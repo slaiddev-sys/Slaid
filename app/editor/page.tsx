@@ -465,11 +465,13 @@ export default function EditorPage() {
     setIsExporting(true);
     setExportProgress(0);
     
+    let progressInterval: NodeJS.Timeout | null = null;
+    
     try {
       console.log('📄 Starting PDF export for presentation:', currentPresentation.title);
       
       // Simulate progress updates during export - realistic timing for 1-2 minute process
-      const progressInterval = setInterval(() => {
+      progressInterval = setInterval(() => {
         setExportProgress(prev => {
           if (prev >= 85) return prev; // Stop at 85% until actual completion
           // Slower, more realistic progress increments
@@ -494,7 +496,7 @@ export default function EditorPage() {
       });
 
       // Clear progress interval
-      clearInterval(progressInterval);
+      if (progressInterval) clearInterval(progressInterval);
       
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`);
@@ -528,11 +530,15 @@ export default function EditorPage() {
       
     } catch (error) {
       console.error('❌ PDF export failed:', error);
+      // Clear progress interval on error
+      if (progressInterval) clearInterval(progressInterval);
       // Reset progress on error
       setExportProgress(0);
-      // You could show an error toast here
+      // Show error message but DON'T close modal
+      alert(`Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setIsExporting(false);
+      // DON'T close modal on error - let user try again
     }
   };
 
