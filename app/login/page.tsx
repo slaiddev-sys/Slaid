@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithGoogle } from "../../lib/auth";
 import SupabaseSetupNotice from "../../components/SupabaseSetupNotice";
@@ -50,7 +50,7 @@ function TypewriterPlaceholder() {
   return displayed;
 }
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -63,6 +63,8 @@ export default function LoginPage() {
 
   // Check for error messages from URL params
   useEffect(() => {
+    if (!searchParams) return;
+    
     const errorParam = searchParams.get('error');
     const messageParam = searchParams.get('message');
     const retryOAuth = searchParams.get('retry_oauth');
@@ -176,5 +178,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <LoginPageContent />
+    </Suspense>
   );
 } 
