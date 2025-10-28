@@ -346,7 +346,7 @@ export default function Component1920WLight() {
           <div className="bg-center bg-contain bg-no-repeat h-[36px] shrink-0 w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
         </div>
         <div className="flex flex-row items-center justify-center w-[359.33px]">
-          <a className="text-[13.2px] text-white/80 font-sans hover:underline" href="#">Pricing</a>
+          <a className="text-[13.2px] text-white/80 font-sans hover:underline" href="/pricing">Pricing</a>
         </div>
         <div className="flex flex-row gap-1 items-center justify-end w-[359.34px]">
           <button 
