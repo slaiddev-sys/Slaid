@@ -3292,18 +3292,18 @@ export default function EditorPage() {
           const reconstructedMessages = [
             {
               role: 'user',
-              text: `Generate a presentation about ${state.title || 'Sales Performance Report'}`
+              text: `Create a presentation about ${state.title || 'business presentation'}`
             },
             {
               role: 'assistant',
-              text: `I've created your presentation: "${state.title || 'Sales Performance Report'}"`,
+              text: `I've created your presentation: "${state.title || 'Untitled Presentation'}"`,
               isLoading: false,
               presentationData: {
-                title: state.title || 'Sales Performance Report',
+                title: state.title || 'Untitled Presentation',
                 slides: state.slides
               },
               version: 1,
-              userMessage: `Generate a presentation about ${state.title || 'Sales Performance Report'}`
+              userMessage: `Create a presentation about ${state.title || 'business presentation'}`
             }
           ]
           
@@ -3376,7 +3376,7 @@ export default function EditorPage() {
             console.log('🔧🔧🔧 FIXING PRESENTATION DATA: Ensuring assistant messages have complete presentation data')
             
             const presentationDataToAdd = {
-              title: state.title || 'Sales Performance Report',
+              title: state.title || 'Untitled Presentation',
               slides: state.slides
             };
             
