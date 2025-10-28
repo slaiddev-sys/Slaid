@@ -6372,15 +6372,31 @@ export default function EditorPage() {
           {/* Top bar */}
           <div className="bg-[#212121] border-b border-[#31343b] px-8 py-4 flex justify-end">
             <div className="flex gap-3">
-              <button className="flex items-center justify-center hover:bg-[#23242a] text-gray-300 px-3 py-2 rounded-lg font-medium text-sm transition" onClick={() => {
-                setShowFullscreenPreview(true);
+              <button className="relative flex items-center justify-center hover:bg-[#23242a] text-gray-300 px-3 py-2 rounded-lg font-medium text-sm transition" onClick={() => {
+                // Check if user has Pro plan for Preview feature
+                if (credits?.plan_type === 'free') {
+                  setShowPricingModal(true);
+                } else {
+                  setShowFullscreenPreview(true);
+                }
               }}>
                 <img src="/preview-icon.png" alt="Preview" className="w-4 h-4 object-contain" />
+                {credits?.plan_type === 'free' && (
+                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">PRO</span>
+                )}
               </button>
-              <button className="flex items-center justify-center bg-white hover:bg-gray-100 hover:scale-110 text-gray-700 p-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm transform" onClick={() => {
-                setShowExportModal(true);
+              <button className="relative flex items-center justify-center bg-white hover:bg-gray-100 hover:scale-110 text-gray-700 p-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm transform" onClick={() => {
+                // Check if user has Pro plan for Export feature
+                if (credits?.plan_type === 'free') {
+                  setShowPricingModal(true);
+                } else {
+                  setShowExportModal(true);
+                }
               }}>
                 <img src="/export-icon.png" alt="Export" className="w-4 h-4 object-contain" />
+                {credits?.plan_type === 'free' && (
+                  <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">PRO</span>
+                )}
               </button>
             </div>
           </div>
@@ -6621,7 +6637,12 @@ export default function EditorPage() {
                 className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-white hover:bg-[#2563eb]"
                 onClick={() => {
                   setShowTitleMenu(false);
-                  setShowExportModal(true);
+                  // Check if user has Pro plan for Export feature
+                  if (credits?.plan_type === 'free') {
+                    setShowPricingModal(true);
+                  } else {
+                    setShowExportModal(true);
+                  }
                 }}
               >
                 Export as PDF
