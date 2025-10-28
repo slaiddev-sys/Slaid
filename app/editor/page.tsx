@@ -4340,13 +4340,11 @@ export default function EditorPage() {
                            lowerPrompt.includes('créame un reporte') ||
                            lowerPrompt.includes('crea una reporte') ||
                            lowerPrompt.includes('crea un reporte') ||
-                           // 🔥 EXCEL-BASED PRESENTATION DETECTION - Only for NEW presentations, NOT modifications
-                           (!isModification && lowerPrompt.includes('presentation') && lowerPrompt.includes('excel')) ||
-                           (!isModification && lowerPrompt.includes('presentation') && lowerPrompt.includes('data')) ||
-                           // 🎯 ENHANCED EXCEL REPORT DETECTION - More patterns for Excel-based reports
-                           (!isModification && lowerPrompt.includes('report') && lowerPrompt.includes('excel')) ||
-                           (!isModification && lowerPrompt.includes('report') && lowerPrompt.includes('data')) ||
-                           (!isModification && lowerPrompt.includes('analysis') && lowerPrompt.includes('excel')) ||
+                           // 🔥 EXCEL-BASED REPORT DETECTION - Only for EXPLICIT sales/business reports with Excel data
+                           (!isModification && lowerPrompt.includes('sales report') && lowerPrompt.includes('excel')) ||
+                           (!isModification && lowerPrompt.includes('business report') && lowerPrompt.includes('excel')) ||
+                           (!isModification && lowerPrompt.includes('revenue report') && lowerPrompt.includes('excel')) ||
+                           (!isModification && lowerPrompt.includes('sales analysis') && lowerPrompt.includes('excel')) ||
                            (!isModification && lowerPrompt.includes('forecast') && lowerPrompt.includes('excel')) ||
                            lowerPrompt.includes('qbr') || 
                            lowerPrompt.includes('quarterly business review') || 
