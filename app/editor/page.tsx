@@ -4902,6 +4902,168 @@ export default function EditorPage() {
                     }
                   }
 
+                  // 🎯 PRODUCT LAUNCH DETECTION AND SINGLE API CALL
+                  if (isProductLaunchRequest(userPrompt) && !isModification) {
+                    console.log('🎯 PRODUCT LAUNCH DETECTED: Making single API call');
+                    
+                    // Detect language for product launch API request
+                    const userLanguage = detectLanguage(userPrompt);
+                    
+                    let finalPrompt = `Create a 10-slide product launch presentation: Cover, Index, Content, Goals, Product Launch Info, New Features (slide 6), New Features (slide 7), Roadmap, Next Steps, Back Cover. ${userPrompt}`;
+                    if (userLanguage === 'es') {
+                      finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                    }
+
+                    // Make single API call for Product Launch (10 slides)
+                    const response = await fetch('/api/generate', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                      },
+                      body: JSON.stringify({
+                        prompt: finalPrompt,
+                        language: userLanguage,
+                        presentationId: currentPresentationId,
+                        workspace: currentWorkspace,
+                        fileData: fileData
+                      })
+                    });
+
+                    if (response.ok) {
+                      const result = await response.json();
+                      console.log('✅ Product Launch generated successfully');
+                      
+                      // Update presentation messages and workspace presentations
+                      setPresentationMessages(prev => ({
+                        ...prev,
+                        [currentPresentationId]: [
+                          ...prev[currentPresentationId].filter(msg => !msg.isLoading),
+                          {
+                            id: `assistant-result-${Date.now()}-${Math.random()}`,
+                            role: "assistant" as const,
+                            text: `Successfully created "${result.title}"\n\nYour 10-slide product launch presentation is ready!`,
+                            isLoading: false,
+                            presentationData: result,
+                            userMessage: userPrompt,
+                            version: 1
+                          }
+                        ]
+                      }));
+                      
+                      setTimeout(() => reloadWorkspacePresentations(), 1000);
+                      return;
+                    }
+                  }
+
+                  // 🎯 CAMPAIGN DETECTION AND SINGLE API CALL
+                  if (isCampaignRequest(userPrompt) && !isModification) {
+                    console.log('🎯 CAMPAIGN DETECTED: Making single API call');
+                    
+                    // Detect language for campaign API request
+                    const userLanguage = detectLanguage(userPrompt);
+                    
+                    let finalPrompt = `Create a 9-slide campaign presentation: Cover, Index, Context, Current Metrics, Goals, Strategy, Roadmap, Next Steps, Back Cover. ${userPrompt}`;
+                    if (userLanguage === 'es') {
+                      finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                    }
+
+                    // Make single API call for Campaign (9 slides)
+                    const response = await fetch('/api/generate', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                      },
+                      body: JSON.stringify({
+                        prompt: finalPrompt,
+                        language: userLanguage,
+                        presentationId: currentPresentationId,
+                        workspace: currentWorkspace,
+                        fileData: fileData
+                      })
+                    });
+
+                    if (response.ok) {
+                      const result = await response.json();
+                      console.log('✅ Campaign generated successfully');
+                      
+                      // Update presentation messages and workspace presentations
+                      setPresentationMessages(prev => ({
+                        ...prev,
+                        [currentPresentationId]: [
+                          ...prev[currentPresentationId].filter(msg => !msg.isLoading),
+                          {
+                            id: `assistant-result-${Date.now()}-${Math.random()}`,
+                            role: "assistant" as const,
+                            text: `Successfully created "${result.title}"\n\nYour 9-slide campaign presentation is ready!`,
+                            isLoading: false,
+                            presentationData: result,
+                            userMessage: userPrompt,
+                            version: 1
+                          }
+                        ]
+                      }));
+                      
+                      setTimeout(() => reloadWorkspacePresentations(), 1000);
+                      return;
+                    }
+                  }
+
+                  // 🎯 TOPIC PRESENTATION DETECTION AND SINGLE API CALL
+                  if (isTopicPresentationRequest(userPrompt) && !isModification) {
+                    console.log('🎯 TOPIC PRESENTATION DETECTED: Making single API call');
+                    
+                    // Detect language for topic presentation API request
+                    const userLanguage = detectLanguage(userPrompt);
+                    
+                    let finalPrompt = `Create a 9-slide topic presentation: Cover, Index, Quote, Info Topic (slide 4), Info Topic (slide 5), Info Topic (slide 6), Info Topic (slide 7), Info Topic (slide 8), Back Cover. ${userPrompt}`;
+                    if (userLanguage === 'es') {
+                      finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                    }
+
+                    // Make single API call for Topic Presentation (9 slides)
+                    const response = await fetch('/api/generate', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                      },
+                      body: JSON.stringify({
+                        prompt: finalPrompt,
+                        language: userLanguage,
+                        presentationId: currentPresentationId,
+                        workspace: currentWorkspace,
+                        fileData: fileData
+                      })
+                    });
+
+                    if (response.ok) {
+                      const result = await response.json();
+                      console.log('✅ Topic Presentation generated successfully');
+                      
+                      // Update presentation messages and workspace presentations
+                      setPresentationMessages(prev => ({
+                        ...prev,
+                        [currentPresentationId]: [
+                          ...prev[currentPresentationId].filter(msg => !msg.isLoading),
+                          {
+                            id: `assistant-result-${Date.now()}-${Math.random()}`,
+                            role: "assistant" as const,
+                            text: `Successfully created "${result.title}"\n\nYour 9-slide topic presentation is ready!`,
+                            isLoading: false,
+                            presentationData: result,
+                            userMessage: userPrompt,
+                            version: 1
+                          }
+                        ]
+                      }));
+                      
+                      setTimeout(() => reloadWorkspacePresentations(), 1000);
+                      return;
+                    }
+                  }
+
                   // 🔥 WORD DOCUMENT WITH EXISTING PLAYBOOKS - Map Word content to appropriate playbook
                   if (fileData && (fileData.type === 'word' || fileData.type === 'document') && !isModification) {
                     console.log('📄 WORD DOCUMENT DETECTED - Analyzing content to determine appropriate playbook');
@@ -5420,7 +5582,11 @@ export default function EditorPage() {
                     return;
                   }
 
-                    // Regular single API call for non-special deck requests
+                    // 🎯 DEFAULT FALLBACK: ALWAYS GENERATE TOPIC PRESENTATION
+                    // If we reach here, no specific playbook was detected, so default to Topic Presentation
+                    console.log('🎯 NO SPECIFIC PLAYBOOK DETECTED: Defaulting to TOPIC PRESENTATION');
+                    console.log('🎯 This ensures EVERY user input generates a presentation');
+                    
                     // Detect language for API request - USE CURRENT PROMPT ONLY, NOT PREVIOUS MESSAGES
                     const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
                     
@@ -5431,10 +5597,10 @@ export default function EditorPage() {
                       isSpanish: userLanguage === 'es'
                     });
                     
-                    // Modify prompt to explicitly request Spanish content if user spoke Spanish
-                    let finalPrompt = userPrompt;
+                    // FORCE Topic Presentation structure for ALL unmatched requests
+                    let finalPrompt = `Create a 9-slide topic presentation: Cover, Index, Quote, Info Topic (slide 4), Info Topic (slide 5), Info Topic (slide 6), Info Topic (slide 7), Info Topic (slide 8), Back Cover. ${userPrompt}`;
                     if (userLanguage === 'es') {
-                      finalPrompt = `${userPrompt}\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                      finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
                     }
                     
                     const requestData = { 
