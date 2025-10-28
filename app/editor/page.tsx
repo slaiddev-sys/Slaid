@@ -3767,8 +3767,14 @@ export default function EditorPage() {
                                     activeSlide: 0
                                   }
                                 })
+                              }).then(response => {
+                                if (response.ok) {
+                                  console.log('✅ Title saved successfully:', finalTitle);
+                                } else {
+                                  console.error('❌ Failed to save title:', response.status);
+                                }
                               }).catch(error => {
-                                console.error('Failed to save title:', error);
+                                console.error('❌ Error saving title:', error);
                               });
                             };
                             saveTitle();
@@ -3792,22 +3798,44 @@ export default function EditorPage() {
                               }
                               
                               // Save title to database when Enter is pressed
-                              fetch('/api/presentations/save', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({ 
-                                  presentationId: p.id,
-                                  workspace: currentWorkspace, 
-                                  state: {
-                                    title: finalTitle,
-                                    slides: [{ id: 'slide-1', blocks: [] }],
-                                    messages: [],
-                                    activeSlide: 0
+                              const saveTitleOnEnter = async () => {
+                                const headers: Record<string, string> = {
+                                  'Content-Type': 'application/json',
+                                };
+
+                                try {
+                                  const { data: { session } } = await supabase.auth.getSession();
+                                  if (session?.access_token) {
+                                    headers['Authorization'] = `Bearer ${session.access_token}`;
                                   }
-                                })
-                              }).catch(error => {
-                                console.error('Failed to save title:', error);
-                              });
+                                } catch (authError) {
+                                  console.warn('⚠️ Could not get auth session for save:', authError);
+                                }
+
+                                fetch('/api/presentations/save', {
+                                  method: 'POST',
+                                  headers,
+                                  body: JSON.stringify({ 
+                                    presentationId: p.id,
+                                    workspace: currentWorkspace, 
+                                    state: {
+                                      title: finalTitle,
+                                      slides: [{ id: 'slide-1', blocks: [] }],
+                                      messages: [],
+                                      activeSlide: 0
+                                    }
+                                  })
+                                }).then(response => {
+                                  if (response.ok) {
+                                    console.log('✅ Title saved successfully on Enter:', finalTitle);
+                                  } else {
+                                    console.error('❌ Failed to save title on Enter:', response.status);
+                                  }
+                                }).catch(error => {
+                                  console.error('❌ Error saving title on Enter:', error);
+                                });
+                              };
+                              saveTitleOnEnter();
                               
                               // Don't switch presentations - just finish editing
                               setEditingTitle(null);
