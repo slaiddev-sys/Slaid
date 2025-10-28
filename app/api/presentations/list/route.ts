@@ -32,18 +32,41 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Build query based on authentication
-    let query = supabase
-      .from('presentations')
-      .select('id, title, workspace, updated_at')
-      .eq('workspace', workspace)
-      .order('updated_at', { ascending: false })
-
     // If user is authenticated, only show their presentations
     // If not authenticated, return empty array (no backward compatibility for anonymous users)
     if (userId) {
-      // Only include presentations with this user_id (no more shared presentations)
-      query = query.eq('user_id', userId)
+      // PRIMARY FILTER: Only include presentations with this user_id
+      // SECONDARY FILTER: Within that user's presentations, filter by workspace
+      const query = supabase
+        .from('presentations')
+        .select('id, title, workspace, updated_at')
+        .eq('user_id', userId)  // USER FILTER FIRST - CRITICAL FOR SECURITY
+        .eq('workspace', workspace)
+        .order('updated_at', { ascending: false })
+        
+      const { data: presentations, error } = await query
+      
+      if (error) {
+        console.error('❌ Failed to list presentations:', error)
+        return NextResponse.json(
+          { error: error.message },
+          { status: 500 }
+        )
+      }
+
+      console.log('✅ API: Listed presentations successfully:', presentations?.length || 0)
+      console.log('📋 API: Presentation details:', presentations?.map(p => ({
+        id: p.id,
+        title: p.title,
+        user_id: p.user_id || 'NULL',
+        workspace: p.workspace
+      })))
+
+      return NextResponse.json({
+        success: true,
+        presentations: presentations || [],
+        message: 'Presentations listed successfully'
+      })
     } else {
       // For unauthenticated users, return empty array
       console.log('⚠️ Unauthenticated user - returning empty presentations list')
@@ -53,30 +76,6 @@ export async function GET(request: NextRequest) {
         message: 'Authentication required to view presentations'
       })
     }
-
-    const { data: presentations, error } = await query
-
-    if (error) {
-      console.error('❌ Failed to list presentations:', error)
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      )
-    }
-
-    console.log('✅ API: Listed presentations successfully:', presentations?.length || 0)
-    console.log('📋 API: Presentation details:', presentations?.map(p => ({
-      id: p.id,
-      title: p.title,
-      user_id: p.user_id || 'NULL',
-      workspace: p.workspace
-    })))
-
-    return NextResponse.json({
-      success: true,
-      presentations: presentations || [],
-      message: 'Presentations listed successfully'
-    })
 
   } catch (error) {
     console.error('❌ API: Failed to list presentations:', error)
