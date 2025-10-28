@@ -52,14 +52,32 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      // PRIMARY FILTER: Only include presentations with this user_id
+      // PRIMARY FILTER: Include presentations with this user_id OR orphaned presentations in this workspace
       // SECONDARY FILTER: Within that user's presentations, filter by workspace_id (UUID)
       const query = supabase
         .from('presentations')
-        .select('id, title, workspace, updated_at')
-        .eq('user_id', userId)  // USER FILTER FIRST - CRITICAL FOR SECURITY
-        .eq('workspace_id', workspaceData.id)  // WORKSPACE ID FILTER - PREVENTS CROSS-USER ACCESS
+        .select('id, title, workspace, updated_at, user_id')
+        .or(`user_id.eq.${userId},and(user_id.is.null,workspace.eq.${workspace})`)  // USER'S PRESENTATIONS OR ORPHANED IN THIS WORKSPACE
         .order('updated_at', { ascending: false })
+        
+      // Also auto-reclaim orphaned presentations for this user
+      const reclaimQuery = supabase
+        .from('presentations')
+        .update({ 
+          user_id: userId,
+          workspace_id: workspaceData.id 
+        })
+        .eq('workspace', workspace)
+        .is('user_id', null)
+        
+      // Execute reclaim in parallel (don't wait for it)
+      reclaimQuery.then(({ error: reclaimError, count }) => {
+        if (reclaimError) {
+          console.warn('⚠️ Failed to reclaim orphaned presentations:', reclaimError)
+        } else if (count && count > 0) {
+          console.log('✅ Auto-reclaimed', count, 'orphaned presentations for user:', userId)
+        }
+      })
         
       const { data: presentations, error } = await query
       
