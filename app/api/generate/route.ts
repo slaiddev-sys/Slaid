@@ -500,7 +500,8 @@ When user provides Excel file data (indicated by "Based on the Excel file" in pr
 - ALL TITLES MUST BE MAXIMUM 3 WORDS
 - Cover/Problem/Context layouts: ONLY 1-2 WORDS for titles
 - Keep descriptions under 15 words
-- Lists_LeftTextRightImage layout: MAXIMUM 15 words for description (NOT the 150+ word rule)
+- Lists_LeftTextRightImage layout: MAXIMUM 5-8 words for description (keep it very short)
+- EXAMPLES for Lists_LeftTextRightImage: "Key insights", "Action items", "Strategic focus", "Core benefits"
 - Use minimal bullet points (max 3 per slide)
 
 🚨🚨🚨 ABSOLUTE MANDATORY EXCEPTION - NO EXCEPTIONS ALLOWED 🚨🚨🚨
@@ -967,7 +968,7 @@ REPORT PLAYBOOK EXAMPLES (KEEP CONTENT MINIMAL):
 - Slide 7 (Performance): {"type": "Metrics_FullWidthChart", "props": {"title": "Performance Trends", "description": "Quarterly growth analytics", "chart": {"type": "area", "labels": ["Q1", "Q2", "Q3", "Q4"], "series": [{"id": "Revenue", "data": [1.2, 1.5, 1.8, 2.1], "color": "#4A3AFF"}, {"id": "Customers", "data": [150, 200, 250, 300], "color": "#C893FD"}], "showLegend": true, "showGrid": true, "animate": true, "curved": true, "legendPosition": "bottom"}}}
 - Slide 8 (Budget): {"type": "Metrics_FinancialsSplit", "props": {"title": "Budget Overview", "description": "Expense allocation by department", "chart": {"type": "pie", "series": [{"id": "Operations", "data": [40], "color": "#962DFF"}, {"id": "Marketing", "data": [30], "color": "#C893FD"}, {"id": "R&D", "data": [20], "color": "#E0C6FD"}, {"id": "Admin", "data": [10], "color": "#F0E5FC"}], "legendPosition": "bottom"}}}
 - Slide 9 (Market): {"type": "Metrics_FullWidthChart", "props": {"title": "Market Analysis", "description": "Market trends and projections", "chart": {"type": "line", "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"], "series": [{"id": "Market Share", "data": [25, 28, 32, 35, 38, 42], "color": "#4A3AFF"}, {"id": "Growth Rate", "data": [15, 18, 22, 25, 28, 30], "color": "#C893FD"}], "showLegend": true, "showGrid": true, "animate": true, "legendPosition": "bottom"}}}
-- Slide 10 (Next Steps): {"type": "Lists_LeftTextRightImage", "props": {"title": "Next Steps", "description": "Strategic initiatives and action items", "bulletPoints": [{"icon": "Target", "title": "Expansion", "description": "New markets"}, {"icon": "Users", "title": "Growth", "description": "Team scaling"}, {"icon": "Zap", "title": "Innovation", "description": "New features"}], "imageUrl": "/Default-Image-2.png"}}
+- Slide 10 (Next Steps): {"type": "Lists_LeftTextRightImage", "props": {"title": "Next Steps", "description": "Action items", "bulletPoints": [{"icon": "Target", "title": "Expansion", "description": "New markets"}, {"icon": "Users", "title": "Growth", "description": "Team scaling"}, {"icon": "Zap", "title": "Innovation", "description": "New features"}], "imageUrl": "/Default-Image-2.png"}}
 - Slide 11 (Mission): {"type": "Quote_LeftTextRightImage", "props": {"title": "Mission", "quote": "Drive business excellence through data-driven insights", "author": "Leadership Team", "imageUrl": "/Default-Image-2.png"}}
 
 TOPIC PRESENTATION EXAMPLES (MINIMAL):
@@ -978,7 +979,7 @@ TOPIC PRESENTATION EXAMPLES (MINIMAL):
 - Slide 5: {"type": "Impact_ImageMetrics", "props": {"title": "Data", "description": "Key metrics", "metrics": [{"value": "85%", "label": "Stat 1"}, {"value": "$15B", "label": "Stat 2"}], "imageUrl": "/Default-Image-1.png"}}
 - Slide 6: {"type": "Lists_CardsLayout", "props": {"title": "Applications", "description": "Use cases", "cards": [{"icon": "MessageSquare", "title": "App 1", "description": "Description 1"}, {"icon": "Eye", "title": "App 2", "description": "Description 2"}]}}
 - Slide 7: {"type": "Metrics_FinancialsSplit", "props": {"title": "Analysis", "description": "Data breakdown", "chart": {"type": "pie", "series": [{"id": "Cat 1", "data": [40], "color": "#4A3AFF"}, {"id": "Cat 2", "data": [60], "color": "#C893FD"}], "legendPosition": "bottom"}}}
-- Slide 8: {"type": "Lists_LeftTextRightImage", "props": {"title": "Details", "description": "Additional information and key details", "bulletPoints": [{"icon": "Cpu", "title": "Detail 1", "description": "Info 1"}, {"icon": "Globe", "title": "Detail 2", "description": "Info 2"}], "imageUrl": "/Default-Image-2.png"}}
+- Slide 8: {"type": "Lists_LeftTextRightImage", "props": {"title": "Details", "description": "Key information", "bulletPoints": [{"icon": "Cpu", "title": "Detail 1", "description": "Info 1"}, {"icon": "Globe", "title": "Detail 2", "description": "Info 2"}], "imageUrl": "/Default-Image-2.png"}}
 - Slide 9: {"type": "BackCover_ThankYouWithImage", "props": {"title": "Thank You", "paragraph": "Next steps", "imageUrl": "/Default-Image-1.png"}}
 
 PRODUCT DOSSIER EXAMPLES (CRITICAL):
