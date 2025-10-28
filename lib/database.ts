@@ -36,7 +36,25 @@ export async function savePresentation(
       }
     }
 
-    // 2. Upsert presentation metadata
+    // 2. Get workspace_id if user is authenticated
+    let workspaceId: string | undefined
+    if (userId) {
+      const { data: workspaceData } = await supabase
+        .from('workspaces')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('name', workspace)
+        .single()
+      
+      if (workspaceData) {
+        workspaceId = workspaceData.id
+        console.log('✅ Found workspace_id for user:', workspaceId)
+      } else {
+        console.log('⚠️ No workspace found for user:', userId, 'workspace:', workspace)
+      }
+    }
+
+    // 3. Upsert presentation metadata
     const presentationData: any = {
       id: presentationId,
       title,
@@ -44,9 +62,12 @@ export async function savePresentation(
       updated_at: new Date().toISOString()
     }
     
-    // Add user_id if provided or if claiming an existing presentation
+    // Add user_id and workspace_id if available
     if (userId) {
       presentationData.user_id = userId
+    }
+    if (workspaceId) {
+      presentationData.workspace_id = workspaceId
     }
 
     const { data: presentation, error: presentationError } = await supabase

@@ -35,13 +35,30 @@ export async function GET(request: NextRequest) {
     // If user is authenticated, only show their presentations
     // If not authenticated, return empty array (no backward compatibility for anonymous users)
     if (userId) {
+      // First, get the workspace_id for this user and workspace name
+      const { data: workspaceData, error: workspaceError } = await supabase
+        .from('workspaces')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('name', workspace)
+        .single();
+
+      if (workspaceError || !workspaceData) {
+        console.log('⚠️ Workspace not found for user:', userId, 'workspace:', workspace);
+        return NextResponse.json({
+          success: true,
+          presentations: [],
+          message: 'Workspace not found'
+        });
+      }
+
       // PRIMARY FILTER: Only include presentations with this user_id
-      // SECONDARY FILTER: Within that user's presentations, filter by workspace
+      // SECONDARY FILTER: Within that user's presentations, filter by workspace_id (UUID)
       const query = supabase
         .from('presentations')
         .select('id, title, workspace, updated_at')
         .eq('user_id', userId)  // USER FILTER FIRST - CRITICAL FOR SECURITY
-        .eq('workspace', workspace)
+        .eq('workspace_id', workspaceData.id)  // WORKSPACE ID FILTER - PREVENTS CROSS-USER ACCESS
         .order('updated_at', { ascending: false })
         
       const { data: presentations, error } = await query
