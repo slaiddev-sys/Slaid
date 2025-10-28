@@ -5588,10 +5588,11 @@ export default function EditorPage() {
                     return;
                   }
 
-                    // 🎯 DEFAULT FALLBACK: ALWAYS GENERATE TOPIC PRESENTATION
-                    // If we reach here, no specific playbook was detected, so default to Topic Presentation
-                    console.log('🎯 NO SPECIFIC PLAYBOOK DETECTED: Defaulting to TOPIC PRESENTATION');
-                    console.log('🎯 This ensures EVERY user input generates a presentation');
+                    // 🎯 DEFAULT FALLBACK: Handle modifications OR create Topic Presentation
+                    console.log('🎯 REACHED DEFAULT HANDLER:', {
+                      isModification: isModification,
+                      userPrompt: userPrompt
+                    });
                     
                     // Detect language for API request - USE CURRENT PROMPT ONLY, NOT PREVIOUS MESSAGES
                     const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
@@ -5603,10 +5604,22 @@ export default function EditorPage() {
                       isSpanish: userLanguage === 'es'
                     });
                     
-                    // FORCE Topic Presentation structure for ALL unmatched requests
-                    let finalPrompt = `Create a 9-slide topic presentation: Cover, Index, Quote, Info Topic (slide 4), Info Topic (slide 5), Info Topic (slide 6), Info Topic (slide 7), Info Topic (slide 8), Back Cover. ${userPrompt}`;
-                    if (userLanguage === 'es') {
-                      finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                    let finalPrompt;
+                    
+                    if (isModification) {
+                      // 🔧 MODIFICATION: Pass user request directly without forcing structure
+                      console.log('🔧 MODIFICATION REQUEST: Passing user prompt directly');
+                      finalPrompt = userPrompt;
+                      if (userLanguage === 'es') {
+                        finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                      }
+                    } else {
+                      // 🎯 NEW PRESENTATION: Force Topic Presentation structure for unmatched requests
+                      console.log('🎯 NO SPECIFIC PLAYBOOK DETECTED: Defaulting to TOPIC PRESENTATION');
+                      finalPrompt = `Create a 9-slide topic presentation: Cover, Index, Quote, Info Topic (slide 4), Info Topic (slide 5), Info Topic (slide 6), Info Topic (slide 7), Info Topic (slide 8), Back Cover. ${userPrompt}`;
+                      if (userLanguage === 'es') {
+                        finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                      }
                     }
                     
                     const requestData = { 
