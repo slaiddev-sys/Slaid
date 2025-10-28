@@ -5613,6 +5613,13 @@ export default function EditorPage() {
                       if (userLanguage === 'es') {
                         finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
                       }
+                    } else if (finalIntent === 'add_slide') {
+                      // 🆕 ADD SLIDE: Pass user request directly without forcing structure
+                      console.log('🆕 ADD SLIDE REQUEST: Passing user prompt directly');
+                      finalPrompt = userPrompt;
+                      if (userLanguage === 'es') {
+                        finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                      }
                     } else {
                       // 🎯 NEW PRESENTATION: Force Topic Presentation structure for unmatched requests
                       console.log('🎯 NO SPECIFIC PLAYBOOK DETECTED: Defaulting to TOPIC PRESENTATION');
