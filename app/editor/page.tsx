@@ -3514,20 +3514,45 @@ export default function EditorPage() {
                         type="text"
                         defaultValue={workspaceDisplayName}
                         autoFocus
-                        onBlur={(e) => {
+                        onBlur={async (e) => {
                           const newName = e.target.value.trim();
                           if (newName && newName !== workspaceDisplayName) {
-                            console.log('🔄 Updating workspace display name from:', workspaceDisplayName, 'to:', newName);
-                            // Update the display name
-                            setWorkspaceDisplayName(newName);
+                            console.log('🔄 Renaming workspace from:', workspaceDisplayName, 'to:', newName);
                             
-                            // Save to localStorage for persistence (user-specific key)
+                            // Update the database via API
                             try {
-                              const userSpecificKey = `slaid_workspace_display_name_${user?.id || 'anonymous'}`;
-                              localStorage.setItem(userSpecificKey, newName);
-                              console.log('💾 Workspace display name saved to localStorage with user-specific key:', userSpecificKey, newName);
+                              const { data: { session } } = await supabase.auth.getSession();
+                              if (session?.access_token) {
+                                const response = await fetch('/api/workspaces/rename', {
+                                  method: 'POST',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${session.access_token}`
+                                  },
+                                  body: JSON.stringify({ 
+                                    oldName: workspaceDisplayName, 
+                                    newName: newName 
+                                  })
+                                });
+                                
+                                if (response.ok) {
+                                  console.log('✅ Workspace renamed in database');
+                                  // Update the display name only after successful database update
+                                  setWorkspaceDisplayName(newName);
+                                  
+                                  // Update localStorage
+                                  const userSpecificKey = `slaid_workspace_display_name_${user?.id || 'anonymous'}`;
+                                  localStorage.setItem(userSpecificKey, newName);
+                                } else {
+                                  console.error('❌ Failed to rename workspace in database:', response.status);
+                                  // Revert the input value
+                                  e.target.value = workspaceDisplayName;
+                                }
+                              }
                             } catch (error) {
-                              console.error('❌ Failed to save workspace name to localStorage:', error);
+                              console.error('❌ Error renaming workspace:', error);
+                              // Revert the input value
+                              e.target.value = workspaceDisplayName;
                             }
                           }
                           setEditingWorkspace(false);
@@ -3535,23 +3560,8 @@ export default function EditorPage() {
                         onKeyDown={(e) => {
                           e.stopPropagation();
                           if (e.key === 'Enter') {
-                            // Handle Enter key with the same simple logic as onBlur
-                            const newName = e.currentTarget.value.trim();
-                            if (newName && newName !== workspaceDisplayName) {
-                              console.log('🔄 Updating workspace display name from:', workspaceDisplayName, 'to:', newName);
-                              // Update the display name
-                              setWorkspaceDisplayName(newName);
-                              
-                              // Save to localStorage for persistence
-                              try {
-                                const userSpecificKey = `slaid_workspace_display_name_${user?.id || 'anonymous'}`;
-                    localStorage.setItem(userSpecificKey, newName);
-                                console.log('💾 Workspace display name saved to localStorage:', newName);
-                              } catch (error) {
-                                console.error('❌ Failed to save workspace name to localStorage:', error);
-                              }
-                            }
-                            setEditingWorkspace(false);
+                            // Trigger the same logic as onBlur
+                            e.currentTarget.blur();
                           }
                           if (e.key === 'Escape') {
                             setEditingWorkspace(false);
