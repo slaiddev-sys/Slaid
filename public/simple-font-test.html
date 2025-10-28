@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Font Test</title>
+    <!-- Direct Google Fonts CSS -->
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 40px;
+            background: #f5f5f5;
+            font-family: Arial, sans-serif;
+        }
+        .test-box {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .info {
+            font-family: monospace;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .test-text {
+            font-size: 48px;
+            margin: 10px 0;
+        }
+        .instrument-serif {
+            font-family: 'Instrument Serif', serif;
+        }
+        .default-serif {
+            font-family: serif;
+        }
+        .default-sans {
+            font-family: sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Simple Font Test - No CDN Dependencies</h1>
+    
+    <div class="test-box">
+        <div class="info">Test 1: Instrument Serif (should look elegant and serif)</div>
+        <div class="test-text instrument-serif">The Wonderful World of Dogs</div>
+    </div>
+    
+    <div class="test-box">
+        <div class="info">Test 2: Default serif (for comparison)</div>
+        <div class="test-text default-serif">The Wonderful World of Dogs</div>
+    </div>
+    
+    <div class="test-box">
+        <div class="info">Test 3: Default sans-serif (for comparison)</div>
+        <div class="test-text default-sans">The Wonderful World of Dogs</div>
+    </div>
+    
+    <div class="test-box">
+        <div class="info">Console Output:</div>
+        <div id="console-output" style="font-family: monospace; font-size: 14px; color: #333;"></div>
+    </div>
+    
+    <script>
+        function log(message) {
+            const output = document.getElementById('console-output');
+            output.innerHTML += message + '<br>';
+        }
+        
+        log('🔄 Testing font loading...');
+        
+        // Test if Instrument Serif is available
+        document.fonts.ready.then(() => {
+            log('✅ All fonts loaded!');
+            
+            // Check if Instrument Serif is in the font list
+            const fontFamilies = [...document.fonts].map(f => f.family);
+            log('📊 Available font families: ' + fontFamilies.join(', '));
+            
+            if (fontFamilies.includes('Instrument Serif')) {
+                log('✅ Instrument Serif is loaded!');
+            } else {
+                log('❌ Instrument Serif NOT found in font list');
+            }
+            
+            // Check computed style
+            const testElement = document.querySelector('.instrument-serif');
+            if (testElement) {
+                const computedStyle = window.getComputedStyle(testElement);
+                log('🎯 Computed font-family: ' + computedStyle.fontFamily);
+                
+                if (computedStyle.fontFamily.includes('Instrument Serif')) {
+                    log('✅ Font is being applied correctly!');
+                } else {
+                    log('❌ Font is NOT being applied. Fallback in use.');
+                }
+            }
+        }).catch(err => {
+            log('❌ Font loading error: ' + err.message);
+        });
+        
+        // Additional network test
+        fetch('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap')
+            .then(response => {
+                if (response.ok) {
+                    log('✅ Google Fonts CSS loaded successfully');
+                    return response.text();
+                } else {
+                    throw new Error('HTTP ' + response.status);
+                }
+            })
+            .then(css => {
+                if (css.includes('Instrument Serif')) {
+                    log('✅ CSS contains Instrument Serif definitions');
+                } else {
+                    log('❌ CSS does not contain Instrument Serif');
+                }
+            })
+            .catch(err => {
+                log('❌ Network error loading Google Fonts: ' + err.message);
+            });
+    </script>
+</body>
+</html> 

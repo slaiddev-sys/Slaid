@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Font Test - Debugging</title>
+    <!-- Same Google Fonts CSS as the app -->
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              'instrument-serif': ['"Instrument Serif"', 'serif'],
+              'inter': ['Inter', 'sans-serif'],
+              'montserrat': ['Montserrat', 'sans-serif'],
+              'roboto': ['Roboto', 'sans-serif'],
+              'playfair-display': ['"Playfair Display"', 'serif'],
+              'lora': ['Lora', 'serif'],
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      .debug-info {
+        font-family: monospace;
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 10px;
+      }
+    </style>
+</head>
+<body class="p-8 bg-gray-50">
+    <h1 class="text-2xl font-bold mb-8 text-gray-900">🔧 FONT DEBUGGING TEST</h1>
+    
+    <div class="space-y-8">
+        <!-- Test 1: Direct CSS Font Family -->
+        <div>
+            <div class="debug-info">Test 1: Direct CSS font-family: "Instrument Serif"</div>
+            <div style="font-family: 'Instrument Serif', serif; font-size: 48px; color: #111;">
+                The Wonderful World of Dogs
+            </div>
+        </div>
+        
+        <!-- Test 2: Tailwind Font Class -->
+        <div>
+            <div class="debug-info">Test 2: Tailwind class: font-instrument-serif</div>
+            <div class="font-instrument-serif text-[48px] text-gray-900">
+                The Wonderful World of Dogs
+            </div>
+        </div>
+        
+        <!-- Test 3: Default Sans-serif for comparison -->
+        <div>
+            <div class="debug-info">Test 3: Default sans-serif for comparison</div>
+            <div class="text-[48px] text-gray-900">
+                The Wonderful World of Dogs
+            </div>
+        </div>
+        
+        <!-- Test 4: Other fonts to verify system works -->
+        <div>
+            <div class="debug-info">Test 4: Playfair Display (font-playfair-display)</div>
+            <div class="font-playfair-display text-[32px] text-gray-900">
+                Beautiful Typography Test
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check if fonts are loaded
+        document.fonts.ready.then(() => {
+            console.log('📊 All fonts loaded!');
+            console.log('📊 Available fonts:', [...document.fonts].map(f => f.family));
+            
+            // Check computed styles
+            const testElement = document.querySelector('.font-instrument-serif');
+            if (testElement) {
+                const computedStyle = window.getComputedStyle(testElement);
+                console.log('🎯 Computed font-family for .font-instrument-serif:', computedStyle.fontFamily);
+            }
+        });
+    </script>
+</body>
+</html> 

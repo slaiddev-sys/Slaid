@@ -1,0 +1,43 @@
+{
+  "name": "slaidai",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.57.0",
+    "@next/font": "^14.2.15",
+    "@polar-sh/nextjs": "^0.4.11",
+    "@supabase/supabase-js": "^2.75.0",
+    "@tailwindcss/line-clamp": "^0.4.4",
+    "@types/lodash": "^4.17.20",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "framer-motion": "^11.18.2",
+    "lodash": "^4.17.21",
+    "lucide-react": "^0.533.0",
+    "mammoth": "^1.11.0",
+    "next": "15.4.2",
+    "node-fetch": "^3.3.2",
+    "pdf-merger-js": "^5.1.2",
+    "puppeteer": "^24.26.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "recharts": "^3.1.2",
+    "tailwind-merge": "^3.3.1",
+    "tailwind-scrollbar": "^4.0.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

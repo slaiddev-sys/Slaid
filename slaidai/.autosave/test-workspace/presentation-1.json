@@ -1,0 +1,13 @@
+{
+  "id": 1,
+  "title": "Test Presentation",
+  "slides": [
+    {
+      "id": "slide-1",
+      "blocks": []
+    }
+  ],
+  "workspace": "test-workspace",
+  "savedAt": "2025-10-13T17:48:53.897Z",
+  "version": "1.0"
+}

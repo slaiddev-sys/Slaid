@@ -1,0 +1,59 @@
+{
+  "title": "OpenAI: Leading AI Innovation",
+  "slides": [
+    {
+      "id": "slide-1",
+      "title": "OpenAI Overview",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "type": "gradient",
+            "colors": [
+              "from-blue-600",
+              "to-purple-700"
+            ],
+            "gradientDirection": "to-br"
+          }
+        },
+        {
+          "type": "Title",
+          "props": {
+            "children": "OpenAI",
+            "align": "center",
+            "className": "text-white mb-4"
+          }
+        },
+        {
+          "type": "Body",
+          "props": {
+            "children": "Advancing Artificial Intelligence for the Benefit of Humanity",
+            "align": "center",
+            "className": "text-gray-100 mb-8"
+          }
+        },
+        {
+          "type": "FeatureList",
+          "props": {
+            "items": [
+              "Leading AI research organization founded in 2015",
+              "Creator of GPT, DALL-E, and other breakthrough AI models",
+              "Mission to ensure AI benefits all of humanity",
+              "Pioneers in responsible AI development"
+            ],
+            "color": "text-white",
+            "spacing": "wide",
+            "align": "center"
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2025-07-30T14:26:01.827Z",
+    "model": "claude-3-5-sonnet-20241022",
+    "prompt": "Create a simple presentation about OpenAI with 1 slide",
+    "slideCount": 1,
+    "isModification": false
+  }
+}

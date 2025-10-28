@@ -1,0 +1,1119 @@
+{
+  "id": 1,
+  "title": "Sales Performance Report",
+  "slides": [
+    {
+      "id": "slide-1",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495,
+            "text": "Test Report"
+          }
+        },
+        {
+          "type": "Cover_LeftTitleRightBodyUnderlined",
+          "props": {
+            "title": "Sales Report",
+            "paragraph": "Q3 Performance Insights and Strategic Outlook",
+            "imageUrl": "/Default-Image-2.png",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-2",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495
+          }
+        },
+        {
+          "type": "Index_AgendaGrid3x4",
+          "props": {
+            "title": "Agenda",
+            "description": "Quarterly Sales Performance Overview",
+            "agenda": [
+              {
+                "title": "Context",
+                "duration": "8 min",
+                "description": "Market conditions and background"
+              },
+              {
+                "title": "Our Goals",
+                "duration": "10 min",
+                "description": "Strategic sales objectives"
+              },
+              {
+                "title": "KPIs",
+                "duration": "12 min",
+                "description": "Key performance indicators"
+              },
+              {
+                "title": "Financial Analysis",
+                "duration": "10 min",
+                "description": "Revenue breakdown"
+              },
+              {
+                "title": "Performance Trends",
+                "duration": "12 min",
+                "description": "Sales growth analytics"
+              },
+              {
+                "title": "Budget Overview",
+                "duration": "10 min",
+                "description": "Sales investment allocation"
+              },
+              {
+                "title": "Market Analysis",
+                "duration": "10 min",
+                "description": "Sales market projections"
+              },
+              {
+                "title": "Next Steps",
+                "duration": "8 min",
+                "description": "Strategic sales initiatives"
+              },
+              {
+                "title": "Mission",
+                "duration": "5 min",
+                "description": "Sales team vision"
+              }
+            ],
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-3",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495
+          }
+        },
+        {
+          "type": "Lists_LeftTextRightImageDescription",
+          "props": {
+            "title": "Context",
+            "description": "Sales Environment Overview",
+            "bulletPoints": [
+              {
+                "icon": "TrendingUp",
+                "title": "Market Growth",
+                "description": "15% increase in B2B technology sales"
+              },
+              {
+                "icon": "Globe",
+                "title": "Geographic Expansion",
+                "description": "Successful entry into 3 new markets"
+              },
+              {
+                "icon": "Users",
+                "title": "Sales Team",
+                "description": "Expanded team by 22% in Q3"
+              }
+            ],
+            "imageUrl": "/Default-Image-1.png",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-4",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495
+          }
+        },
+        {
+          "type": "Impact_ImageMetrics",
+          "props": {
+            "title": "Our Goals",
+            "description": "Q3 Sales Strategic Objectives",
+            "impactNumbers": {
+              "number1": {
+                "value": "25%",
+                "label": "Revenue Growth"
+              },
+              "number2": {
+                "value": "$5M",
+                "label": "New Contracts"
+              },
+              "number3": {
+                "value": "500",
+                "label": "New Clients"
+              },
+              "number4": {
+                "value": "15%",
+                "label": "Market Share"
+              }
+            },
+            "imageUrl": "/Default-Image-1.png",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-5",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495
+          }
+        },
+        {
+          "type": "Impact_KPIOverview",
+          "props": {
+            "title": "KPIs",
+            "description": "Sales Performance Indicators",
+            "kpiCards": [
+              {
+                "title": "Revenue",
+                "value": "35%",
+                "subtitle": "Growth",
+                "trend": "up",
+                "icon": "TrendingUp",
+                "hasChart": "true",
+                "chartType": "area"
+              },
+              {
+                "title": "New Clients",
+                "value": "450",
+                "subtitle": "Acquired",
+                "trend": "up",
+                "icon": "Users",
+                "hasChart": "false"
+              },
+              {
+                "title": "Conversion Rate",
+                "value": "22%",
+                "subtitle": "Lead to Sale",
+                "trend": "up",
+                "icon": "CheckCircle",
+                "hasChart": "false"
+              },
+              {
+                "title": "Average Deal",
+                "value": "$45K",
+                "subtitle": "Contract Value",
+                "trend": "up",
+                "icon": "DollarSign",
+                "hasChart": "true",
+                "chartType": "bar"
+              },
+              {
+                "title": "Sales Cycle",
+                "value": "45 Days",
+                "subtitle": "Average Length",
+                "trend": "down",
+                "icon": "Clock",
+                "hasChart": "false"
+              }
+            ],
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495,
+            "language": "en"
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-6",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white",
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495,
+            "text": "change the chart to gree"
+          }
+        },
+        {
+          "type": "Metrics_FinancialsSplit",
+          "props": {
+            "title": "Financial Analysis",
+            "description": "Q3 Revenue Breakdown",
+            "chart": {
+              "type": "bar",
+              "labels": [
+                "Enterprise Sales",
+                "SMB Sales",
+                "Consulting",
+                "Renewals"
+              ],
+              "series": [
+                {
+                  "id": "Revenue",
+                  "data": [
+                    45,
+                    30,
+                    15,
+                    10
+                  ],
+                  "color": "#4A3AFF"
+                }
+              ],
+              "legendPosition": "bottom"
+            },
+            "useFixedDimensions": true,
+            "canvasWidth": 881,
+            "canvasHeight": 495,
+            "language": "en"
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-7",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white"
+          }
+        },
+        {
+          "type": "Metrics_FullWidthChart",
+          "props": {
+            "title": "Performance Trends",
+            "description": "Quarterly Sales Growth Analytics",
+            "chart": {
+              "type": "area",
+              "labels": [
+                "Q1",
+                "Q2",
+                "Q3",
+                "Q4"
+              ],
+              "series": [
+                {
+                  "id": "Sales Revenue",
+                  "data": [
+                    1.2,
+                    1.5,
+                    1.8,
+                    2.1
+                  ],
+                  "color": "#4A3AFF"
+                },
+                {
+                  "id": "New Customers",
+                  "data": [
+                    150,
+                    200,
+                    250,
+                    300
+                  ],
+                  "color": "#C893FD"
+                }
+              ],
+              "showLegend": "true",
+              "showGrid": "true",
+              "animate": "true",
+              "curved": "true",
+              "legendPosition": "bottom"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-8",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white"
+          }
+        },
+        {
+          "type": "Metrics_FinancialsSplit",
+          "props": {
+            "title": "Budget Overview",
+            "description": "Sales Department Expense Allocation",
+            "chart": {
+              "type": "pie",
+              "series": [
+                {
+                  "id": "Sales Team",
+                  "data": [
+                    40
+                  ],
+                  "color": "#962DFF"
+                },
+                {
+                  "id": "Marketing",
+                  "data": [
+                    30
+                  ],
+                  "color": "#C893FD"
+                },
+                {
+                  "id": "Training",
+                  "data": [
+                    20
+                  ],
+                  "color": "#E0C6FD"
+                },
+                {
+                  "id": "Tools & Tech",
+                  "data": [
+                    10
+                  ],
+                  "color": "#F0E5FC"
+                }
+              ],
+              "legendPosition": "bottom"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-9",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white"
+          }
+        },
+        {
+          "type": "Metrics_FullWidthChart",
+          "props": {
+            "title": "Market Analysis",
+            "description": "Sales Market Trends and Projections",
+            "chart": {
+              "type": "line",
+              "labels": [
+                "Jan",
+                "Feb",
+                "Mar",
+                "Apr",
+                "May",
+                "Jun"
+              ],
+              "series": [
+                {
+                  "id": "Market Share",
+                  "data": [
+                    25,
+                    28,
+                    32,
+                    35,
+                    38,
+                    42
+                  ],
+                  "color": "#4A3AFF"
+                },
+                {
+                  "id": "Sales Growth",
+                  "data": [
+                    15,
+                    18,
+                    22,
+                    25,
+                    28,
+                    30
+                  ],
+                  "color": "#C893FD"
+                }
+              ],
+              "showLegend": "true",
+              "showGrid": "true",
+              "animate": "true",
+              "legendPosition": "bottom"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-10",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white"
+          }
+        },
+        {
+          "type": "Lists_LeftTextRightImage",
+          "props": {
+            "title": "Next Steps",
+            "description": "Sales Strategy Initiatives",
+            "bulletPoints": [
+              {
+                "icon": "Target",
+                "title": "Market Expansion",
+                "description": "Enter 3 new regions"
+              },
+              {
+                "icon": "Users",
+                "title": "Team Growth",
+                "description": "Hire 10 sales representatives"
+              },
+              {
+                "icon": "Zap",
+                "title": "Sales Innovation",
+                "description": "Implement AI-driven sales tools"
+              }
+            ],
+            "imageUrl": "/Default-Image-2.png"
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-11",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white"
+          }
+        },
+        {
+          "type": "Quote_LeftTextRightImage",
+          "props": {
+            "title": "Our Mission",
+            "quote": "Drive business growth through strategic sales excellence and customer-centric solutions",
+            "author": "Sales Leadership Team",
+            "imageUrl": "/Default-Image-2.png"
+          }
+        }
+      ]
+    },
+    {
+      "id": "slide-12",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "color": "bg-white"
+          }
+        },
+        {
+          "type": "BackCover_ThankYouWithImage",
+          "props": {
+            "title": "Thank You",
+            "paragraph": "Committed to continuous sales performance and innovation",
+            "imageUrl": "/Default-Image-2.png"
+          }
+        }
+      ]
+    }
+  ],
+  "messages": [
+    {
+      "role": "user",
+      "text": "create a sales report",
+      "attachments": []
+    },
+    {
+      "role": "assistant",
+      "text": "Successfully created \"Sales Performance Report\"\n\nPresentation structure:\n1. Slide 1\n2. Slide 2\n3. Slide 3\n4. Slide 4\n5. Slide 5\n6. Slide 6\n7. Slide 7\n8. Slide 8\n9. Slide 9\n10. Slide 10\n11. Slide 11\n12. Slide 12\n\nYour 12-slide business report features comprehensive performance overview, strategic goals, KPI tracking, 4 detailed chart visualizations, next steps planning, strategic roadmap, and actionable insights. Ready for review and presentation.",
+      "version": 80,
+      "userMessage": "create a sales report",
+      "isLoading": false,
+      "presentationData": {
+        "title": "Sales Performance Report",
+        "slides": [
+          {
+            "id": "slide-1",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495,
+                  "text": "Test Report"
+                }
+              },
+              {
+                "type": "Cover_LeftTitleRightBodyUnderlined",
+                "props": {
+                  "title": "Sales Report",
+                  "paragraph": "Q3 Performance Insights and Strategic Outlook",
+                  "imageUrl": "/Default-Image-2.png",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-2",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              },
+              {
+                "type": "Index_AgendaGrid3x4",
+                "props": {
+                  "title": "Agenda",
+                  "description": "Quarterly Sales Performance Overview",
+                  "agenda": [
+                    {
+                      "title": "Context",
+                      "duration": "8 min",
+                      "description": "Market conditions and background"
+                    },
+                    {
+                      "title": "Our Goals",
+                      "duration": "10 min",
+                      "description": "Strategic sales objectives"
+                    },
+                    {
+                      "title": "KPIs",
+                      "duration": "12 min",
+                      "description": "Key performance indicators"
+                    },
+                    {
+                      "title": "Financial Analysis",
+                      "duration": "10 min",
+                      "description": "Revenue breakdown"
+                    },
+                    {
+                      "title": "Performance Trends",
+                      "duration": "12 min",
+                      "description": "Sales growth analytics"
+                    },
+                    {
+                      "title": "Budget Overview",
+                      "duration": "10 min",
+                      "description": "Sales investment allocation"
+                    },
+                    {
+                      "title": "Market Analysis",
+                      "duration": "10 min",
+                      "description": "Sales market projections"
+                    },
+                    {
+                      "title": "Next Steps",
+                      "duration": "8 min",
+                      "description": "Strategic sales initiatives"
+                    },
+                    {
+                      "title": "Mission",
+                      "duration": "5 min",
+                      "description": "Sales team vision"
+                    }
+                  ],
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-3",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              },
+              {
+                "type": "Lists_LeftTextRightImageDescription",
+                "props": {
+                  "title": "Context",
+                  "description": "Sales Environment Overview",
+                  "bulletPoints": [
+                    {
+                      "icon": "TrendingUp",
+                      "title": "Market Growth",
+                      "description": "15% increase in B2B technology sales"
+                    },
+                    {
+                      "icon": "Globe",
+                      "title": "Geographic Expansion",
+                      "description": "Successful entry into 3 new markets"
+                    },
+                    {
+                      "icon": "Users",
+                      "title": "Sales Team",
+                      "description": "Expanded team by 22% in Q3"
+                    }
+                  ],
+                  "imageUrl": "/Default-Image-1.png",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-4",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              },
+              {
+                "type": "Impact_ImageMetrics",
+                "props": {
+                  "title": "Our Goals",
+                  "description": "Q3 Sales Strategic Objectives",
+                  "impactNumbers": {
+                    "number1": {
+                      "value": "25%",
+                      "label": "Revenue Growth"
+                    },
+                    "number2": {
+                      "value": "$5M",
+                      "label": "New Contracts"
+                    },
+                    "number3": {
+                      "value": "500",
+                      "label": "New Clients"
+                    },
+                    "number4": {
+                      "value": "15%",
+                      "label": "Market Share"
+                    }
+                  },
+                  "imageUrl": "/Default-Image-1.png",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-5",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              },
+              {
+                "type": "Impact_KPIOverview",
+                "props": {
+                  "title": "KPIs",
+                  "description": "Sales Performance Indicators",
+                  "kpiCards": [
+                    {
+                      "title": "Revenue",
+                      "value": "35%",
+                      "subtitle": "Growth",
+                      "trend": "up",
+                      "icon": "TrendingUp",
+                      "hasChart": "true",
+                      "chartType": "area"
+                    },
+                    {
+                      "title": "New Clients",
+                      "value": "450",
+                      "subtitle": "Acquired",
+                      "trend": "up",
+                      "icon": "Users",
+                      "hasChart": "false"
+                    },
+                    {
+                      "title": "Conversion Rate",
+                      "value": "22%",
+                      "subtitle": "Lead to Sale",
+                      "trend": "up",
+                      "icon": "CheckCircle",
+                      "hasChart": "false"
+                    },
+                    {
+                      "title": "Average Deal",
+                      "value": "$45K",
+                      "subtitle": "Contract Value",
+                      "trend": "up",
+                      "icon": "DollarSign",
+                      "hasChart": "true",
+                      "chartType": "bar"
+                    },
+                    {
+                      "title": "Sales Cycle",
+                      "value": "45 Days",
+                      "subtitle": "Average Length",
+                      "trend": "down",
+                      "icon": "Clock",
+                      "hasChart": "false"
+                    }
+                  ],
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495,
+                  "language": "en"
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-6",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white",
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495
+                }
+              },
+              {
+                "type": "Metrics_FinancialsSplit",
+                "props": {
+                  "title": "Financial Analysis",
+                  "description": "Q3 Revenue Breakdown",
+                  "chart": {
+                    "type": "bar",
+                    "labels": [
+                      "Enterprise Sales",
+                      "SMB Sales",
+                      "Consulting",
+                      "Renewals"
+                    ],
+                    "series": [
+                      {
+                        "id": "Revenue",
+                        "data": [
+                          45,
+                          30,
+                          15,
+                          10
+                        ],
+                        "color": "#4A3AFF"
+                      }
+                    ],
+                    "legendPosition": "bottom"
+                  },
+                  "useFixedDimensions": true,
+                  "canvasWidth": 881,
+                  "canvasHeight": 495,
+                  "language": "en"
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-7",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white"
+                }
+              },
+              {
+                "type": "Metrics_FullWidthChart",
+                "props": {
+                  "title": "Performance Trends",
+                  "description": "Quarterly Sales Growth Analytics",
+                  "chart": {
+                    "type": "area",
+                    "labels": [
+                      "Q1",
+                      "Q2",
+                      "Q3",
+                      "Q4"
+                    ],
+                    "series": [
+                      {
+                        "id": "Sales Revenue",
+                        "data": [
+                          1.2,
+                          1.5,
+                          1.8,
+                          2.1
+                        ],
+                        "color": "#4A3AFF"
+                      },
+                      {
+                        "id": "New Customers",
+                        "data": [
+                          150,
+                          200,
+                          250,
+                          300
+                        ],
+                        "color": "#C893FD"
+                      }
+                    ],
+                    "showLegend": "true",
+                    "showGrid": "true",
+                    "animate": "true",
+                    "curved": "true",
+                    "legendPosition": "bottom"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-8",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white"
+                }
+              },
+              {
+                "type": "Metrics_FinancialsSplit",
+                "props": {
+                  "title": "Budget Overview",
+                  "description": "Sales Department Expense Allocation",
+                  "chart": {
+                    "type": "pie",
+                    "series": [
+                      {
+                        "id": "Sales Team",
+                        "data": [
+                          40
+                        ],
+                        "color": "#962DFF"
+                      },
+                      {
+                        "id": "Marketing",
+                        "data": [
+                          30
+                        ],
+                        "color": "#C893FD"
+                      },
+                      {
+                        "id": "Training",
+                        "data": [
+                          20
+                        ],
+                        "color": "#E0C6FD"
+                      },
+                      {
+                        "id": "Tools & Tech",
+                        "data": [
+                          10
+                        ],
+                        "color": "#F0E5FC"
+                      }
+                    ],
+                    "legendPosition": "bottom"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-9",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white"
+                }
+              },
+              {
+                "type": "Metrics_FullWidthChart",
+                "props": {
+                  "title": "Market Analysis",
+                  "description": "Sales Market Trends and Projections",
+                  "chart": {
+                    "type": "line",
+                    "labels": [
+                      "Jan",
+                      "Feb",
+                      "Mar",
+                      "Apr",
+                      "May",
+                      "Jun"
+                    ],
+                    "series": [
+                      {
+                        "id": "Market Share",
+                        "data": [
+                          25,
+                          28,
+                          32,
+                          35,
+                          38,
+                          42
+                        ],
+                        "color": "#4A3AFF"
+                      },
+                      {
+                        "id": "Sales Growth",
+                        "data": [
+                          15,
+                          18,
+                          22,
+                          25,
+                          28,
+                          30
+                        ],
+                        "color": "#C893FD"
+                      }
+                    ],
+                    "showLegend": "true",
+                    "showGrid": "true",
+                    "animate": "true",
+                    "legendPosition": "bottom"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-10",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white"
+                }
+              },
+              {
+                "type": "Lists_LeftTextRightImage",
+                "props": {
+                  "title": "Next Steps",
+                  "description": "Sales Strategy Initiatives",
+                  "bulletPoints": [
+                    {
+                      "icon": "Target",
+                      "title": "Market Expansion",
+                      "description": "Enter 3 new regions"
+                    },
+                    {
+                      "icon": "Users",
+                      "title": "Team Growth",
+                      "description": "Hire 10 sales representatives"
+                    },
+                    {
+                      "icon": "Zap",
+                      "title": "Sales Innovation",
+                      "description": "Implement AI-driven sales tools"
+                    }
+                  ],
+                  "imageUrl": "/Default-Image-2.png"
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-11",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white"
+                }
+              },
+              {
+                "type": "Quote_LeftTextRightImage",
+                "props": {
+                  "title": "Our Mission",
+                  "quote": "Drive business growth through strategic sales excellence and customer-centric solutions",
+                  "author": "Sales Leadership Team",
+                  "imageUrl": "/Default-Image-2.png"
+                }
+              }
+            ]
+          },
+          {
+            "id": "slide-12",
+            "blocks": [
+              {
+                "type": "BackgroundBlock",
+                "props": {
+                  "color": "bg-white"
+                }
+              },
+              {
+                "type": "BackCover_ThankYouWithImage",
+                "props": {
+                  "title": "Thank You",
+                  "paragraph": "Committed to continuous sales performance and innovation",
+                  "imageUrl": "/Default-Image-2.png"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "role": "user",
+      "text": "change the chart to green",
+      "attachments": []
+    },
+    {
+      "role": "assistant",
+      "text": "Analyzing for 3 seconds\n\nUnderstanding changes for 2 seconds\n\nReconfiguring charts for 4 seconds\n\nApplying changes for 2 seconds\n\nModified slide structure and content based on your specifications. Adjusted visualization parameters, color schemes, and data series to better represent the information. Maintained design consistency while implementing your requested changes.",
+      "version": 81,
+      "userMessage": "change the chart to green",
+      "isLoading": true
+    }
+  ],
+  "activeSlide": 5,
+  "workspace": "Manuel's Workspace",
+  "lastModified": "2025-10-14T09:50:56.127Z",
+  "savedAt": "2025-10-14T09:50:56.411Z",
+  "version": "1.0"
+}

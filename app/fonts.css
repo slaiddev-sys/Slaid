@@ -1,0 +1,102 @@
+/* Explicit font classes to bypass Tailwind purging issues */
+.font-instrument-serif {
+  font-family: 'Instrument Serif', serif !important;
+}
+
+.font-inter {
+  /* Inter should actually render Inter, not alias to Helvetica Neue */
+  font-family: 'Inter', Arial, Helvetica, sans-serif !important;
+}
+
+/* Explicit Helvetica Neue utility classes */
+.font-helvetica-neue {
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+}
+
+.font-helvetica {
+  font-family: Helvetica, Arial, sans-serif !important;
+}
+
+.font-montserrat {
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+.font-roboto {
+  font-family: 'Roboto', sans-serif !important;
+}
+
+.font-playfair-display {
+  font-family: 'Playfair Display', serif !important;
+}
+
+.font-lora {
+  font-family: 'Lora', serif !important;
+}
+
+.font-open-sans {
+  font-family: 'Open Sans', sans-serif !important;
+}
+
+.font-poppins {
+  font-family: 'Poppins', sans-serif !important;
+}
+
+.font-source-serif-pro {
+  font-family: 'Source Serif Pro', serif !important;
+}
+
+.font-oswald {
+  font-family: 'Oswald', sans-serif !important;
+}
+
+/* User requested 10 fonts */
+.font-georgia {
+  font-family: 'Georgia', serif !important;
+}
+
+.font-merriweather {
+  font-family: 'Merriweather', serif !important;
+}
+
+.font-times-new-roman {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
+.font-lato {
+  font-family: 'Lato', sans-serif !important;
+}
+
+.font-segoe-ui {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}
+
+.font-noto-sans {
+  font-family: 'Noto Sans', sans-serif !important;
+}
+
+.font-bebas-neue {
+  font-family: 'Bebas Neue', cursive !important;
+}
+
+.font-raleway {
+  font-family: 'Raleway', sans-serif !important;
+}
+
+.font-dm-serif-display {
+  font-family: 'DM Serif Display', serif !important;
+}
+
+.font-cabin {
+  font-family: 'Cabin', sans-serif !important;
+}
+
+/* Font weight classes to bypass Tailwind purging */
+.font-thin { font-weight: 100 !important; }
+.font-extralight { font-weight: 200 !important; }
+.font-light { font-weight: 300 !important; }
+.font-normal { font-weight: 400 !important; }
+.font-medium { font-weight: 500 !important; }
+.font-semibold { font-weight: 600 !important; }
+.font-bold { font-weight: 700 !important; }
+.font-extrabold { font-weight: 800 !important; }
+.font-black { font-weight: 900 !important; } 

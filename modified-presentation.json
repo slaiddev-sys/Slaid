@@ -1,0 +1,55 @@
+{
+  "title": "OpenAI: Leading AI Innovation",
+  "slides": [
+    {
+      "id": "slide-1",
+      "title": "OpenAI Overview",
+      "blocks": [
+        {
+          "type": "BackgroundBlock",
+          "props": {
+            "type": "solid",
+            "backgroundColor": "#ffffff"
+          }
+        },
+        {
+          "type": "Title",
+          "props": {
+            "children": "OpenAI",
+            "align": "center",
+            "className": "text-gray-800 mb-4"
+          }
+        },
+        {
+          "type": "Body",
+          "props": {
+            "children": "Advancing Artificial Intelligence for the Benefit of Humanity",
+            "align": "center",
+            "className": "text-gray-700 mb-8"
+          }
+        },
+        {
+          "type": "FeatureList",
+          "props": {
+            "items": [
+              "Leading AI research organization founded in 2015",
+              "Creator of GPT, DALL-E, and other breakthrough AI models",
+              "Mission to ensure AI benefits all of humanity",
+              "Pioneers in responsible AI development"
+            ],
+            "color": "text-gray-800",
+            "spacing": "wide",
+            "align": "center"
+          }
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "generatedAt": "2025-07-30T14:26:07.038Z",
+    "model": "claude-3-5-sonnet-20241022",
+    "prompt": "Change the background color to white",
+    "slideCount": 1,
+    "isModification": true
+  }
+}
