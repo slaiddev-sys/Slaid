@@ -45,29 +45,58 @@ export class ExcelAnalyzer {
   static analyzeExcelData(data: ParsedExcelData): ExcelAnalysis {
     console.log('ExcelAnalyzer: Starting comprehensive Excel analysis...');
     
-    const analysis: ExcelAnalysis = {
-      dataCategory: 'unknown',
-      confidence: 0,
-      insights: {
-        keyMetrics: [],
-        patterns: [],
-        relationships: [],
-        recommendations: []
-      },
-      structure: {
-        hasTimeSeries: false,
-        hasCategories: false,
-        hasHierarchy: false,
-        hasCalculations: data.summary.hasFormulas,
-        dataQuality: 'fair',
-        completeness: 0
-      }
-    };
+    try {
+      const analysis: ExcelAnalysis = {
+        dataCategory: 'unknown',
+        confidence: 0,
+        insights: {
+          keyMetrics: [],
+          patterns: [],
+          relationships: [],
+          recommendations: []
+        },
+        structure: {
+          hasTimeSeries: false,
+          hasCategories: false,
+          hasHierarchy: false,
+          hasCalculations: data?.summary?.hasFormulas || false,
+          dataQuality: 'fair',
+          completeness: 0
+        }
+      };
 
-    // Analyze each sheet for patterns and data types
-    const sheetAnalyses = Object.entries(data.sheets).map(([sheetName, sheet]) => {
-      return this.analyzeSheet(sheetName, sheet, data);
-    });
+      // Safe check for sheets data
+      if (!data || !data.sheets || typeof data.sheets !== 'object') {
+        console.warn('ExcelAnalyzer: Invalid or missing sheets data');
+        return analysis;
+      }
+
+      // Analyze each sheet for patterns and data types
+      const sheetAnalyses = Object.entries(data.sheets).map(([sheetName, sheet]) => {
+        try {
+          return this.analyzeSheet(sheetName, sheet, data);
+        } catch (sheetError) {
+          console.warn(`ExcelAnalyzer: Error analyzing sheet "${sheetName}":`, sheetError);
+          return {
+            sheetName,
+            patterns: {
+              hasFinancialTerms: false,
+              hasDateColumns: false,
+              hasNumericData: false,
+              hasCurrencyData: false,
+              hasPercentages: false,
+              hasCategories: false,
+              hasFormulas: false
+            },
+            businessDomain: 'general',
+            dataQuality: { score: 0, issues: ['Analysis failed'] },
+            headers: [],
+            rowCount: 0,
+            formulaCount: 0,
+            sampleData: []
+          };
+        }
+      });
 
     // Determine overall data category
     analysis.dataCategory = this.determineDataCategory(sheetAnalyses, data);
@@ -79,16 +108,45 @@ export class ExcelAnalyzer {
     // Analyze structure
     analysis.structure = this.analyzeStructure(sheetAnalyses, data);
 
-    console.log(`ExcelAnalyzer: Analysis complete - Category: ${analysis.dataCategory} (${Math.round(analysis.confidence * 100)}% confidence)`);
-    
-    return analysis;
+      console.log(`ExcelAnalyzer: Analysis complete - Category: ${analysis.dataCategory} (${Math.round(analysis.confidence * 100)}% confidence)`);
+      
+      return analysis;
+      
+    } catch (error) {
+      console.error('ExcelAnalyzer: Critical error during analysis:', error);
+      
+      // Return minimal analysis on error
+      return {
+        dataCategory: 'unknown',
+        confidence: 0,
+        insights: {
+          keyMetrics: [],
+          patterns: [],
+          relationships: [],
+          recommendations: [{
+            type: 'analysis',
+            priority: 'high',
+            description: 'Analysis failed - please check Excel file format'
+          }]
+        },
+        structure: {
+          hasTimeSeries: false,
+          hasCategories: false,
+          hasHierarchy: false,
+          hasCalculations: false,
+          dataQuality: 'poor',
+          completeness: 0
+        }
+      };
+    }
   }
 
   private static analyzeSheet(sheetName: string, sheet: any, data: ParsedExcelData) {
     console.log(`ExcelAnalyzer: Analyzing sheet "${sheetName}"...`);
     
-    const headers = sheet.raw[0] || [];
-    const dataRows = sheet.objects || [];
+    // Safe access to sheet data
+    const headers = (sheet?.raw && Array.isArray(sheet.raw) && sheet.raw[0]) ? sheet.raw[0] : [];
+    const dataRows = (sheet?.objects && Array.isArray(sheet.objects)) ? sheet.objects : [];
     
     // Detect data patterns
     const patterns = {
@@ -232,12 +290,19 @@ export class ExcelAnalyzer {
     const issues: string[] = [];
     let score = 100;
     
-    const totalCells = sheet.rowCount * sheet.columnCount;
-    const filledCells = sheet.objects.reduce((count: number, row: any) => {
-      return count + Object.values(row).filter(value => value != null && value !== '').length;
-    }, 0);
-    
-    const completeness = totalCells > 0 ? filledCells / totalCells : 0;
+    try {
+      // Safe access to sheet properties
+      const rowCount = sheet?.rowCount || 0;
+      const columnCount = sheet?.columnCount || 0;
+      const objects = sheet?.objects || [];
+      
+      const totalCells = rowCount * columnCount;
+      const filledCells = objects.reduce((count: number, row: any) => {
+        if (!row || typeof row !== 'object') return count;
+        return count + Object.values(row).filter(value => value != null && value !== '').length;
+      }, 0);
+      
+      const completeness = totalCells > 0 ? filledCells / totalCells : 0;
     
     if (completeness < 0.7) {
       issues.push('High number of empty cells');
@@ -249,12 +314,18 @@ export class ExcelAnalyzer {
       score -= 15;
     }
     
-    if (Object.keys(sheet.formulas || {}).length === 0 && sheet.rowCount > 10) {
-      issues.push('No calculations detected in data-heavy sheet');
-      score -= 10;
+      const formulaCount = Object.keys(sheet?.formulas || {}).length;
+      if (formulaCount === 0 && rowCount > 10) {
+        issues.push('No calculations detected in data-heavy sheet');
+        score -= 10;
+      }
+      
+      return { score: Math.max(0, score), issues };
+      
+    } catch (error) {
+      console.warn('Error assessing data quality:', error);
+      return { score: 50, issues: ['Could not assess data quality'] };
     }
-    
-    return { score: Math.max(0, score), issues };
   }
 
   private static determineDataCategory(sheetAnalyses: any[], data: ParsedExcelData): ExcelAnalysis['dataCategory'] {
