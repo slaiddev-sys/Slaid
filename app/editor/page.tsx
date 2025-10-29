@@ -6373,12 +6373,7 @@ export default function EditorPage() {
           <div className="bg-[#212121] border-b border-[#31343b] px-8 py-4 flex justify-end">
             <div className="flex gap-3">
               <button className="flex items-center justify-center hover:bg-[#23242a] text-gray-300 px-3 py-2 rounded-lg font-medium text-sm transition" onClick={() => {
-                // Check if user has Pro plan for Preview feature
-                if (credits?.plan_type === 'free') {
-                  setShowPricingModal(true);
-                } else {
-                  setShowFullscreenPreview(true);
-                }
+                setShowFullscreenPreview(true);
               }}>
                 <img src="/preview-icon.png" alt="Preview" className="w-4 h-4 object-contain" />
               </button>
