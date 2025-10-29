@@ -61,48 +61,87 @@ function generateASCIIBarChart(labels: string[], actual: number[], goal: number[
 
 // Helper function to generate comprehensive analysis report
 function generateComprehensiveReport(excelData: ParsedExcelData, analysis: any): string {
+  // Safe access to summary data
+  const summary = excelData?.summary || {
+    totalSheets: 0,
+    sheetNames: [],
+    totalCells: 0,
+    totalFormulas: 0,
+    fileMetadata: {
+      author: 'Unknown',
+      created: 'Unknown',
+      modified: 'Unknown',
+      title: 'Untitled'
+    }
+  };
+
+  const analysisData = analysis || {
+    dataCategory: 'unknown',
+    confidence: 0,
+    structure: {
+      dataQuality: 'unknown',
+      completeness: 0
+    }
+  };
+
   let report = `
 🔍 COMPREHENSIVE EXCEL ANALYSIS REPORT
 =====================================
 
 📊 FILE OVERVIEW:
-• Total Sheets: ${excelData.summary.totalSheets}
-• Sheet Names: ${excelData.summary.sheetNames.join(', ')}
-• Total Cells: ${excelData.summary.totalCells}
-• Formulas Found: ${excelData.summary.totalFormulas}
-• Data Category: ${analysis.dataCategory.toUpperCase()} (${Math.round(analysis.confidence * 100)}% confidence)
-• Data Quality: ${analysis.structure.dataQuality.toUpperCase()}
-• Completeness: ${Math.round(analysis.structure.completeness * 100)}%
+• Total Sheets: ${summary.totalSheets}
+• Sheet Names: ${summary.sheetNames.join(', ')}
+• Total Cells: ${summary.totalCells}
+• Formulas Found: ${summary.totalFormulas}
+• Data Category: ${analysisData.dataCategory.toUpperCase()} (${Math.round(analysisData.confidence * 100)}% confidence)
+• Data Quality: ${analysisData.structure.dataQuality.toUpperCase()}
+• Completeness: ${Math.round(analysisData.structure.completeness * 100)}%
 
 📈 FILE METADATA:
-• Author: ${excelData.summary.fileMetadata.author || 'Unknown'}
-• Created: ${excelData.summary.fileMetadata.created || 'Unknown'}
-• Modified: ${excelData.summary.fileMetadata.modified || 'Unknown'}
-• Title: ${excelData.summary.fileMetadata.title || 'Untitled'}
+• Author: ${summary.fileMetadata.author || 'Unknown'}
+• Created: ${summary.fileMetadata.created || 'Unknown'}
+• Modified: ${summary.fileMetadata.modified || 'Unknown'}
+• Title: ${summary.fileMetadata.title || 'Untitled'}
 
 🔍 DETAILED SHEET ANALYSIS:
 `;
 
-  Object.entries(excelData.sheets).forEach(([sheetName, sheet]) => {
+  // Safe access to sheets data
+  const sheets = excelData?.sheets || {};
+  Object.entries(sheets).forEach(([sheetName, sheet]) => {
+    const safeSheet = sheet || {
+      rowCount: 0,
+      columnCount: 0,
+      range: 'A1:A1',
+      formulas: {},
+      mergedCells: [],
+      comments: {},
+      raw: [],
+      objects: []
+    };
+
     report += `
 📋 SHEET: "${sheetName}"
-• Dimensions: ${sheet.rowCount} rows × ${sheet.columnCount} columns
-• Range: ${sheet.range}
-• Formulas: ${Object.keys(sheet.formulas || {}).length}
-• Merged Cells: ${sheet.mergedCells?.length || 0}
-• Comments: ${Object.keys(sheet.comments || {}).length}
+• Dimensions: ${safeSheet.rowCount} rows × ${safeSheet.columnCount} columns
+• Range: ${safeSheet.range}
+• Formulas: ${Object.keys(safeSheet.formulas || {}).length}
+• Merged Cells: ${safeSheet.mergedCells?.length || 0}
+• Comments: ${Object.keys(safeSheet.comments || {}).length}
 
-Headers: ${sheet.raw[0]?.join(', ') || 'No headers detected'}
+Headers: ${safeSheet.raw[0]?.join(', ') || 'No headers detected'}
 
 Sample Data (first 3 rows):`;
     
-    sheet.objects.slice(0, 3).forEach((row: any, index: number) => {
-      report += `\nRow ${index + 1}: ${JSON.stringify(row)}`;
+    const objects = safeSheet.objects || [];
+    objects.slice(0, 3).forEach((row: any, index: number) => {
+      if (row && typeof row === 'object') {
+        report += `\nRow ${index + 1}: ${JSON.stringify(row)}`;
+      }
     });
 
-    if (Object.keys(sheet.formulas || {}).length > 0) {
+    if (Object.keys(safeSheet.formulas || {}).length > 0) {
       report += `\n\nFormulas Found:`;
-      Object.entries(sheet.formulas || {}).slice(0, 5).forEach(([cell, formula]) => {
+      Object.entries(safeSheet.formulas || {}).slice(0, 5).forEach(([cell, formula]) => {
         report += `\n• ${cell}: ${formula}`;
       });
     }
@@ -147,23 +186,47 @@ Sample Data (first 3 rows):`;
 
 // Helper function to create contextual AI prompt
 function createContextualPrompt(excelData: ParsedExcelData, analysis: any, originalPrompt: string): string {
-  return `You are analyzing a ${analysis.dataCategory.toUpperCase()} Excel file with ${Math.round(analysis.confidence * 100)}% confidence.
+  // Safe access to analysis data
+  const safeAnalysis = analysis || {
+    dataCategory: 'unknown',
+    confidence: 0,
+    structure: {
+      dataQuality: 'unknown',
+      hasTimeSeries: false,
+      hasCategories: false,
+      hasCalculations: false
+    },
+    insights: {
+      keyMetrics: [],
+      patterns: []
+    }
+  };
+
+  const keyMetrics = Array.isArray(safeAnalysis.insights?.keyMetrics) 
+    ? safeAnalysis.insights.keyMetrics.map((m: any) => `• ${m?.name || 'Unknown'}: ${m?.value || 'N/A'}`).join('\n')
+    : '• No key metrics detected';
+
+  const patterns = Array.isArray(safeAnalysis.insights?.patterns)
+    ? safeAnalysis.insights.patterns.map((p: any) => `• ${p?.description || 'Unknown pattern'}`).join('\n')
+    : '• No patterns detected';
+
+  return `You are analyzing a ${safeAnalysis.dataCategory.toUpperCase()} Excel file with ${Math.round(safeAnalysis.confidence * 100)}% confidence.
 
 CONTEXT:
-• Data Category: ${analysis.dataCategory}
-• Quality: ${analysis.structure.dataQuality}
-• Has Time Series: ${analysis.structure.hasTimeSeries}
-• Has Categories: ${analysis.structure.hasCategories}
-• Has Formulas: ${analysis.structure.hasCalculations}
+• Data Category: ${safeAnalysis.dataCategory}
+• Quality: ${safeAnalysis.structure.dataQuality}
+• Has Time Series: ${safeAnalysis.structure.hasTimeSeries}
+• Has Categories: ${safeAnalysis.structure.hasCategories}
+• Has Formulas: ${safeAnalysis.structure.hasCalculations}
 
 KEY METRICS DETECTED:
-${analysis.insights.keyMetrics.map((m: any) => `• ${m.name}: ${m.value}`).join('\n')}
+${keyMetrics}
 
 PATTERNS FOUND:
-${analysis.insights.patterns.map((p: any) => `• ${p.description}`).join('\n')}
+${patterns}
 
 ACTUAL EXCEL DATA:
-${JSON.stringify(excelData, null, 2)}
+${JSON.stringify(excelData || {}, null, 2)}
 
 Based on this comprehensive analysis, please provide:
 1. BUSINESS INSIGHTS: What story does this data tell?
