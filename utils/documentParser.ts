@@ -64,16 +64,36 @@ export class DocumentParser {
       });
       
       console.log('DocumentParser: Enhanced workbook loaded, sheet names:', workbook.SheetNames);
+      console.log('DocumentParser: Workbook structure:', {
+        hasProps: !!workbook.Props,
+        hasCustprops: !!workbook.Custprops,
+        propsKeys: workbook.Props ? Object.keys(workbook.Props) : 'none',
+        custpropsKeys: workbook.Custprops ? Object.keys(workbook.Custprops) : 'none'
+      });
       
       // Extract file metadata with safe access
-      const fileMetadata = {
-        author: workbook.Props?.Author || workbook.Custprops?.Author || 'Unknown',
-        created: workbook.Props?.CreatedDate || workbook.Custprops?.CreatedDate || null,
-        modified: workbook.Props?.ModifiedDate || workbook.Custprops?.ModifiedDate || null,
-        title: workbook.Props?.Title || workbook.Custprops?.Title || 'Untitled',
-        subject: workbook.Props?.Subject || workbook.Custprops?.Subject || '',
-        keywords: workbook.Props?.Keywords || workbook.Custprops?.Keywords || ''
-      };
+      let fileMetadata;
+      try {
+        fileMetadata = {
+          author: workbook.Props?.Author || workbook.Custprops?.Author || 'Unknown',
+          created: workbook.Props?.CreatedDate || workbook.Custprops?.CreatedDate || null,
+          modified: workbook.Props?.ModifiedDate || workbook.Custprops?.ModifiedDate || null,
+          title: workbook.Props?.Title || workbook.Custprops?.Title || 'Untitled',
+          subject: workbook.Props?.Subject || workbook.Custprops?.Subject || '',
+          keywords: workbook.Props?.Keywords || workbook.Custprops?.Keywords || ''
+        };
+        console.log('DocumentParser: File metadata extracted successfully');
+      } catch (metadataError) {
+        console.error('DocumentParser: Error extracting metadata:', metadataError);
+        fileMetadata = {
+          author: 'Unknown',
+          created: null,
+          modified: null,
+          title: 'Untitled',
+          subject: '',
+          keywords: ''
+        };
+      }
       
       const sheets: Record<string, any> = {};
       let totalCells = 0;
@@ -85,14 +105,23 @@ export class DocumentParser {
       // Process each sheet with enhanced extraction
       workbook.SheetNames.forEach(sheetName => {
         console.log(`DocumentParser: Processing sheet "${sheetName}" with enhanced extraction...`);
-        const worksheet = workbook.Sheets[sheetName];
         
-        // Get the range of the sheet
-        const range = worksheet['!ref'] || 'A1:A1';
-        
-        // Convert to JSON objects (first row as headers)
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-        const objectData = XLSX.utils.sheet_to_json(worksheet);
+        try {
+          const worksheet = workbook.Sheets[sheetName];
+          if (!worksheet) {
+            console.warn(`DocumentParser: Sheet "${sheetName}" is undefined, skipping...`);
+            return;
+          }
+          
+          // Get the range of the sheet
+          const range = worksheet['!ref'] || 'A1:A1';
+          console.log(`DocumentParser: Sheet "${sheetName}" range:`, range);
+          
+          // Convert to JSON objects (first row as headers)
+          console.log(`DocumentParser: Converting sheet "${sheetName}" to JSON...`);
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+          const objectData = XLSX.utils.sheet_to_json(worksheet);
+          console.log(`DocumentParser: Sheet "${sheetName}" converted successfully`);
         
         // Calculate dimensions
         const rowCount = jsonData.length;
@@ -199,11 +228,31 @@ export class DocumentParser {
           comments
         };
         
-        console.log(`DocumentParser: Sheet "${sheetName}" enhanced processing complete:`);
-        console.log(`  - ${rowCount} rows, ${columnCount} columns`);
-        console.log(`  - ${Object.keys(formulas).length} formulas found`);
-        console.log(`  - ${mergedCells.length} merged cell ranges`);
-        console.log(`  - ${Object.keys(comments).length} comments`);
+          console.log(`DocumentParser: Sheet "${sheetName}" enhanced processing complete:`);
+          console.log(`  - ${rowCount} rows, ${columnCount} columns`);
+          console.log(`  - ${Object.keys(formulas).length} formulas found`);
+          console.log(`  - ${mergedCells.length} merged cell ranges`);
+          console.log(`  - ${Object.keys(comments).length} comments`);
+          
+        } catch (sheetError) {
+          console.error(`DocumentParser: Error processing sheet "${sheetName}":`, sheetError);
+          
+          // Add minimal sheet data on error
+          sheets[sheetName] = {
+            raw: [],
+            objects: [],
+            range: 'A1:A1',
+            rowCount: 0,
+            columnCount: 0,
+            formulas: {},
+            formatting: {},
+            mergedCells: [],
+            columnWidths: [],
+            rowHeights: [],
+            dataTypes: {},
+            comments: {}
+          };
+        }
       });
       
       const result: ParsedExcelData = {
@@ -229,7 +278,32 @@ export class DocumentParser {
       
     } catch (error) {
       console.error('DocumentParser: Error in enhanced Excel parsing:', error);
-      throw new Error(`Failed to parse Excel file with enhanced extraction: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('DocumentParser: Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+      
+      // Return a minimal valid result instead of throwing
+      const fallbackResult: ParsedExcelData = {
+        sheets: {},
+        summary: {
+          totalSheets: 0,
+          sheetNames: [],
+          fileMetadata: {
+            author: 'Unknown',
+            created: null,
+            modified: null,
+            title: file.name || 'Untitled',
+            subject: '',
+            keywords: ''
+          },
+          hasFormulas: false,
+          hasCharts: false,
+          hasPivotTables: false,
+          totalCells: 0,
+          totalFormulas: 0
+        }
+      };
+      
+      console.log('DocumentParser: Returning fallback result due to parsing error');
+      return fallbackResult;
     }
   }
   
