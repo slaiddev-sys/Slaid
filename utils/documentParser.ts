@@ -8,10 +8,32 @@ export interface ParsedExcelData {
     range: string;
     rowCount: number;
     columnCount: number;
+    // Enhanced data extraction
+    formulas: Record<string, string>; // Cell formulas (A1: "=SUM(B1:B10)")
+    formatting: Record<string, any>; // Cell formatting info
+    mergedCells: any[]; // Merged cell ranges
+    columnWidths: number[]; // Column width information
+    rowHeights: number[]; // Row height information
+    dataTypes: Record<string, string>; // Cell data types
+    comments: Record<string, string>; // Cell comments
   }>;
   summary: {
     totalSheets: number;
     sheetNames: string[];
+    // Enhanced metadata
+    fileMetadata: {
+      author?: string;
+      created?: Date;
+      modified?: Date;
+      title?: string;
+      subject?: string;
+      keywords?: string;
+    };
+    hasFormulas: boolean;
+    hasCharts: boolean;
+    hasPivotTables: boolean;
+    totalCells: number;
+    totalFormulas: number;
   };
 }
 
@@ -26,17 +48,43 @@ export interface ParsedWordData {
 export class DocumentParser {
   static async parseExcelFile(buffer: Buffer): Promise<ParsedExcelData> {
     try {
-      console.log('DocumentParser: Starting Excel file parsing...');
+      console.log('DocumentParser: Starting ENHANCED Excel file parsing...');
       
-      // Read the workbook from buffer
-      const workbook = XLSX.read(buffer, { type: 'buffer' });
-      console.log('DocumentParser: Workbook loaded, sheet names:', workbook.SheetNames);
+      // Read the workbook from buffer with enhanced options
+      const workbook = XLSX.read(buffer, { 
+        type: 'buffer',
+        cellFormula: true,  // Extract formulas
+        cellStyles: true,   // Extract formatting
+        cellDates: true,    // Parse dates properly
+        cellNF: true,       // Number formats
+        cellText: false,    // Don't convert everything to text
+        bookProps: true,    // Extract metadata
+        bookSheets: true,   // Sheet properties
+        bookVBA: false      // Skip VBA for security
+      });
+      
+      console.log('DocumentParser: Enhanced workbook loaded, sheet names:', workbook.SheetNames);
+      
+      // Extract file metadata with safe access
+      const fileMetadata = {
+        author: workbook.Props?.Author || workbook.Custprops?.Author || 'Unknown',
+        created: workbook.Props?.CreatedDate || workbook.Custprops?.CreatedDate || null,
+        modified: workbook.Props?.ModifiedDate || workbook.Custprops?.ModifiedDate || null,
+        title: workbook.Props?.Title || workbook.Custprops?.Title || 'Untitled',
+        subject: workbook.Props?.Subject || workbook.Custprops?.Subject || '',
+        keywords: workbook.Props?.Keywords || workbook.Custprops?.Keywords || ''
+      };
       
       const sheets: Record<string, any> = {};
+      let totalCells = 0;
+      let totalFormulas = 0;
+      let hasFormulas = false;
+      let hasCharts = false;
+      let hasPivotTables = false;
       
-      // Process each sheet
+      // Process each sheet with enhanced extraction
       workbook.SheetNames.forEach(sheetName => {
-        console.log(`DocumentParser: Processing sheet "${sheetName}"`);
+        console.log(`DocumentParser: Processing sheet "${sheetName}" with enhanced extraction...`);
         const worksheet = workbook.Sheets[sheetName];
         
         // Get the range of the sheet
@@ -50,31 +98,138 @@ export class DocumentParser {
         const rowCount = jsonData.length;
         const columnCount = rowCount > 0 ? Math.max(...jsonData.map((row: any) => Array.isArray(row) ? row.length : 0)) : 0;
         
+        // ENHANCED: Extract formulas from each cell
+        const formulas: Record<string, string> = {};
+        const formatting: Record<string, any> = {};
+        const dataTypes: Record<string, string> = {};
+        const comments: Record<string, string> = {};
+        
+        // Iterate through all cells to extract enhanced data
+        Object.keys(worksheet).forEach(cellAddress => {
+          if (cellAddress.startsWith('!')) return; // Skip metadata
+          
+          try {
+            const cell = worksheet[cellAddress];
+            if (!cell) return; // Skip empty cells
+            
+            totalCells++;
+            
+            // Extract formulas
+            if (cell.f) {
+              formulas[cellAddress] = cell.f;
+              totalFormulas++;
+              hasFormulas = true;
+            }
+            
+            // Extract data types
+            if (cell.t) {
+              dataTypes[cellAddress] = cell.t; // 'n' = number, 's' = string, 'b' = boolean, 'd' = date
+            }
+            
+            // Extract formatting (if available)
+            if (cell.s) {
+              try {
+                formatting[cellAddress] = {
+                  numFmt: cell.s.numFmt || null,
+                  font: cell.s.font || null,
+                  fill: cell.s.fill || null,
+                  border: cell.s.border || null,
+                  alignment: cell.s.alignment || null
+                };
+              } catch (formatError) {
+                console.warn(`Warning: Could not extract formatting for cell ${cellAddress}:`, formatError);
+              }
+            }
+            
+            // Extract comments
+            if (cell.c && Array.isArray(cell.c) && cell.c.length > 0) {
+              try {
+                comments[cellAddress] = cell.c.map((comment: any) => comment.t || comment).join('; ');
+              } catch (commentError) {
+                console.warn(`Warning: Could not extract comments for cell ${cellAddress}:`, commentError);
+              }
+            }
+          } catch (cellError) {
+            console.warn(`Warning: Could not process cell ${cellAddress}:`, cellError);
+          }
+        });
+        
+        // Extract merged cells
+        const mergedCells = worksheet['!merges'] || [];
+        
+        // Extract column widths and row heights with error handling
+        let columnWidths: number[] = [];
+        let rowHeights: number[] = [];
+        
+        try {
+          columnWidths = worksheet['!cols'] ? worksheet['!cols'].map((col: any) => col?.width || 0) : [];
+        } catch (error) {
+          console.warn('Warning: Could not extract column widths:', error);
+          columnWidths = [];
+        }
+        
+        try {
+          rowHeights = worksheet['!rows'] ? worksheet['!rows'].map((row: any) => row?.hpt || 0) : [];
+        } catch (error) {
+          console.warn('Warning: Could not extract row heights:', error);
+          rowHeights = [];
+        }
+        
+        // Check for charts and pivot tables (basic detection)
+        try {
+          if (worksheet['!charts']) hasCharts = true;
+          if (worksheet['!pivots']) hasPivotTables = true;
+        } catch (error) {
+          console.warn('Warning: Could not detect charts/pivot tables:', error);
+        }
+        
         sheets[sheetName] = {
           raw: jsonData,
           objects: objectData,
           range,
           rowCount,
-          columnCount
+          columnCount,
+          // Enhanced data
+          formulas,
+          formatting,
+          mergedCells,
+          columnWidths,
+          rowHeights,
+          dataTypes,
+          comments
         };
         
-        console.log(`DocumentParser: Sheet "${sheetName}" processed - ${rowCount} rows, ${columnCount} columns`);
+        console.log(`DocumentParser: Sheet "${sheetName}" enhanced processing complete:`);
+        console.log(`  - ${rowCount} rows, ${columnCount} columns`);
+        console.log(`  - ${Object.keys(formulas).length} formulas found`);
+        console.log(`  - ${mergedCells.length} merged cell ranges`);
+        console.log(`  - ${Object.keys(comments).length} comments`);
       });
       
       const result: ParsedExcelData = {
         sheets,
         summary: {
           totalSheets: workbook.SheetNames.length,
-          sheetNames: workbook.SheetNames
+          sheetNames: workbook.SheetNames,
+          fileMetadata,
+          hasFormulas,
+          hasCharts,
+          hasPivotTables,
+          totalCells,
+          totalFormulas
         }
       };
       
-      console.log('DocumentParser: Excel parsing completed successfully');
+      console.log('DocumentParser: ENHANCED Excel parsing completed successfully');
+      console.log(`  - Total cells processed: ${totalCells}`);
+      console.log(`  - Total formulas extracted: ${totalFormulas}`);
+      console.log(`  - File metadata: ${JSON.stringify(fileMetadata, null, 2)}`);
+      
       return result;
       
     } catch (error) {
-      console.error('DocumentParser: Error parsing Excel file:', error);
-      throw new Error(`Failed to parse Excel file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('DocumentParser: Error in enhanced Excel parsing:', error);
+      throw new Error(`Failed to parse Excel file with enhanced extraction: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
   
