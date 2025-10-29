@@ -6601,23 +6601,8 @@ export default function EditorPage() {
               <button 
                 className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-white hover:bg-[#2563eb]"
                 onClick={() => {
-                  // Toggle pin status (you can add a pinned state if needed)
                   setShowTitleMenu(false);
-                  // For now, just close the menu - you can implement pinning logic later
-                }}
-              >
-                Pin presentation
-              </button>
-              <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-white hover:bg-[#2563eb]"
-                onClick={() => {
-                  setShowTitleMenu(false);
-                  // Check if user is on free plan
-                  if (credits?.plan_type === 'free') {
-                    setShowPricingModal(true);
-                  } else {
                   setShowFullscreenPreview(true);
-                  }
                 }}
               >
                 Preview presentation
