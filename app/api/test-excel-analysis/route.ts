@@ -422,7 +422,7 @@ Be extremely thorough - this analysis will be used to create a professional busi
     console.log('🚀 Sending comprehensive prompt to AI (length:', analysisPrompt.length, 'chars)');
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022', // Using more powerful model
+      model: 'claude-3-5-haiku-20241022', // Using Haiku - available and capable
       max_tokens: 4000, // Increased token limit for comprehensive analysis
       messages: [
         {
