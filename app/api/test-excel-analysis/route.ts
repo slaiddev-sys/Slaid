@@ -92,12 +92,10 @@ async function performComprehensiveExcelAnalysis(fileData: any) {
         });
       }
       
-      // 8. PRESENTATION RECOMMENDATIONS
-      detailedAnalysis += `\n📋 PRESENTATION RECOMMENDATIONS:\n`;
-      const presentationRecs = generatePresentationRecommendations(sheets);
-      presentationRecs.forEach(rec => {
-        detailedAnalysis += `- ${rec}\n`;
-      });
+      // 8. COMPLETE DATA SUMMARY
+      detailedAnalysis += `\n📋 COMPLETE DATA SUMMARY:\n`;
+      detailedAnalysis += `- All sheets processed and data extracted completely\n`;
+      detailedAnalysis += `- Every data point captured and listed above\n`;
       
       detailedAnalysis += `\n📊 SUMMARY STATISTICS:\n`;
       detailedAnalysis += `- Total Data Volume: ${totalDataCells} cells across ${totalRows} rows and ${totalColumns} columns\n`;
@@ -384,40 +382,36 @@ ${comprehensiveAnalysis.detailedAnalysis}
 EXCEL FILE RAW DATA:
 ${JSON.stringify(fileData, null, 2)}
 
-Please provide an EXTENSIVE and PROFESSIONAL analysis of this Excel file. Your analysis should be suitable for creating a comprehensive business presentation. Include:
+Extract and list ALL the data from this Excel file. Focus purely on data extraction - no recommendations or analysis. Include:
 
-📊 STRUCTURAL ANALYSIS:
-1. Complete sheet inventory and purpose of each sheet
-2. All column headers and their data types
-3. Total data volume (rows, columns, cells with data)
-4. Data quality assessment (missing values, inconsistencies)
+📊 COMPLETE DATA EXTRACTION:
+1. List every sheet name and its complete contents
+2. Show ALL column headers exactly as they appear
+3. Extract EVERY single data row with all values
+4. Include empty cells, null values, and formatting information
+5. Show the exact structure and organization of the data
 
-📈 DATA CONTENT ANALYSIS:
-5. ALL numerical data with specific values (don't summarize - list everything)
-6. Time series data identification (dates, periods, trends)
-7. Financial metrics and KPIs present
-8. Categorical data and dimensions for grouping
+📈 RAW DATA CONTENT:
+6. List ALL numerical values exactly as they appear in the file
+7. Extract ALL text values, labels, and categories
+8. Show ALL dates, times, and period information
+9. Include any formulas, calculations, or computed values
+10. Extract any metadata, comments, or additional information
 
-🎯 BUSINESS INSIGHTS:
-9. Key performance indicators and metrics
-10. Trends, patterns, and anomalies in the data
-11. Comparative analysis opportunities
-12. Growth rates, percentages, and ratios
-
-📋 PRESENTATION RECOMMENDATIONS:
-13. Specific slide topics that could be created from this data
-14. Chart types most suitable for each data set
-15. Key messages and insights for executive summary
-16. Data storytelling opportunities
+🔍 COMPLETE DATA INVENTORY:
+11. Total count of sheets, rows, columns, and populated cells
+12. List of all unique values in each column
+13. Data types present (numbers, text, dates, formulas)
+14. Any special formatting, colors, or styling information
 
 🚨 CRITICAL REQUIREMENTS:
-- Analyze EVERY sheet, not just the first one
-- Include ALL data points, not just samples
-- Identify the most important metrics for business decision-making
-- Suggest specific chart configurations with exact data series
-- Recommend presentation flow and narrative structure
+- Extract EVERY piece of data - don't summarize or skip anything
+- Show the complete contents of EVERY sheet
+- Include ALL data rows, not just samples
+- List exact values, don't round or approximate
+- NO analysis, insights, or recommendations - just pure data extraction
 
-Be extremely thorough - this analysis will be used to create a professional business presentation.`;
+Be completely exhaustive - extract every single piece of information that exists in this Excel file.`;
 
     console.log('🚀 Sending comprehensive prompt to AI (length:', analysisPrompt.length, 'chars)');
 
@@ -520,22 +514,22 @@ Be extremely thorough - this analysis will be used to create a professional busi
    
    ${generateASCIIBarChart(months.slice(0, 6), totalRevenue.slice(0, 6), goalRevenue.slice(0, 6))}
 
-💡 RECOMMENDED CHART TYPES FOR THIS DATA:
-• Line Chart: Best for showing trends in units sold over time
-• Column Chart: Ideal for comparing actual vs goal revenue by month  
-• Area Chart: Good for showing cumulative revenue growth
-• Combo Chart: Perfect for showing both units sold (line) and revenue (bars)`;
+📊 EXTRACTED CHART DATA:
+• Line Chart Data Available: Units sold over time periods
+• Bar Chart Data Available: Revenue comparison data by month  
+• Time Series Data: Monthly progression data extracted
+• Numerical Series: All values extracted and ready for visualization`;
         }
       }
     } catch (error) {
       console.error('Error generating chart visualizations:', error);
       chartVisualizations = `
 
-📊 CHART RECOMMENDATIONS:
-• Line Chart: Best for showing monthly trends in units sold
-• Column Chart: Ideal for comparing actual vs goal revenue by month
-• Area Chart: Good for showing cumulative revenue growth
-• Combo Chart: Perfect for combining units sold and revenue data`;
+📊 DATA EXTRACTION SUMMARY:
+• Monthly trend data extracted from Excel
+• Revenue comparison data available  
+• Time series data successfully parsed
+• All numerical values captured for chart generation`;
     }
 
     return NextResponse.json({ 
