@@ -297,26 +297,32 @@ async function performChunkedExcelAnalysis(fileData: any, userPrompt: string) {
         console.log(`📋 Processing sheet: ${sheetName}`);
         
         // Create focused prompt for this specific sheet
-        const sheetPrompt = `Extract ALL data from Excel sheet "${sheetName}". 
+        const sheetPrompt = `YOU MUST EXTRACT ALL DATA FROM EXCEL SHEET "${sheetName}" IMMEDIATELY. NO QUESTIONS, NO CONFIRMATIONS.
 
-SHEET DATA:
+SHEET RAW DATA:
 ${JSON.stringify(sheet, null, 2)}
 
-Extract EVERY piece of data from this sheet:
-1. List ALL column headers: ${sheet.headers.join(', ')}
-2. Extract ALL ${sheet.totalRows} data rows with complete values
-3. Show every single cell value exactly as it appears
-4. Include any empty/null cells
-5. List all numerical values: ${sheet.numericColumns.join(', ')}
-6. List all text values: ${sheet.textColumns.join(', ')}
+MANDATORY EXTRACTION REQUIREMENTS:
+1. EXTRACT ALL ${sheet.totalRows} ROWS OF DATA - EVERY SINGLE ROW
+2. SHOW ALL COLUMN HEADERS: ${sheet.headers.join(', ')}
+3. LIST EVERY CELL VALUE EXACTLY AS IT APPEARS
+4. INCLUDE ALL EMPTY/NULL CELLS  
+5. SHOW ALL NUMERIC VALUES: ${sheet.numericColumns.join(', ')}
+6. SHOW ALL TEXT VALUES: ${sheet.textColumns.join(', ')}
 
-CRITICAL: Extract EVERY data row completely. Do not summarize or skip any data.
-Show the complete contents of this sheet with all ${sheet.totalRows} rows of data.`;
+FORMAT: Display as a complete table with ALL rows:
+Row 1: [Column1: Value1] | [Column2: Value2] | [Column3: Value3] | ...
+Row 2: [Column1: Value1] | [Column2: Value2] | [Column3: Value3] | ...
+[Continue for ALL ${sheet.totalRows} rows]
+
+DO NOT ASK FOR CONFIRMATION. DO NOT SUMMARIZE. EXTRACT EVERYTHING NOW.
+START WITH "COMPLETE DATA EXTRACTION FOR SHEET ${sheetName}:" and then list every single row.`;
 
         try {
           const sheetResponse = await anthropic.messages.create({
             model: 'claude-3-5-haiku-20241022',
-            max_tokens: 4000,
+            max_tokens: 8000, // Increased for complete extraction
+            system: "You are a data extraction specialist. Your ONLY job is to extract ALL data from Excel sheets completely. Never ask questions, never summarize, never provide analysis. Just extract every single piece of data exactly as requested.",
             messages: [
               {
                 role: 'user',
@@ -329,6 +335,29 @@ Show the complete contents of this sheet with all ${sheet.totalRows} rows of dat
           
           completeAnalysis += `\n📋 SHEET: "${sheetName}" - COMPLETE DATA EXTRACTION:\n`;
           completeAnalysis += `${sheetAnalysis}\n`;
+          
+          // FALLBACK: If AI didn't extract properly, force extract the raw data
+          if (sheetAnalysis.includes('would you prefer') || sheetAnalysis.includes('confirmation') || sheetAnalysis.length < 500) {
+            completeAnalysis += `\n🔧 DIRECT DATA EXTRACTION (AI FALLBACK):\n`;
+            completeAnalysis += `Headers: ${sheet.headers.join(' | ')}\n`;
+            completeAnalysis += `Total Rows: ${sheet.totalRows}\n`;
+            completeAnalysis += `Numeric Columns: ${sheet.numericColumns.join(', ')}\n`;
+            completeAnalysis += `Text Columns: ${sheet.textColumns.join(', ')}\n`;
+            
+            if (sheet.sampleData && Array.isArray(sheet.sampleData)) {
+              completeAnalysis += `\nALL DATA ROWS:\n`;
+              sheet.sampleData.forEach((row: any, idx: number) => {
+                const rowData = sheet.headers.map((header: string) => {
+                  const value = row[header];
+                  return `${header}: ${value !== undefined && value !== null ? value : 'NULL'}`;
+                }).join(' | ');
+                completeAnalysis += `Row ${idx + 1}: ${rowData}\n`;
+              });
+            }
+            
+            completeAnalysis += `\nRAW SHEET DATA:\n${JSON.stringify(sheet.sampleData, null, 2)}\n`;
+          }
+          
           completeAnalysis += `\n${'='.repeat(80)}\n`;
           
         } catch (error) {
