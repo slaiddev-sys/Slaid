@@ -275,116 +275,34 @@ function analyzeCrossSheetRelationships(sheets: any) {
   return insights;
 }
 
-// CHUNKED ANALYSIS FUNCTION - Process each sheet separately to extract ALL data
-async function performChunkedExcelAnalysis(fileData: any, userPrompt: string) {
-  console.log('🔍 Starting chunked Excel analysis for complete data extraction...');
+// Helper function to generate presentation recommendations
+function generatePresentationRecommendations(sheets: any) {
+  const recommendations: string[] = [];
   
-  let completeAnalysis = '';
-  
-  try {
-    if (fileData?.processedData?.structuredData?.sheets) {
-      const sheets = fileData.processedData.structuredData.sheets;
-      const sheetNames = Object.keys(sheets);
-      
-      completeAnalysis += `📊 COMPLETE EXCEL DATA EXTRACTION\n`;
-      completeAnalysis += `Total Sheets: ${sheetNames.length}\n`;
-      completeAnalysis += `Sheet Names: ${sheetNames.join(', ')}\n\n`;
-      
-      // Process each sheet individually to avoid token limits
-      for (const sheetName of sheetNames) {
-        const sheet = sheets[sheetName];
-        
-        console.log(`📋 Processing sheet: ${sheetName}`);
-        
-        // Create focused prompt for this specific sheet
-        const sheetPrompt = `YOU MUST EXTRACT ALL DATA FROM EXCEL SHEET "${sheetName}" IMMEDIATELY. NO QUESTIONS, NO CONFIRMATIONS.
-
-SHEET RAW DATA:
-${JSON.stringify(sheet, null, 2)}
-
-MANDATORY EXTRACTION REQUIREMENTS:
-1. EXTRACT ALL ${sheet.totalRows} ROWS OF DATA - EVERY SINGLE ROW
-2. SHOW ALL COLUMN HEADERS: ${sheet.headers.join(', ')}
-3. LIST EVERY CELL VALUE EXACTLY AS IT APPEARS
-4. INCLUDE ALL EMPTY/NULL CELLS  
-5. SHOW ALL NUMERIC VALUES: ${sheet.numericColumns.join(', ')}
-6. SHOW ALL TEXT VALUES: ${sheet.textColumns.join(', ')}
-
-FORMAT: Display as a complete table with ALL rows:
-Row 1: [Column1: Value1] | [Column2: Value2] | [Column3: Value3] | ...
-Row 2: [Column1: Value1] | [Column2: Value2] | [Column3: Value3] | ...
-[Continue for ALL ${sheet.totalRows} rows]
-
-DO NOT ASK FOR CONFIRMATION. DO NOT SUMMARIZE. EXTRACT EVERYTHING NOW.
-START WITH "COMPLETE DATA EXTRACTION FOR SHEET ${sheetName}:" and then list every single row.`;
-
-        try {
-          const sheetResponse = await anthropic.messages.create({
-            model: 'claude-3-5-haiku-20241022',
-            max_tokens: 8000, // Increased for complete extraction
-            system: "You are a data extraction specialist. Your ONLY job is to extract ALL data from Excel sheets completely. Never ask questions, never summarize, never provide analysis. Just extract every single piece of data exactly as requested.",
-            messages: [
-              {
-                role: 'user',
-                content: sheetPrompt
-              }
-            ]
-          });
-
-          const sheetAnalysis = sheetResponse.content[0].type === 'text' ? sheetResponse.content[0].text : 'No analysis';
-          
-          completeAnalysis += `\n📋 SHEET: "${sheetName}" - COMPLETE DATA EXTRACTION:\n`;
-          completeAnalysis += `${sheetAnalysis}\n`;
-          
-          // FALLBACK: If AI didn't extract properly, force extract the raw data
-          if (sheetAnalysis.includes('would you prefer') || sheetAnalysis.includes('confirmation') || sheetAnalysis.length < 500) {
-            completeAnalysis += `\n🔧 DIRECT DATA EXTRACTION (AI FALLBACK):\n`;
-            completeAnalysis += `Headers: ${sheet.headers.join(' | ')}\n`;
-            completeAnalysis += `Total Rows: ${sheet.totalRows}\n`;
-            completeAnalysis += `Numeric Columns: ${sheet.numericColumns.join(', ')}\n`;
-            completeAnalysis += `Text Columns: ${sheet.textColumns.join(', ')}\n`;
-            
-            if (sheet.sampleData && Array.isArray(sheet.sampleData)) {
-              completeAnalysis += `\nALL DATA ROWS:\n`;
-              sheet.sampleData.forEach((row: any, idx: number) => {
-                const rowData = sheet.headers.map((header: string) => {
-                  const value = row[header];
-                  return `${header}: ${value !== undefined && value !== null ? value : 'NULL'}`;
-                }).join(' | ');
-                completeAnalysis += `Row ${idx + 1}: ${rowData}\n`;
-              });
-            }
-            
-            completeAnalysis += `\nRAW SHEET DATA:\n${JSON.stringify(sheet.sampleData, null, 2)}\n`;
-          }
-          
-          completeAnalysis += `\n${'='.repeat(80)}\n`;
-          
-        } catch (error) {
-          console.error(`Error analyzing sheet ${sheetName}:`, error);
-          completeAnalysis += `\n❌ Error extracting data from sheet "${sheetName}": ${error}\n`;
-        }
-      }
-      
-      // Add final summary
-      completeAnalysis += `\n✅ EXTRACTION COMPLETE\n`;
-      completeAnalysis += `- All ${sheetNames.length} sheets processed\n`;
-      completeAnalysis += `- Every data row extracted\n`;
-      completeAnalysis += `- Complete Excel contents captured\n`;
-      
-    } else {
-      completeAnalysis = 'ERROR: No sheet data found in Excel file';
+  Object.entries(sheets).forEach(([sheetName, sheet]: [string, any]) => {
+    // Recommend slide types based on data structure
+    if (sheet.numericColumns.length > 0 && sheet.totalRows > 1) {
+      recommendations.push(`Create KPI dashboard slide from "${sheetName}" with ${sheet.numericColumns.length} key metrics`);
     }
     
-  } catch (error) {
-    console.error('Error in chunked analysis:', error);
-    completeAnalysis = `ERROR: Chunked analysis failed - ${error}`;
-  }
+    if (sheet.headers.some((h: string) => ['january', 'february', 'march'].some(month => h.toLowerCase().includes(month)))) {
+      recommendations.push(`Create monthly trend analysis slide from "${sheetName}" time series data`);
+    }
+    
+    if (sheet.headers.some((h: string) => h.toLowerCase().includes('revenue') || h.toLowerCase().includes('sales'))) {
+      recommendations.push(`Create financial performance slide highlighting revenue/sales metrics from "${sheetName}"`);
+    }
+    
+    if (sheet.totalRows > 10) {
+      recommendations.push(`Create detailed analysis slide with top insights from "${sheetName}" dataset`);
+    }
+  });
   
-  return {
-    completeAnalysis,
-    timestamp: new Date().toISOString()
-  };
+  // Overall presentation structure recommendations
+  recommendations.push('Suggested presentation flow: Executive Summary → Key Metrics → Trend Analysis → Detailed Insights → Recommendations');
+  recommendations.push('Recommended chart types: Line charts for trends, Bar charts for comparisons, KPI cards for key metrics');
+  
+  return recommendations;
 }
 
 // Helper function to generate ASCII line chart
@@ -451,15 +369,97 @@ export async function POST(request: NextRequest) {
     console.log('File data keys:', Object.keys(fileData));
     console.log('File data structure:', JSON.stringify(fileData, null, 2));
 
-    // COMPREHENSIVE EXCEL ANALYSIS - Extract ALL possible information using chunked approach
+    // COMPREHENSIVE EXCEL ANALYSIS - Extract ALL possible information
     const comprehensiveAnalysis = await performComprehensiveExcelAnalysis(fileData);
     
-    // CHUNKED ANALYSIS - Process each sheet separately to avoid token limits
-    const completeAnalysis = await performChunkedExcelAnalysis(fileData, prompt);
+    // FORCE COMPLETE EXTRACTION - Focus on Sheet 1 first with direct data dump
+    let completeDataExtraction = '';
     
-    console.log('✅ Complete chunked analysis finished');
+    // Extract Sheet 1 data directly without AI limitations
+    if (fileData?.processedData?.structuredData?.sheets) {
+      const sheets = fileData.processedData.structuredData.sheets;
+      const sheetNames = Object.keys(sheets);
+      
+      if (sheetNames.length > 0) {
+        const firstSheet = sheets[sheetNames[0]];
+        const firstSheetName = sheetNames[0];
+        
+        completeDataExtraction += `📊 COMPLETE SHEET 1 DATA EXTRACTION: "${firstSheetName}"\n\n`;
+        completeDataExtraction += `Headers: ${firstSheet.headers.join(' | ')}\n`;
+        completeDataExtraction += `Total Rows: ${firstSheet.totalRows}\n`;
+        completeDataExtraction += `Total Columns: ${firstSheet.columnCount}\n\n`;
+        
+        // FORCE EXTRACT ALL DATA ROWS - NO LIMITS
+        if (firstSheet.sampleData && Array.isArray(firstSheet.sampleData)) {
+          completeDataExtraction += `🔥 ALL DATA ROWS FROM SHEET 1 (EVERY SINGLE ROW):\n`;
+          completeDataExtraction += `${'='.repeat(100)}\n`;
+          
+          firstSheet.sampleData.forEach((row: any, idx: number) => {
+            const rowData = firstSheet.headers.map((header: string) => {
+              const value = row[header];
+              return `${header}: ${value !== undefined && value !== null ? value : 'NULL'}`;
+            }).join(' | ');
+            completeDataExtraction += `Row ${idx + 1}: ${rowData}\n`;
+          });
+          
+          completeDataExtraction += `${'='.repeat(100)}\n`;
+          completeDataExtraction += `✅ EXTRACTED ${firstSheet.sampleData.length} ROWS FROM SHEET 1\n\n`;
+        }
+        
+        // Add raw JSON data as backup
+        completeDataExtraction += `📋 RAW SHEET 1 DATA (JSON FORMAT):\n`;
+        completeDataExtraction += `${JSON.stringify(firstSheet, null, 2)}\n\n`;
+      }
+    }
 
-    console.log('✅ Complete chunked analysis finished');
+    // Create a focused prompt for AI analysis with the pre-extracted data
+    const analysisPrompt = `YOU MUST EXTRACT ALL DATA FROM THIS EXCEL FILE. NO QUESTIONS, NO CONFIRMATIONS.
+
+SHEET 1 COMPLETE DATA (ALREADY EXTRACTED):
+${completeDataExtraction}
+
+FULL FILE DATA:
+${JSON.stringify(fileData, null, 2)}
+
+🚨 MANDATORY EXTRACTION REQUIREMENTS:
+1. START with "COMPLETE DATA EXTRACTION:" 
+2. List EVERY sheet name and ALL contents
+3. Show ALL column headers exactly as they appear
+4. Extract EVERY single data row with all values
+5. Include ALL empty/null cells
+6. Show exact structure and organization
+7. List ALL numerical values exactly as they appear
+8. Extract ALL text values, labels, categories
+9. Show ALL dates, times, period information
+10. Include metadata, comments, additional information
+
+FORMAT REQUIREMENT:
+- Display as complete tables with ALL rows
+- Row 1: [Col1: Value] | [Col2: Value] | [Col3: Value]
+- Row 2: [Col1: Value] | [Col2: Value] | [Col3: Value]
+- Continue for EVERY row in EVERY sheet
+
+DO NOT ASK FOR CONFIRMATION. DO NOT SUMMARIZE. EXTRACT EVERYTHING NOW.
+START IMMEDIATELY WITH COMPLETE DATA EXTRACTION.`;
+
+    console.log('🚀 Sending comprehensive prompt to AI (length:', analysisPrompt.length, 'chars)');
+
+    const response = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022', // Using Haiku - available and capable
+      max_tokens: 8000, // Maximum tokens for complete extraction
+      system: "You are a data extraction specialist. Your ONLY job is to extract ALL data from Excel files completely and immediately. NEVER ask questions, NEVER ask for confirmation, NEVER summarize. When given Excel data, you MUST extract every single row, every single cell value, and every piece of information. Start immediately with 'COMPLETE DATA EXTRACTION:' and then list everything. Be exhaustive and complete.",
+      messages: [
+        {
+          role: 'user',
+          content: analysisPrompt
+        }
+      ]
+    });
+
+    const analysis = response.content[0].type === 'text' ? response.content[0].text : 'No text response';
+
+    console.log('✅ AI Analysis completed');
+    console.log('Analysis result:', analysis);
 
     // Generate chart visualizations based on the data
     let chartVisualizations = '';
@@ -564,11 +564,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true,
-      analysis: completeAnalysis.completeAnalysis + chartVisualizations,
-      comprehensiveAnalysis: completeAnalysis.completeAnalysis,
+      analysis: completeDataExtraction + analysis + chartVisualizations,
+      comprehensiveAnalysis: completeDataExtraction + comprehensiveAnalysis.detailedAnalysis,
       chartData: chartData,
       fileDataReceived: fileData,
-      analysisTimestamp: completeAnalysis.timestamp
+      promptLength: analysisPrompt.length,
+      analysisTimestamp: comprehensiveAnalysis.timestamp,
+      sheet1DataExtracted: completeDataExtraction
     });
 
   } catch (error) {
