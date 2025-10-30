@@ -413,28 +413,60 @@ export async function POST(request: NextRequest) {
     }
 
     // Create prompts for both content analysis and presentation content
-    const contentAnalysisPrompt = `ANALYZE AND SQUEEZE ALL RELEVANT INFORMATION FROM THIS EXCEL DATA. Extract every important insight, pattern, trend, and business intelligence.
+    const contentAnalysisPrompt = `PERFORM EXHAUSTIVE CONTENT ANALYSIS - SQUEEZE EVERY SINGLE PIECE OF DATA AND EXTRACT ALL POSSIBLE INSIGHTS.
 
-EXCEL DATA TO ANALYZE:
+COMPLETE EXCEL DATA TO ANALYZE:
 ${completeDataExtraction}
 
-FULL FILE DATA:
+FULL RAW FILE DATA:
 ${JSON.stringify(fileData, null, 2)}
 
-🔍 CONTENT ANALYSIS REQUIREMENTS:
-1. START with "CONTENT ANALYSIS:"
-2. Identify ALL key patterns and trends
-3. Extract ALL important business metrics
-4. Find ALL correlations and relationships
-5. Highlight ALL significant findings
-6. Analyze ALL performance indicators
-7. Identify ALL opportunities and risks
-8. Extract ALL actionable insights
-9. Find ALL anomalies or outliers
-10. Summarize ALL critical information
+🔍 MANDATORY EXHAUSTIVE ANALYSIS - EXTRACT EVERYTHING:
 
-SQUEEZE EVERY PIECE OF RELEVANT INFORMATION - BE COMPREHENSIVE AND THOROUGH.
-START IMMEDIATELY WITH "CONTENT ANALYSIS:" and extract all insights.`;
+1. START with "CONTENT ANALYSIS:"
+
+2. NUMERICAL ANALYSIS:
+   - Calculate ALL totals, averages, medians, min/max for EVERY numeric column
+   - Identify ALL percentage changes, growth rates, variance patterns
+   - Find ALL mathematical relationships between columns
+   - Calculate ALL ratios and proportions
+   - Identify ALL statistical outliers and anomalies
+
+3. TEMPORAL ANALYSIS (if dates/periods exist):
+   - Analyze ALL time-based trends and seasonality
+   - Calculate ALL period-over-period changes
+   - Identify ALL cyclical patterns and recurring trends
+   - Find ALL acceleration/deceleration points
+
+4. CATEGORICAL ANALYSIS:
+   - Analyze ALL text categories and their distributions
+   - Find ALL unique values and their frequencies
+   - Identify ALL categorical patterns and groupings
+
+5. CORRELATION ANALYSIS:
+   - Find ALL relationships between different data columns
+   - Identify ALL cause-and-effect patterns
+   - Analyze ALL interdependencies
+
+6. BUSINESS INTELLIGENCE:
+   - Extract ALL KPIs and performance metrics
+   - Identify ALL business opportunities and risks
+   - Find ALL efficiency gaps and improvement areas
+   - Analyze ALL competitive advantages/disadvantages
+
+7. DATA QUALITY ASSESSMENT:
+   - Identify ALL missing values, inconsistencies, errors
+   - Find ALL data completeness issues
+   - Highlight ALL data reliability concerns
+
+8. PREDICTIVE INSIGHTS:
+   - Identify ALL future trend indicators
+   - Find ALL leading/lagging indicators
+   - Suggest ALL forecasting opportunities
+
+BE EXHAUSTIVE - ANALYZE EVERY SINGLE DATA POINT, EVERY RELATIONSHIP, EVERY PATTERN.
+LEAVE NO STONE UNTURNED. SQUEEZE ALL INFORMATION FROM THE DATA.
+START IMMEDIATELY WITH "CONTENT ANALYSIS:" and provide comprehensive analysis.`;
 
     const presentationPrompt = `CREATE PRESENTATION CONTENT FROM THIS EXCEL DATA. Generate the actual text, titles, and bullet points that will appear in slides.
 
@@ -477,8 +509,8 @@ START IMMEDIATELY WITH "PRESENTATION CONTENT:" and list all slide content.`;
     // First AI call: Content Analysis (squeeze all relevant information)
     const contentAnalysisResponse = await anthropic.messages.create({
       model: 'claude-3-5-haiku-20241022',
-      max_tokens: 6000,
-      system: "You are a business intelligence analyst. Your job is to squeeze ALL relevant information from Excel data - find every pattern, trend, insight, correlation, and business intelligence. Be comprehensive and thorough in extracting insights. Start with 'CONTENT ANALYSIS:' and analyze everything.",
+      max_tokens: 8000, // Increased for exhaustive analysis
+      system: "You are an expert data analyst and business intelligence specialist. Your job is to perform EXHAUSTIVE analysis of Excel data. You must squeeze EVERY SINGLE PIECE OF INFORMATION from the data - calculate all statistics, find all patterns, analyze all relationships, extract all insights. Be extremely thorough and comprehensive. Analyze every data point, every column, every row. Leave no information unanalyzed. Start with 'CONTENT ANALYSIS:' and provide exhaustive analysis.",
       messages: [
         {
           role: 'user',
