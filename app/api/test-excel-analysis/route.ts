@@ -412,14 +412,34 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create a focused prompt for generating presentation content
-    const analysisPrompt = `CREATE PRESENTATION CONTENT FROM THIS EXCEL DATA. Generate the actual text, titles, and bullet points that will appear in slides.
+    // Create prompts for both content analysis and presentation content
+    const contentAnalysisPrompt = `ANALYZE AND SQUEEZE ALL RELEVANT INFORMATION FROM THIS EXCEL DATA. Extract every important insight, pattern, trend, and business intelligence.
 
-EXCEL DATA TO CONVERT TO PRESENTATION:
+EXCEL DATA TO ANALYZE:
 ${completeDataExtraction}
 
 FULL FILE DATA:
 ${JSON.stringify(fileData, null, 2)}
+
+🔍 CONTENT ANALYSIS REQUIREMENTS:
+1. START with "CONTENT ANALYSIS:"
+2. Identify ALL key patterns and trends
+3. Extract ALL important business metrics
+4. Find ALL correlations and relationships
+5. Highlight ALL significant findings
+6. Analyze ALL performance indicators
+7. Identify ALL opportunities and risks
+8. Extract ALL actionable insights
+9. Find ALL anomalies or outliers
+10. Summarize ALL critical information
+
+SQUEEZE EVERY PIECE OF RELEVANT INFORMATION - BE COMPREHENSIVE AND THOROUGH.
+START IMMEDIATELY WITH "CONTENT ANALYSIS:" and extract all insights.`;
+
+    const presentationPrompt = `CREATE PRESENTATION CONTENT FROM THIS EXCEL DATA. Generate the actual text, titles, and bullet points that will appear in slides.
+
+EXCEL DATA TO CONVERT TO PRESENTATION:
+${completeDataExtraction}
 
 🎯 GENERATE PRESENTATION CONTENT:
 1. START with "PRESENTATION CONTENT:"
@@ -452,21 +472,42 @@ EXECUTIVE SUMMARY:
 GENERATE ACTUAL PRESENTATION TEXT - NOT RECOMMENDATIONS ABOUT WHAT TO CREATE.
 START IMMEDIATELY WITH "PRESENTATION CONTENT:" and list all slide content.`;
 
-    console.log('🚀 Sending comprehensive prompt to AI (length:', analysisPrompt.length, 'chars)');
+    console.log('🚀 Sending content analysis prompt to AI (length:', contentAnalysisPrompt.length, 'chars)');
 
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022', // Using Haiku - available and capable
-      max_tokens: 8000, // Maximum tokens for complete extraction
-      system: "You are a presentation content creator. Your job is to convert Excel data into actual presentation content - slide titles, bullet points, insights, and text that will appear in slides. Generate the exact content that will be displayed in the presentation. Start with 'PRESENTATION CONTENT:' and create slide-ready text, titles, and bullet points. Be concise and professional.",
+    // First AI call: Content Analysis (squeeze all relevant information)
+    const contentAnalysisResponse = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 6000,
+      system: "You are a business intelligence analyst. Your job is to squeeze ALL relevant information from Excel data - find every pattern, trend, insight, correlation, and business intelligence. Be comprehensive and thorough in extracting insights. Start with 'CONTENT ANALYSIS:' and analyze everything.",
       messages: [
         {
           role: 'user',
-          content: analysisPrompt
+          content: contentAnalysisPrompt
         }
       ]
     });
 
-    const analysis = response.content[0].type === 'text' ? response.content[0].text : 'No text response';
+    const contentAnalysis = contentAnalysisResponse.content[0].type === 'text' ? contentAnalysisResponse.content[0].text : 'No content analysis';
+
+    console.log('🚀 Sending presentation content prompt to AI (length:', presentationPrompt.length, 'chars)');
+
+    // Second AI call: Presentation Content (how it will be displayed)
+    const presentationResponse = await anthropic.messages.create({
+      model: 'claude-3-5-haiku-20241022',
+      max_tokens: 6000,
+      system: "You are a presentation content creator. Your job is to convert Excel data into actual presentation content - slide titles, bullet points, insights, and text that will appear in slides. Generate the exact content that will be displayed in the presentation. Start with 'PRESENTATION CONTENT:' and create slide-ready text, titles, and bullet points. Be concise and professional.",
+      messages: [
+        {
+          role: 'user',
+          content: presentationPrompt
+        }
+      ]
+    });
+
+    const presentationContent = presentationResponse.content[0].type === 'text' ? presentationResponse.content[0].text : 'No presentation content';
+
+    // Combine both analyses
+    const analysis = contentAnalysis + '\n\n' + presentationContent;
 
     console.log('✅ AI Analysis completed');
     console.log('Analysis result:', analysis);
@@ -574,11 +615,12 @@ START IMMEDIATELY WITH "PRESENTATION CONTENT:" and list all slide content.`;
 
     return NextResponse.json({ 
       success: true,
-      analysis: completeDataExtraction + analysis + chartVisualizations,
+      analysis: analysis + chartVisualizations,
       comprehensiveAnalysis: completeDataExtraction + comprehensiveAnalysis.detailedAnalysis,
+      contentAnalysis: contentAnalysis,
+      presentationContent: presentationContent,
       chartData: chartData,
       fileDataReceived: fileData,
-      promptLength: analysisPrompt.length,
       analysisTimestamp: comprehensiveAnalysis.timestamp,
       sheet1DataExtracted: completeDataExtraction
     });

@@ -10,6 +10,8 @@ export default function TestExcelPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string>('');
   const [comprehensiveAnalysis, setComprehensiveAnalysis] = useState<string>('');
+  const [contentAnalysis, setContentAnalysis] = useState<string>('');
+  const [presentationContent, setPresentationContent] = useState<string>('');
   const [chartData, setChartData] = useState<any>(null);
   const [error, setError] = useState<string>('');
 
@@ -68,6 +70,8 @@ export default function TestExcelPage() {
 
       setAnalysisResult(result.analysis);
       setComprehensiveAnalysis(result.comprehensiveAnalysis || '');
+      setContentAnalysis(result.contentAnalysis || '');
+      setPresentationContent(result.presentationContent || '');
       setChartData(result.chartData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
@@ -137,21 +141,32 @@ export default function TestExcelPage() {
             </button>
 
             {/* Comprehensive Analysis Result */}
+            {/* 1. Comprehensive Data Analysis */}
             {comprehensiveAnalysis && (
               <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
-                <h3 className="font-semibold text-green-800">🔍 Comprehensive Data Analysis:</h3>
+                <h3 className="font-semibold text-green-800">📊 Comprehensive Data Analysis:</h3>
                 <div className="mt-2 text-green-700 whitespace-pre-wrap text-sm max-h-80 overflow-y-auto">
                   {comprehensiveAnalysis}
                 </div>
               </div>
             )}
 
-            {/* Presentation Content */}
-            {analysisResult && (
+            {/* 2. Content Analysis (AI squeezes all relevant information) */}
+            {contentAnalysis && (
+              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <h3 className="font-semibold text-blue-800">🔍 Content Analysis:</h3>
+                <div className="mt-2 text-blue-700 whitespace-pre-wrap text-sm max-h-80 overflow-y-auto">
+                  {contentAnalysis}
+                </div>
+              </div>
+            )}
+
+            {/* 3. Presentation Content (how it will be displayed) */}
+            {presentationContent && (
               <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-md">
                 <h3 className="font-semibold text-purple-800">🎯 Presentation Content:</h3>
                 <div className="mt-2 text-purple-700 whitespace-pre-wrap text-sm max-h-80 overflow-y-auto">
-                  {analysisResult}
+                  {presentationContent}
                 </div>
               </div>
             )}
