@@ -275,34 +275,87 @@ function analyzeCrossSheetRelationships(sheets: any) {
   return insights;
 }
 
-// Helper function to generate presentation recommendations
-function generatePresentationRecommendations(sheets: any) {
-  const recommendations: string[] = [];
+// CHUNKED ANALYSIS FUNCTION - Process each sheet separately to extract ALL data
+async function performChunkedExcelAnalysis(fileData: any, userPrompt: string) {
+  console.log('🔍 Starting chunked Excel analysis for complete data extraction...');
   
-  Object.entries(sheets).forEach(([sheetName, sheet]: [string, any]) => {
-    // Recommend slide types based on data structure
-    if (sheet.numericColumns.length > 0 && sheet.totalRows > 1) {
-      recommendations.push(`Create KPI dashboard slide from "${sheetName}" with ${sheet.numericColumns.length} key metrics`);
+  let completeAnalysis = '';
+  
+  try {
+    if (fileData?.processedData?.structuredData?.sheets) {
+      const sheets = fileData.processedData.structuredData.sheets;
+      const sheetNames = Object.keys(sheets);
+      
+      completeAnalysis += `📊 COMPLETE EXCEL DATA EXTRACTION\n`;
+      completeAnalysis += `Total Sheets: ${sheetNames.length}\n`;
+      completeAnalysis += `Sheet Names: ${sheetNames.join(', ')}\n\n`;
+      
+      // Process each sheet individually to avoid token limits
+      for (const sheetName of sheetNames) {
+        const sheet = sheets[sheetName];
+        
+        console.log(`📋 Processing sheet: ${sheetName}`);
+        
+        // Create focused prompt for this specific sheet
+        const sheetPrompt = `Extract ALL data from Excel sheet "${sheetName}". 
+
+SHEET DATA:
+${JSON.stringify(sheet, null, 2)}
+
+Extract EVERY piece of data from this sheet:
+1. List ALL column headers: ${sheet.headers.join(', ')}
+2. Extract ALL ${sheet.totalRows} data rows with complete values
+3. Show every single cell value exactly as it appears
+4. Include any empty/null cells
+5. List all numerical values: ${sheet.numericColumns.join(', ')}
+6. List all text values: ${sheet.textColumns.join(', ')}
+
+CRITICAL: Extract EVERY data row completely. Do not summarize or skip any data.
+Show the complete contents of this sheet with all ${sheet.totalRows} rows of data.`;
+
+        try {
+          const sheetResponse = await anthropic.messages.create({
+            model: 'claude-3-5-haiku-20241022',
+            max_tokens: 4000,
+            messages: [
+              {
+                role: 'user',
+                content: sheetPrompt
+              }
+            ]
+          });
+
+          const sheetAnalysis = sheetResponse.content[0].type === 'text' ? sheetResponse.content[0].text : 'No analysis';
+          
+          completeAnalysis += `\n📋 SHEET: "${sheetName}" - COMPLETE DATA EXTRACTION:\n`;
+          completeAnalysis += `${sheetAnalysis}\n`;
+          completeAnalysis += `\n${'='.repeat(80)}\n`;
+          
+        } catch (error) {
+          console.error(`Error analyzing sheet ${sheetName}:`, error);
+          completeAnalysis += `\n❌ Error extracting data from sheet "${sheetName}": ${error}\n`;
+        }
+      }
+      
+      // Add final summary
+      completeAnalysis += `\n✅ EXTRACTION COMPLETE\n`;
+      completeAnalysis += `- All ${sheetNames.length} sheets processed\n`;
+      completeAnalysis += `- Every data row extracted\n`;
+      completeAnalysis += `- Complete Excel contents captured\n`;
+      
+    } else {
+      completeAnalysis = 'ERROR: No sheet data found in Excel file';
     }
     
-    if (sheet.headers.some((h: string) => ['january', 'february', 'march'].some(month => h.toLowerCase().includes(month)))) {
-      recommendations.push(`Create monthly trend analysis slide from "${sheetName}" time series data`);
-    }
-    
-    if (sheet.headers.some((h: string) => h.toLowerCase().includes('revenue') || h.toLowerCase().includes('sales'))) {
-      recommendations.push(`Create financial performance slide highlighting revenue/sales metrics from "${sheetName}"`);
-    }
-    
-    if (sheet.totalRows > 10) {
-      recommendations.push(`Create detailed analysis slide with top insights from "${sheetName}" dataset`);
-    }
-  });
+  } catch (error) {
+    console.error('Error in chunked analysis:', error);
+    completeAnalysis = `ERROR: Chunked analysis failed - ${error}`;
+  }
   
-  // Overall presentation structure recommendations
-  recommendations.push('Suggested presentation flow: Executive Summary → Key Metrics → Trend Analysis → Detailed Insights → Recommendations');
-  recommendations.push('Recommended chart types: Line charts for trends, Bar charts for comparisons, KPI cards for key metrics');
-  
-  return recommendations;
+  return {
+    completeAnalysis,
+    timestamp: new Date().toISOString()
+  };
 }
 
 // Helper function to generate ASCII line chart
@@ -369,67 +422,15 @@ export async function POST(request: NextRequest) {
     console.log('File data keys:', Object.keys(fileData));
     console.log('File data structure:', JSON.stringify(fileData, null, 2));
 
-    // COMPREHENSIVE EXCEL ANALYSIS - Extract ALL possible information
+    // COMPREHENSIVE EXCEL ANALYSIS - Extract ALL possible information using chunked approach
     const comprehensiveAnalysis = await performComprehensiveExcelAnalysis(fileData);
     
-    // Create an enhanced prompt with deep analysis
-    const analysisPrompt = `${prompt}
+    // CHUNKED ANALYSIS - Process each sheet separately to avoid token limits
+    const completeAnalysis = await performChunkedExcelAnalysis(fileData, prompt);
+    
+    console.log('✅ Complete chunked analysis finished');
 
-🔍 COMPREHENSIVE EXCEL FILE ANALYSIS:
-
-${comprehensiveAnalysis.detailedAnalysis}
-
-EXCEL FILE RAW DATA:
-${JSON.stringify(fileData, null, 2)}
-
-Extract and list ALL the data from this Excel file. Focus purely on data extraction - no recommendations or analysis. Include:
-
-📊 COMPLETE DATA EXTRACTION:
-1. List every sheet name and its complete contents
-2. Show ALL column headers exactly as they appear
-3. Extract EVERY single data row with all values
-4. Include empty cells, null values, and formatting information
-5. Show the exact structure and organization of the data
-
-📈 RAW DATA CONTENT:
-6. List ALL numerical values exactly as they appear in the file
-7. Extract ALL text values, labels, and categories
-8. Show ALL dates, times, and period information
-9. Include any formulas, calculations, or computed values
-10. Extract any metadata, comments, or additional information
-
-🔍 COMPLETE DATA INVENTORY:
-11. Total count of sheets, rows, columns, and populated cells
-12. List of all unique values in each column
-13. Data types present (numbers, text, dates, formulas)
-14. Any special formatting, colors, or styling information
-
-🚨 CRITICAL REQUIREMENTS:
-- Extract EVERY piece of data - don't summarize or skip anything
-- Show the complete contents of EVERY sheet
-- Include ALL data rows, not just samples
-- List exact values, don't round or approximate
-- NO analysis, insights, or recommendations - just pure data extraction
-
-Be completely exhaustive - extract every single piece of information that exists in this Excel file.`;
-
-    console.log('🚀 Sending comprehensive prompt to AI (length:', analysisPrompt.length, 'chars)');
-
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022', // Using Haiku - available and capable
-      max_tokens: 4000, // Increased token limit for comprehensive analysis
-      messages: [
-        {
-          role: 'user',
-          content: analysisPrompt
-        }
-      ]
-    });
-
-    const analysis = response.content[0].type === 'text' ? response.content[0].text : 'No text response';
-
-    console.log('✅ AI Analysis completed');
-    console.log('Analysis result:', analysis);
+    console.log('✅ Complete chunked analysis finished');
 
     // Generate chart visualizations based on the data
     let chartVisualizations = '';
@@ -534,12 +535,11 @@ Be completely exhaustive - extract every single piece of information that exists
 
     return NextResponse.json({ 
       success: true,
-      analysis: analysis + chartVisualizations,
-      comprehensiveAnalysis: comprehensiveAnalysis.detailedAnalysis,
+      analysis: completeAnalysis.completeAnalysis + chartVisualizations,
+      comprehensiveAnalysis: completeAnalysis.completeAnalysis,
       chartData: chartData,
       fileDataReceived: fileData,
-      promptLength: analysisPrompt.length,
-      analysisTimestamp: comprehensiveAnalysis.timestamp
+      analysisTimestamp: completeAnalysis.timestamp
     });
 
   } catch (error) {
