@@ -146,11 +146,11 @@ export default function TestExcelPage() {
               </div>
             )}
 
-            {/* AI Analysis Result */}
+            {/* Presentation Content */}
             {analysisResult && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <h3 className="font-semibold text-blue-800">🤖 AI Analysis & Recommendations:</h3>
-                <div className="mt-2 text-blue-700 whitespace-pre-wrap">
+              <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-md">
+                <h3 className="font-semibold text-purple-800">🎯 Presentation Content:</h3>
+                <div className="mt-2 text-purple-700 whitespace-pre-wrap text-sm max-h-80 overflow-y-auto">
                   {analysisResult}
                 </div>
               </div>

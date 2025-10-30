@@ -412,42 +412,52 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create a focused prompt for AI analysis with the pre-extracted data
-    const analysisPrompt = `YOU MUST EXTRACT ALL DATA FROM THIS EXCEL FILE. NO QUESTIONS, NO CONFIRMATIONS.
+    // Create a focused prompt for generating presentation content
+    const analysisPrompt = `CREATE PRESENTATION CONTENT FROM THIS EXCEL DATA. Generate the actual text, titles, and bullet points that will appear in slides.
 
-SHEET 1 COMPLETE DATA (ALREADY EXTRACTED):
+EXCEL DATA TO CONVERT TO PRESENTATION:
 ${completeDataExtraction}
 
 FULL FILE DATA:
 ${JSON.stringify(fileData, null, 2)}
 
-🚨 MANDATORY EXTRACTION REQUIREMENTS:
-1. START with "COMPLETE DATA EXTRACTION:" 
-2. List EVERY sheet name and ALL contents
-3. Show ALL column headers exactly as they appear
-4. Extract EVERY single data row with all values
-5. Include ALL empty/null cells
-6. Show exact structure and organization
-7. List ALL numerical values exactly as they appear
-8. Extract ALL text values, labels, categories
-9. Show ALL dates, times, period information
-10. Include metadata, comments, additional information
+🎯 GENERATE PRESENTATION CONTENT:
+1. START with "PRESENTATION CONTENT:"
+2. Create slide titles (3-5 words max each)
+3. Write bullet points for each slide
+4. Generate key insights and takeaways
+5. Create executive summary points
+6. Write chart titles and descriptions
+7. Generate conclusion statements
+8. Create action items or recommendations
 
-FORMAT REQUIREMENT:
-- Display as complete tables with ALL rows
-- Row 1: [Col1: Value] | [Col2: Value] | [Col3: Value]
-- Row 2: [Col1: Value] | [Col2: Value] | [Col3: Value]
-- Continue for EVERY row in EVERY sheet
+📋 CONTENT FORMAT:
+SLIDE 1: [Title]
+• Bullet point 1
+• Bullet point 2
+• Key insight
 
-DO NOT ASK FOR CONFIRMATION. DO NOT SUMMARIZE. EXTRACT EVERYTHING NOW.
-START IMMEDIATELY WITH COMPLETE DATA EXTRACTION.`;
+SLIDE 2: [Title]
+• Bullet point 1
+• Bullet point 2
+• Key metric or finding
+
+[Continue for all relevant slides]
+
+EXECUTIVE SUMMARY:
+• Key finding 1
+• Key finding 2
+• Main conclusion
+
+GENERATE ACTUAL PRESENTATION TEXT - NOT RECOMMENDATIONS ABOUT WHAT TO CREATE.
+START IMMEDIATELY WITH "PRESENTATION CONTENT:" and list all slide content.`;
 
     console.log('🚀 Sending comprehensive prompt to AI (length:', analysisPrompt.length, 'chars)');
 
     const response = await anthropic.messages.create({
       model: 'claude-3-5-haiku-20241022', // Using Haiku - available and capable
       max_tokens: 8000, // Maximum tokens for complete extraction
-      system: "You are a data extraction specialist. Your ONLY job is to extract ALL data from Excel files completely and immediately. NEVER ask questions, NEVER ask for confirmation, NEVER summarize. When given Excel data, you MUST extract every single row, every single cell value, and every piece of information. Start immediately with 'COMPLETE DATA EXTRACTION:' and then list everything. Be exhaustive and complete.",
+      system: "You are a presentation content creator. Your job is to convert Excel data into actual presentation content - slide titles, bullet points, insights, and text that will appear in slides. Generate the exact content that will be displayed in the presentation. Start with 'PRESENTATION CONTENT:' and create slide-ready text, titles, and bullet points. Be concise and professional.",
       messages: [
         {
           role: 'user',
