@@ -9,6 +9,7 @@ export default function TestExcelPage() {
   const [uploadResult, setUploadResult] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<string>('');
+  const [comprehensiveAnalysis, setComprehensiveAnalysis] = useState<string>('');
   const [chartData, setChartData] = useState<any>(null);
   const [error, setError] = useState<string>('');
 
@@ -66,6 +67,7 @@ export default function TestExcelPage() {
       }
 
       setAnalysisResult(result.analysis);
+      setComprehensiveAnalysis(result.comprehensiveAnalysis || '');
       setChartData(result.chartData);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Analysis failed');
@@ -134,10 +136,20 @@ export default function TestExcelPage() {
               {isAnalyzing ? 'Analyzing...' : 'Analyze Excel Data with AI'}
             </button>
 
-            {/* Analysis Result */}
+            {/* Comprehensive Analysis Result */}
+            {comprehensiveAnalysis && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-md">
+                <h3 className="font-semibold text-green-800">🔍 Comprehensive Data Analysis:</h3>
+                <div className="mt-2 text-green-700 whitespace-pre-wrap text-sm max-h-80 overflow-y-auto">
+                  {comprehensiveAnalysis}
+                </div>
+              </div>
+            )}
+
+            {/* AI Analysis Result */}
             {analysisResult && (
               <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
-                <h3 className="font-semibold text-blue-800">AI Analysis Result:</h3>
+                <h3 className="font-semibold text-blue-800">🤖 AI Analysis & Recommendations:</h3>
                 <div className="mt-2 text-blue-700 whitespace-pre-wrap">
                   {analysisResult}
                 </div>

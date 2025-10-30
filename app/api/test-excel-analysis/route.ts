@@ -1,11 +1,311 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
-import { ExcelAnalyzer } from '../../../utils/excelAnalyzer';
-import { ParsedExcelData } from '../../../utils/documentParser';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });
+
+// COMPREHENSIVE EXCEL ANALYSIS FUNCTION
+async function performComprehensiveExcelAnalysis(fileData: any) {
+  console.log('🔍 Starting comprehensive Excel analysis...');
+  
+  let detailedAnalysis = '';
+  
+  try {
+    // 1. STRUCTURAL ANALYSIS
+    detailedAnalysis += '📊 STRUCTURAL ANALYSIS:\n';
+    
+    if (fileData?.processedData?.structuredData?.sheets) {
+      const sheets = fileData.processedData.structuredData.sheets;
+      const sheetNames = Object.keys(sheets);
+      
+      detailedAnalysis += `- Total Sheets: ${sheetNames.length}\n`;
+      detailedAnalysis += `- Sheet Names: ${sheetNames.join(', ')}\n`;
+      
+      let totalDataCells = 0;
+      let totalRows = 0;
+      let totalColumns = 0;
+      
+      // Analyze each sheet in detail
+      sheetNames.forEach(sheetName => {
+        const sheet = sheets[sheetName];
+        detailedAnalysis += `\n📋 SHEET: "${sheetName}"\n`;
+        detailedAnalysis += `  - Dimensions: ${sheet.rowCount} rows × ${sheet.columnCount} columns\n`;
+        detailedAnalysis += `  - Data Rows: ${sheet.totalRows}\n`;
+        detailedAnalysis += `  - Headers: [${sheet.headers.join(', ')}]\n`;
+        detailedAnalysis += `  - Numeric Columns: [${sheet.numericColumns.join(', ')}]\n`;
+        detailedAnalysis += `  - Text Columns: [${sheet.textColumns.join(', ')}]\n`;
+        
+        totalRows += sheet.rowCount;
+        totalColumns += sheet.columnCount;
+        totalDataCells += (sheet.rowCount * sheet.columnCount);
+        
+        // 2. DATA QUALITY ANALYSIS
+        if (sheet.sampleData && Array.isArray(sheet.sampleData)) {
+          const dataQuality = analyzeDataQuality(sheet.sampleData, sheet.headers);
+          detailedAnalysis += `  - Data Quality: ${dataQuality.completeness}% complete, ${dataQuality.missingValues} missing values\n`;
+          
+          // 3. DETAILED DATA CONTENT
+          detailedAnalysis += `  - ALL DATA ROWS:\n`;
+          sheet.sampleData.forEach((row: any, idx: number) => {
+            const rowData = sheet.headers.map((header: string) => {
+              const value = row[header];
+              return `${header}: ${value !== undefined && value !== null ? value : 'NULL'}`;
+            }).join(' | ');
+            detailedAnalysis += `    Row ${idx + 1}: ${rowData}\n`;
+          });
+          
+          // 4. NUMERICAL ANALYSIS
+          const numericalAnalysis = performNumericalAnalysis(sheet.sampleData, sheet.numericColumns);
+          if (numericalAnalysis.length > 0) {
+            detailedAnalysis += `  - NUMERICAL INSIGHTS:\n`;
+            numericalAnalysis.forEach(insight => {
+              detailedAnalysis += `    ${insight}\n`;
+            });
+          }
+          
+          // 5. TIME SERIES DETECTION
+          const timeSeriesAnalysis = detectTimeSeriesPatterns(sheet.headers, sheet.sampleData);
+          if (timeSeriesAnalysis.isTimeSeries) {
+            detailedAnalysis += `  - TIME SERIES DETECTED: ${timeSeriesAnalysis.description}\n`;
+            detailedAnalysis += `    Time Columns: [${timeSeriesAnalysis.timeColumns.join(', ')}]\n`;
+            detailedAnalysis += `    Value Columns: [${timeSeriesAnalysis.valueColumns.join(', ')}]\n`;
+          }
+          
+          // 6. BUSINESS METRICS IDENTIFICATION
+          const businessMetrics = identifyBusinessMetrics(sheet.headers, sheet.sampleData);
+          if (businessMetrics.length > 0) {
+            detailedAnalysis += `  - BUSINESS METRICS IDENTIFIED:\n`;
+            businessMetrics.forEach(metric => {
+              detailedAnalysis += `    ${metric}\n`;
+            });
+          }
+        }
+      });
+      
+      // 7. CROSS-SHEET ANALYSIS
+      if (sheetNames.length > 1) {
+        detailedAnalysis += `\n🔗 CROSS-SHEET ANALYSIS:\n`;
+        const crossSheetInsights = analyzeCrossSheetRelationships(sheets);
+        crossSheetInsights.forEach(insight => {
+          detailedAnalysis += `- ${insight}\n`;
+        });
+      }
+      
+      // 8. PRESENTATION RECOMMENDATIONS
+      detailedAnalysis += `\n📋 PRESENTATION RECOMMENDATIONS:\n`;
+      const presentationRecs = generatePresentationRecommendations(sheets);
+      presentationRecs.forEach(rec => {
+        detailedAnalysis += `- ${rec}\n`;
+      });
+      
+      detailedAnalysis += `\n📊 SUMMARY STATISTICS:\n`;
+      detailedAnalysis += `- Total Data Volume: ${totalDataCells} cells across ${totalRows} rows and ${totalColumns} columns\n`;
+      detailedAnalysis += `- Data Density: High-value business data suitable for executive presentation\n`;
+      
+    } else {
+      detailedAnalysis += 'ERROR: No structured data found in file\n';
+    }
+    
+  } catch (error) {
+    console.error('Error in comprehensive analysis:', error);
+    detailedAnalysis += `ERROR: Analysis failed - ${error}\n`;
+  }
+  
+  return {
+    detailedAnalysis,
+    timestamp: new Date().toISOString()
+  };
+}
+
+// Helper function to analyze data quality
+function analyzeDataQuality(data: any[], headers: string[]) {
+  let totalCells = 0;
+  let missingValues = 0;
+  
+  data.forEach(row => {
+    headers.forEach(header => {
+      totalCells++;
+      const value = row[header];
+      if (value === undefined || value === null || value === '' || value === 'N/A') {
+        missingValues++;
+      }
+    });
+  });
+  
+  const completeness = totalCells > 0 ? Math.round(((totalCells - missingValues) / totalCells) * 100) : 0;
+  
+  return { completeness, missingValues, totalCells };
+}
+
+// Helper function for numerical analysis
+function performNumericalAnalysis(data: any[], numericColumns: string[]) {
+  const insights: string[] = [];
+  
+  numericColumns.forEach(column => {
+    const values = data.map(row => {
+      const val = row[column];
+      return typeof val === 'number' ? val : parseFloat(String(val).replace(/[^\d.-]/g, ''));
+    }).filter(val => !isNaN(val));
+    
+    if (values.length > 0) {
+      const sum = values.reduce((a, b) => a + b, 0);
+      const avg = sum / values.length;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      
+      insights.push(`${column}: Min=${min}, Max=${max}, Avg=${avg.toFixed(2)}, Total=${sum.toFixed(2)}`);
+      
+      // Detect trends
+      if (values.length > 2) {
+        const trend = detectTrend(values);
+        insights.push(`${column} Trend: ${trend}`);
+      }
+    }
+  });
+  
+  return insights;
+}
+
+// Helper function to detect trends
+function detectTrend(values: number[]) {
+  let increasing = 0;
+  let decreasing = 0;
+  
+  for (let i = 1; i < values.length; i++) {
+    if (values[i] > values[i-1]) increasing++;
+    else if (values[i] < values[i-1]) decreasing++;
+  }
+  
+  if (increasing > decreasing * 1.5) return 'Upward trend';
+  if (decreasing > increasing * 1.5) return 'Downward trend';
+  return 'Stable/Mixed trend';
+}
+
+// Helper function to detect time series patterns
+function detectTimeSeriesPatterns(headers: string[], data: any[]) {
+  const timeKeywords = ['date', 'time', 'month', 'year', 'quarter', 'week', 'day', 'period'];
+  const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december', 'jan', 'feb', 'mar', 'apr', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+  
+  const timeColumns = headers.filter(header => 
+    timeKeywords.some(keyword => header.toLowerCase().includes(keyword)) ||
+    monthNames.some(month => header.toLowerCase().includes(month))
+  );
+  
+  const valueColumns = headers.filter(header => 
+    !timeColumns.includes(header) && 
+    data.some(row => typeof row[header] === 'number' || !isNaN(parseFloat(String(row[header]))))
+  );
+  
+  const isTimeSeries = timeColumns.length > 0 && valueColumns.length > 0;
+  
+  return {
+    isTimeSeries,
+    timeColumns,
+    valueColumns,
+    description: isTimeSeries ? `Time-based data with ${timeColumns.length} time dimension(s) and ${valueColumns.length} metric(s)` : 'No time series pattern detected'
+  };
+}
+
+// Helper function to identify business metrics
+function identifyBusinessMetrics(headers: string[], data: any[]) {
+  const metrics: string[] = [];
+  
+  const businessKeywords = {
+    'Revenue/Sales': ['revenue', 'sales', 'income', 'earnings'],
+    'Costs/Expenses': ['cost', 'expense', 'spend', 'budget'],
+    'Performance': ['performance', 'kpi', 'metric', 'target', 'goal'],
+    'Growth': ['growth', 'increase', 'decrease', 'change'],
+    'Customer': ['customer', 'client', 'user', 'subscriber'],
+    'Financial': ['profit', 'margin', 'roi', 'roa', 'ebitda']
+  };
+  
+  Object.entries(businessKeywords).forEach(([category, keywords]) => {
+    const matchingHeaders = headers.filter(header =>
+      keywords.some(keyword => header.toLowerCase().includes(keyword))
+    );
+    
+    if (matchingHeaders.length > 0) {
+      metrics.push(`${category} Metrics: [${matchingHeaders.join(', ')}]`);
+    }
+  });
+  
+  return metrics;
+}
+
+// Helper function to analyze cross-sheet relationships
+function analyzeCrossSheetRelationships(sheets: any) {
+  const insights: string[] = [];
+  const sheetNames = Object.keys(sheets);
+  
+  if (sheetNames.length > 1) {
+    // Look for common headers across sheets
+    const allHeaders = sheetNames.map(name => sheets[name].headers).flat();
+    const headerCounts: { [key: string]: number } = {};
+    
+    allHeaders.forEach(header => {
+      headerCounts[header] = (headerCounts[header] || 0) + 1;
+    });
+    
+    const commonHeaders = Object.entries(headerCounts)
+      .filter(([_, count]) => count > 1)
+      .map(([header, count]) => `${header} (${count} sheets)`);
+    
+    if (commonHeaders.length > 0) {
+      insights.push(`Common headers across sheets: ${commonHeaders.join(', ')}`);
+    }
+    
+    // Analyze sheet purposes
+    sheetNames.forEach(sheetName => {
+      const sheet = sheets[sheetName];
+      let purpose = 'General data';
+      
+      if (sheet.headers.some((h: string) => h.toLowerCase().includes('summary'))) {
+        purpose = 'Summary/Dashboard sheet';
+      } else if (sheet.headers.some((h: string) => h.toLowerCase().includes('detail'))) {
+        purpose = 'Detailed data sheet';
+      } else if (sheet.totalRows > 50) {
+        purpose = 'Large dataset (transaction-level data)';
+      } else if (sheet.totalRows < 10) {
+        purpose = 'Summary/KPI sheet';
+      }
+      
+      insights.push(`Sheet "${sheetName}": ${purpose}`);
+    });
+  }
+  
+  return insights;
+}
+
+// Helper function to generate presentation recommendations
+function generatePresentationRecommendations(sheets: any) {
+  const recommendations: string[] = [];
+  
+  Object.entries(sheets).forEach(([sheetName, sheet]: [string, any]) => {
+    // Recommend slide types based on data structure
+    if (sheet.numericColumns.length > 0 && sheet.totalRows > 1) {
+      recommendations.push(`Create KPI dashboard slide from "${sheetName}" with ${sheet.numericColumns.length} key metrics`);
+    }
+    
+    if (sheet.headers.some((h: string) => ['january', 'february', 'march'].some(month => h.toLowerCase().includes(month)))) {
+      recommendations.push(`Create monthly trend analysis slide from "${sheetName}" time series data`);
+    }
+    
+    if (sheet.headers.some((h: string) => h.toLowerCase().includes('revenue') || h.toLowerCase().includes('sales'))) {
+      recommendations.push(`Create financial performance slide highlighting revenue/sales metrics from "${sheetName}"`);
+    }
+    
+    if (sheet.totalRows > 10) {
+      recommendations.push(`Create detailed analysis slide with top insights from "${sheetName}" dataset`);
+    }
+  });
+  
+  // Overall presentation structure recommendations
+  recommendations.push('Suggested presentation flow: Executive Summary → Key Metrics → Trend Analysis → Detailed Insights → Recommendations');
+  recommendations.push('Recommended chart types: Line charts for trends, Bar charts for comparisons, KPI cards for key metrics');
+  
+  return recommendations;
+}
 
 // Helper function to generate ASCII line chart
 function generateASCIILineChart(labels: string[], data: number[], title: string): string {
@@ -59,260 +359,6 @@ function generateASCIIBarChart(labels: string[], actual: number[], goal: number[
   return chart;
 }
 
-// Helper function to generate comprehensive analysis report
-function generateComprehensiveReport(excelData: ParsedExcelData, analysis: any): string {
-  // Safe access to summary data
-  const summary = excelData?.summary || {
-    totalSheets: 0,
-    sheetNames: [],
-    totalCells: 0,
-    totalFormulas: 0,
-    fileMetadata: {
-      author: 'Unknown',
-      created: 'Unknown',
-      modified: 'Unknown',
-      title: 'Untitled'
-    }
-  };
-
-  const analysisData = analysis || {
-    dataCategory: 'unknown',
-    confidence: 0,
-    structure: {
-      dataQuality: 'unknown',
-      completeness: 0
-    }
-  };
-
-  let report = `
-🔍 COMPREHENSIVE EXCEL ANALYSIS REPORT
-=====================================
-
-📊 FILE OVERVIEW:
-• Total Sheets: ${summary.totalSheets}
-• Sheet Names: ${summary.sheetNames.join(', ')}
-• Total Cells: ${summary.totalCells}
-• Formulas Found: ${summary.totalFormulas}
-• Data Category: ${analysisData.dataCategory.toUpperCase()} (${Math.round(analysisData.confidence * 100)}% confidence)
-• Data Quality: ${analysisData.structure.dataQuality.toUpperCase()}
-• Completeness: ${Math.round(analysisData.structure.completeness * 100)}%
-
-📈 FILE METADATA:
-• Author: ${summary.fileMetadata.author || 'Unknown'}
-• Created: ${summary.fileMetadata.created || 'Unknown'}
-• Modified: ${summary.fileMetadata.modified || 'Unknown'}
-• Title: ${summary.fileMetadata.title || 'Untitled'}
-
-🔍 DETAILED SHEET ANALYSIS:
-`;
-
-  // Safe access to sheets data
-  const sheets = excelData?.sheets || {};
-  Object.entries(sheets).forEach(([sheetName, sheet]) => {
-    const safeSheet = sheet || {
-      rowCount: 0,
-      columnCount: 0,
-      range: 'A1:A1',
-      formulas: {},
-      mergedCells: [],
-      comments: {},
-      raw: [],
-      objects: []
-    };
-
-    report += `
-📋 SHEET: "${sheetName}"
-• Dimensions: ${safeSheet.rowCount} rows × ${safeSheet.columnCount} columns
-• Range: ${safeSheet.range}
-• Formulas: ${Object.keys(safeSheet.formulas || {}).length}
-• Merged Cells: ${safeSheet.mergedCells?.length || 0}
-• Comments: ${Object.keys(safeSheet.comments || {}).length}
-
-Headers: ${safeSheet.raw[0]?.join(', ') || 'No headers detected'}
-
-Sample Data (first 3 rows):`;
-    
-    const objects = safeSheet.objects || [];
-    objects.slice(0, 3).forEach((row: any, index: number) => {
-      if (row && typeof row === 'object') {
-        report += `\nRow ${index + 1}: ${JSON.stringify(row)}`;
-      }
-    });
-
-    if (Object.keys(safeSheet.formulas || {}).length > 0) {
-      report += `\n\nFormulas Found:`;
-      Object.entries(safeSheet.formulas || {}).slice(0, 5).forEach(([cell, formula]) => {
-        report += `\n• ${cell}: ${formula}`;
-      });
-    }
-
-    report += '\n';
-  });
-
-  report += `
-💡 KEY INSIGHTS:
-`;
-
-  analysis.insights.keyMetrics.forEach((metric: any, index: number) => {
-    report += `\n${index + 1}. ${metric.name}: ${metric.value} (${metric.type})`;
-  });
-
-  if (analysis.insights.patterns.length > 0) {
-    report += `\n\n🔍 PATTERNS DETECTED:`;
-    analysis.insights.patterns.forEach((pattern: any, index: number) => {
-      report += `\n${index + 1}. ${pattern.description} (${Math.round(pattern.confidence * 100)}% confidence)`;
-    });
-  }
-
-  if (analysis.insights.recommendations.length > 0) {
-    report += `\n\n📊 VISUALIZATION RECOMMENDATIONS:`;
-    analysis.insights.recommendations.forEach((rec: any, index: number) => {
-      report += `\n${index + 1}. [${rec.priority.toUpperCase()}] ${rec.description}`;
-      if (rec.suggestedCharts) {
-        report += `\n   Suggested Charts: ${rec.suggestedCharts.join(', ')}`;
-      }
-    });
-  }
-
-  report += `\n\n🏗️ STRUCTURE ANALYSIS:
-• Time Series Data: ${analysis.structure.hasTimeSeries ? 'YES' : 'NO'}
-• Categorical Data: ${analysis.structure.hasCategories ? 'YES' : 'NO'}
-• Hierarchical Data: ${analysis.structure.hasHierarchy ? 'YES' : 'NO'}
-• Calculations Present: ${analysis.structure.hasCalculations ? 'YES' : 'NO'}
-`;
-
-  return report;
-}
-
-// Helper function to create contextual AI prompt
-function createContextualPrompt(excelData: ParsedExcelData, analysis: any, originalPrompt: string): string {
-  // Safe access to analysis data
-  const safeAnalysis = analysis || {
-    dataCategory: 'unknown',
-    confidence: 0,
-    structure: {
-      dataQuality: 'unknown',
-      hasTimeSeries: false,
-      hasCategories: false,
-      hasCalculations: false
-    },
-    insights: {
-      keyMetrics: [],
-      patterns: []
-    }
-  };
-
-  const keyMetrics = Array.isArray(safeAnalysis.insights?.keyMetrics) 
-    ? safeAnalysis.insights.keyMetrics.map((m: any) => `• ${m?.name || 'Unknown'}: ${m?.value || 'N/A'}`).join('\n')
-    : '• No key metrics detected';
-
-  const patterns = Array.isArray(safeAnalysis.insights?.patterns)
-    ? safeAnalysis.insights.patterns.map((p: any) => `• ${p?.description || 'Unknown pattern'}`).join('\n')
-    : '• No patterns detected';
-
-  return `You are analyzing a ${safeAnalysis.dataCategory.toUpperCase()} Excel file with ${Math.round(safeAnalysis.confidence * 100)}% confidence.
-
-CONTEXT:
-• Data Category: ${safeAnalysis.dataCategory}
-• Quality: ${safeAnalysis.structure.dataQuality}
-• Has Time Series: ${safeAnalysis.structure.hasTimeSeries}
-• Has Categories: ${safeAnalysis.structure.hasCategories}
-• Has Formulas: ${safeAnalysis.structure.hasCalculations}
-
-KEY METRICS DETECTED:
-${keyMetrics}
-
-PATTERNS FOUND:
-${patterns}
-
-ACTUAL EXCEL DATA:
-${JSON.stringify(excelData || {}, null, 2)}
-
-Based on this comprehensive analysis, please provide:
-1. BUSINESS INSIGHTS: What story does this data tell?
-2. KEY FINDINGS: Most important numbers and trends
-3. ANOMALIES: Any unusual patterns or outliers
-4. ACTIONABLE RECOMMENDATIONS: What should be done based on this data?
-5. PRESENTATION STRATEGY: How should this data be presented to executives?
-
-Original request: ${originalPrompt}
-
-Focus on being specific and actionable. Use the actual numbers from the data.`;
-}
-
-// Helper function to generate enhanced chart data and recommendations
-function generateEnhancedChartData(excelData: ParsedExcelData, analysis: any) {
-  const chartConfigs: any[] = [];
-  let recommendations = '';
-
-  // Generate chart configurations based on analysis
-  analysis.insights.recommendations.forEach((rec: any, index: number) => {
-    if (rec.type === 'visualization' && rec.suggestedCharts) {
-      recommendations += `\n${index + 1}. [${rec.priority.toUpperCase()}] ${rec.description}`;
-      recommendations += `\n   Recommended Charts: ${rec.suggestedCharts.join(', ')}`;
-      
-      // Generate actual chart configurations
-      rec.suggestedCharts.forEach((chartType: string) => {
-        const chartConfig = generateChartConfig(excelData, chartType, analysis);
-        if (chartConfig) {
-          chartConfigs.push(chartConfig);
-        }
-      });
-    }
-  });
-
-  if (recommendations === '') {
-    recommendations = `
-Based on the data analysis, here are the recommended visualizations:
-• Line Charts: For time-series data and trends
-• Bar Charts: For categorical comparisons
-• Pie Charts: For proportional data
-• KPI Cards: For key metrics display`;
-  }
-
-  return {
-    recommendations,
-    chartConfigs
-  };
-}
-
-// Helper function to generate specific chart configurations
-function generateChartConfig(excelData: ParsedExcelData, chartType: string, analysis: any) {
-  // Get the first sheet with data
-  const firstSheet = Object.values(excelData.sheets)[0];
-  if (!firstSheet || !firstSheet.objects || firstSheet.objects.length === 0) {
-    return null;
-  }
-
-  const headers = firstSheet.raw[0] || [];
-  const data = firstSheet.objects.slice(0, 10); // First 10 rows for chart
-
-  // Find numeric columns
-  const numericColumns = headers.filter(header => 
-    data.some(row => typeof row[header] === 'number')
-  );
-
-  if (numericColumns.length === 0) return null;
-
-  const labels = data.map((row, index) => `Row ${index + 1}`);
-  const series = numericColumns.slice(0, 3).map((column, index) => ({
-    id: column,
-    data: data.map(row => row[column] || 0),
-    color: ['#4A3AFF', '#C893FD', '#8B5CF6'][index]
-  }));
-
-  return {
-    type: chartType,
-    labels,
-    series,
-    showLegend: true,
-    showGrid: true,
-    animate: true,
-    title: `${chartType.charAt(0).toUpperCase() + chartType.slice(1)} Chart - ${analysis.dataCategory} Data`,
-    className: 'w-full h-80 bg-white p-4'
-  };
-}
-
 export async function POST(request: NextRequest) {
   try {
     const { fileData, prompt } = await request.json();
@@ -321,72 +367,185 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No file data provided' }, { status: 400 });
     }
 
-    console.log('🔍 ENHANCED EXCEL ANALYSIS - Starting comprehensive analysis...');
+    console.log('🔍 TEST EXCEL ANALYSIS - Raw file data received:');
     console.log('File data keys:', Object.keys(fileData));
+    console.log('File data structure:', JSON.stringify(fileData, null, 2));
 
-    // PHASE 1: COMPREHENSIVE DATA EXTRACTION
-    console.log('📊 Phase 1: Extracting enhanced Excel data...');
-    const excelData: ParsedExcelData = fileData;
+    // COMPREHENSIVE EXCEL ANALYSIS - Extract ALL possible information
+    const comprehensiveAnalysis = await performComprehensiveExcelAnalysis(fileData);
     
-    // PHASE 2: INTELLIGENT ANALYSIS
-    console.log('🧠 Phase 2: Running intelligent Excel analysis...');
-    const smartAnalysis = ExcelAnalyzer.analyzeExcelData(excelData);
-    
-    console.log(`📈 Analysis Results: ${smartAnalysis.dataCategory} (${Math.round(smartAnalysis.confidence * 100)}% confidence)`);
-    console.log(`📋 Key Metrics Found: ${smartAnalysis.insights.keyMetrics.length}`);
-    console.log(`🔍 Patterns Detected: ${smartAnalysis.insights.patterns.length}`);
-    console.log(`💡 Recommendations: ${smartAnalysis.insights.recommendations.length}`);
+    // Create an enhanced prompt with deep analysis
+    const analysisPrompt = `${prompt}
 
-    // PHASE 3: GENERATE COMPREHENSIVE ANALYSIS REPORT
-    const analysisReport = generateComprehensiveReport(excelData, smartAnalysis);
-    
-    // PHASE 4: ENHANCED AI ANALYSIS WITH CONTEXT
-    console.log('🤖 Phase 4: Generating contextual AI insights...');
-    const contextualPrompt = createContextualPrompt(excelData, smartAnalysis, prompt);
-    
+🔍 COMPREHENSIVE EXCEL FILE ANALYSIS:
+
+${comprehensiveAnalysis.detailedAnalysis}
+
+EXCEL FILE RAW DATA:
+${JSON.stringify(fileData, null, 2)}
+
+Please provide an EXTENSIVE and PROFESSIONAL analysis of this Excel file. Your analysis should be suitable for creating a comprehensive business presentation. Include:
+
+📊 STRUCTURAL ANALYSIS:
+1. Complete sheet inventory and purpose of each sheet
+2. All column headers and their data types
+3. Total data volume (rows, columns, cells with data)
+4. Data quality assessment (missing values, inconsistencies)
+
+📈 DATA CONTENT ANALYSIS:
+5. ALL numerical data with specific values (don't summarize - list everything)
+6. Time series data identification (dates, periods, trends)
+7. Financial metrics and KPIs present
+8. Categorical data and dimensions for grouping
+
+🎯 BUSINESS INSIGHTS:
+9. Key performance indicators and metrics
+10. Trends, patterns, and anomalies in the data
+11. Comparative analysis opportunities
+12. Growth rates, percentages, and ratios
+
+📋 PRESENTATION RECOMMENDATIONS:
+13. Specific slide topics that could be created from this data
+14. Chart types most suitable for each data set
+15. Key messages and insights for executive summary
+16. Data storytelling opportunities
+
+🚨 CRITICAL REQUIREMENTS:
+- Analyze EVERY sheet, not just the first one
+- Include ALL data points, not just samples
+- Identify the most important metrics for business decision-making
+- Suggest specific chart configurations with exact data series
+- Recommend presentation flow and narrative structure
+
+Be extremely thorough - this analysis will be used to create a professional business presentation.`;
+
+    console.log('🚀 Sending comprehensive prompt to AI (length:', analysisPrompt.length, 'chars)');
+
     const response = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022',
-      max_tokens: 2000, // Increased for comprehensive analysis
+      model: 'claude-3-5-sonnet-20241022', // Using more powerful model
+      max_tokens: 4000, // Increased token limit for comprehensive analysis
       messages: [
         {
           role: 'user',
-          content: contextualPrompt
+          content: analysisPrompt
         }
       ]
     });
 
-    const aiInsights = response.content[0].type === 'text' ? response.content[0].text : 'No AI insights generated';
+    const analysis = response.content[0].type === 'text' ? response.content[0].text : 'No text response';
 
-    console.log('✅ ENHANCED Excel Analysis completed successfully');
+    console.log('✅ AI Analysis completed');
+    console.log('Analysis result:', analysis);
 
-    // PHASE 5: GENERATE ENHANCED CHART RECOMMENDATIONS
-    const enhancedChartData = generateEnhancedChartData(excelData, smartAnalysis);
+    // Generate chart visualizations based on the data
+    let chartVisualizations = '';
+    let chartData = null;
     
-    // PHASE 6: COMPILE FINAL COMPREHENSIVE RESPONSE
-    const finalAnalysis = `${analysisReport}
+    try {
+      // Extract sample data from the Excel file for chart generation
+      const sampleData = fileData?.processedData?.structuredData?.sheets?.Sheet1?.sampleData;
+      
+      if (sampleData && Array.isArray(sampleData)) {
+        const months = [];
+        const unitsSold = [];
+        const totalRevenue = [];
+        const goalRevenue = [];
+        
+        // Extract data for charts (skip header row)
+        sampleData.slice(1).forEach(row => {
+          if (row['Monthly sales forecast']) {
+            months.push(row['Monthly sales forecast']);
+            unitsSold.push(row['__EMPTY'] || 0);
+            totalRevenue.push(row['__EMPTY_2'] || 0);
+            goalRevenue.push(row['__EMPTY_3'] || 0);
+          }
+        });
+        
+        if (months.length > 0) {
+          // Create actual chart data for ChartBlock components
+          chartData = {
+            lineChart: {
+              type: 'line' as const,
+              labels: months,
+              series: [
+                {
+                  id: 'Units Sold',
+                  data: unitsSold,
+                  color: '#4A3AFF'
+                }
+              ],
+              showLegend: true,
+              showGrid: true,
+              curved: false,
+              animate: true,
+              className: 'w-full h-80 bg-white p-4'
+            },
+            barChart: {
+              type: 'bar' as const,
+              labels: months.slice(0, 6), // First 6 months for better readability
+              series: [
+                {
+                  id: 'Actual Revenue',
+                  data: totalRevenue.slice(0, 6),
+                  color: '#4A3AFF'
+                },
+                {
+                  id: 'Goal Revenue',
+                  data: goalRevenue.slice(0, 6),
+                  color: '#C893FD'
+                }
+              ],
+              showLegend: true,
+              showGrid: true,
+              stacked: false,
+              animate: true,
+              className: 'w-full h-80 bg-white p-4'
+            }
+          };
+          
+          chartVisualizations = `
 
-🤖 AI INSIGHTS & RECOMMENDATIONS:
-${aiInsights}
+📊 CHART VISUALIZATIONS:
 
-📊 ENHANCED CHART RECOMMENDATIONS:
-${enhancedChartData.recommendations}
-`;
+1. LINE CHART - Units Sold Over Time:
+   Labels: [${months.map(m => `"${m}"`).join(', ')}]
+   Data: [${unitsSold.join(', ')}]
+   
+   ${generateASCIILineChart(months, unitsSold, 'Units Sold')}
+
+2. BAR CHART - Revenue Comparison (Actual vs Goal):
+   Months: [${months.slice(0, 6).map(m => `"${m}"`).join(', ')}]
+   Actual Revenue: [${totalRevenue.slice(0, 6).join(', ')}]
+   Goal Revenue: [${goalRevenue.slice(0, 6).join(', ')}]
+   
+   ${generateASCIIBarChart(months.slice(0, 6), totalRevenue.slice(0, 6), goalRevenue.slice(0, 6))}
+
+💡 RECOMMENDED CHART TYPES FOR THIS DATA:
+• Line Chart: Best for showing trends in units sold over time
+• Column Chart: Ideal for comparing actual vs goal revenue by month  
+• Area Chart: Good for showing cumulative revenue growth
+• Combo Chart: Perfect for showing both units sold (line) and revenue (bars)`;
+        }
+      }
+    } catch (error) {
+      console.error('Error generating chart visualizations:', error);
+      chartVisualizations = `
+
+📊 CHART RECOMMENDATIONS:
+• Line Chart: Best for showing monthly trends in units sold
+• Column Chart: Ideal for comparing actual vs goal revenue by month
+• Area Chart: Good for showing cumulative revenue growth
+• Combo Chart: Perfect for combining units sold and revenue data`;
+    }
 
     return NextResponse.json({ 
       success: true,
-      analysis: finalAnalysis,
-      smartAnalysis: smartAnalysis,
-      chartData: enhancedChartData.chartConfigs,
-      metadata: {
-        dataCategory: smartAnalysis.dataCategory,
-        confidence: smartAnalysis.confidence,
-        keyMetrics: smartAnalysis.insights.keyMetrics,
-        recommendations: smartAnalysis.insights.recommendations,
-        dataQuality: smartAnalysis.structure.dataQuality,
-        completeness: smartAnalysis.structure.completeness
-      },
-      fileDataReceived: excelData,
-      promptLength: contextualPrompt.length
+      analysis: analysis + chartVisualizations,
+      comprehensiveAnalysis: comprehensiveAnalysis.detailedAnalysis,
+      chartData: chartData,
+      fileDataReceived: fileData,
+      promptLength: analysisPrompt.length,
+      analysisTimestamp: comprehensiveAnalysis.timestamp
     });
 
   } catch (error) {
