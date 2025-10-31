@@ -268,7 +268,53 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
          }
 
          // If we reach here, either no image was provided or upload failed
-         console.log('⚠️ No chart image available - adding error message');
+         // Add title and basic content as fallback
+         console.log('⚠️ No chart image available - adding title and basic content');
+         
+         // Add title
+         const titleId = `title_${Date.now()}`;
+         requests.push({
+           createShape: {
+             objectId: titleId,
+             shapeType: 'TEXT_BOX',
+             elementProperties: {
+               pageObjectId: slideId,
+               size: {
+                 height: { magnitude: 60, unit: 'PT' },
+                 width: { magnitude: 600, unit: 'PT' }
+               },
+               transform: {
+                 scaleX: 1,
+                 scaleY: 1,
+                 translateX: 50,
+                 translateY: 50,
+                 unit: 'PT'
+               }
+             }
+           }
+         });
+
+         requests.push({
+           insertText: {
+             objectId: titleId,
+             text: layoutData.title || 'Revenue Performance by Quarter'
+           }
+         });
+
+         requests.push({
+           updateTextStyle: {
+             objectId: titleId,
+             fields: 'fontSize,bold,fontFamily',
+             textRange: { type: 'ALL' },
+             style: {
+               fontSize: { magnitude: 24, unit: 'PT' },
+               bold: true,
+               fontFamily: 'Helvetica'
+             }
+           }
+         });
+
+         // Add error message
          const errorId = `error_${Date.now()}`;
          requests.push({
            createShape: {
@@ -277,14 +323,14 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
              elementProperties: {
                pageObjectId: slideId,
                size: {
-                 height: { magnitude: 100, unit: 'PT' },
+                 height: { magnitude: 80, unit: 'PT' },
                  width: { magnitude: 600, unit: 'PT' }
                },
                transform: {
                  scaleX: 1,
                  scaleY: 1,
-                 translateX: 100,
-                 translateY: 200,
+                 translateX: 50,
+                 translateY: 150,
                  unit: 'PT'
                }
              }
@@ -294,22 +340,69 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
          requests.push({
            insertText: {
              objectId: errorId,
-             text: 'Chart image not available. Please try exporting again.'
+             text: 'Chart image capture failed. Please check browser console for details and try again.'
            }
          });
 
          requests.push({
            updateTextStyle: {
              objectId: errorId,
-             fields: 'fontSize,bold,fontFamily',
+             fields: 'fontSize,fontFamily',
              textRange: { type: 'ALL' },
              style: {
-               fontSize: { magnitude: 18, unit: 'PT' },
-               bold: true,
+               fontSize: { magnitude: 14, unit: 'PT' },
                fontFamily: 'Helvetica'
              }
            }
          });
+
+         // Add insights if available
+         if (layoutData.insights && layoutData.insights.length > 0) {
+           const insightsId = `insights_${Date.now()}`;
+           requests.push({
+             createShape: {
+               objectId: insightsId,
+               shapeType: 'TEXT_BOX',
+               elementProperties: {
+                 pageObjectId: slideId,
+                 size: {
+                   height: { magnitude: 200, unit: 'PT' },
+                   width: { magnitude: 300, unit: 'PT' }
+                 },
+                 transform: {
+                   scaleX: 1,
+                   scaleY: 1,
+                   translateX: 400,
+                   translateY: 150,
+                   unit: 'PT'
+                 }
+               }
+             }
+           });
+
+           const insightsText = layoutData.insights.map((insight: string, index: number) => 
+             `• ${insight}`
+           ).join('\n\n');
+
+           requests.push({
+             insertText: {
+               objectId: insightsId,
+               text: insightsText
+             }
+           });
+
+           requests.push({
+             updateTextStyle: {
+               objectId: insightsId,
+               fields: 'fontSize,fontFamily',
+               textRange: { type: 'ALL' },
+               style: {
+                 fontSize: { magnitude: 11, unit: 'PT' },
+                 fontFamily: 'Helvetica'
+               }
+             }
+           });
+         }
 
          return requests;
 }
