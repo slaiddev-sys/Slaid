@@ -347,34 +347,61 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
       
       // Capture the layout as an image
       let chartImageBase64 = null;
+      console.log('=== IMAGE CAPTURE DEBUG ===');
+      console.log('Layout name:', layoutName);
       console.log('Layout ref current:', layoutRef.current);
+      console.log('Layout ref type:', typeof layoutRef.current);
       
       if (layoutRef.current) {
         try {
+          console.log('Element dimensions:', {
+            width: layoutRef.current.offsetWidth,
+            height: layoutRef.current.offsetHeight,
+            scrollWidth: layoutRef.current.scrollWidth,
+            scrollHeight: layoutRef.current.scrollHeight
+          });
+          
           console.log('Starting html2canvas capture...');
           
-          // Wait a moment for the component to fully render
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Wait longer for charts to fully render
+          await new Promise(resolve => setTimeout(resolve, 2000));
           
           const canvas = await html2canvas(layoutRef.current, {
             backgroundColor: '#ffffff',
-            scale: 2, // Higher quality
+            scale: 1, // Reduce scale to avoid memory issues
             useCORS: true,
             allowTaint: true,
-            logging: true, // Enable html2canvas logging
+            logging: false, // Disable verbose logging
             width: layoutRef.current.offsetWidth,
-            height: layoutRef.current.offsetHeight
+            height: layoutRef.current.offsetHeight,
+            foreignObjectRendering: true,
+            removeContainer: true
+          });
+          
+          console.log('Canvas created:', {
+            width: canvas.width,
+            height: canvas.height
           });
           
           chartImageBase64 = canvas.toDataURL('image/png');
-          console.log('Image captured successfully, size:', chartImageBase64.length);
-          console.log('Image preview:', chartImageBase64.substring(0, 100) + '...');
+          console.log('✅ Image captured successfully!');
+          console.log('Image size (bytes):', chartImageBase64.length);
+          console.log('Image data URL prefix:', chartImageBase64.substring(0, 50));
+          
+          // Test if image is valid
+          if (chartImageBase64.length < 1000) {
+            console.error('❌ Image too small, likely failed');
+            chartImageBase64 = null;
+          }
         } catch (error) {
-          console.error('Failed to capture chart image:', error);
+          console.error('❌ Failed to capture chart image:', error);
+          chartImageBase64 = null;
         }
       } else {
-        console.error('Layout ref is null - cannot capture image');
+        console.error('❌ Layout ref is null - cannot capture image');
       }
+      
+      console.log('Final chartImage status:', chartImageBase64 ? 'SUCCESS' : 'FAILED');
       
       // Prepare layout data based on the selected layout
       const layoutData = {

@@ -217,23 +217,24 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
     }
   }
 
-  // Fallback: Create title if no image or image upload failed
-  const titleId = `title_${Date.now()}`;
+  // Fallback: Create simple message if no image or image upload failed
+  console.log('Using fallback - no chart image available');
+  const messageId = `message_${Date.now()}`;
   requests.push({
     createShape: {
-      objectId: titleId,
+      objectId: messageId,
       shapeType: 'TEXT_BOX',
       elementProperties: {
         pageObjectId: slideId,
         size: {
-          height: { magnitude: 50, unit: 'PT' },
+          height: { magnitude: 200, unit: 'PT' },
           width: { magnitude: 600, unit: 'PT' }
         },
         transform: {
           scaleX: 1,
           scaleY: 1,
-          translateX: 50,
-          translateY: 50,
+          translateX: 100,
+          translateY: 200,
           unit: 'PT'
         }
       }
@@ -242,250 +243,27 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
 
   requests.push({
     insertText: {
-      objectId: titleId,
-      text: 'Revenue Performance by Quarter (Fallback)'
+      objectId: messageId,
+      text: `Chart Export Failed
+      
+The chart image could not be captured. Please try again or check the browser console for errors.
+
+Layout: ${layoutData.title || 'Unknown Layout'}`
     }
   });
 
   requests.push({
     updateTextStyle: {
-      objectId: titleId,
-      fields: 'fontSize,bold,fontFamily',
-      textRange: { type: 'ALL' },
-      style: {
-        fontSize: { magnitude: 24, unit: 'PT' },
-        bold: true,
-        fontFamily: 'Helvetica'
-      }
-    }
-  });
-
-  // Create chart area (left side) - simulate bars with rectangles
-  const chartData = [
-    { label: 'Q1 2023', value: 52.2 },
-    { label: 'Q2 2023', value: 58.6 },
-    { label: 'Q3 2023', value: 43.8 },
-    { label: 'Q4 2023', value: 47.8 }
-  ];
-
-  const maxValue = Math.max(...chartData.map(d => d.value));
-  const chartStartX = 50;
-  const chartStartY = 120;
-  const barWidth = 60;
-  const barSpacing = 80;
-  const maxBarHeight = 200;
-
-  chartData.forEach((data, index) => {
-    const barHeight = (data.value / maxValue) * maxBarHeight;
-    const barX = chartStartX + (index * barSpacing);
-    const barY = chartStartY + (maxBarHeight - barHeight);
-
-    // Create bar rectangle
-    const barId = `bar_${index}_${Date.now()}`;
-    requests.push({
-      createShape: {
-        objectId: barId,
-        shapeType: 'RECTANGLE',
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: barHeight, unit: 'PT' },
-            width: { magnitude: barWidth, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: barX,
-            translateY: barY,
-            unit: 'PT'
-          }
-        }
-      }
-    });
-
-    // Style the bar
-    requests.push({
-      updateShapeProperties: {
-        objectId: barId,
-        fields: 'shapeBackgroundFill',
-        shapeProperties: {
-          shapeBackgroundFill: {
-            solidFill: {
-              color: {
-                rgbColor: {
-                  red: 0.4,
-                  green: 0.3,
-                  blue: 0.9
-                }
-              }
-            }
-          }
-        }
-      }
-    });
-
-    // Add label below bar
-    const labelId = `label_${index}_${Date.now()}`;
-    requests.push({
-      createShape: {
-        objectId: labelId,
-        shapeType: 'TEXT_BOX',
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: 30, unit: 'PT' },
-            width: { magnitude: barWidth + 20, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: barX - 10,
-            translateY: chartStartY + maxBarHeight + 10,
-            unit: 'PT'
-          }
-        }
-      }
-    });
-
-    requests.push({
-      insertText: {
-        objectId: labelId,
-        text: data.label
-      }
-    });
-
-    requests.push({
-      updateTextStyle: {
-        objectId: labelId,
-        fields: 'fontSize,fontFamily',
-        textRange: { type: 'ALL' },
-        style: {
-          fontSize: { magnitude: 10, unit: 'PT' },
-          fontFamily: 'Helvetica'
-        }
-      }
-    });
-
-    // Add value on top of bar
-    const valueId = `value_${index}_${Date.now()}`;
-    requests.push({
-      createShape: {
-        objectId: valueId,
-        shapeType: 'TEXT_BOX',
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: 20, unit: 'PT' },
-            width: { magnitude: barWidth, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: barX,
-            translateY: barY - 25,
-            unit: 'PT'
-          }
-        }
-      }
-    });
-
-    requests.push({
-      insertText: {
-        objectId: valueId,
-        text: data.value.toString()
-      }
-    });
-
-    requests.push({
-      updateTextStyle: {
-        objectId: valueId,
-        fields: 'fontSize,fontFamily,bold',
-        textRange: { type: 'ALL' },
-        style: {
-          fontSize: { magnitude: 12, unit: 'PT' },
-          fontFamily: 'Helvetica',
-          bold: true
-        }
-      }
-    });
-  });
-
-  // Create insights panel (right side)
-  const insightsId = `insights_${Date.now()}`;
-  requests.push({
-    createShape: {
-      objectId: insightsId,
-      shapeType: 'TEXT_BOX',
-      elementProperties: {
-        pageObjectId: slideId,
-        size: {
-          height: { magnitude: 280, unit: 'PT' },
-          width: { magnitude: 280, unit: 'PT' }
-        },
-        transform: {
-          scaleX: 1,
-          scaleY: 1,
-          translateX: 420,
-          translateY: 120,
-          unit: 'PT'
-        }
-      }
-    }
-  });
-
-  // Add border to insights panel
-  requests.push({
-    updateShapeProperties: {
-      objectId: insightsId,
-      fields: 'outline',
-      shapeProperties: {
-        outline: {
-          outlineFill: {
-            solidFill: {
-              color: {
-                rgbColor: {
-                  red: 0.8,
-                  green: 0.8,
-                  blue: 0.8
-                }
-              }
-            }
-          },
-          weight: { magnitude: 1, unit: 'PT' }
-        }
-      }
-    }
-  });
-
-  const insightsText = `Overall Performance
--8.4% ↓
-
-• Q2 shows strongest performance with 58.6% conversion rate, indicating optimal market conditions and effective strategies.
-
-• Q3 performance dip to 43.8% suggests seasonal challenges or market saturation requiring strategic adjustment.
-
-• Consistent variability across quarters shows execution matters more than timing, with Q2 achieving 34% higher performance than Q3.
-
-• Recovery trend in Q4 (47.8%) indicates successful strategic adjustments and potential for continued improvement.`;
-
-  requests.push({
-    insertText: {
-      objectId: insightsId,
-      text: insightsText
-    }
-  });
-
-  requests.push({
-    updateTextStyle: {
-      objectId: insightsId,
+      objectId: messageId,
       fields: 'fontSize,fontFamily',
       textRange: { type: 'ALL' },
       style: {
-        fontSize: { magnitude: 11, unit: 'PT' },
+        fontSize: { magnitude: 16, unit: 'PT' },
         fontFamily: 'Helvetica'
       }
     }
   });
+
 
   return requests;
 }
