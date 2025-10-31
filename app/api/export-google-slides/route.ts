@@ -6,7 +6,7 @@ import { OAuth2Client } from 'google-auth-library';
 const oauth2Client = new OAuth2Client(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/export-google-slides`
+  `http://localhost:3001/api/export-google-slides` // Fixed to match current server port
 );
 
 // Scopes needed for Google Slides
