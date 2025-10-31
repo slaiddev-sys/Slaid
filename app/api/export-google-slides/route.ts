@@ -458,29 +458,7 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
     }
   });
 
-  // Add border to insights panel
-  requests.push({
-    updateShapeProperties: {
-      objectId: insightsId,
-      fields: 'outline',
-      shapeProperties: {
-        outline: {
-          outlineFill: {
-            solidFill: {
-              color: {
-                rgbColor: {
-                  red: 0.8,
-                  green: 0.8,
-                  blue: 0.8
-                }
-              }
-            }
-          },
-          weight: { magnitude: 1, unit: 'PT' }
-        }
-      }
-    }
-  });
+  // No border for insights panel - clean look
 
   const insightsText = `Overall Performance
 -8.4% ↓
