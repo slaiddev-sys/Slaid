@@ -53,11 +53,14 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  console.log('🚀 GET REQUEST RECEIVED at /api/export-google-slides');
+  console.log('🌐 Request URL:', request.url);
+  console.log('📅 Timestamp:', new Date().toISOString());
+  
   try {
     const { searchParams } = new URL(request.url);
     const code = searchParams.get('code');
     const state = searchParams.get('state');
-
     const error = searchParams.get('error');
     
     console.log('=== OAuth Callback Debug ===');
@@ -65,6 +68,25 @@ export async function GET(request: NextRequest) {
     console.log('State:', state ? 'Present' : 'Missing'); 
     console.log('Error:', error || 'None');
     console.log('Full URL:', request.url);
+    console.log('All search params:', Object.fromEntries(searchParams.entries()));
+
+    // Simple test - if no params, show test page
+    if (!code && !state && !error) {
+      console.log('⚠️ No OAuth params - showing test page');
+      return new Response(`
+        <html>
+          <body>
+            <h1>API Route Test</h1>
+            <p>✅ The /api/export-google-slides route is working!</p>
+            <p>URL: ${request.url}</p>
+            <p>Time: ${new Date().toISOString()}</p>
+          </body>
+        </html>
+      `, { 
+        status: 200,
+        headers: { 'Content-Type': 'text/html' }
+      });
+    }
 
     if (error) {
       console.error('OAuth error from Google:', error);
