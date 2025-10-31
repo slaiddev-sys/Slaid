@@ -8,7 +8,7 @@ const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
   <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title - Standard slide title positioning */}
     <div className="mb-6">
-      <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
+      <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
     </div>
     
     {/* Table - PowerPoint compatible styling */}
@@ -75,7 +75,7 @@ const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
     <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
+        <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
       </div>
       
       {/* KPI Grid - 2x2 layout compatible with slides */}
@@ -137,7 +137,7 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
     <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-4">
-        <h2 className="text-xl font-bold text-blue-600">{title}</h2>
+        <h2 className="text-2xl font-semibold text-black">{title}</h2>
       </div>
       
       <div className="flex h-5/6">
@@ -203,7 +203,7 @@ const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
     <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-4">
-        <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
+        <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
       </div>
       
       <div className="flex h-5/6 gap-6">
@@ -261,7 +261,7 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
   <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title */}
     <div className="mb-6">
-      <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
+      <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
     </div>
     
     {/* Executive summary content - bullet points */}
