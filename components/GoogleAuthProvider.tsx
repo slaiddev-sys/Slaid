@@ -77,7 +77,7 @@ export const GoogleAuthProvider: React.FC<GoogleAuthProviderProps> = ({ children
       throw new Error('Google Identity Services not loaded');
     }
 
-    return new Promise<void>((resolve, reject) => {
+    return new Promise<string>((resolve, reject) => {
       try {
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
@@ -92,9 +92,12 @@ export const GoogleAuthProvider: React.FC<GoogleAuthProviderProps> = ({ children
                 .then(res => res.json())
                 .then(userInfo => {
                   setUser(userInfo);
-                  resolve();
+                  resolve(response.access_token);
                 })
-                .catch(reject);
+                .catch(() => {
+                  // Even if user info fails, we have the token
+                  resolve(response.access_token);
+                });
             } else {
               reject(new Error('Failed to get access token'));
             }

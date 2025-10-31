@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import ChartBlock from '../../components/blocks/ChartBlock';
-import { GoogleAuthProvider, useGoogleAuth } from '../../components/GoogleAuthProvider';
+import { authenticateAndExport } from '../../components/SimpleGoogleAuth';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
 const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
@@ -330,53 +330,12 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
 // Export buttons component
 const ExportButtons = ({ layoutName }: { layoutName: string }) => {
   const [isExporting, setIsExporting] = useState<'google' | 'powerpoint' | null>(null);
-  const { isAuthenticated, accessToken, signIn } = useGoogleAuth();
 
   const handleGoogleSlidesExport = async () => {
     setIsExporting('google');
     try {
-      // Check if user is authenticated with Google
-      if (!isAuthenticated || !accessToken) {
-        try {
-          await signIn();
-        } catch (authError) {
-          alert('❌ Google authentication failed. Please try again.');
-          setIsExporting(null);
-          return;
-        }
-      }
-
-      const response = await fetch('/api/export-google-slides', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          layoutName,
-          layoutData: {}, // TODO: Pass actual layout data
-          accessToken: accessToken
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        // Open Google Slides in new tab
-        window.open(result.presentationUrl, '_blank');
-        console.log(`✅ Created Google Slides presentation: "${layoutName}"`);
-      } else if (result.requiresAuth) {
-        // Re-authenticate if token expired
-        try {
-          await signIn();
-          // Retry the export
-          await handleGoogleSlidesExport();
-          return;
-        } catch (authError) {
-          alert('❌ Google authentication failed. Please try again.');
-        }
-      } else {
-        alert(`❌ Export failed: ${result.message}`);
-      }
+      // One-click auth and export (like Skywork.ai)
+      await authenticateAndExport(layoutName, {});
     } catch (error) {
       console.error('Google Slides export error:', error);
       alert(`❌ Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -488,7 +447,7 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
   );
 };
 
-function ExcelLayoutsPageContent() {
+export default function ExcelLayoutsPage() {
   const [selectedLayout, setSelectedLayout] = useState('table');
 
   const layouts = [
@@ -567,13 +526,5 @@ function ExcelLayoutsPageContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function ExcelLayoutsPage() {
-  return (
-    <GoogleAuthProvider>
-      <ExcelLayoutsPageContent />
-    </GoogleAuthProvider>
   );
 }
