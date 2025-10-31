@@ -368,7 +368,7 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
           
           const canvas = await html2canvas(layoutRef.current, {
             backgroundColor: '#ffffff',
-            scale: 1, // Reduce scale to avoid memory issues
+            scale: 0.5, // Reduce scale to make smaller image
             useCORS: true,
             allowTaint: true,
             logging: false, // Disable verbose logging
@@ -383,15 +383,25 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
             height: canvas.height
           });
           
-          chartImageBase64 = canvas.toDataURL('image/png');
+          // Use JPEG with compression to reduce size
+          chartImageBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
           console.log('✅ Image captured successfully!');
           console.log('Image size (bytes):', chartImageBase64.length);
           console.log('Image data URL prefix:', chartImageBase64.substring(0, 50));
           
-          // Test if image is valid
+          // Test if image is valid and not too large
           if (chartImageBase64.length < 1000) {
             console.error('❌ Image too small, likely failed');
             chartImageBase64 = null;
+          } else if (chartImageBase64.length > 50000) {
+            console.error('❌ Image too large, will cause HTTP 431 error');
+            // Try with lower quality
+            chartImageBase64 = canvas.toDataURL('image/jpeg', 0.5); // 50% quality
+            console.log('Compressed image size:', chartImageBase64.length);
+            if (chartImageBase64.length > 50000) {
+              console.error('❌ Even compressed image is too large');
+              chartImageBase64 = null;
+            }
           }
         } catch (error) {
           console.error('❌ Failed to capture chart image:', error);

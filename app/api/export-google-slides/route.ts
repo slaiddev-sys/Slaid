@@ -154,8 +154,9 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
     console.log('Chart image prefix:', layoutData.chartImage.substring(0, 50));
     
     try {
-      // Convert base64 to buffer
-      const base64Data = layoutData.chartImage.replace(/^data:image\/png;base64,/, '');
+      // Convert base64 to buffer - handle both PNG and JPEG
+      const isJpeg = layoutData.chartImage.startsWith('data:image/jpeg');
+      const base64Data = layoutData.chartImage.replace(/^data:image\/(png|jpeg);base64,/, '');
       const imageBuffer = Buffer.from(base64Data, 'base64');
       console.log('Image buffer created, size:', imageBuffer.length, 'bytes');
 
@@ -163,14 +164,15 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
       const drive = google.drive({ version: 'v3', auth: slides.auth });
       console.log('Google Drive client created');
       
-      const fileName = `slaid_chart_${Date.now()}.png`;
+      const fileExtension = isJpeg ? 'jpg' : 'png';
+      const fileName = `slaid_chart_${Date.now()}.${fileExtension}`;
       const fileMetadata = {
         name: fileName,
         parents: [] // This will put it in the root folder
       };
 
       const media = {
-        mimeType: 'image/png',
+        mimeType: isJpeg ? 'image/jpeg' : 'image/png',
         body: imageBuffer
       };
 
