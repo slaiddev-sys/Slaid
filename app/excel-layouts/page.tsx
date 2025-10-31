@@ -347,15 +347,24 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
       
       // Capture the layout as an image
       let chartImageBase64 = null;
+      console.log('🖼️ Starting image capture process...');
       console.log('Layout ref current:', layoutRef.current);
+      console.log('Layout ref dimensions:', layoutRef.current ? {
+        width: layoutRef.current.offsetWidth,
+        height: layoutRef.current.offsetHeight,
+        scrollWidth: layoutRef.current.scrollWidth,
+        scrollHeight: layoutRef.current.scrollHeight
+      } : 'null');
       
       if (layoutRef.current) {
         try {
-          console.log('Starting html2canvas capture...');
+          console.log('🎯 Starting html2canvas capture...');
           
           // Wait a moment for the component to fully render
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          console.log('⏱️ Waiting for component to render...');
+          await new Promise(resolve => setTimeout(resolve, 2000)); // Increased wait time
           
+          console.log('📸 Capturing with html2canvas...');
           const canvas = await html2canvas(layoutRef.current, {
             backgroundColor: '#ffffff',
             scale: 2, // Higher quality
@@ -363,18 +372,33 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
             allowTaint: true,
             logging: true, // Enable html2canvas logging
             width: layoutRef.current.offsetWidth,
-            height: layoutRef.current.offsetHeight
+            height: layoutRef.current.offsetHeight,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: layoutRef.current.offsetWidth,
+            windowHeight: layoutRef.current.offsetHeight
           });
           
-           chartImageBase64 = canvas.toDataURL('image/jpeg', 0.8); // High quality JPEG
-           console.log('Image captured successfully, size:', chartImageBase64.length);
-           console.log('Image preview:', chartImageBase64.substring(0, 100) + '...');
+          console.log('✅ Canvas created:', {
+            width: canvas.width,
+            height: canvas.height
+          });
+          
+          chartImageBase64 = canvas.toDataURL('image/jpeg', 0.8); // High quality JPEG
+          console.log('🎉 Image captured successfully!');
+          console.log('📊 Image size:', chartImageBase64.length);
+          console.log('🔍 Image preview:', chartImageBase64.substring(0, 100) + '...');
+          console.log('📋 Full image data length:', chartImageBase64.length);
         } catch (error) {
-          console.error('Failed to capture chart image:', error);
+          console.error('❌ Failed to capture chart image:', error);
+          console.error('Error details:', error.message);
+          console.error('Error stack:', error.stack);
         }
       } else {
-        console.error('Layout ref is null - cannot capture image');
+        console.error('❌ Layout ref is null - cannot capture image');
       }
+      
+      console.log('🚀 Final chartImageBase64 status:', chartImageBase64 ? 'SUCCESS' : 'FAILED');
       
       // Prepare layout data based on the selected layout
       const layoutData = {
