@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import ChartBlock from '../../components/blocks/ChartBlock';
+import { GoogleAuthProvider, useGoogleAuth } from '../../components/GoogleAuthProvider';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
 const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
@@ -329,10 +330,22 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
 // Export buttons component
 const ExportButtons = ({ layoutName }: { layoutName: string }) => {
   const [isExporting, setIsExporting] = useState<'google' | 'powerpoint' | null>(null);
+  const { isAuthenticated, accessToken, signIn } = useGoogleAuth();
 
   const handleGoogleSlidesExport = async () => {
     setIsExporting('google');
     try {
+      // Check if user is authenticated with Google
+      if (!isAuthenticated || !accessToken) {
+        try {
+          await signIn();
+        } catch (authError) {
+          alert('❌ Google authentication failed. Please try again.');
+          setIsExporting(null);
+          return;
+        }
+      }
+
       const response = await fetch('/api/export-google-slides', {
         method: 'POST',
         headers: {
@@ -340,7 +353,8 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
         },
         body: JSON.stringify({
           layoutName,
-          layoutData: {} // TODO: Pass actual layout data
+          layoutData: {}, // TODO: Pass actual layout data
+          accessToken: accessToken
         }),
       });
 
@@ -349,11 +363,16 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
       if (result.success) {
         // Open Google Slides in new tab
         window.open(result.presentationUrl, '_blank');
-        
-        // Show a brief notification that a new presentation was created
-        if (result.isNewPresentation) {
-          // Optional: You could add a toast notification here instead of alert
-          console.log(`✅ New Google Slides presentation opened for "${layoutName}"`);
+        console.log(`✅ Created Google Slides presentation: "${layoutName}"`);
+      } else if (result.requiresAuth) {
+        // Re-authenticate if token expired
+        try {
+          await signIn();
+          // Retry the export
+          await handleGoogleSlidesExport();
+          return;
+        } catch (authError) {
+          alert('❌ Google authentication failed. Please try again.');
         }
       } else {
         alert(`❌ Export failed: ${result.message}`);
@@ -469,7 +488,7 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
   );
 };
 
-export default function ExcelLayoutsPage() {
+function ExcelLayoutsPageContent() {
   const [selectedLayout, setSelectedLayout] = useState('table');
 
   const layouts = [
@@ -548,5 +567,13 @@ export default function ExcelLayoutsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function ExcelLayoutsPage() {
+  return (
+    <GoogleAuthProvider>
+      <ExcelLayoutsPageContent />
+    </GoogleAuthProvider>
   );
 }
