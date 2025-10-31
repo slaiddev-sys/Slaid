@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import ChartBlock from '../../components/blocks/ChartBlock';
-import { authenticateAndExport } from '../../components/SimpleGoogleAuth';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
 const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
@@ -329,66 +328,106 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
 
 // Export buttons component
 const ExportButtons = ({ layoutName }: { layoutName: string }) => {
-  const [isExporting, setIsExporting] = useState<'google' | 'powerpoint' | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
 
   const handleGoogleSlidesExport = async () => {
-    setIsExporting('google');
     try {
-      // One-click auth and export (like Skywork.ai)
-      await authenticateAndExport(layoutName, {});
-    } catch (error) {
-      console.error('Google Slides export error:', error);
-      alert(`❌ Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setIsExporting(null);
-    }
-  };
-
-  const handlePowerPointExport = async () => {
-    setIsExporting('powerpoint');
-    try {
-      const response = await fetch('/api/export-powerpoint', {
+      setIsExporting(true);
+      
+      // Prepare layout data based on the selected layout
+      const layoutData = getLayoutData(layoutName);
+      
+      const response = await fetch('/api/export-google-slides', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
+          action: 'authenticate',
           layoutName,
-          layoutData: {} // TODO: Pass actual layout data
+          layoutData
         }),
       });
 
-      const result = await response.json();
+      const data = await response.json();
       
-      if (result.success) {
-        // Create and download the PowerPoint file
-        const byteCharacters = atob(result.fileData);
-        const byteNumbers = new Array(byteCharacters.length);
-        for (let i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
-        }
-        const byteArray = new Uint8Array(byteNumbers);
-        const blob = new Blob([byteArray], { type: result.mimeType });
-        
-        // Create download link
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = result.fileName;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
-        
-        // File automatically downloads, no popup needed
+      if (data.authUrl) {
+        // Open Google OAuth in a new window
+        window.open(data.authUrl, '_blank', 'width=500,height=600');
       } else {
-        alert(`❌ Export failed: ${result.message}`);
+        throw new Error('Failed to get authentication URL');
       }
     } catch (error) {
-      console.error('PowerPoint export error:', error);
-      alert(`❌ Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error('Export error:', error);
+      alert('Failed to export to Google Slides. Please try again.');
     } finally {
-      setIsExporting(null);
+      setIsExporting(false);
+    }
+  };
+
+  const handlePowerPointExport = () => {
+    // TODO: Implement PowerPoint export functionality
+    alert(`Exporting "${layoutName}" to PowerPoint...`);
+  };
+
+  // Get layout-specific data
+  const getLayoutData = (layoutName: string) => {
+    switch (layoutName) {
+      case 'Trend Chart':
+        return {
+          title: 'Revenue Performance by Quarter',
+          chartData: {
+            labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023'],
+            values: [52.2, 58.6, 43.8, 47.8]
+          },
+          insights: [
+            'Q2 shows strongest performance with 58.6% conversion rate',
+            'Q3 performance dip to 43.8% suggests seasonal challenges',
+            'Consistent variability across quarters shows execution matters',
+            'Recovery trend in Q4 indicates successful strategic adjustments'
+          ]
+        };
+      case 'KPI Dashboard':
+        return {
+          title: 'Key Performance Indicators',
+          kpis: [
+            { title: 'Total Revenue', value: '$648K', change: '+18.2%' },
+            { title: 'Units Sold', value: '16.2K', change: '+15.3%' },
+            { title: 'Avg Order Value', value: '$40', change: '+2.5%' },
+            { title: 'Target Achievement', value: '94.2%', change: '-5.8%' }
+          ]
+        };
+      case 'Data Table':
+        return {
+          title: 'Data Overview',
+          tableData: [
+            { metric: 'Total Revenue', value: '$648,000', change: '+18.2%' },
+            { metric: 'Average Monthly', value: '$54,000', change: '+12.5%' },
+            { metric: 'Peak Month', value: '$68,000', change: 'December' },
+            { metric: 'Units Sold', value: '16,200', change: '+15.3%' },
+            { metric: 'Target Achievement', value: '94.2%', change: '-5.8%' }
+          ]
+        };
+      case 'Comparison View':
+        return {
+          title: 'Performance Comparison',
+          actual: [156, 168, 162, 162],
+          target: [165, 170, 175, 180],
+          quarters: ['Q1', 'Q2', 'Q3', 'Q4']
+        };
+      case 'Executive Summary':
+        return {
+          title: 'Executive Summary',
+          points: [
+            'Strong Performance: Achieved $648K total revenue with 94.2% target achievement rate',
+            'Growth Trend: 18.2% overall growth with Q2 showing strongest performance',
+            'Seasonal Patterns: December peak and January low indicate clear seasonality',
+            'Opportunity: $42K revenue gap to targets represents 6.5% improvement potential',
+            'Recommendation: Focus on Q3/Q4 optimization to capture seasonal upside'
+          ]
+        };
+      default:
+        return { title: layoutName };
     }
   };
 
@@ -396,52 +435,41 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
     <div className="flex gap-3 mb-4">
       <button
         onClick={handleGoogleSlidesExport}
-        disabled={isExporting !== null}
+        disabled={isExporting}
         className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
-          isExporting === 'google'
-            ? 'bg-blue-400 text-white cursor-not-allowed'
-            : isExporting
-            ? 'bg-gray-400 text-white cursor-not-allowed'
+          isExporting 
+            ? 'bg-blue-400 text-white cursor-not-allowed' 
             : 'bg-blue-600 text-white hover:bg-blue-700'
         }`}
       >
-        {isExporting === 'google' ? (
-          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-          </svg>
+        {isExporting ? (
+          <>
+            <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+            </svg>
+            Authenticating...
+          </>
         ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
-            <path d="M7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z" fill="currentColor"/>
-          </svg>
+          <>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
+              <path d="M7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z" fill="currentColor"/>
+            </svg>
+            Export to Google Slides
+          </>
         )}
-        {isExporting === 'google' ? 'Exporting...' : 'Export to Google Slides'}
       </button>
       
       <button
         onClick={handlePowerPointExport}
-        disabled={isExporting !== null}
-        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
-          isExporting === 'powerpoint'
-            ? 'bg-orange-400 text-white cursor-not-allowed'
-            : isExporting
-            ? 'bg-gray-400 text-white cursor-not-allowed'
-            : 'bg-orange-600 text-white hover:bg-orange-700'
-        }`}
+        className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-sm"
       >
-        {isExporting === 'powerpoint' ? (
-          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
-          </svg>
-        ) : (
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M21 8V16C21 17.1 20.1 18 19 18H5C3.9 18 3 17.1 3 16V8C3 6.9 3.9 6 5 6H19C20.1 6 21 6.9 21 8ZM19 8H5V16H19V8Z" fill="currentColor"/>
-            <path d="M7 10H17V12H7V10ZM7 13H14V15H7V13Z" fill="currentColor"/>
-          </svg>
-        )}
-        {isExporting === 'powerpoint' ? 'Exporting...' : 'Export to PowerPoint'}
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 8V16C21 17.1 20.1 18 19 18H5C3.9 18 3 17.1 3 16V8C3 6.9 3.9 6 5 6H19C20.1 6 21 6.9 21 8ZM19 8H5V16H19V8Z" fill="currentColor"/>
+          <path d="M7 10H17V12H7V10ZM7 13H14V15H7V13Z" fill="currentColor"/>
+        </svg>
+        Export to PowerPoint
       </button>
     </div>
   );
