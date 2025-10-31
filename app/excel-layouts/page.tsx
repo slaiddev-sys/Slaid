@@ -194,28 +194,28 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => (
       <div className="w-1/3 pl-4 border-l border-gray-200">
         <div className="space-y-4 text-sm">
           <div className="flex items-start">
-            <span className="text-red-500 text-lg mr-2 flex-shrink-0 mt-0.5">→</span>
+            <span className="text-black text-sm mr-2 flex-shrink-0 mt-1">▶</span>
             <p className="text-gray-800">
               <strong>Q2 shows strongest performance</strong> with median conversion of 58.6%, indicating optimal market conditions and effective strategies.
             </p>
           </div>
           
           <div className="flex items-start">
-            <span className="text-red-500 text-lg mr-2 flex-shrink-0 mt-0.5">→</span>
+            <span className="text-black text-sm mr-2 flex-shrink-0 mt-1">▶</span>
             <p className="text-gray-800">
               <strong>Q3 performance dip</strong> to 43.8% suggests seasonal challenges or market saturation requiring strategic adjustment.
             </p>
           </div>
           
           <div className="flex items-start">
-            <span className="text-red-500 text-lg mr-2 flex-shrink-0 mt-0.5">→</span>
+            <span className="text-black text-sm mr-2 flex-shrink-0 mt-1">▶</span>
             <p className="text-gray-800">
               <strong>Consistent variability</strong> across quarters shows execution matters more than timing, with top performers achieving 2-3x median rates.
             </p>
           </div>
           
           <div className="flex items-start">
-            <span className="text-red-500 text-lg mr-2 flex-shrink-0 mt-0.5">→</span>
+            <span className="text-black text-sm mr-2 flex-shrink-0 mt-1">▶</span>
             <p className="text-gray-800">
               <strong>Opportunity exists</strong> to bring bottom quartile performers (18-28%) closer to median levels through best practice sharing.
             </p>
