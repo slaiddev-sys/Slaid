@@ -133,6 +133,13 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
     className: 'w-full h-full'
   };
 
+  // Calculate growth from Q1 to Q4
+  const firstValue = chartData.series[0].data[0] as number;
+  const lastValue = chartData.series[0].data[chartData.series[0].data.length - 1] as number;
+  const growthPercentage = ((lastValue - firstValue) / firstValue) * 100;
+  const isPositive = growthPercentage > 0;
+  const formattedGrowth = `${isPositive ? '+' : ''}${growthPercentage.toFixed(1)}%`;
+
   return (
     <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
@@ -143,7 +150,33 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
       <div className="flex h-4/5">
         {/* Chart Section - Left 70% */}
         <div className="w-2/3 pr-6 -ml-4">
-          <ChartBlock {...chartData} />
+          {/* Growth Metrics */}
+          <div className="mb-4 ml-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-bold text-black">{formattedGrowth}</span>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                isPositive ? 'bg-green-500' : 'bg-red-500'
+              }`}>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                  <path 
+                    d={isPositive 
+                      ? "M6 2L6 10M6 2L3 5M6 2L9 5" 
+                      : "M6 10L6 2M6 10L3 7M6 10L9 7"
+                    } 
+                    stroke="white" 
+                    strokeWidth="1.5" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+          
+          {/* Chart */}
+          <div className="h-5/6">
+            <ChartBlock {...chartData} />
+          </div>
         </div>
         
         {/* Insights Panel - Right 30% */}
