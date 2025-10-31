@@ -136,7 +136,7 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
   return (
     <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
-      <div className="mb-6">
+      <div className="mb-6 ml-2">
         <h2 className="text-2xl font-medium text-black">{title}</h2>
       </div>
       
