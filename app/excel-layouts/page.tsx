@@ -354,8 +354,8 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
         const tempDiv = document.createElement('div');
         tempDiv.style.position = 'absolute';
         tempDiv.style.left = '-9999px';
-        tempDiv.style.width = '800px';
-        tempDiv.style.height = '450px'; // 16:9 ratio
+        tempDiv.style.width = '600px';
+        tempDiv.style.height = '338px'; // 16:9 ratio, smaller size
         tempDiv.style.backgroundColor = '#ffffff';
         tempDiv.style.fontFamily = 'Helvetica, Arial, sans-serif';
         tempDiv.style.padding = '24px';
@@ -402,7 +402,7 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
         console.log('📸 Capturing static layout...');
         const canvas = await html2canvas(tempDiv, {
           backgroundColor: '#ffffff',
-          scale: 2,
+          scale: 1, // Reduce scale to make smaller image
           useCORS: true,
           allowTaint: true,
           logging: false
@@ -415,7 +415,7 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
           height: canvas.height
         });
         
-        chartImageBase64 = canvas.toDataURL('image/jpeg', 0.8);
+        chartImageBase64 = canvas.toDataURL('image/jpeg', 0.5); // Lower quality to reduce size
         console.log('🎉 Image captured successfully!');
         console.log('📊 Image size:', chartImageBase64.length);
         
