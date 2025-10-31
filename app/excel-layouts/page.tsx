@@ -157,7 +157,7 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
         <div className="w-1/3 pl-4 border-l border-gray-200">
           {/* Growth Metrics Section */}
           <div className="mb-6">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">Overall Performance</h3>
+            <h3 className="text-sm font-semibold text-gray-900 mb-1">Overall Performance</h3>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-medium text-black">{formattedGrowth}</span>
               <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
