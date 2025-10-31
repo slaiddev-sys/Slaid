@@ -152,27 +152,32 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
     try {
       // Convert base64 to buffer - handle both PNG and JPEG
       const base64Data = layoutData.chartImage.replace(/^data:image\/(png|jpeg);base64,/, '');
-      const imageBuffer = Buffer.from(base64Data, 'base64');
-
+      
       // Determine image type from data URL
       const isJpeg = layoutData.chartImage.startsWith('data:image/jpeg');
       const extension = isJpeg ? 'jpg' : 'png';
       const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
 
       console.log('Image type detected:', mimeType);
-      console.log('Image buffer size:', imageBuffer.length);
+      console.log('Base64 data length:', base64Data.length);
 
-      // Upload image to Google Drive
+      // Upload image to Google Drive using base64 directly
       const drive = google.drive({ version: 'v3', auth: slides.auth });
       
       const fileMetadata = {
         name: `chart_${Date.now()}.${extension}`,
-        parents: [] // This will put it in the root folder
       };
+
+      // Create a readable stream from base64 data
+      const { Readable } = require('stream');
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+      const imageStream = new Readable();
+      imageStream.push(imageBuffer);
+      imageStream.push(null);
 
       const media = {
         mimeType: mimeType,
-        body: imageBuffer
+        body: imageStream
       };
 
       console.log('Uploading to Google Drive...');
@@ -196,17 +201,21 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
           }
         });
 
-        // Insert the image into the slide
+        // Insert the image into the slide as a single image element
         const imageId = `image_${Date.now()}`;
+        const imageUrl = `https://drive.google.com/uc?id=${imageFileId}`;
+        
+        console.log('Creating image element with URL:', imageUrl);
+        
         requests.push({
           createImage: {
             objectId: imageId,
-            url: `https://drive.google.com/uc?id=${imageFileId}`,
+            url: imageUrl,
             elementProperties: {
               pageObjectId: slideId,
               size: {
-                height: { magnitude: 400, unit: 'PT' },
-                width: { magnitude: 600, unit: 'PT' }
+                height: { magnitude: 500, unit: 'PT' }, // Make it larger
+                width: { magnitude: 800, unit: 'PT' }
               },
               transform: {
                 scaleX: 1,
@@ -219,7 +228,7 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
           }
         });
 
-        console.log('Chart image uploaded and added to slide');
+        console.log('✅ Chart image uploaded and added to slide as single image!');
         return requests;
       }
     } catch (error) {
@@ -229,10 +238,11 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
       // Fall back to text-based layout if image upload fails
     }
   } else {
-    console.log('No chart image provided - using fallback layout');
+    console.log('❌ No chart image provided - using fallback layout');
   }
 
   // Fallback: Create title if no image or image upload failed
+  console.log('⚠️ Using fallback - no chart image available');
   const titleId = `title_${Date.now()}`;
   requests.push({
     createShape: {
