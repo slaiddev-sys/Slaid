@@ -171,9 +171,15 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
         parents: [] // This will put it in the root folder
       };
 
+      // Convert buffer to stream for Google Drive API
+      const { Readable } = require('stream');
+      const imageStream = new Readable();
+      imageStream.push(imageBuffer);
+      imageStream.push(null); // End the stream
+
       const media = {
         mimeType: isJpeg ? 'image/jpeg' : 'image/png',
-        body: imageBuffer
+        body: imageStream
       };
 
       console.log('Uploading file to Google Drive:', fileName);
