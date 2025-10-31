@@ -58,12 +58,15 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
 
+    console.log('OAuth callback received:', { code: code ? 'Present' : 'Missing', state: state ? 'Present' : 'Missing' });
+
     if (!code || !state) {
       return NextResponse.json({ error: 'Missing authorization code or state' }, { status: 400 });
     }
 
     // Parse state to get layout information
     const { layoutName, layoutData } = JSON.parse(state);
+    console.log('Creating presentation for:', layoutName);
 
     // Exchange code for tokens
     const { tokens } = await oauth2Client.getToken(code);
@@ -80,6 +83,27 @@ export async function GET(request: NextRequest) {
     });
 
     const presentationId = presentation.data.presentationId!;
+    console.log('Presentation created:', presentationId);
+
+    // Get the first slide ID
+    const slideId = presentation.data.slides![0].objectId!;
+
+    // Create requests to populate the slide based on layout type
+    const requests = createSlideRequests(layoutName, layoutData, slideId);
+
+    console.log('Adding content requests:', requests.length);
+
+    if (requests.length > 0) {
+      // Apply the requests to update the slide
+      await slides.presentations.batchUpdate({
+        presentationId,
+        requestBody: {
+          requests
+        }
+      });
+      console.log('Content added successfully');
+    }
+
     const presentationUrl = `https://docs.google.com/presentation/d/${presentationId}/edit`;
 
     // Redirect to the created presentation
@@ -92,4 +116,249 @@ export async function GET(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+function createSlideRequests(layoutName: string, layoutData: any, slideId: string) {
+  const requests: any[] = [];
+
+  // Add layout-specific content based on layout type
+  switch (layoutName) {
+    case 'Trend Chart':
+      requests.push(...createTrendChartRequests(layoutData, slideId));
+      break;
+    case 'KPI Dashboard':
+      requests.push(...createKPIDashboardRequests(layoutData, slideId));
+      break;
+    case 'Data Table':
+      requests.push(...createDataTableRequests(layoutData, slideId));
+      break;
+    case 'Comparison View':
+      requests.push(...createComparisonRequests(layoutData, slideId));
+      break;
+    case 'Executive Summary':
+      requests.push(...createExecutiveSummaryRequests(layoutData, slideId));
+      break;
+  }
+
+  return requests;
+}
+
+function createTrendChartRequests(layoutData: any, slideId: string) {
+  const requests: any[] = [];
+
+  // Add chart data as text (Google Slides API doesn't support direct chart creation from data)
+  const textBoxId = `textbox_${Date.now()}`;
+  
+  requests.push({
+    createShape: {
+      objectId: textBoxId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 300, unit: 'PT' },
+          width: { magnitude: 500, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 50,
+          translateY: 100,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  const chartText = `Revenue Performance by Quarter
+
+Q1 2023: 52.2
+Q2 2023: 58.6
+Q3 2023: 43.8
+Q4 2023: 47.8
+
+Overall Performance: -8.4%
+
+Key Insights:
+• Q2 shows strongest performance with 58.6% conversion rate
+• Q3 performance dip to 43.8% suggests seasonal challenges
+• Recovery trend in Q4 indicates successful strategic adjustments`;
+
+  requests.push({
+    insertText: {
+      objectId: textBoxId,
+      text: chartText
+    }
+  });
+
+  return requests;
+}
+
+function createKPIDashboardRequests(layoutData: any, slideId: string) {
+  const requests: any[] = [];
+
+  // Add KPI data as text boxes
+  const kpis = [
+    { title: 'Total Revenue', value: '$648K', change: '+18.2%' },
+    { title: 'Units Sold', value: '16.2K', change: '+15.3%' },
+    { title: 'Avg Order Value', value: '$40', change: '+2.5%' },
+    { title: 'Target Achievement', value: '94.2%', change: '-5.8%' }
+  ];
+
+  kpis.forEach((kpi, index) => {
+    const x = (index % 2) * 250 + 50;
+    const y = Math.floor(index / 2) * 150 + 100;
+    const kpiId = `kpi_${index}_${Date.now()}`;
+
+    requests.push({
+      createShape: {
+        objectId: kpiId,
+        shapeType: 'TEXT_BOX',
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: 120, unit: 'PT' },
+            width: { magnitude: 200, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: x,
+            translateY: y,
+            unit: 'PT'
+          }
+        }
+      }
+    });
+
+    requests.push({
+      insertText: {
+        objectId: kpiId,
+        text: `${kpi.title}\n${kpi.value}\n${kpi.change}`
+      }
+    });
+  });
+
+  return requests;
+}
+
+function createDataTableRequests(layoutData: any, slideId: string) {
+  const requests: any[] = [];
+
+  // Create a table
+  const tableId = `table_${Date.now()}`;
+  
+  requests.push({
+    createTable: {
+      objectId: tableId,
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 200, unit: 'PT' },
+          width: { magnitude: 400, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 50,
+          translateY: 100,
+          unit: 'PT'
+        }
+      },
+      rows: 6,
+      columns: 3
+    }
+  });
+
+  return requests;
+}
+
+function createComparisonRequests(layoutData: any, slideId: string) {
+  const requests: any[] = [];
+  const comparisonId = `comparison_${Date.now()}`;
+
+  requests.push({
+    createShape: {
+      objectId: comparisonId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 250, unit: 'PT' },
+          width: { magnitude: 450, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 50,
+          translateY: 100,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  requests.push({
+    insertText: {
+      objectId: comparisonId,
+      text: `Performance Comparison
+
+Actual vs Target:
+Q1: $156K vs $165K
+Q2: $168K vs $170K
+Q3: $162K vs $175K
+Q4: $162K vs $180K
+
+Total Actual: $648K
+Total Target: $690K
+Gap: -$42K (-6.1%)`
+    }
+  });
+
+  return requests;
+}
+
+function createExecutiveSummaryRequests(layoutData: any, slideId: string) {
+  const requests: any[] = [];
+  const summaryId = `summary_${Date.now()}`;
+
+  requests.push({
+    createShape: {
+      objectId: summaryId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 350, unit: 'PT' },
+          width: { magnitude: 550, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 50,
+          translateY: 100,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  requests.push({
+    insertText: {
+      objectId: summaryId,
+      text: `Executive Summary
+
+• Strong Performance: Achieved $648K total revenue with 94.2% target achievement rate
+
+• Growth Trend: 18.2% overall growth with Q2 showing strongest performance
+
+• Seasonal Patterns: December peak and January low indicate clear seasonality
+
+• Opportunity: $42K revenue gap to targets represents 6.5% improvement potential
+
+• Recommendation: Focus on Q3/Q4 optimization to capture seasonal upside`
+    }
+  });
+
+  return requests;
 }
