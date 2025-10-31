@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import ChartBlock from '../../components/blocks/ChartBlock';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
 const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
@@ -43,238 +44,218 @@ const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
   </div>
 );
 
-const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
-    {/* Title */}
-    <div className="mb-6">
-      <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
-    </div>
-    
-    {/* KPI Grid - 2x2 layout compatible with slides */}
-    <div className="grid grid-cols-2 gap-6 h-4/5">
-      {[
-        { label: "Total Revenue", value: "$648K", change: "+18.2%", color: "blue" },
-        { label: "Units Sold", value: "16.2K", change: "+15.3%", color: "green" },
-        { label: "Avg Order Value", value: "$40", change: "+2.5%", color: "purple" },
-        { label: "Target Achievement", value: "94.2%", change: "-5.8%", color: "orange" }
-      ].map((kpi, idx) => (
-        <div key={idx} className={`bg-${kpi.color}-50 border-2 border-${kpi.color}-200 rounded-lg p-4 flex flex-col justify-center items-center`}>
-          <div className={`text-3xl font-bold text-${kpi.color}-600 mb-2`}>{kpi.value}</div>
-          <div className="text-gray-700 font-medium mb-1">{kpi.label}</div>
-          <div className={`text-sm font-semibold ${
-            kpi.change.startsWith('+') ? 'text-green-600' : 'text-red-600'
-          }`}>{kpi.change}</div>
-        </div>
-      ))}
-    </div>
-  </div>
-);
+const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
+  // Small chart data for KPI cards
+  const revenueChartData = {
+    type: 'area' as const,
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    series: [{ id: 'Revenue', data: [42, 48, 52, 58, 62, 68] }],
+    showLegend: false,
+    showGrid: false,
+    stacked: false,
+    curved: true,
+    animate: true,
+    showDots: false,
+    className: 'w-full h-16'
+  };
 
-const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
-    {/* Title */}
-    <div className="mb-4">
-      <h2 className="text-xl font-bold text-blue-600">{title}</h2>
-    </div>
-    
-    <div className="flex h-5/6">
-      {/* Chart Section - Left 70% */}
-      <div className="w-2/3 pr-6">
-        {/* Y-axis labels and chart area */}
-        <div className="relative h-full">
-          {/* Y-axis */}
-          <div className="absolute left-0 h-full flex flex-col justify-between text-xs text-gray-600 py-4">
-            <span>80%</span>
-            <span>60%</span>
-            <span>40%</span>
-            <span>20%</span>
-            <span>0%</span>
+  const unitsChartData = {
+    type: 'line' as const,
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    series: [{ id: 'Units', data: [1200, 1350, 1180, 1450, 1520, 1620] }],
+    showLegend: false,
+    showGrid: false,
+    curved: false,
+    animate: true,
+    showDots: false,
+    className: 'w-full h-16'
+  };
+
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      {/* Title */}
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
+      </div>
+      
+      {/* KPI Grid - 2x2 layout compatible with slides */}
+      <div className="grid grid-cols-2 gap-6 h-4/5">
+        {/* Revenue KPI with chart */}
+        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 flex flex-col">
+          <div className="text-3xl font-bold text-blue-600 mb-1">$648K</div>
+          <div className="text-gray-700 font-medium mb-2">Total Revenue</div>
+          <div className="text-sm font-semibold text-green-600 mb-2">+18.2%</div>
+          <div className="flex-1">
+            <ChartBlock {...revenueChartData} />
           </div>
-          
-          {/* Chart area */}
-          <div className="ml-8 h-full relative">
-            {/* Grid lines */}
-            <div className="absolute inset-0">
-              {[20, 40, 60, 80].map((line) => (
-                <div 
-                  key={line}
-                  className="absolute w-full border-t border-gray-200"
-                  style={{ top: `${100 - line}%` }}
-                ></div>
-              ))}
+        </div>
+
+        {/* Units Sold KPI with chart */}
+        <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 flex flex-col">
+          <div className="text-3xl font-bold text-green-600 mb-1">16.2K</div>
+          <div className="text-gray-700 font-medium mb-2">Units Sold</div>
+          <div className="text-sm font-semibold text-green-600 mb-2">+15.3%</div>
+          <div className="flex-1">
+            <ChartBlock {...unitsChartData} />
+          </div>
+        </div>
+
+        {/* Average Order Value */}
+        <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 flex flex-col justify-center items-center">
+          <div className="text-3xl font-bold text-purple-600 mb-2">$40</div>
+          <div className="text-gray-700 font-medium mb-1">Avg Order Value</div>
+          <div className="text-sm font-semibold text-green-600">+2.5%</div>
+        </div>
+
+        {/* Target Achievement */}
+        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 flex flex-col justify-center items-center">
+          <div className="text-3xl font-bold text-orange-600 mb-2">94.2%</div>
+          <div className="text-gray-700 font-medium mb-1">Target Achievement</div>
+          <div className="text-sm font-semibold text-red-600">-5.8%</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
+  // Chart data for quarterly performance
+  const chartData = {
+    type: 'bar' as const,
+    labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023'],
+    series: [
+      { id: 'Performance', data: [52.2, 58.6, 43.8, 47.8] }
+    ],
+    showLegend: false,
+    showGrid: true,
+    stacked: false,
+    animate: true,
+    className: 'w-full h-full'
+  };
+
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      {/* Title */}
+      <div className="mb-4">
+        <h2 className="text-xl font-bold text-blue-600">{title}</h2>
+      </div>
+      
+      <div className="flex h-5/6">
+        {/* Chart Section - Left 70% */}
+        <div className="w-2/3 pr-6">
+          <ChartBlock {...chartData} />
+        </div>
+        
+        {/* Insights Panel - Right 30% */}
+        <div className="w-1/3 pl-4 border-l border-gray-200">
+          <div className="space-y-3 text-xs">
+            <div className="flex items-start">
+              <span className="text-black text-xs mr-2 flex-shrink-0 mt-1">•</span>
+              <p className="text-gray-800">
+                <strong>Q2 shows strongest performance</strong> with 58.6% conversion rate, indicating optimal market conditions and effective strategies.
+              </p>
             </div>
             
-            {/* Box and whisker chart */}
-            <div className="flex items-end justify-between h-full px-4 pb-8">
+            <div className="flex items-start">
+              <span className="text-black text-xs mr-2 flex-shrink-0 mt-1">•</span>
+              <p className="text-gray-800">
+                <strong>Q3 performance dip</strong> to 43.8% suggests seasonal challenges or market saturation requiring strategic adjustment.
+              </p>
+            </div>
+            
+            <div className="flex items-start">
+              <span className="text-black text-xs mr-2 flex-shrink-0 mt-1">•</span>
+              <p className="text-gray-800">
+                <strong>Consistent variability</strong> across quarters shows execution matters more than timing, with Q2 achieving 34% higher performance than Q3.
+              </p>
+            </div>
+            
+            <div className="flex items-start">
+              <span className="text-black text-xs mr-2 flex-shrink-0 mt-1">•</span>
+              <p className="text-gray-800">
+                <strong>Recovery trend</strong> in Q4 (47.8%) indicates successful strategic adjustments and potential for continued improvement.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
+  // Comparison chart data
+  const comparisonChartData = {
+    type: 'bar' as const,
+    labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+    series: [
+      { id: 'Actual', data: [156, 168, 162, 162] },
+      { id: 'Target', data: [165, 170, 175, 180] }
+    ],
+    showLegend: true,
+    showGrid: true,
+    stacked: false,
+    animate: true,
+    className: 'w-full h-full'
+  };
+
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      {/* Title */}
+      <div className="mb-4">
+        <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
+      </div>
+      
+      <div className="flex h-5/6 gap-6">
+        {/* Chart Section - Left 60% */}
+        <div className="w-3/5">
+          <ChartBlock {...comparisonChartData} />
+        </div>
+        
+        {/* Data Tables - Right 40% */}
+        <div className="w-2/5 grid grid-cols-1 gap-4">
+          {/* Actual Performance */}
+          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3">
+            <h3 className="text-sm font-bold text-green-800 mb-2 text-center">Actual Performance</h3>
+            <div className="space-y-1 text-xs">
               {[
-                { quarter: "Q1 2023", median: 52.2, q1: 34.6, q3: 68.8, min: 22.4, max: 73.2, value: "52.2%" },
-                { quarter: "Q2 2023", median: 58.6, q1: 39.9, q3: 68.3, min: 27.8, max: 75.2, value: "58.6%" },
-                { quarter: "Q3 2023", median: 43.8, q1: 28.6, q3: 60.8, min: 18.7, max: 64.9, value: "43.8%" },
-                { quarter: "Q4 2023", median: 47.8, q1: 31.0, q3: 62.8, min: 18.2, max: 67.4, value: "47.8%" }
-              ].map((data, idx) => (
-                <div key={idx} className="flex flex-col items-center relative" style={{ height: '100%' }}>
-                  {/* Whisker lines */}
-                  <div className="relative w-12" style={{ height: '100%' }}>
-                    {/* Max whisker */}
-                    <div 
-                      className="absolute w-0.5 bg-red-400 left-1/2 transform -translate-x-1/2"
-                      style={{ 
-                        height: '2px',
-                        bottom: `${data.max}%`
-                      }}
-                    ></div>
-                    
-                    {/* Whisker line to max */}
-                    <div 
-                      className="absolute w-0.5 bg-red-400 left-1/2 transform -translate-x-1/2"
-                      style={{ 
-                        height: `${data.max - data.q3}%`,
-                        bottom: `${data.q3}%`
-                      }}
-                    ></div>
-                    
-                    {/* Box (Q1 to Q3) */}
-                    <div 
-                      className="absolute w-12 bg-red-400 border border-red-500 left-1/2 transform -translate-x-1/2"
-                      style={{ 
-                        height: `${data.q3 - data.q1}%`,
-                        bottom: `${data.q1}%`
-                      }}
-                    >
-                      {/* Median line */}
-                      <div 
-                        className="absolute w-full bg-white border-t-2 border-white"
-                        style={{ 
-                          bottom: `${((data.median - data.q1) / (data.q3 - data.q1)) * 100}%`
-                        }}
-                      ></div>
-                      
-                      {/* Value label inside box */}
-                      <div 
-                        className="absolute text-xs font-semibold text-white text-center w-full"
-                        style={{ 
-                          bottom: `${((data.median - data.q1) / (data.q3 - data.q1)) * 100 + 10}%`
-                        }}
-                      >
-                        {data.value}
-                      </div>
-                    </div>
-                    
-                    {/* Whisker line to min */}
-                    <div 
-                      className="absolute w-0.5 bg-red-400 left-1/2 transform -translate-x-1/2"
-                      style={{ 
-                        height: `${data.q1 - data.min}%`,
-                        bottom: `${data.min}%`
-                      }}
-                    ></div>
-                    
-                    {/* Min whisker */}
-                    <div 
-                      className="absolute w-0.5 bg-red-400 left-1/2 transform -translate-x-1/2"
-                      style={{ 
-                        height: '2px',
-                        bottom: `${data.min}%`
-                      }}
-                    ></div>
-                  </div>
-                  
-                  {/* Quarter label */}
-                  <div className="text-xs font-medium text-gray-700 mt-2 text-center">
-                    {data.quarter}
-                  </div>
+                { metric: "Q1 Revenue", value: "$156K" },
+                { metric: "Q2 Revenue", value: "$168K" },
+                { metric: "Q3 Revenue", value: "$162K" },
+                { metric: "Q4 Revenue", value: "$162K" },
+                { metric: "Total", value: "$648K" }
+              ].map((item, idx) => (
+                <div key={idx} className="flex justify-between">
+                  <span className="text-gray-700">{item.metric}</span>
+                  <span className="font-semibold text-green-700">{item.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          {/* Target Performance */}
+          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3">
+            <h3 className="text-sm font-bold text-blue-800 mb-2 text-center">Target Performance</h3>
+            <div className="space-y-1 text-xs">
+              {[
+                { metric: "Q1 Target", value: "$165K" },
+                { metric: "Q2 Target", value: "$170K" },
+                { metric: "Q3 Target", value: "$175K" },
+                { metric: "Q4 Target", value: "$180K" },
+                { metric: "Total", value: "$690K" }
+              ].map((item, idx) => (
+                <div key={idx} className="flex justify-between">
+                  <span className="text-gray-700">{item.metric}</span>
+                  <span className="font-semibold text-blue-700">{item.value}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
       </div>
-      
-      {/* Insights Panel - Right 30% */}
-      <div className="w-1/3 pl-4 border-l border-gray-200">
-        <div className="space-y-3 text-xs">
-          <div className="flex items-start">
-            <span className="text-black text-xs mr-2 flex-shrink-0 mt-1">•</span>
-            <p className="text-gray-800">
-              <strong>Q2 shows strongest performance</strong> with median conversion of 58.6%, indicating optimal market conditions and effective strategies.
-            </p>
-          </div>
-          
-          <div className="flex items-start">
-            <span className="text-black text-xs mr-2 flex-shrink-0 mt-1">•</span>
-            <p className="text-gray-800">
-              <strong>Q3 performance dip</strong> to 43.8% suggests seasonal challenges or market saturation requiring strategic adjustment.
-            </p>
-          </div>
-          
-          <div className="flex items-start">
-            <span className="text-black text-xs mr-2 flex-shrink-0 mt-1">•</span>
-            <p className="text-gray-800">
-              <strong>Consistent variability</strong> across quarters shows execution matters more than timing, with top performers achieving 2-3x median rates.
-            </p>
-          </div>
-          
-          <div className="flex items-start">
-            <span className="text-black text-xs mr-2 flex-shrink-0 mt-1">•</span>
-            <p className="text-gray-800">
-              <strong>Opportunity exists</strong> to bring bottom quartile performers (18-28%) closer to median levels through best practice sharing.
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
-  </div>
-);
-
-const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
-    {/* Title */}
-    <div className="mb-6">
-      <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
-    </div>
-    
-    {/* Two-column comparison layout */}
-    <div className="grid grid-cols-2 gap-8 h-4/5">
-      {/* Left Column - Actual Performance */}
-      <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4">
-        <h3 className="text-lg font-bold text-green-800 mb-4 text-center">Actual Performance</h3>
-        <div className="space-y-3">
-          {[
-            { metric: "Q1 Revenue", value: "$156K" },
-            { metric: "Q2 Revenue", value: "$168K" },
-            { metric: "Q3 Revenue", value: "$162K" },
-            { metric: "Q4 Revenue", value: "$162K" },
-            { metric: "Total", value: "$648K" }
-          ].map((item, idx) => (
-            <div key={idx} className="flex justify-between">
-              <span className="text-gray-700">{item.metric}</span>
-              <span className="font-semibold text-green-700">{item.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      
-      {/* Right Column - Target Performance */}
-      <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-        <h3 className="text-lg font-bold text-blue-800 mb-4 text-center">Target Performance</h3>
-        <div className="space-y-3">
-          {[
-            { metric: "Q1 Target", value: "$165K" },
-            { metric: "Q2 Target", value: "$170K" },
-            { metric: "Q3 Target", value: "$175K" },
-            { metric: "Q4 Target", value: "$180K" },
-            { metric: "Total", value: "$690K" }
-          ].map((item, idx) => (
-            <div key={idx} className="flex justify-between">
-              <span className="text-gray-700">{item.metric}</span>
-              <span className="font-semibold text-blue-700">{item.value}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  </div>
-);
+  );
+};
 
 const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
   <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
