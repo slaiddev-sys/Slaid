@@ -5,6 +5,13 @@
 
 export const authenticateAndExport = async (layoutName: string, layoutData: any = {}) => {
   return new Promise<void>((resolve, reject) => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    
+    if (!clientId) {
+      reject(new Error('Google Client ID not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file.'));
+      return;
+    }
+
     // Load Google Identity Services if not already loaded
     if (!window.google) {
       const script = document.createElement('script');
@@ -27,20 +34,14 @@ export const authenticateAndExport = async (layoutName: string, layoutData: any 
 
     function performAuth() {
       try {
-        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
-        
-        if (!clientId) {
-          reject(new Error('Google Client ID not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file. See GOOGLE_SLIDES_SETUP.md for instructions.'));
-          return;
-        }
-
+        // Use Google Identity Services with implicit flow
         const client = window.google.accounts.oauth2.initTokenClient({
           client_id: clientId,
           scope: 'https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive.file',
           callback: async (response: any) => {
             if (response.access_token) {
               try {
-                // Immediately create the presentation with the token
+                // Create presentation with the token
                 const apiResponse = await fetch('/api/export-google-slides', {
                   method: 'POST',
                   headers: {
@@ -56,7 +57,6 @@ export const authenticateAndExport = async (layoutName: string, layoutData: any 
                 const result = await apiResponse.json();
                 
                 if (result.success) {
-                  // Open Google Slides in new tab
                   window.open(result.presentationUrl, '_blank');
                   console.log(`✅ Created Google Slides presentation: "${layoutName}"`);
                   resolve();
@@ -71,11 +71,12 @@ export const authenticateAndExport = async (layoutName: string, layoutData: any 
             }
           },
           error_callback: (error: any) => {
+            console.error('Google auth error:', error);
             reject(new Error(error.message || 'Authentication failed'));
           }
         });
 
-        // Trigger the auth popup
+        // Request access token
         client.requestAccessToken();
       } catch (error) {
         reject(error);
