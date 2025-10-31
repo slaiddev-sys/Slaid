@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
 const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9' }}>
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title - Standard slide title positioning */}
     <div className="mb-6">
       <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
@@ -44,7 +44,7 @@ const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
 );
 
 const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9' }}>
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title */}
     <div className="mb-6">
       <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
@@ -71,7 +71,7 @@ const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => (
 );
 
 const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9' }}>
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title */}
     <div className="mb-4">
       <h2 className="text-xl font-bold text-blue-600">{title}</h2>
@@ -227,7 +227,7 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => (
 );
 
 const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9' }}>
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title */}
     <div className="mb-6">
       <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
@@ -277,7 +277,7 @@ const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => (
 );
 
 const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9' }}>
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title */}
     <div className="mb-6">
       <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
@@ -327,7 +327,7 @@ export default function ExcelLayoutsPage() {
   const SelectedComponent = layouts.find(l => l.id === selectedLayout)?.component || ExcelDataTable;
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className="min-h-screen bg-gray-100 p-8" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
