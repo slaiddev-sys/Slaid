@@ -326,6 +326,45 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
   </div>
 );
 
+// Export buttons component
+const ExportButtons = ({ layoutName }: { layoutName: string }) => {
+  const handleGoogleSlidesExport = () => {
+    // TODO: Implement Google Slides export functionality
+    alert(`Exporting "${layoutName}" to Google Slides...`);
+  };
+
+  const handlePowerPointExport = () => {
+    // TODO: Implement PowerPoint export functionality
+    alert(`Exporting "${layoutName}" to PowerPoint...`);
+  };
+
+  return (
+    <div className="flex gap-3 mb-4">
+      <button
+        onClick={handleGoogleSlidesExport}
+        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
+          <path d="M7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z" fill="currentColor"/>
+        </svg>
+        Export to Google Slides
+      </button>
+      
+      <button
+        onClick={handlePowerPointExport}
+        className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-sm"
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M21 8V16C21 17.1 20.1 18 19 18H5C3.9 18 3 17.1 3 16V8C3 6.9 3.9 6 5 6H19C20.1 6 21 6.9 21 8ZM19 8H5V16H19V8Z" fill="currentColor"/>
+          <path d="M7 10H17V12H7V10ZM7 13H14V15H7V13Z" fill="currentColor"/>
+        </svg>
+        Export to PowerPoint
+      </button>
+    </div>
+  );
+};
+
 export default function ExcelLayoutsPage() {
   const [selectedLayout, setSelectedLayout] = useState('table');
 
@@ -338,6 +377,7 @@ export default function ExcelLayoutsPage() {
   ];
 
   const SelectedComponent = layouts.find(l => l.id === selectedLayout)?.component || ExcelDataTable;
+  const selectedLayoutName = layouts.find(l => l.id === selectedLayout)?.name || 'Data Table';
 
   return (
     <div className="min-h-screen bg-gray-100 p-8" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
@@ -371,10 +411,13 @@ export default function ExcelLayoutsPage() {
         <div className="bg-white rounded-lg shadow-lg p-8">
           <div className="mb-4">
             <h2 className="text-xl font-semibold text-gray-800">
-              Preview: {layouts.find(l => l.id === selectedLayout)?.name}
+              Preview: {selectedLayoutName}
             </h2>
             <p className="text-sm text-gray-500">16:9 aspect ratio • PowerPoint/Google Slides compatible</p>
           </div>
+          
+          {/* Export Buttons */}
+          <ExportButtons layoutName={selectedLayoutName} />
           
           {/* Layout Container - Fixed 16:9 aspect ratio */}
           <div className="w-full max-w-4xl mx-auto">
