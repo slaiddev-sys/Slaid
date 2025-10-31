@@ -27,8 +27,15 @@ export const authenticateAndExport = async (layoutName: string, layoutData: any 
 
     function performAuth() {
       try {
+        const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+        
+        if (!clientId) {
+          reject(new Error('Google Client ID not configured. Please set NEXT_PUBLIC_GOOGLE_CLIENT_ID in your .env.local file. See GOOGLE_SLIDES_SETUP.md for instructions.'));
+          return;
+        }
+
         const client = window.google.accounts.oauth2.initTokenClient({
-          client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+          client_id: clientId,
           scope: 'https://www.googleapis.com/auth/presentations https://www.googleapis.com/auth/drive.file',
           callback: async (response: any) => {
             if (response.access_token) {
