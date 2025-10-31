@@ -347,71 +347,34 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
       
       // Capture the layout as an image
       let chartImageBase64 = null;
-      console.log('=== IMAGE CAPTURE DEBUG ===');
-      console.log('Layout name:', layoutName);
       console.log('Layout ref current:', layoutRef.current);
-      console.log('Layout ref type:', typeof layoutRef.current);
       
       if (layoutRef.current) {
         try {
-          console.log('Element dimensions:', {
-            width: layoutRef.current.offsetWidth,
-            height: layoutRef.current.offsetHeight,
-            scrollWidth: layoutRef.current.scrollWidth,
-            scrollHeight: layoutRef.current.scrollHeight
-          });
-          
           console.log('Starting html2canvas capture...');
           
-          // Wait longer for charts to fully render
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          // Wait a moment for the component to fully render
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
           const canvas = await html2canvas(layoutRef.current, {
             backgroundColor: '#ffffff',
-            scale: 0.5, // Reduce scale to make smaller image
+            scale: 2, // Higher quality
             useCORS: true,
             allowTaint: true,
-            logging: false, // Disable verbose logging
+            logging: true, // Enable html2canvas logging
             width: layoutRef.current.offsetWidth,
-            height: layoutRef.current.offsetHeight,
-            foreignObjectRendering: true,
-            removeContainer: true
+            height: layoutRef.current.offsetHeight
           });
           
-          console.log('Canvas created:', {
-            width: canvas.width,
-            height: canvas.height
-          });
-          
-          // Use JPEG with compression to reduce size
-          chartImageBase64 = canvas.toDataURL('image/jpeg', 0.7); // 70% quality
-          console.log('✅ Image captured successfully!');
-          console.log('Image size (bytes):', chartImageBase64.length);
-          console.log('Image data URL prefix:', chartImageBase64.substring(0, 50));
-          
-          // Test if image is valid and not too large
-          if (chartImageBase64.length < 1000) {
-            console.error('❌ Image too small, likely failed');
-            chartImageBase64 = null;
-          } else if (chartImageBase64.length > 50000) {
-            console.error('❌ Image too large, will cause HTTP 431 error');
-            // Try with lower quality
-            chartImageBase64 = canvas.toDataURL('image/jpeg', 0.5); // 50% quality
-            console.log('Compressed image size:', chartImageBase64.length);
-            if (chartImageBase64.length > 50000) {
-              console.error('❌ Even compressed image is too large');
-              chartImageBase64 = null;
-            }
-          }
+           chartImageBase64 = canvas.toDataURL('image/jpeg', 0.8); // High quality JPEG
+           console.log('Image captured successfully, size:', chartImageBase64.length);
+           console.log('Image preview:', chartImageBase64.substring(0, 100) + '...');
         } catch (error) {
-          console.error('❌ Failed to capture chart image:', error);
-          chartImageBase64 = null;
+          console.error('Failed to capture chart image:', error);
         }
       } else {
-        console.error('❌ Layout ref is null - cannot capture image');
+        console.error('Layout ref is null - cannot capture image');
       }
-      
-      console.log('Final chartImage status:', chartImageBase64 ? 'SUCCESS' : 'FAILED');
       
       // Prepare layout data based on the selected layout
       const layoutData = {
