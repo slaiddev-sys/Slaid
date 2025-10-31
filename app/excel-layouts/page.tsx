@@ -349,6 +349,15 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
         }),
       });
 
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error:', errorText);
+        throw new Error(`API Error: ${response.status} - ${errorText}`);
+      }
+
       const data = await response.json();
       
       if (data.authUrl) {
