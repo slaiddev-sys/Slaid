@@ -70,38 +70,158 @@ const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => (
   </div>
 );
 
-const ExcelTrendChart = ({ title = "Monthly Trend Analysis" }) => (
+const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => (
   <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9' }}>
     {/* Title */}
-    <div className="mb-6">
-      <h2 className="text-2xl font-bold text-gray-900 text-center">{title}</h2>
+    <div className="mb-4">
+      <h2 className="text-xl font-bold text-blue-600">{title}</h2>
     </div>
     
-    {/* Simple bar chart representation - PowerPoint compatible */}
-    <div className="h-4/5 flex items-end justify-between px-4">
-      {[
-        { month: "Jan", value: 65, revenue: "$42K" },
-        { month: "Feb", value: 85, revenue: "$54K" },
-        { month: "Mar", value: 75, revenue: "$48K" },
-        { month: "Apr", value: 90, revenue: "$58K" },
-        { month: "May", value: 80, revenue: "$52K" },
-        { month: "Jun", value: 95, revenue: "$62K" },
-        { month: "Jul", value: 88, revenue: "$56K" },
-        { month: "Aug", value: 70, revenue: "$45K" },
-        { month: "Sep", value: 92, revenue: "$59K" },
-        { month: "Oct", value: 98, revenue: "$63K" },
-        { month: "Nov", value: 100, revenue: "$65K" },
-        { month: "Dec", value: 105, revenue: "$68K" }
-      ].map((data, idx) => (
-        <div key={idx} className="flex flex-col items-center">
-          <div className="text-xs font-semibold text-gray-600 mb-1">{data.revenue}</div>
-          <div 
-            className="bg-blue-500 w-8 rounded-t-sm"
-            style={{ height: `${data.value * 2}px` }}
-          ></div>
-          <div className="text-xs font-medium text-gray-700 mt-2">{data.month}</div>
+    <div className="flex h-5/6">
+      {/* Chart Section - Left 70% */}
+      <div className="w-2/3 pr-6">
+        {/* Y-axis labels and chart area */}
+        <div className="relative h-full">
+          {/* Y-axis */}
+          <div className="absolute left-0 h-full flex flex-col justify-between text-xs text-gray-600 py-4">
+            <span>80%</span>
+            <span>60%</span>
+            <span>40%</span>
+            <span>20%</span>
+            <span>0%</span>
+          </div>
+          
+          {/* Chart area */}
+          <div className="ml-8 h-full relative">
+            {/* Grid lines */}
+            <div className="absolute inset-0">
+              {[20, 40, 60, 80].map((line) => (
+                <div 
+                  key={line}
+                  className="absolute w-full border-t border-gray-200"
+                  style={{ top: `${100 - line}%` }}
+                ></div>
+              ))}
+            </div>
+            
+            {/* Box and whisker chart */}
+            <div className="flex items-end justify-between h-full px-4 pb-8">
+              {[
+                { quarter: "Q1 2023", median: 52.2, q1: 34.6, q3: 68.8, min: 22.4, max: 73.2, value: "52.2%" },
+                { quarter: "Q2 2023", median: 58.6, q1: 39.9, q3: 68.3, min: 27.8, max: 75.2, value: "58.6%" },
+                { quarter: "Q3 2023", median: 43.8, q1: 28.6, q3: 60.8, min: 18.7, max: 64.9, value: "43.8%" },
+                { quarter: "Q4 2023", median: 47.8, q1: 31.0, q3: 62.8, min: 18.2, max: 67.4, value: "47.8%" }
+              ].map((data, idx) => (
+                <div key={idx} className="flex flex-col items-center relative" style={{ height: '100%' }}>
+                  {/* Whisker lines */}
+                  <div className="relative w-12" style={{ height: '100%' }}>
+                    {/* Max whisker */}
+                    <div 
+                      className="absolute w-0.5 bg-red-400 left-1/2 transform -translate-x-1/2"
+                      style={{ 
+                        height: '2px',
+                        bottom: `${data.max}%`
+                      }}
+                    ></div>
+                    
+                    {/* Whisker line to max */}
+                    <div 
+                      className="absolute w-0.5 bg-red-400 left-1/2 transform -translate-x-1/2"
+                      style={{ 
+                        height: `${data.max - data.q3}%`,
+                        bottom: `${data.q3}%`
+                      }}
+                    ></div>
+                    
+                    {/* Box (Q1 to Q3) */}
+                    <div 
+                      className="absolute w-12 bg-red-400 border border-red-500 left-1/2 transform -translate-x-1/2"
+                      style={{ 
+                        height: `${data.q3 - data.q1}%`,
+                        bottom: `${data.q1}%`
+                      }}
+                    >
+                      {/* Median line */}
+                      <div 
+                        className="absolute w-full bg-white border-t-2 border-white"
+                        style={{ 
+                          bottom: `${((data.median - data.q1) / (data.q3 - data.q1)) * 100}%`
+                        }}
+                      ></div>
+                      
+                      {/* Value label inside box */}
+                      <div 
+                        className="absolute text-xs font-semibold text-white text-center w-full"
+                        style={{ 
+                          bottom: `${((data.median - data.q1) / (data.q3 - data.q1)) * 100 + 10}%`
+                        }}
+                      >
+                        {data.value}
+                      </div>
+                    </div>
+                    
+                    {/* Whisker line to min */}
+                    <div 
+                      className="absolute w-0.5 bg-red-400 left-1/2 transform -translate-x-1/2"
+                      style={{ 
+                        height: `${data.q1 - data.min}%`,
+                        bottom: `${data.min}%`
+                      }}
+                    ></div>
+                    
+                    {/* Min whisker */}
+                    <div 
+                      className="absolute w-0.5 bg-red-400 left-1/2 transform -translate-x-1/2"
+                      style={{ 
+                        height: '2px',
+                        bottom: `${data.min}%`
+                      }}
+                    ></div>
+                  </div>
+                  
+                  {/* Quarter label */}
+                  <div className="text-xs font-medium text-gray-700 mt-2 text-center">
+                    {data.quarter}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      ))}
+      </div>
+      
+      {/* Insights Panel - Right 30% */}
+      <div className="w-1/3 pl-4 border-l border-gray-200">
+        <div className="space-y-4 text-sm">
+          <div className="flex items-start">
+            <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+            <p className="text-gray-800">
+              <strong>Q2 shows strongest performance</strong> with median conversion of 58.6%, indicating optimal market conditions and effective strategies.
+            </p>
+          </div>
+          
+          <div className="flex items-start">
+            <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+            <p className="text-gray-800">
+              <strong>Q3 performance dip</strong> to 43.8% suggests seasonal challenges or market saturation requiring strategic adjustment.
+            </p>
+          </div>
+          
+          <div className="flex items-start">
+            <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+            <p className="text-gray-800">
+              <strong>Consistent variability</strong> across quarters shows execution matters more than timing, with top performers achieving 2-3x median rates.
+            </p>
+          </div>
+          
+          <div className="flex items-start">
+            <div className="w-2 h-2 bg-red-500 rounded-full mt-1.5 mr-2 flex-shrink-0"></div>
+            <p className="text-gray-800">
+              <strong>Opportunity exists</strong> to bring bottom quartile performers (18-28%) closer to median levels through best practice sharing.
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 );
