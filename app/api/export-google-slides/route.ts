@@ -85,8 +85,31 @@ export async function GET(request: NextRequest) {
     const presentationId = presentation.data.presentationId!;
     console.log('Presentation created:', presentationId);
 
-    // Get the first slide ID
+    // Get the first slide ID and make it blank
     const slideId = presentation.data.slides![0].objectId!;
+
+    // First, delete any default placeholder elements and make the slide blank
+    const slideInfo = await slides.presentations.get({
+      presentationId,
+      fields: 'slides'
+    });
+
+    const firstSlide = slideInfo.data.slides![0];
+    const elementsToDelete = firstSlide.pageElements?.map(element => element.objectId).filter(Boolean) || [];
+
+    if (elementsToDelete.length > 0) {
+      console.log('Deleting default placeholder elements:', elementsToDelete);
+      await slides.presentations.batchUpdate({
+        presentationId,
+        requestBody: {
+          requests: elementsToDelete.map(elementId => ({
+            deleteObject: {
+              objectId: elementId
+            }
+          }))
+        }
+      });
+    }
 
     // Create requests to populate the slide based on layout type
     const requests = await createSlideRequests(layoutName, layoutData, slideId, slides, presentationId);
