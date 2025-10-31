@@ -347,9 +347,8 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
       const result = await response.json();
       
       if (result.success) {
-        alert(`✅ Successfully exported "${layoutName}" to Google Slides!\n\nPresentation URL: ${result.presentationUrl}`);
-        // TODO: Open the presentation URL in a new tab
-        // window.open(result.presentationUrl, '_blank');
+        // Directly open Google Slides presentation in new tab
+        window.open(result.presentationUrl, '_blank');
       } else {
         alert(`❌ Export failed: ${result.message}`);
       }
@@ -397,7 +396,7 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
         document.body.removeChild(link);
         window.URL.revokeObjectURL(url);
         
-        alert(`✅ Successfully exported "${layoutName}" to PowerPoint!\n\nFile downloaded: ${result.fileName}`);
+        // File automatically downloads, no popup needed
       } else {
         alert(`❌ Export failed: ${result.message}`);
       }
