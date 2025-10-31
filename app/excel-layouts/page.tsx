@@ -370,13 +370,37 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
             scale: 2, // Higher quality
             useCORS: true,
             allowTaint: true,
-            logging: true, // Enable html2canvas logging
+            logging: false, // Disable logging to reduce noise
             width: layoutRef.current.offsetWidth,
             height: layoutRef.current.offsetHeight,
             scrollX: 0,
             scrollY: 0,
             windowWidth: layoutRef.current.offsetWidth,
-            windowHeight: layoutRef.current.offsetHeight
+            windowHeight: layoutRef.current.offsetHeight,
+            ignoreElements: (element) => {
+              // Skip elements that might cause CSS parsing issues
+              const computedStyle = window.getComputedStyle(element);
+              const hasProblematicColors = computedStyle.color?.includes('oklch') || 
+                                         computedStyle.backgroundColor?.includes('oklch') ||
+                                         computedStyle.borderColor?.includes('oklch');
+              return hasProblematicColors;
+            },
+            onclone: (clonedDoc) => {
+              // Remove problematic CSS that html2canvas can't handle
+              const style = clonedDoc.createElement('style');
+              style.textContent = `
+                * {
+                  color: rgb(0, 0, 0) !important;
+                  background-color: transparent !important;
+                  border-color: rgb(0, 0, 0) !important;
+                }
+                .bg-white { background-color: rgb(255, 255, 255) !important; }
+                .text-black { color: rgb(0, 0, 0) !important; }
+                .text-gray-800 { color: rgb(31, 41, 55) !important; }
+                .border-gray-200 { border-color: rgb(229, 231, 235) !important; }
+              `;
+              clonedDoc.head.appendChild(style);
+            }
           });
           
           console.log('✅ Canvas created:', {
