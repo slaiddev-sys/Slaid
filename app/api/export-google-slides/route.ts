@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
     const slideId = presentation.data.slides![0].objectId!;
 
     // Create requests to populate the slide based on layout type
-    const requests = createSlideRequests(layoutName, layoutData, slideId);
+    const requests = await createSlideRequests(layoutName, layoutData, slideId, slides, presentationId);
 
     console.log('Adding content requests:', requests.length);
 
@@ -118,13 +118,14 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function createSlideRequests(layoutName: string, layoutData: any, slideId: string) {
+async function createSlideRequests(layoutName: string, layoutData: any, slideId: string, slides: any, presentationId: string) {
   const requests: any[] = [];
 
   // Add layout-specific content based on layout type
   switch (layoutName) {
     case 'Trend Chart':
-      requests.push(...createTrendChartRequests(layoutData, slideId));
+      const trendRequests = await createTrendChartRequests(layoutData, slideId, slides, presentationId);
+      requests.push(...trendRequests);
       break;
     case 'KPI Dashboard':
       requests.push(...createKPIDashboardRequests(layoutData, slideId));
@@ -143,10 +144,80 @@ function createSlideRequests(layoutName: string, layoutData: any, slideId: strin
   return requests;
 }
 
-function createTrendChartRequests(layoutData: any, slideId: string) {
+async function createTrendChartRequests(layoutData: any, slideId: string, slides: any, presentationId: string) {
   const requests: any[] = [];
 
-  // Create title
+  // If we have a chart image, upload it and insert it
+  if (layoutData.chartImage) {
+    try {
+      // Convert base64 to buffer
+      const base64Data = layoutData.chartImage.replace(/^data:image\/png;base64,/, '');
+      const imageBuffer = Buffer.from(base64Data, 'base64');
+
+      // Upload image to Google Drive
+      const drive = google.drive({ version: 'v3', auth: slides.auth });
+      
+      const fileMetadata = {
+        name: `chart_${Date.now()}.png`,
+        parents: [] // This will put it in the root folder
+      };
+
+      const media = {
+        mimeType: 'image/png',
+        body: imageBuffer
+      };
+
+      const uploadResponse = await drive.files.create({
+        requestBody: fileMetadata,
+        media: media,
+        fields: 'id'
+      });
+
+      const imageFileId = uploadResponse.data.id;
+
+      if (imageFileId) {
+        // Make the file publicly readable
+        await drive.permissions.create({
+          fileId: imageFileId,
+          requestBody: {
+            role: 'reader',
+            type: 'anyone'
+          }
+        });
+
+        // Insert the image into the slide
+        const imageId = `image_${Date.now()}`;
+        requests.push({
+          createImage: {
+            objectId: imageId,
+            url: `https://drive.google.com/uc?id=${imageFileId}`,
+            elementProperties: {
+              pageObjectId: slideId,
+              size: {
+                height: { magnitude: 400, unit: 'PT' },
+                width: { magnitude: 600, unit: 'PT' }
+              },
+              transform: {
+                scaleX: 1,
+                scaleY: 1,
+                translateX: 50,
+                translateY: 50,
+                unit: 'PT'
+              }
+            }
+          }
+        });
+
+        console.log('Chart image uploaded and added to slide');
+        return requests;
+      }
+    } catch (error) {
+      console.error('Failed to upload chart image:', error);
+      // Fall back to text-based layout if image upload fails
+    }
+  }
+
+  // Fallback: Create title if no image or image upload failed
   const titleId = `title_${Date.now()}`;
   requests.push({
     createShape: {
@@ -172,7 +243,7 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
   requests.push({
     insertText: {
       objectId: titleId,
-      text: 'Revenue Performance by Quarter'
+      text: 'Revenue Performance by Quarter (Fallback)'
     }
   });
 

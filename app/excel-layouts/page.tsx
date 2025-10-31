@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import ChartBlock from '../../components/blocks/ChartBlock';
+import html2canvas from 'html2canvas';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
 const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
@@ -118,7 +119,7 @@ const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
   );
 };
 
-const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
+const ExcelTrendChart = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Revenue Performance by Quarter" }, ref) => {
   // Chart data for quarterly performance
   const chartData = {
     type: 'bar' as const,
@@ -141,7 +142,7 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
   const formattedGrowth = `${isPositive ? '+' : ''}${growthPercentage.toFixed(1)}%`;
 
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-6 ml-6">
         <h2 className="text-2xl font-medium text-black">{title}</h2>
@@ -213,7 +214,9 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
       </div>
     </div>
   );
-};
+});
+
+ExcelTrendChart.displayName = 'ExcelTrendChart';
 
 const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
   // Comparison chart data
@@ -327,15 +330,34 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
 );
 
 // Export buttons component
-const ExportButtons = ({ layoutName }: { layoutName: string }) => {
+const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRef: React.RefObject<HTMLDivElement> }) => {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleGoogleSlidesExport = async () => {
     try {
       setIsExporting(true);
       
+      // Capture the layout as an image
+      let chartImageBase64 = null;
+      if (layoutRef.current) {
+        try {
+          const canvas = await html2canvas(layoutRef.current, {
+            backgroundColor: '#ffffff',
+            scale: 2, // Higher quality
+            useCORS: true,
+            allowTaint: true
+          });
+          chartImageBase64 = canvas.toDataURL('image/png');
+        } catch (error) {
+          console.error('Failed to capture chart image:', error);
+        }
+      }
+      
       // Prepare layout data based on the selected layout
-      const layoutData = getLayoutData(layoutName);
+      const layoutData = {
+        ...getLayoutData(layoutName),
+        chartImage: chartImageBase64
+      };
       
       const response = await fetch('/api/export-google-slides', {
         method: 'POST',
@@ -486,6 +508,7 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
 
 export default function ExcelLayoutsPage() {
   const [selectedLayout, setSelectedLayout] = useState('table');
+  const layoutRef = useRef<HTMLDivElement>(null);
 
   const layouts = [
     { id: 'table', name: 'Data Table', component: ExcelDataTable },
@@ -536,11 +559,11 @@ export default function ExcelLayoutsPage() {
           </div>
           
           {/* Export Buttons */}
-          <ExportButtons layoutName={selectedLayoutName} />
+          <ExportButtons layoutName={selectedLayoutName} layoutRef={layoutRef} />
           
           {/* Layout Container - Fixed 16:9 aspect ratio */}
           <div className="w-full max-w-4xl mx-auto">
-            <SelectedComponent />
+            <SelectedComponent ref={layoutRef} />
           </div>
         </div>
 
