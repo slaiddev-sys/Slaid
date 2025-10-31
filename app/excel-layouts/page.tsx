@@ -143,7 +143,9 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
       <div className="flex h-5/6">
         {/* Chart Section - Left 70% */}
         <div className="w-2/3 pr-6">
-          <ChartBlock {...chartData} />
+          <div className="bg-gray-100 rounded-lg p-4 h-full">
+            <ChartBlock {...chartData} />
+          </div>
         </div>
         
         {/* Insights Panel - Right 30% */}
