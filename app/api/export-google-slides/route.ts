@@ -4,25 +4,22 @@ export async function POST(request: NextRequest) {
   try {
     const { layoutName, layoutData } = await request.json();
 
-    // TODO: Implement Google Slides API integration
-    // This is a placeholder implementation
+    // For now, we'll create a new blank Google Slides presentation
+    // This opens Google Slides with a new presentation that the user can edit
     
-    // For now, we'll simulate the export process
-    await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API call delay
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // In a real implementation, you would:
-    // 1. Authenticate with Google OAuth 2.0
-    // 2. Create a new presentation using Google Slides API
-    // 3. Add slides with the layout content
-    // 4. Return the presentation URL
-
-    const mockPresentationUrl = `https://docs.google.com/presentation/d/mock-presentation-id/edit`;
+    // Create a new blank Google Slides presentation
+    // This URL creates a new presentation automatically
+    const newPresentationUrl = 'https://docs.google.com/presentation/create';
 
     return NextResponse.json({
       success: true,
-      message: `Successfully exported "${layoutName}" to Google Slides`,
-      presentationUrl: mockPresentationUrl,
-      layoutName
+      message: `Opening new Google Slides presentation for "${layoutName}"`,
+      presentationUrl: newPresentationUrl,
+      layoutName,
+      isNewPresentation: true
     });
 
   } catch (error) {
@@ -30,7 +27,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { 
         success: false, 
-        error: 'Failed to export to Google Slides',
+        error: 'Failed to open Google Slides',
         message: error instanceof Error ? error.message : 'Unknown error'
       },
       { status: 500 }

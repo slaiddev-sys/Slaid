@@ -347,8 +347,14 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
       const result = await response.json();
       
       if (result.success) {
-        // Directly open Google Slides presentation in new tab
+        // Open Google Slides in new tab
         window.open(result.presentationUrl, '_blank');
+        
+        // Show a brief notification that a new presentation was created
+        if (result.isNewPresentation) {
+          // Optional: You could add a toast notification here instead of alert
+          console.log(`✅ New Google Slides presentation opened for "${layoutName}"`);
+        }
       } else {
         alert(`❌ Export failed: ${result.message}`);
       }
