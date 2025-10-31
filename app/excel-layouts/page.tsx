@@ -155,7 +155,15 @@ const ExcelTrendChart = React.forwardRef<HTMLDivElement, { title?: string }>(({ 
       <div className="flex h-5/6">
         {/* Chart Section - Left 70% */}
         <div className="w-2/3 pr-6 -ml-4">
-          <ChartBlock {...chartData} />
+          {/* Temporary: Simple colored div instead of ChartBlock for testing */}
+          <div className="w-full h-full bg-blue-500 rounded-lg flex items-center justify-center">
+            <div className="text-white text-center">
+              <div className="text-4xl font-bold mb-2">📊</div>
+              <div className="text-lg">Chart Placeholder</div>
+              <div className="text-sm opacity-80">Testing image capture</div>
+            </div>
+          </div>
+          {/* <ChartBlock {...chartData} /> */}
         </div>
         
         {/* Insights Panel - Right 30% */}
