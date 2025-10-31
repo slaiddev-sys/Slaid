@@ -58,10 +58,44 @@ export async function GET(request: NextRequest) {
     const code = searchParams.get('code');
     const state = searchParams.get('state');
 
-    console.log('OAuth callback received:', { code: code ? 'Present' : 'Missing', state: state ? 'Present' : 'Missing' });
+    const error = searchParams.get('error');
+    
+    console.log('=== OAuth Callback Debug ===');
+    console.log('Code:', code ? 'Present' : 'Missing');
+    console.log('State:', state ? 'Present' : 'Missing'); 
+    console.log('Error:', error || 'None');
+    console.log('Full URL:', request.url);
+
+    if (error) {
+      console.error('OAuth error from Google:', error);
+      return new Response(`
+        <html>
+          <body>
+            <h1>OAuth Error</h1>
+            <p>Error: ${error}</p>
+            <p>Please close this window and try again.</p>
+          </body>
+        </html>
+      `, { 
+        status: 400,
+        headers: { 'Content-Type': 'text/html' }
+      });
+    }
 
     if (!code || !state) {
-      return NextResponse.json({ error: 'Missing authorization code or state' }, { status: 400 });
+      console.error('Missing required parameters:', { code: !!code, state: !!state });
+      return new Response(`
+        <html>
+          <body>
+            <h1>Missing Parameters</h1>
+            <p>Missing authorization code or state parameter.</p>
+            <p>Please close this window and try again.</p>
+          </body>
+        </html>
+      `, { 
+        status: 400,
+        headers: { 'Content-Type': 'text/html' }
+      });
     }
 
     // Parse state to get layout information
@@ -69,7 +103,12 @@ export async function GET(request: NextRequest) {
     console.log('Creating presentation for:', layoutName);
 
     // Exchange code for tokens
+    console.log('🔄 Exchanging code for tokens...');
     const { tokens } = await oauth2Client.getToken(code);
+    console.log('✅ Tokens received:', { 
+      access_token: tokens.access_token ? 'Present' : 'Missing',
+      refresh_token: tokens.refresh_token ? 'Present' : 'Missing'
+    });
     oauth2Client.setCredentials(tokens);
 
     // Create Google Slides presentation
@@ -128,16 +167,55 @@ export async function GET(request: NextRequest) {
     }
 
     const presentationUrl = `https://docs.google.com/presentation/d/${presentationId}/edit`;
+    console.log('🎉 Presentation created successfully:', presentationUrl);
 
-    // Redirect to the created presentation
-    return NextResponse.redirect(presentationUrl);
+    // Show success page with link to presentation
+    return new Response(`
+      <html>
+        <head>
+          <title>Export Successful</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 40px; text-align: center; }
+            .success { color: #16a34a; font-size: 24px; margin-bottom: 20px; }
+            .link { background: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin: 20px 0; }
+            .link:hover { background: #1d4ed8; }
+            .close { color: #6b7280; font-size: 14px; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <div class="success">✅ Export Successful!</div>
+          <p>Your layout has been exported to Google Slides.</p>
+          <a href="${presentationUrl}" target="_blank" class="link">Open Presentation</a>
+          <p class="close">You can close this window now.</p>
+          <script>
+            // Auto-open the presentation
+            window.open('${presentationUrl}', '_blank');
+          </script>
+        </body>
+      </html>
+    `, { 
+      status: 200,
+      headers: { 'Content-Type': 'text/html' }
+    });
 
   } catch (error) {
     console.error('Google Slides callback error:', error);
-    return NextResponse.json(
-      { error: 'Failed to create Google Slides presentation' },
-      { status: 500 }
-    );
+    console.error('Error details:', error.message);
+    console.error('Error stack:', error.stack);
+    
+    return new Response(`
+      <html>
+        <body>
+          <h1>Export Failed</h1>
+          <p>Failed to create Google Slides presentation.</p>
+          <p>Error: ${error.message}</p>
+          <p>Please close this window and try again.</p>
+        </body>
+      </html>
+    `, { 
+      status: 500,
+      headers: { 'Content-Type': 'text/html' }
+    });
   }
 }
 
