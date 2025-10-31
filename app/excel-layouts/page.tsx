@@ -375,36 +375,52 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
           console.log('📸 Capturing with html2canvas...');
           const canvas = await html2canvas(layoutRef.current, {
             backgroundColor: '#ffffff',
-            scale: 2, // Higher quality
+            scale: 1, // Reduced scale for compatibility
             useCORS: true,
             allowTaint: true,
-            logging: false, // Disable logging to reduce noise
+            logging: false,
             width: layoutRef.current.offsetWidth,
             height: layoutRef.current.offsetHeight,
             scrollX: 0,
             scrollY: 0,
-            windowWidth: layoutRef.current.offsetWidth,
-            windowHeight: layoutRef.current.offsetHeight,
+            // Disable CSS parsing entirely to avoid oklch() issues
+            foreignObjectRendering: false,
+            removeContainer: true,
             ignoreElements: (element) => {
-              // Skip elements that might cause CSS parsing issues
-              return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
+              // Skip ALL style elements and scripts
+              const tagName = element.tagName;
+              return tagName === 'SCRIPT' || tagName === 'STYLE' || tagName === 'LINK';
             },
-            onclone: (clonedDoc) => {
-              // Remove any problematic CSS that uses oklch() or other modern functions
-              const styles = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-              styles.forEach(style => {
-                if (style.textContent && style.textContent.includes('oklch')) {
-                  console.log('🔧 Removing problematic CSS with oklch()');
-                  style.remove();
+            onclone: (clonedDoc, element) => {
+              console.log('🔧 Cleaning cloned document...');
+              
+              // Remove ALL stylesheets completely
+              const allStyles = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
+              console.log(`🗑️ Removing ${allStyles.length} stylesheets`);
+              allStyles.forEach(style => style.remove());
+              
+              // Remove any elements with problematic styles
+              const elementsWithOklch = clonedDoc.querySelectorAll('*');
+              elementsWithOklch.forEach(el => {
+                if (el.style && el.style.cssText && el.style.cssText.includes('oklch')) {
+                  console.log('🔧 Cleaning element with oklch()');
+                  el.style.cssText = '';
                 }
               });
               
-              // Also check inline styles
-              const elementsWithStyle = clonedDoc.querySelectorAll('[style*="oklch"]');
-              elementsWithStyle.forEach(el => {
-                console.log('🔧 Cleaning inline oklch() styles');
-                el.style.cssText = el.style.cssText.replace(/oklch\([^)]*\)/g, '#6366f1'); // Replace with a safe blue color
-              });
+              // Apply basic inline styles to maintain appearance
+              const targetElement = clonedDoc.querySelector('[data-html2canvas-clone]') || element;
+              if (targetElement) {
+                targetElement.style.cssText = `
+                  background: white;
+                  font-family: Arial, sans-serif;
+                  padding: 20px;
+                  width: ${layoutRef.current.offsetWidth}px;
+                  height: ${layoutRef.current.offsetHeight}px;
+                `;
+              }
+              
+              console.log('✅ Document cleaned successfully');
             }
           });
           
