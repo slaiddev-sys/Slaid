@@ -149,16 +149,23 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
 
   // If we have a chart image, upload it and insert it
   if (layoutData.chartImage) {
+    console.log('=== GOOGLE DRIVE UPLOAD DEBUG ===');
+    console.log('Chart image received, length:', layoutData.chartImage.length);
+    console.log('Chart image prefix:', layoutData.chartImage.substring(0, 50));
+    
     try {
       // Convert base64 to buffer
       const base64Data = layoutData.chartImage.replace(/^data:image\/png;base64,/, '');
       const imageBuffer = Buffer.from(base64Data, 'base64');
+      console.log('Image buffer created, size:', imageBuffer.length, 'bytes');
 
       // Upload image to Google Drive
       const drive = google.drive({ version: 'v3', auth: slides.auth });
+      console.log('Google Drive client created');
       
+      const fileName = `slaid_chart_${Date.now()}.png`;
       const fileMetadata = {
-        name: `chart_${Date.now()}.png`,
+        name: fileName,
         parents: [] // This will put it in the root folder
       };
 
@@ -167,16 +174,21 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
         body: imageBuffer
       };
 
+      console.log('Uploading file to Google Drive:', fileName);
       const uploadResponse = await drive.files.create({
         requestBody: fileMetadata,
         media: media,
-        fields: 'id'
+        fields: 'id,name,webViewLink'
       });
 
+      console.log('Upload response:', uploadResponse.data);
       const imageFileId = uploadResponse.data.id;
 
       if (imageFileId) {
+        console.log('File uploaded successfully, ID:', imageFileId);
+        
         // Make the file publicly readable
+        console.log('Setting file permissions...');
         await drive.permissions.create({
           fileId: imageFileId,
           requestBody: {
@@ -184,13 +196,17 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
             type: 'anyone'
           }
         });
+        console.log('File permissions set to public');
 
         // Insert the image into the slide
         const imageId = `image_${Date.now()}`;
+        const imageUrl = `https://drive.google.com/uc?id=${imageFileId}`;
+        console.log('Creating slide image with URL:', imageUrl);
+        
         requests.push({
           createImage: {
             objectId: imageId,
-            url: `https://drive.google.com/uc?id=${imageFileId}`,
+            url: imageUrl,
             elementProperties: {
               pageObjectId: slideId,
               size: {
@@ -208,13 +224,19 @@ async function createTrendChartRequests(layoutData: any, slideId: string, slides
           }
         });
 
-        console.log('Chart image uploaded and added to slide');
+        console.log('✅ Chart image uploaded and slide request created');
         return requests;
+      } else {
+        console.error('❌ No file ID returned from upload');
       }
     } catch (error) {
-      console.error('Failed to upload chart image:', error);
+      console.error('❌ Failed to upload chart image:', error);
+      console.error('Error details:', error.message);
+      console.error('Error stack:', error.stack);
       // Fall back to text-based layout if image upload fails
     }
+  } else {
+    console.log('❌ No chart image provided in layoutData');
   }
 
   // Fallback: Create simple message if no image or image upload failed
