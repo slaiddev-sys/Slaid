@@ -328,38 +328,137 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
 
 // Export buttons component
 const ExportButtons = ({ layoutName }: { layoutName: string }) => {
-  const handleGoogleSlidesExport = () => {
-    // TODO: Implement Google Slides export functionality
-    alert(`Exporting "${layoutName}" to Google Slides...`);
+  const [isExporting, setIsExporting] = useState<'google' | 'powerpoint' | null>(null);
+
+  const handleGoogleSlidesExport = async () => {
+    setIsExporting('google');
+    try {
+      const response = await fetch('/api/export-google-slides', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          layoutName,
+          layoutData: {} // TODO: Pass actual layout data
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert(`✅ Successfully exported "${layoutName}" to Google Slides!\n\nPresentation URL: ${result.presentationUrl}`);
+        // TODO: Open the presentation URL in a new tab
+        // window.open(result.presentationUrl, '_blank');
+      } else {
+        alert(`❌ Export failed: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('Google Slides export error:', error);
+      alert(`❌ Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsExporting(null);
+    }
   };
 
-  const handlePowerPointExport = () => {
-    // TODO: Implement PowerPoint export functionality
-    alert(`Exporting "${layoutName}" to PowerPoint...`);
+  const handlePowerPointExport = async () => {
+    setIsExporting('powerpoint');
+    try {
+      const response = await fetch('/api/export-powerpoint', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          layoutName,
+          layoutData: {} // TODO: Pass actual layout data
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        // Create and download the PowerPoint file
+        const byteCharacters = atob(result.fileData);
+        const byteNumbers = new Array(byteCharacters.length);
+        for (let i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        const blob = new Blob([byteArray], { type: result.mimeType });
+        
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = result.fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        alert(`✅ Successfully exported "${layoutName}" to PowerPoint!\n\nFile downloaded: ${result.fileName}`);
+      } else {
+        alert(`❌ Export failed: ${result.message}`);
+      }
+    } catch (error) {
+      console.error('PowerPoint export error:', error);
+      alert(`❌ Export failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsExporting(null);
+    }
   };
 
   return (
     <div className="flex gap-3 mb-4">
       <button
         onClick={handleGoogleSlidesExport}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm"
+        disabled={isExporting !== null}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
+          isExporting === 'google'
+            ? 'bg-blue-400 text-white cursor-not-allowed'
+            : isExporting
+            ? 'bg-gray-400 text-white cursor-not-allowed'
+            : 'bg-blue-600 text-white hover:bg-blue-700'
+        }`}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
-          <path d="M7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z" fill="currentColor"/>
-        </svg>
-        Export to Google Slides
+        {isExporting === 'google' ? (
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+          </svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM19 19H5V5H19V19Z" fill="currentColor"/>
+            <path d="M7 7H17V9H7V7ZM7 11H17V13H7V11ZM7 15H14V17H7V15Z" fill="currentColor"/>
+          </svg>
+        )}
+        {isExporting === 'google' ? 'Exporting...' : 'Export to Google Slides'}
       </button>
       
       <button
         onClick={handlePowerPointExport}
-        className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium text-sm"
+        disabled={isExporting !== null}
+        className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium text-sm ${
+          isExporting === 'powerpoint'
+            ? 'bg-orange-400 text-white cursor-not-allowed'
+            : isExporting
+            ? 'bg-gray-400 text-white cursor-not-allowed'
+            : 'bg-orange-600 text-white hover:bg-orange-700'
+        }`}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M21 8V16C21 17.1 20.1 18 19 18H5C3.9 18 3 17.1 3 16V8C3 6.9 3.9 6 5 6H19C20.1 6 21 6.9 21 8ZM19 8H5V16H19V8Z" fill="currentColor"/>
-          <path d="M7 10H17V12H7V10ZM7 13H14V15H7V13Z" fill="currentColor"/>
-        </svg>
-        Export to PowerPoint
+        {isExporting === 'powerpoint' ? (
+          <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/>
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+          </svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M21 8V16C21 17.1 20.1 18 19 18H5C3.9 18 3 17.1 3 16V8C3 6.9 3.9 6 5 6H19C20.1 6 21 6.9 21 8ZM19 8H5V16H19V8Z" fill="currentColor"/>
+            <path d="M7 10H17V12H7V10ZM7 13H14V15H7V13Z" fill="currentColor"/>
+          </svg>
+        )}
+        {isExporting === 'powerpoint' ? 'Exporting...' : 'Export to PowerPoint'}
       </button>
     </div>
   );

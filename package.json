@@ -25,6 +25,7 @@
     "next": "15.4.2",
     "node-fetch": "^3.3.2",
     "pdf-merger-js": "^5.1.2",
+    "pptxgenjs": "^4.0.1",
     "puppeteer": "^24.26.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
