@@ -5,8 +5,8 @@ import ChartBlock from '../../components/blocks/ChartBlock';
 import html2canvas from 'html2canvas';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
-const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+const ExcelDataTable = React.forwardRef<HTMLDivElement, { title?: string; data?: any[] }>(({ title = "Data Overview", data = [] }, ref) => (
+  <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title - Standard slide title positioning */}
     <div className="mb-6">
       <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -43,9 +43,11 @@ const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
       </table>
     </div>
   </div>
-);
+));
 
-const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
+ExcelDataTable.displayName = 'ExcelDataTable';
+
+const ExcelKPIDashboard = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Key Performance Indicators" }, ref) => {
   // Small chart data for KPI cards
   const revenueChartData = {
     type: 'area' as const,
@@ -73,7 +75,7 @@ const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
   };
 
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-6">
         <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -117,7 +119,9 @@ const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
       </div>
     </div>
   );
-};
+});
+
+ExcelKPIDashboard.displayName = 'ExcelKPIDashboard';
 
 const ExcelTrendChart = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Revenue Performance by Quarter" }, ref) => {
   // Chart data for quarterly performance
@@ -218,7 +222,7 @@ const ExcelTrendChart = React.forwardRef<HTMLDivElement, { title?: string }>(({ 
 
 ExcelTrendChart.displayName = 'ExcelTrendChart';
 
-const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
+const ExcelComparisonLayout = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Performance Comparison" }, ref) => {
   // Comparison chart data
   const comparisonChartData = {
     type: 'bar' as const,
@@ -235,7 +239,7 @@ const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
   };
 
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-4">
         <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -290,10 +294,12 @@ const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
       </div>
     </div>
   );
-};
+});
 
-const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+ExcelComparisonLayout.displayName = 'ExcelComparisonLayout';
+
+const ExcelExecutiveSummary = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Executive Summary" }, ref) => (
+  <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title */}
     <div className="mb-6">
       <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -327,7 +333,9 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
       </div>
     </div>
   </div>
-);
+));
+
+ExcelExecutiveSummary.displayName = 'ExcelExecutiveSummary';
 
 // Export buttons component
 const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRef: React.RefObject<HTMLDivElement> }) => {
@@ -339,18 +347,33 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
       
       // Capture the layout as an image
       let chartImageBase64 = null;
+      console.log('Layout ref current:', layoutRef.current);
+      
       if (layoutRef.current) {
         try {
+          console.log('Starting html2canvas capture...');
+          
+          // Wait a moment for the component to fully render
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
           const canvas = await html2canvas(layoutRef.current, {
             backgroundColor: '#ffffff',
             scale: 2, // Higher quality
             useCORS: true,
-            allowTaint: true
+            allowTaint: true,
+            logging: true, // Enable html2canvas logging
+            width: layoutRef.current.offsetWidth,
+            height: layoutRef.current.offsetHeight
           });
+          
           chartImageBase64 = canvas.toDataURL('image/png');
+          console.log('Image captured successfully, size:', chartImageBase64.length);
+          console.log('Image preview:', chartImageBase64.substring(0, 100) + '...');
         } catch (error) {
           console.error('Failed to capture chart image:', error);
         }
+      } else {
+        console.error('Layout ref is null - cannot capture image');
       }
       
       // Prepare layout data based on the selected layout
