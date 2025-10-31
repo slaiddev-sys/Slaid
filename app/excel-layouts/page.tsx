@@ -586,7 +586,11 @@ export default function ExcelLayoutsPage() {
           
           {/* Layout Container - Fixed 16:9 aspect ratio */}
           <div className="w-full max-w-4xl mx-auto">
-            <SelectedComponent ref={layoutRef} />
+            {selectedLayout === 'table' && <ExcelDataTable ref={layoutRef} />}
+            {selectedLayout === 'kpi' && <ExcelKPIDashboard ref={layoutRef} />}
+            {selectedLayout === 'trend' && <ExcelTrendChart ref={layoutRef} />}
+            {selectedLayout === 'comparison' && <ExcelComparisonLayout ref={layoutRef} />}
+            {selectedLayout === 'summary' && <ExcelExecutiveSummary ref={layoutRef} />}
           </div>
         </div>
 
