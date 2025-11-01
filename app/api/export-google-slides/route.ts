@@ -232,28 +232,28 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
     const barX = chartStartX + (index * barSpacing);
     const barY = chartStartY + (maxBarHeight - barHeight);
 
-    // Create bar rectangle
-    const barId = `bar_${index}_${Date.now()}`;
-    requests.push({
-      createShape: {
-        objectId: barId,
-        shapeType: 'RECTANGLE',
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: barHeight, unit: 'PT' },
-            width: { magnitude: barWidth, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: barX,
-            translateY: barY,
-            unit: 'PT'
-          }
-        }
-      }
-    });
+     // Create bar rectangle with rounded corners
+     const barId = `bar_${index}_${Date.now()}`;
+     requests.push({
+       createShape: {
+         objectId: barId,
+         shapeType: 'ROUND_RECTANGLE',
+         elementProperties: {
+           pageObjectId: slideId,
+           size: {
+             height: { magnitude: barHeight, unit: 'PT' },
+             width: { magnitude: barWidth, unit: 'PT' }
+           },
+           transform: {
+             scaleX: 1,
+             scaleY: 1,
+             translateX: barX,
+             translateY: barY,
+             unit: 'PT'
+           }
+         }
+       }
+     });
 
     // Style the bar
     requests.push({
