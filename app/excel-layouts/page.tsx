@@ -394,7 +394,7 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
       console.log('🚀 Final chartImageBase64 status:', chartImageBase64 ? 'SUCCESS' : 'FAILED');
       
       // Prepare layout data based on the selected layout
-      const layoutData = {
+      const finalLayoutData = {
         ...getLayoutData(layoutName),
         chartImage: chartImageBase64
       };
@@ -407,7 +407,7 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
         body: JSON.stringify({
           action: 'authenticate',
           layoutName,
-          layoutData
+          layoutData: finalLayoutData
         }),
       });
 

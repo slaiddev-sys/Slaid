@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.57.0",
+    "@napi-rs/canvas": "^0.1.81",
     "@next/font": "^14.2.15",
     "@polar-sh/nextjs": "^0.4.11",
     "@supabase/supabase-js": "^2.75.0",

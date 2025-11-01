@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
 import { ChartConfiguration } from 'chart.js';
 
+// Use the NAPI-RS canvas implementation
+process.env.CHARTJS_NODE_CANVAS_BACKEND = '@napi-rs/canvas';
+
 // Chart.js plugins and components
 import {
   Chart as ChartJS,
