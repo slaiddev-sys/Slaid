@@ -242,6 +242,7 @@ const ExcelFullWidthChart: React.FC<ExcelFullWidthChartProps> = ({ title = "Perf
       { id: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
     ],
     showLegend: true,
+    legendPosition: 'bottom',
     showGrid: true,
     stacked: false,
     animate: true,
@@ -255,7 +256,7 @@ const ExcelFullWidthChart: React.FC<ExcelFullWidthChartProps> = ({ title = "Perf
       {/* Title Section */}
       <div className="mb-6 ml-6 flex items-start justify-between">
         <h1 className="text-2xl font-medium text-black">{title}</h1>
-        <div className="text-left max-w-md">
+        <div className="text-left max-w-md -ml-8">
           <p className="text-gray-600 text-xs">
             Comprehensive metrics and key performance indicators
           </p>
