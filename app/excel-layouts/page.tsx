@@ -254,11 +254,11 @@ const ExcelFullWidthChart: React.FC<ExcelFullWidthChartProps> = ({ title = "Perf
     <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-8" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title Section */}
       <div className="mb-6">
-        <h1 className="text-4xl font-bold text-black mb-2">{title}</h1>
-        <p className="text-gray-600 text-base">
+        <h1 className="text-2xl font-medium text-black mb-2">{title}</h1>
+        <p className="text-gray-600 text-sm">
           Comprehensive metrics and key performance indicators
         </p>
-        <p className="text-gray-600 text-base">
+        <p className="text-gray-600 text-sm">
           showing quarterly growth trends and revenue optimization.
         </p>
       </div>
