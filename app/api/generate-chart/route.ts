@@ -1,43 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
-import { ChartConfiguration } from 'chart.js';
 
-// Use the NAPI-RS canvas implementation
-process.env.CHARTJS_NODE_CANVAS_BACKEND = '@napi-rs/canvas';
+// Simple SVG chart generator - no canvas dependencies needed!
+function generateBarChartSVG(chartData: any, width: number, height: number) {
+  const { labels, values } = chartData;
+  const maxValue = Math.max(...values);
+  const padding = 60;
+  const chartWidth = width - (padding * 2);
+  const chartHeight = height - (padding * 2);
+  const barWidth = chartWidth / labels.length * 0.6;
+  const barSpacing = chartWidth / labels.length;
+  
+  const colors = [
+    '#6366f1', '#22c55e', '#ef4444', '#f59e0b', '#a855f7', '#ec4899'
+  ];
 
-// Chart.js plugins and components
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-} from 'chart.js';
+  let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${width}" height="${height}" fill="white"/>`;
 
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
+  // Draw bars
+  labels.forEach((label: string, index: number) => {
+    const value = values[index];
+    const barHeight = (value / maxValue) * chartHeight;
+    const x = padding + (index * barSpacing) + (barSpacing - barWidth) / 2;
+    const y = height - padding - barHeight;
+    const color = colors[index % colors.length];
+
+    // Bar
+    svg += `<rect x="${x}" y="${y}" width="${barWidth}" height="${barHeight}" 
+            fill="${color}" rx="8" ry="8"/>`;
+    
+    // Value label on top of bar
+    svg += `<text x="${x + barWidth/2}" y="${y - 10}" text-anchor="middle" 
+            font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#374151">
+            ${value}</text>`;
+    
+    // X-axis label
+    svg += `<text x="${x + barWidth/2}" y="${height - padding + 20}" text-anchor="middle" 
+            font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#374151">
+            ${label}</text>`;
+  });
+
+  // Y-axis grid lines and labels
+  for (let i = 0; i <= 5; i++) {
+    const gridValue = (maxValue / 5) * i;
+    const gridY = height - padding - (i * chartHeight / 5);
+    
+    // Grid line
+    svg += `<line x1="${padding}" y1="${gridY}" x2="${width - padding}" y2="${gridY}" 
+            stroke="rgba(0,0,0,0.1)" stroke-width="1"/>`;
+    
+    // Y-axis label
+    svg += `<text x="${padding - 10}" y="${gridY + 4}" text-anchor="end" 
+            font-family="Helvetica, Arial, sans-serif" font-size="12" fill="#374151">
+            ${Math.round(gridValue)}</text>`;
+  }
+
+  svg += '</svg>';
+  return svg;
+}
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('🎨 Server-side chart generation started');
+    console.log('🎨 Server-side SVG chart generation started');
     
     const body = await request.json();
-    const { chartData, width = 800, height = 500, type = 'bar' } = body;
+    const { chartData, width = 600, height = 400, type = 'bar' } = body;
     
     console.log('📊 Chart data received:', { 
       type, 
@@ -55,104 +82,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Chart.js configuration
-    const chartConfig: ChartConfiguration = {
-      type: type as any,
-      data: {
-        labels: chartData.labels,
-        datasets: [{
-          label: chartData.label || 'Revenue',
-          data: chartData.values,
-          backgroundColor: [
-            'rgba(99, 102, 241, 0.8)',   // Blue
-            'rgba(34, 197, 94, 0.8)',    // Green  
-            'rgba(239, 68, 68, 0.8)',    // Red
-            'rgba(245, 158, 11, 0.8)',   // Orange
-            'rgba(168, 85, 247, 0.8)',   // Purple
-            'rgba(236, 72, 153, 0.8)',   // Pink
-          ],
-          borderColor: [
-            'rgba(99, 102, 241, 1)',
-            'rgba(34, 197, 94, 1)',
-            'rgba(239, 68, 68, 1)',
-            'rgba(245, 158, 11, 1)',
-            'rgba(168, 85, 247, 1)',
-            'rgba(236, 72, 153, 1)',
-          ],
-          borderWidth: 2,
-          borderRadius: 8,
-          borderSkipped: false,
-        }]
-      },
-      options: {
-        responsive: false,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            display: false // Hide legend for cleaner look
-          },
-          title: {
-            display: false // Title will be added separately in the layout
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: 'rgba(0, 0, 0, 0.1)',
-              lineWidth: 1
-            },
-            ticks: {
-              font: {
-                family: 'Helvetica, Arial, sans-serif',
-                size: 12
-              },
-              color: '#374151'
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            },
-            ticks: {
-              font: {
-                family: 'Helvetica, Arial, sans-serif',
-                size: 12
-              },
-              color: '#374151'
-            }
-          }
-        },
-        elements: {
-          bar: {
-            borderRadius: 8
-          }
-        }
-      }
-    };
-
-    console.log('⚙️ Creating ChartJSNodeCanvas instance...');
+    console.log('🖼️ Generating SVG chart...');
     
-    // Create chart renderer
-    const chartJSNodeCanvas = new ChartJSNodeCanvas({
-      width,
-      height,
-      backgroundColour: 'white',
-      chartCallback: (ChartJS) => {
-        // Additional Chart.js configuration if needed
-        ChartJS.defaults.font.family = 'Helvetica, Arial, sans-serif';
-      }
-    });
-
-    console.log('🖼️ Rendering chart to buffer...');
+    // Generate SVG chart
+    const svgChart = generateBarChartSVG(chartData, width, height);
     
-    // Generate chart image
-    const imageBuffer = await chartJSNodeCanvas.renderToBuffer(chartConfig);
+    console.log('✅ SVG chart generated successfully, length:', svgChart.length);
     
-    console.log('✅ Chart generated successfully, buffer size:', imageBuffer.length);
-    
-    // Convert to base64
-    const base64Image = `data:image/png;base64,${imageBuffer.toString('base64')}`;
+    // Convert SVG to base64 data URL
+    const base64Image = `data:image/svg+xml;base64,${Buffer.from(svgChart).toString('base64')}`;
     
     console.log('🎯 Base64 conversion complete, length:', base64Image.length);
 
@@ -161,7 +99,7 @@ export async function POST(request: NextRequest) {
       image: base64Image,
       width,
       height,
-      type
+      type: 'svg'
     });
 
   } catch (error) {
