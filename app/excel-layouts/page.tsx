@@ -2,7 +2,6 @@
 
 import React, { useState, useRef } from 'react';
 import ChartBlock from '../../components/blocks/ChartBlock';
-import html2canvas from 'html2canvas';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
 const ExcelDataTable = React.forwardRef<HTMLDivElement, { title?: string; data?: any[] }>(({ title = "Data Overview", data = [] }, ref) => (
@@ -155,15 +154,7 @@ const ExcelTrendChart = React.forwardRef<HTMLDivElement, { title?: string }>(({ 
       <div className="flex h-5/6">
         {/* Chart Section - Left 70% */}
         <div className="w-2/3 pr-6 -ml-4">
-          {/* Temporary: Simple colored div instead of ChartBlock for testing */}
-          <div className="w-full h-full bg-blue-500 rounded-lg flex items-center justify-center">
-            <div className="text-white text-center">
-              <div className="text-4xl font-bold mb-2">📊</div>
-              <div className="text-lg">Chart Placeholder</div>
-              <div className="text-sm opacity-80">Testing image capture</div>
-            </div>
-          </div>
-          {/* <ChartBlock {...chartData} /> */}
+          <ChartBlock {...chartData} />
         </div>
         
         {/* Insights Panel - Right 30% */}
@@ -353,94 +344,51 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
     try {
       setIsExporting(true);
       
-      // Capture the layout as an image
+      // Generate chart image server-side
       let chartImageBase64 = null;
-      console.log('🖼️ Starting image capture process...');
-      console.log('Layout ref current:', layoutRef.current);
-      console.log('Layout ref dimensions:', layoutRef.current ? {
-        width: layoutRef.current.offsetWidth,
-        height: layoutRef.current.offsetHeight,
-        scrollWidth: layoutRef.current.scrollWidth,
-        scrollHeight: layoutRef.current.scrollHeight
-      } : 'null');
+      console.log('🎨 Starting server-side chart generation...');
       
-      if (layoutRef.current) {
+      // Get chart data for the selected layout
+      const currentLayoutData = getLayoutData(layoutName);
+      
+      if (layoutName === 'Trend Chart' && currentLayoutData.chartData) {
         try {
-          console.log('🎯 Starting html2canvas capture...');
+          console.log('📊 Generating chart with data:', currentLayoutData.chartData);
           
-          // Wait a moment for the component to fully render
-          console.log('⏱️ Waiting for component to render...');
-          await new Promise(resolve => setTimeout(resolve, 2000)); // Increased wait time
-          
-          console.log('📸 Capturing with html2canvas...');
-          const canvas = await html2canvas(layoutRef.current, {
-            backgroundColor: '#ffffff',
-            scale: 1, // Reduced scale for compatibility
-            useCORS: true,
-            allowTaint: true,
-            logging: false,
-            width: layoutRef.current.offsetWidth,
-            height: layoutRef.current.offsetHeight,
-            scrollX: 0,
-            scrollY: 0,
-            // Disable CSS parsing entirely to avoid oklch() issues
-            foreignObjectRendering: false,
-            removeContainer: true,
-            ignoreElements: (element) => {
-              // Skip ALL style elements and scripts
-              const tagName = element.tagName;
-              return tagName === 'SCRIPT' || tagName === 'STYLE' || tagName === 'LINK';
+          const chartResponse = await fetch('/api/generate-chart', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
             },
-            onclone: (clonedDoc, element) => {
-              console.log('🔧 Cleaning cloned document...');
-              
-              // Remove ALL stylesheets completely
-              const allStyles = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-              console.log(`🗑️ Removing ${allStyles.length} stylesheets`);
-              allStyles.forEach(style => style.remove());
-              
-              // Remove any elements with problematic styles
-              const elementsWithOklch = clonedDoc.querySelectorAll('*');
-              elementsWithOklch.forEach(el => {
-                if (el.style && el.style.cssText && el.style.cssText.includes('oklch')) {
-                  console.log('🔧 Cleaning element with oklch()');
-                  el.style.cssText = '';
-                }
-              });
-              
-              // Apply basic inline styles to maintain appearance
-              const targetElement = clonedDoc.querySelector('[data-html2canvas-clone]') || element;
-              if (targetElement) {
-                targetElement.style.cssText = `
-                  background: white;
-                  font-family: Arial, sans-serif;
-                  padding: 20px;
-                  width: ${layoutRef.current.offsetWidth}px;
-                  height: ${layoutRef.current.offsetHeight}px;
-                `;
-              }
-              
-              console.log('✅ Document cleaned successfully');
-            }
+            body: JSON.stringify({
+              chartData: currentLayoutData.chartData,
+              width: 600,
+              height: 400,
+              type: 'bar'
+            }),
           });
+
+          if (!chartResponse.ok) {
+            const errorText = await chartResponse.text();
+            console.error('Chart generation API error:', errorText);
+            throw new Error(`Chart API Error: ${chartResponse.status} - ${errorText}`);
+          }
+
+          const chartResult = await chartResponse.json();
           
-          console.log('✅ Canvas created:', {
-            width: canvas.width,
-            height: canvas.height
-          });
-          
-          chartImageBase64 = canvas.toDataURL('image/jpeg', 0.8); // High quality JPEG
-          console.log('🎉 Image captured successfully!');
-          console.log('📊 Image size:', chartImageBase64.length);
-          console.log('🔍 Image preview:', chartImageBase64.substring(0, 100) + '...');
-          console.log('📋 Full image data length:', chartImageBase64.length);
+          if (chartResult.success && chartResult.image) {
+            chartImageBase64 = chartResult.image;
+            console.log('✅ Server-side chart generated successfully!');
+            console.log('📊 Chart image size:', chartImageBase64.length);
+          } else {
+            throw new Error('Chart generation failed: ' + (chartResult.error || 'Unknown error'));
+          }
         } catch (error) {
-          console.error('❌ Failed to capture chart image:', error);
+          console.error('❌ Failed to generate chart server-side:', error);
           console.error('Error details:', error.message);
-          console.error('Error stack:', error.stack);
         }
       } else {
-        console.error('❌ Layout ref is null - cannot capture image');
+        console.log('⚠️ No chart data available for layout:', layoutName);
       }
       
       console.log('🚀 Final chartImageBase64 status:', chartImageBase64 ? 'SUCCESS' : 'FAILED');
