@@ -796,8 +796,7 @@ function createFullWidthChartRequests(layoutData: any, slideId: string) {
                   rgbColor: {
                     red: 0.4,
                     green: 0.3,
-                    blue: 0.9,
-                    alpha: 0.6
+                    blue: 0.9
                   }
                 }
               }
