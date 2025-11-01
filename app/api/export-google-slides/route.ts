@@ -221,11 +221,11 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
   ];
 
   const maxValue = Math.max(...chartData.map(d => d.value));
-  const chartStartX = 50;
-  const chartStartY = 120;
-  const barWidth = 60;
-  const barSpacing = 80;
-  const maxBarHeight = 200;
+  const chartStartX = 80;  // Move chart more to the left
+  const chartStartY = 100; // Move chart up slightly
+  const barWidth = 80;     // Make bars wider
+  const barSpacing = 100;  // Increase spacing between bars
+  const maxBarHeight = 280; // Make bars much taller
 
   chartData.forEach((data, index) => {
     const barHeight = (data.value / maxValue) * maxBarHeight;
@@ -362,7 +362,50 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
     });
   });
 
-  // Create insights panel (right side)
+  // Create Overall Performance section (top right)
+  const overallPerfId = `overall_perf_${Date.now()}`;
+  requests.push({
+    createShape: {
+      objectId: overallPerfId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 80, unit: 'PT' },
+          width: { magnitude: 200, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 500,
+          translateY: 100,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  requests.push({
+    insertText: {
+      objectId: overallPerfId,
+      text: 'Overall Performance\n-8.4% ↓'
+    }
+  });
+
+  requests.push({
+    updateTextStyle: {
+      objectId: overallPerfId,
+      fields: 'fontSize,fontFamily,bold',
+      textRange: { type: 'ALL' },
+      style: {
+        fontSize: { magnitude: 14, unit: 'PT' },
+        fontFamily: 'Helvetica',
+        bold: true
+      }
+    }
+  });
+
+  // Create insights panel (right side, below Overall Performance)
   const insightsId = `insights_${Date.now()}`;
   requests.push({
     createShape: {
@@ -371,25 +414,21 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
       elementProperties: {
         pageObjectId: slideId,
         size: {
-          height: { magnitude: 280, unit: 'PT' },
-          width: { magnitude: 280, unit: 'PT' }
+          height: { magnitude: 300, unit: 'PT' },
+          width: { magnitude: 250, unit: 'PT' }
         },
         transform: {
           scaleX: 1,
           scaleY: 1,
-          translateX: 420,
-          translateY: 120,
+          translateX: 500,
+          translateY: 200,
           unit: 'PT'
         }
       }
     }
   });
 
-
-  const insightsText = `Overall Performance
--8.4% ↓
-
-• Q2 shows strongest performance with 58.6% conversion rate, indicating optimal market conditions and effective strategies.
+  const insightsText = `• Q2 shows strongest performance with 58.6% conversion rate, indicating optimal market conditions and effective strategies.
 
 • Q3 performance dip to 43.8% suggests seasonal challenges or market saturation requiring strategic adjustment.
 
@@ -410,7 +449,7 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
       fields: 'fontSize,fontFamily',
       textRange: { type: 'ALL' },
       style: {
-        fontSize: { magnitude: 11, unit: 'PT' },
+        fontSize: { magnitude: 12, unit: 'PT' },
         fontFamily: 'Helvetica'
       }
     }
