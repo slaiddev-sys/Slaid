@@ -228,6 +228,49 @@ const ExcelTrendChart: React.FC<ExcelTrendChartProps> = ({ title = "Revenue Perf
   );
 };
 
+interface ExcelFullWidthChartProps {
+  title?: string;
+}
+
+const ExcelFullWidthChart: React.FC<ExcelFullWidthChartProps> = ({ title = "Performance Overview" }) => {
+  // Chart data for area chart with multiple series
+  const chartData = {
+    type: 'area' as const,
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    series: [
+      { id: 'Revenue', data: [6500, 8200, 9500, 11200, 15800, 25000] },
+      { id: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
+    ],
+    showLegend: true,
+    showGrid: true,
+    stacked: false,
+    animate: true,
+    curved: true,
+    showDots: true,
+    className: 'w-full h-full'
+  };
+
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-8" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      {/* Title Section */}
+      <div className="mb-6">
+        <h1 className="text-4xl font-bold text-black mb-2">{title}</h1>
+        <p className="text-gray-600 text-base">
+          Comprehensive metrics and key performance indicators
+        </p>
+        <p className="text-gray-600 text-base">
+          showing quarterly growth trends and revenue optimization.
+        </p>
+      </div>
+      
+      {/* Full Width Chart */}
+      <div className="h-4/5 w-full">
+        <ChartBlock {...chartData} />
+      </div>
+    </div>
+  );
+};
+
 interface ExcelComparisonLayoutProps {
   title?: string;
 }
@@ -421,6 +464,19 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
             'Recovery trend in Q4 indicates successful strategic adjustments'
           ]
         };
+      case 'Full Width Chart':
+        return {
+          title: 'Performance Overview',
+          chartData: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            values: [6500, 8200, 9500, 11200, 15800, 25000],
+            series: [
+              { name: 'Revenue', data: [6500, 8200, 9500, 11200, 15800, 25000] },
+              { name: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
+            ]
+          },
+          description: 'Comprehensive metrics and key performance indicators showing quarterly growth trends and revenue optimization.'
+        };
       case 'KPI Dashboard':
         return {
           title: 'Key Performance Indicators',
@@ -516,6 +572,7 @@ const ExcelLayoutsPage: React.FC = () => {
     { id: 'table', name: 'Data Table', component: ExcelDataTable },
     { id: 'kpi', name: 'KPI Dashboard', component: ExcelKPIDashboard },
     { id: 'trend', name: 'Trend Chart', component: ExcelTrendChart },
+    { id: 'fullwidth', name: 'Full Width Chart', component: ExcelFullWidthChart },
     { id: 'comparison', name: 'Comparison View', component: ExcelComparisonLayout },
     { id: 'summary', name: 'Executive Summary', component: ExcelExecutiveSummary }
   ];
