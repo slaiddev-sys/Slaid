@@ -161,6 +161,9 @@ function createSlideRequests(layoutName: string, layoutData: any, slideId: strin
     case 'Executive Summary':
       requests.push(...createExecutiveSummaryRequests(layoutData, slideId));
       break;
+    case 'Full Width Chart':
+      requests.push(...createFullWidthChartRequests(layoutData, slideId));
+      break;
   }
 
   return requests;
@@ -221,11 +224,11 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
   ];
 
   const maxValue = Math.max(...chartData.map(d => d.value));
-  const chartStartX = 80;  // Move chart more to the left
-  const chartStartY = 100; // Move chart up slightly
-  const barWidth = 80;     // Make bars wider
-  const barSpacing = 100;  // Increase spacing between bars
-  const maxBarHeight = 280; // Make bars much taller
+  const chartStartX = 50;
+  const chartStartY = 120;
+  const barWidth = 60;
+  const barSpacing = 80;
+  const maxBarHeight = 200;
 
   chartData.forEach((data, index) => {
     const barHeight = (data.value / maxValue) * maxBarHeight;
@@ -362,50 +365,7 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
     });
   });
 
-  // Create Overall Performance section (top right)
-  const overallPerfId = `overall_perf_${Date.now()}`;
-  requests.push({
-    createShape: {
-      objectId: overallPerfId,
-      shapeType: 'TEXT_BOX',
-      elementProperties: {
-        pageObjectId: slideId,
-        size: {
-          height: { magnitude: 80, unit: 'PT' },
-          width: { magnitude: 200, unit: 'PT' }
-        },
-        transform: {
-          scaleX: 1,
-          scaleY: 1,
-          translateX: 500,
-          translateY: 100,
-          unit: 'PT'
-        }
-      }
-    }
-  });
-
-  requests.push({
-    insertText: {
-      objectId: overallPerfId,
-      text: 'Overall Performance\n-8.4% ↓'
-    }
-  });
-
-  requests.push({
-    updateTextStyle: {
-      objectId: overallPerfId,
-      fields: 'fontSize,fontFamily,bold',
-      textRange: { type: 'ALL' },
-      style: {
-        fontSize: { magnitude: 14, unit: 'PT' },
-        fontFamily: 'Helvetica',
-        bold: true
-      }
-    }
-  });
-
-  // Create insights panel (right side, below Overall Performance)
+  // Create insights panel (right side)
   const insightsId = `insights_${Date.now()}`;
   requests.push({
     createShape: {
@@ -414,21 +374,25 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
       elementProperties: {
         pageObjectId: slideId,
         size: {
-          height: { magnitude: 300, unit: 'PT' },
-          width: { magnitude: 250, unit: 'PT' }
+          height: { magnitude: 280, unit: 'PT' },
+          width: { magnitude: 280, unit: 'PT' }
         },
         transform: {
           scaleX: 1,
           scaleY: 1,
-          translateX: 500,
-          translateY: 200,
+          translateX: 420,
+          translateY: 120,
           unit: 'PT'
         }
       }
     }
   });
 
-  const insightsText = `• Q2 shows strongest performance with 58.6% conversion rate, indicating optimal market conditions and effective strategies.
+
+  const insightsText = `Overall Performance
+-8.4% ↓
+
+• Q2 shows strongest performance with 58.6% conversion rate, indicating optimal market conditions and effective strategies.
 
 • Q3 performance dip to 43.8% suggests seasonal challenges or market saturation requiring strategic adjustment.
 
@@ -449,7 +413,7 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
       fields: 'fontSize,fontFamily',
       textRange: { type: 'ALL' },
       style: {
-        fontSize: { magnitude: 12, unit: 'PT' },
+        fontSize: { magnitude: 11, unit: 'PT' },
         fontFamily: 'Helvetica'
       }
     }
@@ -622,6 +586,315 @@ function createExecutiveSummaryRequests(layoutData: any, slideId: string) {
 
 • Recommendation: Focus on Q3/Q4 optimization to capture seasonal upside`
     }
+  });
+
+  return requests;
+}
+
+function createFullWidthChartRequests(layoutData: any, slideId: string) {
+  const requests: any[] = [];
+
+  // Create title
+  const titleId = `title_${Date.now()}`;
+  requests.push({
+    createShape: {
+      objectId: titleId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 50, unit: 'PT' },
+          width: { magnitude: 400, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 80,
+          translateY: 80,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  requests.push({
+    insertText: {
+      objectId: titleId,
+      text: layoutData.title || 'Performance Overview'
+    }
+  });
+
+  requests.push({
+    updateTextStyle: {
+      objectId: titleId,
+      fields: 'fontSize,fontFamily,bold',
+      textRange: { type: 'ALL' },
+      style: {
+        fontSize: { magnitude: 24, unit: 'PT' },
+        fontFamily: 'Helvetica',
+        bold: false
+      }
+    }
+  });
+
+  // Create description text (right side of title)
+  const descriptionId = `description_${Date.now()}`;
+  requests.push({
+    createShape: {
+      objectId: descriptionId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 60, unit: 'PT' },
+          width: { magnitude: 300, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 500,
+          translateY: 80,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  requests.push({
+    insertText: {
+      objectId: descriptionId,
+      text: layoutData.description || 'Comprehensive metrics and key performance indicators showing quarterly growth trends and revenue optimization.'
+    }
+  });
+
+  requests.push({
+    updateTextStyle: {
+      objectId: descriptionId,
+      fields: 'fontSize,fontFamily',
+      textRange: { type: 'ALL' },
+      style: {
+        fontSize: { magnitude: 10, unit: 'PT' },
+        fontFamily: 'Helvetica'
+      }
+    }
+  });
+
+  // Create full-width area chart simulation
+  const chartData = layoutData.chartData || {
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    series: [
+      { name: 'Revenue', data: [6500, 8200, 9500, 11200, 15800, 25000] },
+      { name: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
+    ]
+  };
+
+  // Create area chart using shapes (simplified representation)
+  const chartStartX = 80;
+  const chartStartY = 160;
+  const chartWidth = 720;
+  const chartHeight = 300;
+  const dataPoints = chartData.labels.length;
+
+  // Create background rectangle for chart area
+  const chartBgId = `chartBg_${Date.now()}`;
+  requests.push({
+    createShape: {
+      objectId: chartBgId,
+      shapeType: 'RECTANGLE',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: chartHeight, unit: 'PT' },
+          width: { magnitude: chartWidth, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: chartStartX,
+          translateY: chartStartY,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  requests.push({
+    updateShapeProperties: {
+      objectId: chartBgId,
+      fields: 'shapeBackgroundFill,outline',
+      shapeProperties: {
+        shapeBackgroundFill: {
+          solidFill: {
+            color: {
+              rgbColor: {
+                red: 0.98,
+                green: 0.98,
+                blue: 0.98
+              }
+            }
+          }
+        },
+        outline: {
+          outlineFill: {
+            solidFill: {
+              color: {
+                rgbColor: {
+                  red: 0.9,
+                  green: 0.9,
+                  blue: 0.9
+                }
+              }
+            }
+          },
+          weight: { magnitude: 1, unit: 'PT' }
+        }
+      }
+    }
+  });
+
+  // Create area chart lines (simplified as connected rectangles)
+  const revenueData = chartData.series[0]?.data || [6500, 8200, 9500, 11200, 15800, 25000];
+  const maxValue = Math.max(...revenueData);
+  const stepWidth = chartWidth / (dataPoints - 1);
+
+  revenueData.forEach((value, index) => {
+    if (index < revenueData.length - 1) {
+      const currentHeight = (value / maxValue) * (chartHeight * 0.8);
+      const nextHeight = (revenueData[index + 1] / maxValue) * (chartHeight * 0.8);
+      
+      // Create area segment
+      const segmentId = `segment_${index}_${Date.now()}`;
+      requests.push({
+        createShape: {
+          objectId: segmentId,
+          shapeType: 'RECTANGLE',
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: Math.max(currentHeight, nextHeight), unit: 'PT' },
+              width: { magnitude: stepWidth, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: chartStartX + (index * stepWidth),
+              translateY: chartStartY + chartHeight - Math.max(currentHeight, nextHeight),
+              unit: 'PT'
+            }
+          }
+        }
+      });
+
+      requests.push({
+        updateShapeProperties: {
+          objectId: segmentId,
+          fields: 'shapeBackgroundFill',
+          shapeProperties: {
+            shapeBackgroundFill: {
+              solidFill: {
+                color: {
+                  rgbColor: {
+                    red: 0.4,
+                    green: 0.3,
+                    blue: 0.9,
+                    alpha: 0.6
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+  });
+
+  // Add X-axis labels
+  chartData.labels.forEach((label, index) => {
+    const labelId = `xlabel_${index}_${Date.now()}`;
+    requests.push({
+      createShape: {
+        objectId: labelId,
+        shapeType: 'TEXT_BOX',
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: 20, unit: 'PT' },
+            width: { magnitude: 60, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: chartStartX + (index * stepWidth) - 20,
+            translateY: chartStartY + chartHeight + 10,
+            unit: 'PT'
+          }
+        }
+      }
+    });
+
+    requests.push({
+      insertText: {
+        objectId: labelId,
+        text: label
+      }
+    });
+
+    requests.push({
+      updateTextStyle: {
+        objectId: labelId,
+        fields: 'fontSize,fontFamily',
+        textRange: { type: 'ALL' },
+        style: {
+          fontSize: { magnitude: 10, unit: 'PT' },
+          fontFamily: 'Helvetica'
+        }
+      }
+    });
+  });
+
+  // Add legend below chart
+  const legendY = chartStartY + chartHeight + 40;
+  chartData.series.forEach((series, index) => {
+    const legendId = `legend_${index}_${Date.now()}`;
+    requests.push({
+      createShape: {
+        objectId: legendId,
+        shapeType: 'TEXT_BOX',
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: 20, unit: 'PT' },
+            width: { magnitude: 100, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: chartStartX + (index * 120),
+            translateY: legendY,
+            unit: 'PT'
+          }
+        }
+      }
+    });
+
+    requests.push({
+      insertText: {
+        objectId: legendId,
+        text: `● ${series.name}`
+      }
+    });
+
+    requests.push({
+      updateTextStyle: {
+        objectId: legendId,
+        fields: 'fontSize,fontFamily',
+        textRange: { type: 'ALL' },
+        style: {
+          fontSize: { magnitude: 12, unit: 'PT' },
+          fontFamily: 'Helvetica'
+        }
+      }
+    });
   });
 
   return requests;
