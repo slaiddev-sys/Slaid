@@ -85,10 +85,10 @@ export async function GET(request: NextRequest) {
     const presentationId = presentation.data.presentationId!;
     console.log('Presentation created:', presentationId);
 
-    // Get the first slide ID and make it blank
+    // Get the first slide ID
     const slideId = presentation.data.slides![0].objectId!;
 
-    // First, delete any default placeholder elements and make the slide blank
+    // First, delete any default placeholder elements to make the slide blank
     const slideInfo = await slides.presentations.get({
       presentationId,
       fields: 'slides'
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Create requests to populate the slide based on layout type
-    const requests = await createSlideRequests(layoutName, layoutData, slideId, slides, presentationId);
+    const requests = createSlideRequests(layoutName, layoutData, slideId);
 
     console.log('Adding content requests:', requests.length);
 
@@ -141,14 +141,13 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function createSlideRequests(layoutName: string, layoutData: any, slideId: string, slides: any, presentationId: string) {
+function createSlideRequests(layoutName: string, layoutData: any, slideId: string) {
   const requests: any[] = [];
 
   // Add layout-specific content based on layout type
   switch (layoutName) {
     case 'Trend Chart':
-      const trendRequests = await createTrendChartRequests(layoutData, slideId, slides, presentationId);
-      requests.push(...trendRequests);
+      requests.push(...createTrendChartRequests(layoutData, slideId));
       break;
     case 'KPI Dashboard':
       requests.push(...createKPIDashboardRequests(layoutData, slideId));
@@ -167,244 +166,280 @@ async function createSlideRequests(layoutName: string, layoutData: any, slideId:
   return requests;
 }
 
-async function createTrendChartRequests(layoutData: any, slideId: string, slides: any, presentationId: string) {
+function createTrendChartRequests(layoutData: any, slideId: string) {
   const requests: any[] = [];
 
-  console.log('🎯 createTrendChartRequests called');
-  console.log('📊 layoutData.chartImage exists:', !!layoutData.chartImage);
-  console.log('📋 chartImage length:', layoutData.chartImage ? layoutData.chartImage.length : 0);
+  // Create title
+  const titleId = `title_${Date.now()}`;
+  requests.push({
+    createShape: {
+      objectId: titleId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 50, unit: 'PT' },
+          width: { magnitude: 600, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 50,
+          translateY: 50,
+          unit: 'PT'
+        }
+      }
+    }
+  });
 
-  // ONLY use the chart image - no fallback elements
-  if (layoutData.chartImage) {
-    try {
-      // Convert base64 to buffer - handle both PNG and JPEG
-      const base64Data = layoutData.chartImage.replace(/^data:image\/(png|jpeg);base64,/, '');
-      
-      // Determine image type from data URL
-      const isJpeg = layoutData.chartImage.startsWith('data:image/jpeg');
-      const extension = isJpeg ? 'jpg' : 'png';
-      const mimeType = isJpeg ? 'image/jpeg' : 'image/png';
+  requests.push({
+    insertText: {
+      objectId: titleId,
+      text: 'Revenue Performance by Quarter'
+    }
+  });
 
-      console.log('Image type detected:', mimeType);
-      console.log('Base64 data length:', base64Data.length);
+  requests.push({
+    updateTextStyle: {
+      objectId: titleId,
+      fields: 'fontSize,bold,fontFamily',
+      textRange: { type: 'ALL' },
+      style: {
+        fontSize: { magnitude: 24, unit: 'PT' },
+        bold: true,
+        fontFamily: 'Helvetica'
+      }
+    }
+  });
 
-      // Upload image to Google Drive using base64 directly
-      const drive = google.drive({ version: 'v3', auth: slides.auth });
-      
-      const fileMetadata = {
-        name: `chart_${Date.now()}.${extension}`,
-      };
+  // Create chart area (left side) - simulate bars with rectangles
+  const chartData = [
+    { label: 'Q1 2023', value: 52.2 },
+    { label: 'Q2 2023', value: 58.6 },
+    { label: 'Q3 2023', value: 43.8 },
+    { label: 'Q4 2023', value: 47.8 }
+  ];
 
-      // Create a readable stream from base64 data
-      const { Readable } = require('stream');
-      const imageBuffer = Buffer.from(base64Data, 'base64');
-      const imageStream = new Readable();
-      imageStream.push(imageBuffer);
-      imageStream.push(null);
+  const maxValue = Math.max(...chartData.map(d => d.value));
+  const chartStartX = 50;
+  const chartStartY = 120;
+  const barWidth = 60;
+  const barSpacing = 80;
+  const maxBarHeight = 200;
 
-      const media = {
-        mimeType: mimeType,
-        body: imageStream
-      };
+  chartData.forEach((data, index) => {
+    const barHeight = (data.value / maxValue) * maxBarHeight;
+    const barX = chartStartX + (index * barSpacing);
+    const barY = chartStartY + (maxBarHeight - barHeight);
 
-      console.log('Uploading to Google Drive...');
-      const uploadResponse = await drive.files.create({
-        requestBody: fileMetadata,
-        media: media,
-        fields: 'id'
-      });
-
-      const imageFileId = uploadResponse.data.id;
-      console.log('Upload response:', uploadResponse.data);
-
-      if (imageFileId) {
-        console.log('Image uploaded successfully with ID:', imageFileId);
-        // Make the file publicly readable
-        await drive.permissions.create({
-          fileId: imageFileId,
-          requestBody: {
-            role: 'reader',
-            type: 'anyone'
+    // Create bar rectangle
+    const barId = `bar_${index}_${Date.now()}`;
+    requests.push({
+      createShape: {
+        objectId: barId,
+        shapeType: 'RECTANGLE',
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: barHeight, unit: 'PT' },
+            width: { magnitude: barWidth, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: barX,
+            translateY: barY,
+            unit: 'PT'
           }
-        });
+        }
+      }
+    });
 
-        // Insert the image into the slide as a single image element
-        const imageId = `image_${Date.now()}`;
-        const imageUrl = `https://drive.google.com/uc?id=${imageFileId}`;
-        
-        console.log('Creating image element with URL:', imageUrl);
-        
-        requests.push({
-          createImage: {
-            objectId: imageId,
-            url: imageUrl,
-            elementProperties: {
-              pageObjectId: slideId,
-              size: {
-                height: { magnitude: 500, unit: 'PT' }, // Make it larger
-                width: { magnitude: 800, unit: 'PT' }
-              },
-              transform: {
-                scaleX: 1,
-                scaleY: 1,
-                translateX: 50,
-                translateY: 50,
-                unit: 'PT'
+    // Style the bar
+    requests.push({
+      updateShapeProperties: {
+        objectId: barId,
+        fields: 'shapeBackgroundFill',
+        shapeProperties: {
+          shapeBackgroundFill: {
+            solidFill: {
+              color: {
+                rgbColor: {
+                  red: 0.4,
+                  green: 0.3,
+                  blue: 0.9
+                }
               }
             }
           }
-        });
+        }
+      }
+    });
 
-               console.log('✅ Chart image uploaded and added to slide as single image!');
-               return requests;
-             }
-           } catch (error) {
-             console.error('❌ Failed to upload chart image:', error);
-             console.error('Error details:', error.message);
-             console.error('Error stack:', error.stack);
-           }
-         } else {
-           console.log('❌ No chart image provided');
-         }
+    // Add label below bar
+    const labelId = `label_${index}_${Date.now()}`;
+    requests.push({
+      createShape: {
+        objectId: labelId,
+        shapeType: 'TEXT_BOX',
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: 30, unit: 'PT' },
+            width: { magnitude: barWidth + 20, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: barX - 10,
+            translateY: chartStartY + maxBarHeight + 10,
+            unit: 'PT'
+          }
+        }
+      }
+    });
 
-         // If we reach here, either no image was provided or upload failed
-         // Add title and basic content as fallback
-         console.log('⚠️ No chart image available - adding title and basic content');
-         
-         // Add title
-         const titleId = `title_${Date.now()}`;
-         requests.push({
-           createShape: {
-             objectId: titleId,
-             shapeType: 'TEXT_BOX',
-             elementProperties: {
-               pageObjectId: slideId,
-               size: {
-                 height: { magnitude: 60, unit: 'PT' },
-                 width: { magnitude: 600, unit: 'PT' }
-               },
-               transform: {
-                 scaleX: 1,
-                 scaleY: 1,
-                 translateX: 50,
-                 translateY: 50,
-                 unit: 'PT'
-               }
-             }
-           }
-         });
+    requests.push({
+      insertText: {
+        objectId: labelId,
+        text: data.label
+      }
+    });
 
-         requests.push({
-           insertText: {
-             objectId: titleId,
-             text: layoutData.title || 'Revenue Performance by Quarter'
-           }
-         });
+    requests.push({
+      updateTextStyle: {
+        objectId: labelId,
+        fields: 'fontSize,fontFamily',
+        textRange: { type: 'ALL' },
+        style: {
+          fontSize: { magnitude: 10, unit: 'PT' },
+          fontFamily: 'Helvetica'
+        }
+      }
+    });
 
-         requests.push({
-           updateTextStyle: {
-             objectId: titleId,
-             fields: 'fontSize,bold,fontFamily',
-             textRange: { type: 'ALL' },
-             style: {
-               fontSize: { magnitude: 24, unit: 'PT' },
-               bold: true,
-               fontFamily: 'Helvetica'
-             }
-           }
-         });
+    // Add value on top of bar
+    const valueId = `value_${index}_${Date.now()}`;
+    requests.push({
+      createShape: {
+        objectId: valueId,
+        shapeType: 'TEXT_BOX',
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: 20, unit: 'PT' },
+            width: { magnitude: barWidth, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: barX,
+            translateY: barY - 25,
+            unit: 'PT'
+          }
+        }
+      }
+    });
 
-         // Add error message
-         const errorId = `error_${Date.now()}`;
-         requests.push({
-           createShape: {
-             objectId: errorId,
-             shapeType: 'TEXT_BOX',
-             elementProperties: {
-               pageObjectId: slideId,
-               size: {
-                 height: { magnitude: 80, unit: 'PT' },
-                 width: { magnitude: 600, unit: 'PT' }
-               },
-               transform: {
-                 scaleX: 1,
-                 scaleY: 1,
-                 translateX: 50,
-                 translateY: 150,
-                 unit: 'PT'
-               }
-             }
-           }
-         });
+    requests.push({
+      insertText: {
+        objectId: valueId,
+        text: data.value.toString()
+      }
+    });
 
-         requests.push({
-           insertText: {
-             objectId: errorId,
-             text: 'Chart image capture failed. Please check browser console for details and try again.'
-           }
-         });
+    requests.push({
+      updateTextStyle: {
+        objectId: valueId,
+        fields: 'fontSize,fontFamily,bold',
+        textRange: { type: 'ALL' },
+        style: {
+          fontSize: { magnitude: 12, unit: 'PT' },
+          fontFamily: 'Helvetica',
+          bold: true
+        }
+      }
+    });
+  });
 
-         requests.push({
-           updateTextStyle: {
-             objectId: errorId,
-             fields: 'fontSize,fontFamily',
-             textRange: { type: 'ALL' },
-             style: {
-               fontSize: { magnitude: 14, unit: 'PT' },
-               fontFamily: 'Helvetica'
-             }
-           }
-         });
+  // Create insights panel (right side)
+  const insightsId = `insights_${Date.now()}`;
+  requests.push({
+    createShape: {
+      objectId: insightsId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 280, unit: 'PT' },
+          width: { magnitude: 280, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 420,
+          translateY: 120,
+          unit: 'PT'
+        }
+      }
+    }
+  });
 
-         // Add insights if available
-         if (layoutData.insights && layoutData.insights.length > 0) {
-           const insightsId = `insights_${Date.now()}`;
-           requests.push({
-             createShape: {
-               objectId: insightsId,
-               shapeType: 'TEXT_BOX',
-               elementProperties: {
-                 pageObjectId: slideId,
-                 size: {
-                   height: { magnitude: 200, unit: 'PT' },
-                   width: { magnitude: 300, unit: 'PT' }
-                 },
-                 transform: {
-                   scaleX: 1,
-                   scaleY: 1,
-                   translateX: 400,
-                   translateY: 150,
-                   unit: 'PT'
-                 }
-               }
-             }
-           });
+  // Add border to insights panel
+  requests.push({
+    updateShapeProperties: {
+      objectId: insightsId,
+      fields: 'outline',
+      shapeProperties: {
+        outline: {
+          outlineFill: {
+            solidFill: {
+              color: {
+                rgbColor: {
+                  red: 0.8,
+                  green: 0.8,
+                  blue: 0.8
+                }
+              }
+            }
+          },
+          weight: { magnitude: 1, unit: 'PT' }
+        }
+      }
+    }
+  });
 
-           const insightsText = layoutData.insights.map((insight: string, index: number) => 
-             `• ${insight}`
-           ).join('\n\n');
+  const insightsText = `Overall Performance
+-8.4% ↓
 
-           requests.push({
-             insertText: {
-               objectId: insightsId,
-               text: insightsText
-             }
-           });
+• Q2 shows strongest performance with 58.6% conversion rate, indicating optimal market conditions and effective strategies.
 
-           requests.push({
-             updateTextStyle: {
-               objectId: insightsId,
-               fields: 'fontSize,fontFamily',
-               textRange: { type: 'ALL' },
-               style: {
-                 fontSize: { magnitude: 11, unit: 'PT' },
-                 fontFamily: 'Helvetica'
-               }
-             }
-           });
-         }
+• Q3 performance dip to 43.8% suggests seasonal challenges or market saturation requiring strategic adjustment.
 
-         return requests;
+• Consistent variability across quarters shows execution matters more than timing, with Q2 achieving 34% higher performance than Q3.
+
+• Recovery trend in Q4 (47.8%) indicates successful strategic adjustments and potential for continued improvement.`;
+
+  requests.push({
+    insertText: {
+      objectId: insightsId,
+      text: insightsText
+    }
+  });
+
+  requests.push({
+    updateTextStyle: {
+      objectId: insightsId,
+      fields: 'fontSize,fontFamily',
+      textRange: { type: 'ALL' },
+      style: {
+        fontSize: { magnitude: 11, unit: 'PT' },
+        fontFamily: 'Helvetica'
+      }
+    }
+  });
+
+  return requests;
 }
 
 function createKPIDashboardRequests(layoutData: any, slideId: string) {

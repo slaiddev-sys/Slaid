@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import ChartBlock from '../../components/blocks/ChartBlock';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
-const ExcelDataTable = React.forwardRef<HTMLDivElement, { title?: string; data?: any[] }>(({ title = "Data Overview", data = [] }, ref) => (
-  <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title - Standard slide title positioning */}
     <div className="mb-6">
       <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -42,11 +42,9 @@ const ExcelDataTable = React.forwardRef<HTMLDivElement, { title?: string; data?:
       </table>
     </div>
   </div>
-));
+);
 
-ExcelDataTable.displayName = 'ExcelDataTable';
-
-const ExcelKPIDashboard = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Key Performance Indicators" }, ref) => {
+const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
   // Small chart data for KPI cards
   const revenueChartData = {
     type: 'area' as const,
@@ -74,7 +72,7 @@ const ExcelKPIDashboard = React.forwardRef<HTMLDivElement, { title?: string }>((
   };
 
   return (
-    <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-6">
         <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -118,11 +116,9 @@ const ExcelKPIDashboard = React.forwardRef<HTMLDivElement, { title?: string }>((
       </div>
     </div>
   );
-});
+};
 
-ExcelKPIDashboard.displayName = 'ExcelKPIDashboard';
-
-const ExcelTrendChart = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Revenue Performance by Quarter" }, ref) => {
+const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
   // Chart data for quarterly performance
   const chartData = {
     type: 'bar' as const,
@@ -145,7 +141,7 @@ const ExcelTrendChart = React.forwardRef<HTMLDivElement, { title?: string }>(({ 
   const formattedGrowth = `${isPositive ? '+' : ''}${growthPercentage.toFixed(1)}%`;
 
   return (
-    <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-6 ml-6">
         <h2 className="text-2xl font-medium text-black">{title}</h2>
@@ -217,11 +213,9 @@ const ExcelTrendChart = React.forwardRef<HTMLDivElement, { title?: string }>(({ 
       </div>
     </div>
   );
-});
+};
 
-ExcelTrendChart.displayName = 'ExcelTrendChart';
-
-const ExcelComparisonLayout = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Performance Comparison" }, ref) => {
+const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
   // Comparison chart data
   const comparisonChartData = {
     type: 'bar' as const,
@@ -238,7 +232,7 @@ const ExcelComparisonLayout = React.forwardRef<HTMLDivElement, { title?: string 
   };
 
   return (
-    <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-4">
         <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -293,12 +287,10 @@ const ExcelComparisonLayout = React.forwardRef<HTMLDivElement, { title?: string 
       </div>
     </div>
   );
-});
+};
 
-ExcelComparisonLayout.displayName = 'ExcelComparisonLayout';
-
-const ExcelExecutiveSummary = React.forwardRef<HTMLDivElement, { title?: string }>(({ title = "Executive Summary" }, ref) => (
-  <div ref={ref} className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title */}
     <div className="mb-6">
       <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -332,72 +324,18 @@ const ExcelExecutiveSummary = React.forwardRef<HTMLDivElement, { title?: string 
       </div>
     </div>
   </div>
-));
-
-ExcelExecutiveSummary.displayName = 'ExcelExecutiveSummary';
+);
 
 // Export buttons component
-const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRef: React.RefObject<HTMLDivElement> }) => {
+const ExportButtons = ({ layoutName }: { layoutName: string }) => {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleGoogleSlidesExport = async () => {
     try {
       setIsExporting(true);
       
-      // Generate chart image server-side
-      let chartImageBase64 = null;
-      console.log('🎨 Starting server-side chart generation...');
-      
-      // Get chart data for the selected layout
-      const currentLayoutData = getLayoutData(layoutName);
-      
-      if (layoutName === 'Trend Chart' && currentLayoutData.chartData) {
-        try {
-          console.log('📊 Generating chart with data:', currentLayoutData.chartData);
-          
-          const chartResponse = await fetch('/api/generate-chart', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              chartData: currentLayoutData.chartData,
-              width: 600,
-              height: 400,
-              type: 'bar'
-            }),
-          });
-
-          if (!chartResponse.ok) {
-            const errorText = await chartResponse.text();
-            console.error('Chart generation API error:', errorText);
-            throw new Error(`Chart API Error: ${chartResponse.status} - ${errorText}`);
-          }
-
-          const chartResult = await chartResponse.json();
-          
-          if (chartResult.success && chartResult.image) {
-            chartImageBase64 = chartResult.image;
-            console.log('✅ Server-side chart generated successfully!');
-            console.log('📊 Chart image size:', chartImageBase64.length);
-          } else {
-            throw new Error('Chart generation failed: ' + (chartResult.error || 'Unknown error'));
-          }
-        } catch (error) {
-          console.error('❌ Failed to generate chart server-side:', error);
-          console.error('Error details:', error.message);
-        }
-      } else {
-        console.log('⚠️ No chart data available for layout:', layoutName);
-      }
-      
-      console.log('🚀 Final chartImageBase64 status:', chartImageBase64 ? 'SUCCESS' : 'FAILED');
-      
       // Prepare layout data based on the selected layout
-      const finalLayoutData = {
-        ...getLayoutData(layoutName),
-        chartImage: chartImageBase64
-      };
+      const layoutData = getLayoutData(layoutName);
       
       const response = await fetch('/api/export-google-slides', {
         method: 'POST',
@@ -407,7 +345,7 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
         body: JSON.stringify({
           action: 'authenticate',
           layoutName,
-          layoutData: finalLayoutData
+          layoutData
         }),
       });
 
@@ -548,7 +486,6 @@ const ExportButtons = ({ layoutName, layoutRef }: { layoutName: string; layoutRe
 
 export default function ExcelLayoutsPage() {
   const [selectedLayout, setSelectedLayout] = useState('table');
-  const layoutRef = useRef<HTMLDivElement>(null);
 
   const layouts = [
     { id: 'table', name: 'Data Table', component: ExcelDataTable },
@@ -599,15 +536,11 @@ export default function ExcelLayoutsPage() {
           </div>
           
           {/* Export Buttons */}
-          <ExportButtons layoutName={selectedLayoutName} layoutRef={layoutRef} />
+          <ExportButtons layoutName={selectedLayoutName} />
           
           {/* Layout Container - Fixed 16:9 aspect ratio */}
           <div className="w-full max-w-4xl mx-auto">
-            {selectedLayout === 'table' && <ExcelDataTable ref={layoutRef} />}
-            {selectedLayout === 'kpi' && <ExcelKPIDashboard ref={layoutRef} />}
-            {selectedLayout === 'trend' && <ExcelTrendChart ref={layoutRef} />}
-            {selectedLayout === 'comparison' && <ExcelComparisonLayout ref={layoutRef} />}
-            {selectedLayout === 'summary' && <ExcelExecutiveSummary ref={layoutRef} />}
+            <SelectedComponent />
           </div>
         </div>
 
