@@ -4,7 +4,12 @@ import React, { useState } from 'react';
 import ChartBlock from '../../components/blocks/ChartBlock';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
-const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
+interface ExcelDataTableProps {
+  title?: string;
+  data?: any[];
+}
+
+const ExcelDataTable: React.FC<ExcelDataTableProps> = ({ title = "Data Overview", data = [] }) => (
   <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title - Standard slide title positioning */}
     <div className="mb-6">
@@ -44,7 +49,11 @@ const ExcelDataTable = ({ title = "Data Overview", data = [] }) => (
   </div>
 );
 
-const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
+interface ExcelKPIDashboardProps {
+  title?: string;
+}
+
+const ExcelKPIDashboard: React.FC<ExcelKPIDashboardProps> = ({ title = "Key Performance Indicators" }) => {
   // Small chart data for KPI cards
   const revenueChartData = {
     type: 'area' as const,
@@ -118,7 +127,11 @@ const ExcelKPIDashboard = ({ title = "Key Performance Indicators" }) => {
   );
 };
 
-const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
+interface ExcelTrendChartProps {
+  title?: string;
+}
+
+const ExcelTrendChart: React.FC<ExcelTrendChartProps> = ({ title = "Revenue Performance by Quarter" }) => {
   // Chart data for quarterly performance
   const chartData = {
     type: 'bar' as const,
@@ -215,7 +228,11 @@ const ExcelTrendChart = ({ title = "Revenue Performance by Quarter" }) => {
   );
 };
 
-const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
+interface ExcelComparisonLayoutProps {
+  title?: string;
+}
+
+const ExcelComparisonLayout: React.FC<ExcelComparisonLayoutProps> = ({ title = "Performance Comparison" }) => {
   // Comparison chart data
   const comparisonChartData = {
     type: 'bar' as const,
@@ -289,7 +306,11 @@ const ExcelComparisonLayout = ({ title = "Performance Comparison" }) => {
   );
 };
 
-const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
+interface ExcelExecutiveSummaryProps {
+  title?: string;
+}
+
+const ExcelExecutiveSummary: React.FC<ExcelExecutiveSummaryProps> = ({ title = "Executive Summary" }) => (
   <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
     {/* Title */}
     <div className="mb-6">
@@ -327,7 +348,11 @@ const ExcelExecutiveSummary = ({ title = "Executive Summary" }) => (
 );
 
 // Export buttons component
-const ExportButtons = ({ layoutName }: { layoutName: string }) => {
+interface ExportButtonsProps {
+  layoutName: string;
+}
+
+const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleGoogleSlidesExport = async () => {
@@ -484,7 +509,7 @@ const ExportButtons = ({ layoutName }: { layoutName: string }) => {
   );
 };
 
-export default function ExcelLayoutsPage() {
+const ExcelLayoutsPage: React.FC = () => {
   const [selectedLayout, setSelectedLayout] = useState('table');
 
   const layouts = [
@@ -564,4 +589,6 @@ export default function ExcelLayoutsPage() {
       </div>
     </div>
   );
-}
+};
+
+export default ExcelLayoutsPage;
