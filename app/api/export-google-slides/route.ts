@@ -740,7 +740,7 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
       }
     });
 
-    // Create area chart visualization with gradient effect
+    // Create smooth area chart visualization
     const chartData = [
       { label: 'Jan', revenue: 6500, gmv: 4200 },
       { label: 'Feb', revenue: 8200, gmv: 5800 },
@@ -757,28 +757,89 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     const chartHeight = 220;
     const stepWidth = chartWidth / (chartData.length - 1);
 
-    // Create area segments for Revenue (blue)
-    chartData.forEach((data, index) => {
-      if (index < chartData.length - 1) {
-        const currentHeight = (data.revenue / maxValue) * chartHeight * 0.8;
-        const nextHeight = (chartData[index + 1].revenue / maxValue) * chartHeight * 0.8;
+    // Create smooth area chart using overlapping ellipses and rectangles
+    const revenuePoints = chartData.map((data, index) => {
+      const x = chartStartX + (index * stepWidth);
+      const y = chartStartY + chartHeight - ((data.revenue / maxValue) * chartHeight * 0.8);
+      return { x, y, value: data.revenue };
+    });
+
+    // Create area fill using multiple overlapping shapes to simulate curves
+    const segmentWidth = stepWidth * 1.2; // Overlap segments for smoother appearance
+    
+    for (let i = 0; i < revenuePoints.length - 1; i++) {
+      const currentPoint = revenuePoints[i];
+      const nextPoint = revenuePoints[i + 1];
+      
+      // Calculate heights for current segment
+      const currentHeight = chartStartY + chartHeight - currentPoint.y;
+      const nextHeight = chartStartY + chartHeight - nextPoint.y;
+      const avgHeight = (currentHeight + nextHeight) / 2;
+      
+      // Create main area segment
+      const segmentId = `areaSegment_${i}_${Date.now()}`;
+      requests.push({
+        createShape: {
+          objectId: segmentId,
+          shapeType: 'RECTANGLE',
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: avgHeight, unit: 'PT' },
+              width: { magnitude: segmentWidth, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: currentPoint.x - (segmentWidth * 0.1),
+              translateY: chartStartY + chartHeight - avgHeight,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+
+      requests.push({
+        updateShapeProperties: {
+          objectId: segmentId,
+          fields: 'shapeBackgroundFill',
+          shapeProperties: {
+            shapeBackgroundFill: {
+              solidFill: {
+                color: {
+                  rgbColor: {
+                    red: 0.4,
+                    green: 0.3,
+                    blue: 0.9
+                  }
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Add curved transition using ellipse
+      if (Math.abs(currentHeight - nextHeight) > 10) {
+        const transitionId = `transition_${i}_${Date.now()}`;
+        const ellipseHeight = Math.abs(currentHeight - nextHeight) * 0.8;
+        const ellipseY = Math.min(currentPoint.y, nextPoint.y) - (ellipseHeight * 0.3);
         
-        const segmentId = `revenueSegment_${index}_${Date.now()}`;
         requests.push({
           createShape: {
-            objectId: segmentId,
-            shapeType: 'RECTANGLE',
+            objectId: transitionId,
+            shapeType: 'ELLIPSE',
             elementProperties: {
               pageObjectId: slideId,
               size: {
-                height: { magnitude: Math.max(currentHeight, nextHeight), unit: 'PT' },
-                width: { magnitude: stepWidth, unit: 'PT' }
+                height: { magnitude: ellipseHeight, unit: 'PT' },
+                width: { magnitude: segmentWidth * 0.6, unit: 'PT' }
               },
               transform: {
                 scaleX: 1,
                 scaleY: 1,
-                translateX: chartStartX + (index * stepWidth),
-                translateY: chartStartY + chartHeight - Math.max(currentHeight, nextHeight),
+                translateX: currentPoint.x + (segmentWidth * 0.2),
+                translateY: ellipseY,
                 unit: 'PT'
               }
             }
@@ -787,7 +848,7 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
 
         requests.push({
           updateShapeProperties: {
-            objectId: segmentId,
+            objectId: transitionId,
             fields: 'shapeBackgroundFill',
             shapeProperties: {
               shapeBackgroundFill: {
@@ -805,6 +866,65 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
           }
         });
       }
+    }
+
+    // Add top curve line using small ellipses
+    revenuePoints.forEach((point, index) => {
+      const dotId = `curveDot_${index}_${Date.now()}`;
+      requests.push({
+        createShape: {
+          objectId: dotId,
+          shapeType: 'ELLIPSE',
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 8, unit: 'PT' },
+              width: { magnitude: 8, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: point.x - 4,
+              translateY: point.y - 4,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+
+      requests.push({
+        updateShapeProperties: {
+          objectId: dotId,
+          fields: 'shapeBackgroundFill,outline',
+          shapeProperties: {
+            shapeBackgroundFill: {
+              solidFill: {
+                color: {
+                  rgbColor: {
+                    red: 0.4,
+                    green: 0.3,
+                    blue: 0.9
+                  }
+                }
+              }
+            },
+            outline: {
+              outlineFill: {
+                solidFill: {
+                  color: {
+                    rgbColor: {
+                      red: 1,
+                      green: 1,
+                      blue: 1
+                    }
+                  }
+                }
+              }
+            },
+            weight: { magnitude: 1, unit: 'PT' }
+          }
+        }
+      });
     });
 
     // Add X-axis labels
