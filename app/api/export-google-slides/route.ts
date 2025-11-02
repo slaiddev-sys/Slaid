@@ -679,55 +679,16 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     }
   });
 
-  // Generate chart image using our render API
+  // Create a visual chart representation using shapes
+  console.log('Creating Full Width Chart with shape-based visualization...');
+  
   try {
-    const chartData = layoutData.chartData || {
-      type: 'area',
-      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-      series: [
-        { name: 'Revenue', data: [6500, 8200, 9500, 11200, 15800, 25000] },
-        { name: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
-      ],
-      showLegend: true,
-      legendPosition: 'bottom',
-      showGrid: true,
-      curved: true,
-      showDots: true
-    };
-
-    console.log('Rendering chart image for Full Width Chart...');
-    
-    // Call our chart rendering API
-    const renderResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/render-chart`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        chartData,
-        width: 720,
-        height: 300
-      })
-    });
-
-    if (!renderResponse.ok) {
-      throw new Error(`Chart rendering failed: ${renderResponse.status}`);
-    }
-
-    const renderResult = await renderResponse.json();
-    
-    if (!renderResult.success) {
-      throw new Error(`Chart rendering error: ${renderResult.error}`);
-    }
-
-    console.log('Chart image generated successfully');
-
-    // Insert chart image
-    const chartImageId = `chartImage_${Date.now()}`;
+    // Create chart background
+    const chartBgId = `chartBg_${Date.now()}`;
     requests.push({
-      createImage: {
-        objectId: chartImageId,
-        url: renderResult.image,
+      createShape: {
+        objectId: chartBgId,
+        shapeType: 'RECTANGLE',
         elementProperties: {
           pageObjectId: slideId,
           size: {
@@ -745,8 +706,198 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
       }
     });
 
+    requests.push({
+      updateShapeProperties: {
+        objectId: chartBgId,
+        fields: 'shapeBackgroundFill,outline',
+        shapeProperties: {
+          shapeBackgroundFill: {
+            solidFill: {
+              color: {
+                rgbColor: {
+                  red: 0.98,
+                  green: 0.98,
+                  blue: 0.98
+                }
+              }
+            }
+          },
+          outline: {
+            outlineFill: {
+              solidFill: {
+                color: {
+                  rgbColor: {
+                    red: 0.85,
+                    green: 0.85,
+                    blue: 0.85
+                  }
+                }
+              }
+            },
+            weight: { magnitude: 1, unit: 'PT' }
+          }
+        }
+      }
+    });
+
+    // Create area chart visualization with gradient effect
+    const chartData = [
+      { label: 'Jan', revenue: 6500, gmv: 4200 },
+      { label: 'Feb', revenue: 8200, gmv: 5800 },
+      { label: 'Mar', revenue: 9500, gmv: 6800 },
+      { label: 'Apr', revenue: 11200, gmv: 8500 },
+      { label: 'May', revenue: 15800, gmv: 12200 },
+      { label: 'Jun', revenue: 25000, gmv: 19500 }
+    ];
+
+    const maxValue = Math.max(...chartData.map(d => Math.max(d.revenue, d.gmv)));
+    const chartStartX = 100;
+    const chartStartY = 180;
+    const chartWidth = 680;
+    const chartHeight = 220;
+    const stepWidth = chartWidth / (chartData.length - 1);
+
+    // Create area segments for Revenue (blue)
+    chartData.forEach((data, index) => {
+      if (index < chartData.length - 1) {
+        const currentHeight = (data.revenue / maxValue) * chartHeight * 0.8;
+        const nextHeight = (chartData[index + 1].revenue / maxValue) * chartHeight * 0.8;
+        
+        const segmentId = `revenueSegment_${index}_${Date.now()}`;
+        requests.push({
+          createShape: {
+            objectId: segmentId,
+            shapeType: 'RECTANGLE',
+            elementProperties: {
+              pageObjectId: slideId,
+              size: {
+                height: { magnitude: Math.max(currentHeight, nextHeight), unit: 'PT' },
+                width: { magnitude: stepWidth, unit: 'PT' }
+              },
+              transform: {
+                scaleX: 1,
+                scaleY: 1,
+                translateX: chartStartX + (index * stepWidth),
+                translateY: chartStartY + chartHeight - Math.max(currentHeight, nextHeight),
+                unit: 'PT'
+              }
+            }
+          }
+        });
+
+        requests.push({
+          updateShapeProperties: {
+            objectId: segmentId,
+            fields: 'shapeBackgroundFill',
+            shapeProperties: {
+              shapeBackgroundFill: {
+                solidFill: {
+                  color: {
+                    rgbColor: {
+                      red: 0.4,
+                      green: 0.3,
+                      blue: 0.9
+                    }
+                  }
+                }
+              }
+            }
+          }
+        });
+      }
+    });
+
+    // Add X-axis labels
+    chartData.forEach((data, index) => {
+      const labelId = `xlabel_${index}_${Date.now()}`;
+      requests.push({
+        createShape: {
+          objectId: labelId,
+          shapeType: 'TEXT_BOX',
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 20, unit: 'PT' },
+              width: { magnitude: 60, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: chartStartX + (index * stepWidth) - 20,
+              translateY: chartStartY + chartHeight + 10,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+
+      requests.push({
+        insertText: {
+          objectId: labelId,
+          text: data.label
+        }
+      });
+
+      requests.push({
+        updateTextStyle: {
+          objectId: labelId,
+          fields: 'fontSize,fontFamily',
+          textRange: { type: 'ALL' },
+          style: {
+            fontSize: { magnitude: 10, unit: 'PT' },
+            fontFamily: 'Helvetica'
+          }
+        }
+      });
+    });
+
+    // Add legend
+    const legendY = chartStartY + chartHeight + 40;
+    ['Revenue', 'GMV'].forEach((seriesName, index) => {
+      const legendId = `legend_${index}_${Date.now()}`;
+      requests.push({
+        createShape: {
+          objectId: legendId,
+          shapeType: 'TEXT_BOX',
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 20, unit: 'PT' },
+              width: { magnitude: 100, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: chartStartX + (index * 120),
+              translateY: legendY,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+
+      requests.push({
+        insertText: {
+          objectId: legendId,
+          text: `● ${seriesName}`
+        }
+      });
+
+      requests.push({
+        updateTextStyle: {
+          objectId: legendId,
+          fields: 'fontSize,fontFamily',
+          textRange: { type: 'ALL' },
+          style: {
+            fontSize: { magnitude: 12, unit: 'PT' },
+            fontFamily: 'Helvetica'
+          }
+        }
+      });
+    });
+
   } catch (error) {
-    console.error('Failed to generate chart image, falling back to placeholder:', error);
+    console.error('Failed to create chart visualization:', error);
     
     // Fallback: Create a simple placeholder rectangle
     const placeholderId = `placeholder_${Date.now()}`;
