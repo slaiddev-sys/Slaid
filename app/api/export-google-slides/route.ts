@@ -831,13 +831,13 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
       });
     }
 
-    // Create a single smooth curved line using CURVE shape
+    // Create a single smooth curved line using BENT_CONNECTOR
     const curveId = `smoothCurve_${Date.now()}`;
     
     requests.push({
       createShape: {
         objectId: curveId,
-        shapeType: 'CURVE',
+        shapeType: 'BENT_CONNECTOR',
         elementProperties: {
           pageObjectId: slideId,
           size: {
