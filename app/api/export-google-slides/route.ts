@@ -679,36 +679,96 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     }
   });
 
-  // Create a visual chart representation using shapes
-  console.log('Creating Full Width Chart with shape-based visualization...');
+  // Capture chart as high-quality image
+  console.log('Capturing chart as image for Full Width Chart...');
   
   try {
-    // Create chart background
-    const chartBgId = `chartBg_${Date.now()}`;
-    requests.push({
-      createShape: {
-        objectId: chartBgId,
-        shapeType: 'RECTANGLE',
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: 300, unit: 'PT' },
-            width: { magnitude: 720, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: 80,
-            translateY: 160,
-            unit: 'PT'
-          }
-        }
-      }
+    // Prepare chart data for capture
+    const chartDataForCapture = {
+      type: 'area',
+      labels: layoutData.chartData?.labels || ['Q1', 'Q2', 'Q3', 'Q4'],
+      series: layoutData.chartData?.series || [
+        { id: 'Sales', name: 'Sales', data: [2500, 5200, 8100, 12000] },
+        { id: 'Marketing', name: 'Marketing', data: [1800, 3600, 5800, 8500] }
+      ],
+      stacked: true,
+      showLegend: true
+    };
+    
+    // Call our new chart capture API
+    const captureResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/capture-chart`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        chartData: chartDataForCapture,
+        width: 600,
+        height: 300
+      })
     });
 
-    requests.push({
-      updateShapeProperties: {
-        objectId: chartBgId,
+    if (captureResponse.ok) {
+      const { image } = await captureResponse.json();
+      
+      // Create image element in Google Slides
+      const imageId = `chartImage_${Date.now()}`;
+      requests.push({
+        createImage: {
+          objectId: imageId,
+          url: `data:image/png;base64,${image}`,
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 300, unit: 'PT' },
+              width: { magnitude: 600, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: 100,
+              translateY: 150,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+      
+      console.log('High-quality chart image added successfully to Google Slides!');
+      return requests;
+    } else {
+      console.log('Chart capture failed, falling back to placeholder');
+    }
+  } catch (error) {
+    console.error('Failed to capture chart image, falling back to placeholder:', error);
+  }
+
+  // Fallback: Create a simple placeholder
+  const placeholderId = `placeholder_${Date.now()}`;
+  requests.push({
+    createShape: {
+      objectId: placeholderId,
+      shapeType: 'RECTANGLE',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 250, unit: 'PT' },
+          width: { magnitude: 500, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 100,
+          translateY: 150,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  requests.push({
+    updateShapeProperties: {
+      objectId: placeholderId,
         fields: 'shapeBackgroundFill,outline',
         shapeProperties: {
           shapeBackgroundFill: {
