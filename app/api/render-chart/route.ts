@@ -12,7 +12,16 @@ export async function POST(request: NextRequest) {
     // Launch Puppeteer
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: [
+        '--no-sandbox', 
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ]
     });
 
     const page = await browser.newPage();
@@ -126,10 +135,17 @@ export async function POST(request: NextRequest) {
         }
 
         // Create the chart
-        new Chart(ctx, chartConfig);
-        
-        // Signal that chart is ready
-        window.chartReady = true;
+        try {
+            console.log('Creating chart with config:', chartConfig);
+            new Chart(ctx, chartConfig);
+            console.log('Chart created successfully');
+            
+            // Signal that chart is ready
+            window.chartReady = true;
+        } catch (error) {
+            console.error('Chart creation failed:', error);
+            window.chartError = error.message;
+        }
     </script>
 </body>
 </html>`;
@@ -138,10 +154,10 @@ export async function POST(request: NextRequest) {
     await page.setContent(html);
 
     // Wait for chart to be rendered
-    await page.waitForFunction(() => window.chartReady === true, { timeout: 10000 });
+    await page.waitForFunction(() => window.chartReady === true, { timeout: 5000 });
     
     // Wait a bit more for animations to complete
-    await page.waitForTimeout(1000);
+    await page.waitForTimeout(500);
 
     // Take screenshot of the chart container
     const chartElement = await page.$('.chart-container');
