@@ -173,7 +173,7 @@ async function createSlideRequests(layoutName: string, layoutData: any, slideId:
       requests.push(...createExecutiveSummaryRequests(layoutData, slideId));
       break;
     case 'Full Width Chart':
-      requests.push(...await createFullWidthChartRequests(layoutData, slideId));
+      requests.push(...await createFullWidthChartRequests(layoutData, slideId, state));
       break;
   }
 
@@ -602,7 +602,7 @@ function createExecutiveSummaryRequests(layoutData: any, slideId: string) {
   return requests;
 }
 
-async function createFullWidthChartRequests(layoutData: any, slideId: string) {
+async function createFullWidthChartRequests(layoutData: any, slideId: string, state: any) {
   const requests: any[] = [];
 
   // Create title
