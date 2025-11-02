@@ -831,37 +831,39 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
       });
     }
 
-    // Create a single smooth curved line using BENT_CONNECTOR
-    const curveId = `smoothCurve_${Date.now()}`;
-    
-    requests.push({
-      createShape: {
-        objectId: curveId,
-        shapeType: 'BENT_CONNECTOR',
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: chartHeight, unit: 'PT' },
-            width: { magnitude: chartWidth, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: chartStartX,
-            translateY: chartStartY,
-            unit: 'PT'
+    // Create smooth curved line using connected straight line segments
+    for (let i = 0; i < revenuePoints.length - 1; i++) {
+      const currentPoint = revenuePoints[i];
+      const nextPoint = revenuePoints[i + 1];
+      
+      const lineId = `lineSegment_${i}_${Date.now()}`;
+      
+      requests.push({
+        createLine: {
+          objectId: lineId,
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: Math.abs(nextPoint.y - currentPoint.y) + 5, unit: 'PT' },
+              width: { magnitude: Math.abs(nextPoint.x - currentPoint.x) + 5, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: Math.min(currentPoint.x, nextPoint.x),
+              translateY: Math.min(currentPoint.y, nextPoint.y),
+              unit: 'PT'
+            }
           }
         }
-      }
-    });
+      });
 
-    requests.push({
-      updateShapeProperties: {
-        objectId: curveId,
-        fields: 'outline',
-        shapeProperties: {
-          outline: {
-            outlineFill: {
+      requests.push({
+        updateLineProperties: {
+          objectId: lineId,
+          fields: 'lineFill',
+          lineProperties: {
+            lineFill: {
               solidFill: {
                 color: {
                   rgbColor: {
@@ -874,8 +876,8 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
             }
           }
         }
-      }
-    });
+      });
+    }
 
     // Add data points as small circles
     revenuePoints.forEach((point, index) => {
