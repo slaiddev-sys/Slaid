@@ -405,8 +405,47 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
     try {
       setIsExporting(true);
       
+      // Capture chart image first (like the copy button does)
+      let chartImageBase64 = null;
+      
+      if (layoutName === 'Full Width Chart') {
+        try {
+          // Import html2canvas dynamically
+          const html2canvas = (await import('html2canvas')).default;
+          
+          // Find the chart container
+          const chartContainer = document.querySelector('.recharts-wrapper');
+          
+          if (chartContainer) {
+            console.log('Capturing chart image...');
+            
+            // Create canvas from the chart
+            const canvas = await html2canvas(chartContainer as HTMLElement, {
+              backgroundColor: '#ffffff',
+              scale: 2, // Higher resolution
+              useCORS: true,
+              allowTaint: true,
+              width: chartContainer.clientWidth,
+              height: chartContainer.clientHeight,
+            });
+
+            // Convert canvas to base64
+            chartImageBase64 = canvas.toDataURL('image/png').split(',')[1]; // Remove data:image/png;base64, prefix
+            console.log('Chart image captured successfully!');
+          }
+        } catch (chartError) {
+          console.error('Failed to capture chart:', chartError);
+          // Continue without chart image
+        }
+      }
+      
       // Prepare layout data based on the selected layout
       const layoutData = getLayoutData(layoutName);
+      
+      // Add captured chart image to layout data
+      if (chartImageBase64) {
+        layoutData.chartImage = chartImageBase64;
+      }
       
       const response = await fetch('/api/export-google-slides', {
         method: 'POST',

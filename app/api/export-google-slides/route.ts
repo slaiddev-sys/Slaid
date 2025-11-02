@@ -679,9 +679,38 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     }
   });
 
-  // For now, skip chart image capture and use a styled placeholder
-  // TODO: Implement frontend chart capture integration
-  console.log('Using styled placeholder for Full Width Chart (chart capture will be added later)...');
+  // Check if we have a captured chart image from the frontend
+  if (layoutData.chartImage) {
+    console.log('Using captured chart image from frontend!');
+    
+    // Create image element in Google Slides using the captured chart
+    const imageId = `chartImage_${Date.now()}`;
+    requests.push({
+      createImage: {
+        objectId: imageId,
+        url: `data:image/png;base64,${layoutData.chartImage}`,
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: 300, unit: 'PT' },
+            width: { magnitude: 600, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: 100,
+            translateY: 150,
+            unit: 'PT'
+          }
+        }
+      }
+    });
+    
+    console.log('Real chart image added successfully to Google Slides!');
+    return requests;
+  }
+  
+  console.log('No chart image provided, using styled placeholder...');
 
   // Create a styled chart placeholder that looks professional
   const chartBgId = `chartBg_${Date.now()}`;
