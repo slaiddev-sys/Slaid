@@ -733,8 +733,7 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
                   }
                 }
               }
-            },
-            weight: { magnitude: 1, unit: 'PT' }
+            }
           }
         }
       }
@@ -920,8 +919,7 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
                   }
                 }
               }
-            },
-            weight: { magnitude: 1, unit: 'PT' }
+            }
           }
         }
       });
