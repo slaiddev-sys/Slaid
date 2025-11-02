@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Create requests to populate the slide based on layout type
-    const requests = createSlideRequests(layoutName, layoutData, slideId);
+    const requests = await createSlideRequests(layoutName, layoutData, slideId);
 
     console.log('Adding content requests:', requests.length);
 
@@ -141,7 +141,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-function createSlideRequests(layoutName: string, layoutData: any, slideId: string) {
+async function createSlideRequests(layoutName: string, layoutData: any, slideId: string) {
   const requests: any[] = [];
 
   // Add layout-specific content based on layout type
@@ -162,7 +162,7 @@ function createSlideRequests(layoutName: string, layoutData: any, slideId: strin
       requests.push(...createExecutiveSummaryRequests(layoutData, slideId));
       break;
     case 'Full Width Chart':
-      requests.push(...createFullWidthChartRequests(layoutData, slideId));
+      requests.push(...await createFullWidthChartRequests(layoutData, slideId));
       break;
   }
 
@@ -591,7 +591,7 @@ function createExecutiveSummaryRequests(layoutData: any, slideId: string) {
   return requests;
 }
 
-function createFullWidthChartRequests(layoutData: any, slideId: string) {
+async function createFullWidthChartRequests(layoutData: any, slideId: string) {
   const requests: any[] = [];
 
   // Create title
@@ -679,63 +679,104 @@ function createFullWidthChartRequests(layoutData: any, slideId: string) {
     }
   });
 
-  // Create full-width area chart simulation
-  const chartData = layoutData.chartData || {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    series: [
-      { name: 'Revenue', data: [6500, 8200, 9500, 11200, 15800, 25000] },
-      { name: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
-    ]
-  };
+  // Generate chart image using our render API
+  try {
+    const chartData = layoutData.chartData || {
+      type: 'area',
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      series: [
+        { name: 'Revenue', data: [6500, 8200, 9500, 11200, 15800, 25000] },
+        { name: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
+      ],
+      showLegend: true,
+      legendPosition: 'bottom',
+      showGrid: true,
+      curved: true,
+      showDots: true
+    };
 
-  // Create area chart using shapes (simplified representation)
-  const chartStartX = 80;
-  const chartStartY = 160;
-  const chartWidth = 720;
-  const chartHeight = 300;
-  const dataPoints = chartData.labels.length;
+    console.log('Rendering chart image for Full Width Chart...');
+    
+    // Call our chart rendering API
+    const renderResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/render-chart`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        chartData,
+        width: 720,
+        height: 300
+      })
+    });
 
-  // Create background rectangle for chart area
-  const chartBgId = `chartBg_${Date.now()}`;
-  requests.push({
-    createShape: {
-      objectId: chartBgId,
-      shapeType: 'RECTANGLE',
-      elementProperties: {
-        pageObjectId: slideId,
-        size: {
-          height: { magnitude: chartHeight, unit: 'PT' },
-          width: { magnitude: chartWidth, unit: 'PT' }
-        },
-        transform: {
-          scaleX: 1,
-          scaleY: 1,
-          translateX: chartStartX,
-          translateY: chartStartY,
-          unit: 'PT'
+    if (!renderResponse.ok) {
+      throw new Error(`Chart rendering failed: ${renderResponse.status}`);
+    }
+
+    const renderResult = await renderResponse.json();
+    
+    if (!renderResult.success) {
+      throw new Error(`Chart rendering error: ${renderResult.error}`);
+    }
+
+    console.log('Chart image generated successfully');
+
+    // Insert chart image
+    const chartImageId = `chartImage_${Date.now()}`;
+    requests.push({
+      createImage: {
+        objectId: chartImageId,
+        url: renderResult.image,
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: 300, unit: 'PT' },
+            width: { magnitude: 720, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: 80,
+            translateY: 160,
+            unit: 'PT'
+          }
         }
       }
-    }
-  });
+    });
 
-  requests.push({
-    updateShapeProperties: {
-      objectId: chartBgId,
-      fields: 'shapeBackgroundFill,outline',
-      shapeProperties: {
-        shapeBackgroundFill: {
-          solidFill: {
-            color: {
-              rgbColor: {
-                red: 0.98,
-                green: 0.98,
-                blue: 0.98
-              }
-            }
+  } catch (error) {
+    console.error('Failed to generate chart image, falling back to placeholder:', error);
+    
+    // Fallback: Create a simple placeholder rectangle
+    const placeholderId = `placeholder_${Date.now()}`;
+    requests.push({
+      createShape: {
+        objectId: placeholderId,
+        shapeType: 'RECTANGLE',
+        elementProperties: {
+          pageObjectId: slideId,
+          size: {
+            height: { magnitude: 300, unit: 'PT' },
+            width: { magnitude: 720, unit: 'PT' }
+          },
+          transform: {
+            scaleX: 1,
+            scaleY: 1,
+            translateX: 80,
+            translateY: 160,
+            unit: 'PT'
           }
-        },
-        outline: {
-          outlineFill: {
+        }
+      }
+    });
+
+    requests.push({
+      updateShapeProperties: {
+        objectId: placeholderId,
+        fields: 'shapeBackgroundFill',
+        shapeProperties: {
+          shapeBackgroundFill: {
             solidFill: {
               color: {
                 rgbColor: {
@@ -745,86 +786,28 @@ function createFullWidthChartRequests(layoutData: any, slideId: string) {
                 }
               }
             }
-          },
-          weight: { magnitude: 1, unit: 'PT' }
+          }
         }
       }
-    }
-  });
+    });
 
-  // Create area chart lines (simplified as connected rectangles)
-  const revenueData = chartData.series[0]?.data || [6500, 8200, 9500, 11200, 15800, 25000];
-  const maxValue = Math.max(...revenueData);
-  const stepWidth = chartWidth / (dataPoints - 1);
-
-  revenueData.forEach((value, index) => {
-    if (index < revenueData.length - 1) {
-      const currentHeight = (value / maxValue) * (chartHeight * 0.8);
-      const nextHeight = (revenueData[index + 1] / maxValue) * (chartHeight * 0.8);
-      
-      // Create area segment
-      const segmentId = `segment_${index}_${Date.now()}`;
-      requests.push({
-        createShape: {
-          objectId: segmentId,
-          shapeType: 'RECTANGLE',
-          elementProperties: {
-            pageObjectId: slideId,
-            size: {
-              height: { magnitude: Math.max(currentHeight, nextHeight), unit: 'PT' },
-              width: { magnitude: stepWidth, unit: 'PT' }
-            },
-            transform: {
-              scaleX: 1,
-              scaleY: 1,
-              translateX: chartStartX + (index * stepWidth),
-              translateY: chartStartY + chartHeight - Math.max(currentHeight, nextHeight),
-              unit: 'PT'
-            }
-          }
-        }
-      });
-
-      requests.push({
-        updateShapeProperties: {
-          objectId: segmentId,
-          fields: 'shapeBackgroundFill',
-          shapeProperties: {
-            shapeBackgroundFill: {
-              solidFill: {
-                color: {
-                  rgbColor: {
-                    red: 0.4,
-                    green: 0.3,
-                    blue: 0.9
-                  }
-                }
-              }
-            }
-          }
-        }
-      });
-    }
-  });
-
-  // Add X-axis labels
-  chartData.labels.forEach((label, index) => {
-    const labelId = `xlabel_${index}_${Date.now()}`;
+    // Add placeholder text
+    const placeholderTextId = `placeholderText_${Date.now()}`;
     requests.push({
       createShape: {
-        objectId: labelId,
+        objectId: placeholderTextId,
         shapeType: 'TEXT_BOX',
         elementProperties: {
           pageObjectId: slideId,
           size: {
-            height: { magnitude: 20, unit: 'PT' },
-            width: { magnitude: 60, unit: 'PT' }
+            height: { magnitude: 50, unit: 'PT' },
+            width: { magnitude: 200, unit: 'PT' }
           },
           transform: {
             scaleX: 1,
             scaleY: 1,
-            translateX: chartStartX + (index * stepWidth) - 20,
-            translateY: chartStartY + chartHeight + 10,
+            translateX: 340,
+            translateY: 285,
             unit: 'PT'
           }
         }
@@ -833,68 +816,23 @@ function createFullWidthChartRequests(layoutData: any, slideId: string) {
 
     requests.push({
       insertText: {
-        objectId: labelId,
-        text: label
+        objectId: placeholderTextId,
+        text: 'Chart Image'
       }
     });
 
     requests.push({
       updateTextStyle: {
-        objectId: labelId,
+        objectId: placeholderTextId,
         fields: 'fontSize,fontFamily',
         textRange: { type: 'ALL' },
         style: {
-          fontSize: { magnitude: 10, unit: 'PT' },
+          fontSize: { magnitude: 16, unit: 'PT' },
           fontFamily: 'Helvetica'
         }
       }
     });
-  });
-
-  // Add legend below chart
-  const legendY = chartStartY + chartHeight + 40;
-  chartData.series.forEach((series, index) => {
-    const legendId = `legend_${index}_${Date.now()}`;
-    requests.push({
-      createShape: {
-        objectId: legendId,
-        shapeType: 'TEXT_BOX',
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: 20, unit: 'PT' },
-            width: { magnitude: 100, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: chartStartX + (index * 120),
-            translateY: legendY,
-            unit: 'PT'
-          }
-        }
-      }
-    });
-
-    requests.push({
-      insertText: {
-        objectId: legendId,
-        text: `● ${series.name}`
-      }
-    });
-
-    requests.push({
-      updateTextStyle: {
-        objectId: legendId,
-        fields: 'fontSize,fontFamily',
-        textRange: { type: 'ALL' },
-        style: {
-          fontSize: { magnitude: 12, unit: 'PT' },
-          fontFamily: 'Helvetica'
-        }
-      }
-    });
-  });
+  }
 
   return requests;
 }
