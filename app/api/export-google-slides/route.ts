@@ -15,6 +15,9 @@ const SCOPES = [
   'https://www.googleapis.com/auth/drive.file'
 ];
 
+// Store chart images temporarily (in production, use Redis or database)
+const chartImageStore = new Map<string, string>();
+
 export async function POST(request: NextRequest) {
   try {
     console.log('=== Google Slides Export Debug ===');
@@ -22,7 +25,7 @@ export async function POST(request: NextRequest) {
     console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set');
     console.log('NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL || 'Not set');
 
-    const { layoutName, layoutData, action } = await request.json();
+    const { layoutName, layoutData, action, chartImageData } = await request.json();
     console.log('Request data:', { layoutName, action });
 
     if (action === 'authenticate') {
@@ -31,11 +34,19 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Google OAuth credentials not configured' }, { status: 500 });
       }
 
+      // Store chart image if provided
+      let chartImageId = null;
+      if (chartImageData) {
+        chartImageId = `chart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+        chartImageStore.set(chartImageId, chartImageData);
+        console.log('Chart image stored with ID:', chartImageId);
+      }
+
       // Generate authentication URL
       const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
-        state: JSON.stringify({ layoutName, layoutData })
+        state: JSON.stringify({ layoutName, layoutData, chartImageId })
       });
 
       console.log('Generated auth URL:', authUrl);
@@ -679,8 +690,19 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     }
   });
 
-  // Check if we have a captured chart image from the frontend
-  if (layoutData.chartImage) {
+  // Check if we have a chart image ID to retrieve from store
+  let chartImageData = null;
+  if (state.chartImageId) {
+    chartImageData = chartImageStore.get(state.chartImageId);
+    if (chartImageData) {
+      console.log('Retrieved chart image from store!');
+      // Clean up after use
+      chartImageStore.delete(state.chartImageId);
+    }
+  }
+
+  // Check if we have a captured chart image
+  if (chartImageData) {
     console.log('Using captured chart image from frontend!');
     
     // Create image element in Google Slides using the captured chart
@@ -688,7 +710,7 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     requests.push({
       createImage: {
         objectId: imageId,
-        url: `data:image/jpeg;base64,${layoutData.chartImage}`,
+        url: `data:image/jpeg;base64,${chartImageData}`,
         elementProperties: {
           pageObjectId: slideId,
           size: {

@@ -458,17 +458,21 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
         layoutData.chartImage = chartImageBase64;
       }
       
-      const response = await fetch('/api/export-google-slides', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'authenticate',
-          layoutName,
-          layoutData
-        }),
-      });
+        const response = await fetch('/api/export-google-slides', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            action: 'authenticate',
+            layoutName,
+            layoutData: {
+              ...layoutData,
+              chartImage: undefined // Don't send in URL state to avoid length limits
+            },
+            chartImageData: chartImageBase64 // Send separately in body
+          }),
+        });
 
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
