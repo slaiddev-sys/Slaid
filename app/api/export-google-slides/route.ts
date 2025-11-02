@@ -688,7 +688,7 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     requests.push({
       createImage: {
         objectId: imageId,
-        url: `data:image/png;base64,${layoutData.chartImage}`,
+        url: `data:image/jpeg;base64,${layoutData.chartImage}`,
         elementProperties: {
           pageObjectId: slideId,
           size: {

@@ -422,16 +422,27 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
             // Create canvas from the chart
             const canvas = await html2canvas(chartContainer as HTMLElement, {
               backgroundColor: '#ffffff',
-              scale: 2, // Higher resolution
+              scale: 1, // Reduced scale to avoid large file size
               useCORS: true,
               allowTaint: true,
-              width: chartContainer.clientWidth,
-              height: chartContainer.clientHeight,
+              width: Math.min(chartContainer.clientWidth, 800), // Max width 800px
+              height: Math.min(chartContainer.clientHeight, 400), // Max height 400px
             });
 
-            // Convert canvas to base64
-            chartImageBase64 = canvas.toDataURL('image/png').split(',')[1]; // Remove data:image/png;base64, prefix
-            console.log('Chart image captured successfully!');
+            // Convert canvas to base64 with JPEG compression to reduce size
+            chartImageBase64 = canvas.toDataURL('image/jpeg', 0.8).split(',')[1]; // JPEG with 80% quality
+            
+            // Check image size and compress further if needed
+            const imageSizeKB = Math.round((chartImageBase64.length * 3) / 4 / 1024);
+            console.log(`Chart image captured successfully! Size: ${imageSizeKB}KB`);
+            
+            // If image is still too large (>500KB), compress more
+            if (imageSizeKB > 500) {
+              console.log('Image too large, compressing further...');
+              chartImageBase64 = canvas.toDataURL('image/jpeg', 0.5).split(',')[1]; // Lower quality
+              const newSizeKB = Math.round((chartImageBase64.length * 3) / 4 / 1024);
+              console.log(`Compressed image size: ${newSizeKB}KB`);
+            }
           }
         } catch (chartError) {
           console.error('Failed to capture chart:', chartError);
