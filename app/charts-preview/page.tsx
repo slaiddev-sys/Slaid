@@ -98,6 +98,62 @@ export default function ChartsPreviewPage() {
     }
   }, [singleSeries, calculateDefaultComparison]);
 
+  // Function to copy chart as image to clipboard
+  const copyChartAsImage = React.useCallback(async (chartElement: HTMLElement, chartTitle: string) => {
+    try {
+      // Import html2canvas dynamically
+      const html2canvas = (await import('html2canvas')).default;
+      
+      // Find the chart container (the ChartBlock element)
+      const chartContainer = chartElement.querySelector('.recharts-wrapper') || chartElement;
+      
+      if (!chartContainer) {
+        throw new Error('Chart container not found');
+      }
+
+      // Create canvas from the chart
+      const canvas = await html2canvas(chartContainer as HTMLElement, {
+        backgroundColor: '#ffffff',
+        scale: 2, // Higher resolution
+        useCORS: true,
+        allowTaint: true,
+        width: chartContainer.clientWidth,
+        height: chartContainer.clientHeight,
+      });
+
+      // Convert canvas to blob
+      canvas.toBlob(async (blob) => {
+        if (blob) {
+          try {
+            // Copy to clipboard
+            await navigator.clipboard.write([
+              new ClipboardItem({
+                'image/png': blob
+              })
+            ]);
+            
+            // Show success feedback
+            alert(`${chartTitle} copied to clipboard! You can now paste it into Google Slides.`);
+          } catch (clipboardError) {
+            console.error('Failed to copy to clipboard:', clipboardError);
+            // Fallback: download the image
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `${chartTitle.replace(/\s+/g, '_')}.png`;
+            link.click();
+            URL.revokeObjectURL(url);
+            alert(`${chartTitle} downloaded! You can upload it to Google Slides.`);
+          }
+        }
+      }, 'image/png');
+      
+    } catch (error) {
+      console.error('Failed to copy chart:', error);
+      alert('Failed to copy chart. Please try again.');
+    }
+  }, []);
+
   // Helper function to render legend in title area
   const renderTitleLegend = (series: any[], chartTitle: string) => {
     // Color palette matching ChartBlock
@@ -532,13 +588,33 @@ export default function ChartsPreviewPage() {
           </h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {areaCharts.map((chart, index) => (
-              <div key={index} className="bg-white rounded-xl shadow-sm border p-6">
+              <div key={index} className="bg-white rounded-xl shadow-sm border p-6" ref={index === 0 ? (el) => { if (el) el.setAttribute('data-chart-container', 'true'); } : undefined}>
                 {/* Title and legend with precise alignment */}
                 <div className="mb-4 pl-16 pr-12 flex justify-between items-start">
-                  <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-1">{chart.title}</h3>
-                    <p className="text-sm text-gray-600">{chart.description}</p>
-
+                  <div className="flex items-center gap-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-1">{chart.title}</h3>
+                      <p className="text-sm text-gray-600">{chart.description}</p>
+                    </div>
+                    {/* Copy button for Stacked Area Chart only */}
+                    {index === 0 && (
+                      <button
+                        onClick={() => {
+                          const chartContainer = document.querySelector('[data-chart-container="true"]') as HTMLElement;
+                          if (chartContainer) {
+                            copyChartAsImage(chartContainer, chart.title);
+                          }
+                        }}
+                        className="ml-4 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors flex items-center gap-1.5"
+                        title="Copy chart as image to clipboard"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        Copy Chart
+                      </button>
+                    )}
                   </div>
                   {/* Legend aligned with chart right edge */}
                   {chart.data.showLegend && chart.data.series.length > 1 && (
