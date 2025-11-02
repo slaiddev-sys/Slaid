@@ -696,7 +696,7 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     };
     
     // Call our new chart capture API
-    const captureResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/capture-chart`, {
+    const captureResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3002'}/api/capture-chart`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
