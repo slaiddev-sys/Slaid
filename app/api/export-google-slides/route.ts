@@ -756,42 +756,53 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
     const chartHeight = 220;
     const stepWidth = chartWidth / (chartData.length - 1);
 
-    // Create smooth area chart using overlapping ellipses and rectangles
+    // Create smooth curved area chart using curved lines
     const revenuePoints = chartData.map((data, index) => {
       const x = chartStartX + (index * stepWidth);
       const y = chartStartY + chartHeight - ((data.revenue / maxValue) * chartHeight * 0.8);
       return { x, y, value: data.revenue };
     });
 
-    // Create area fill using multiple overlapping shapes to simulate curves
-    const segmentWidth = stepWidth * 1.2; // Overlap segments for smoother appearance
+    // Create the area fill first (background shape)
+    const areaFillId = `areaFill_${Date.now()}`;
     
+    // Create a polygon shape for the filled area
+    const areaPoints = [
+      // Start from bottom-left
+      { x: revenuePoints[0].x, y: chartStartY + chartHeight },
+      // Add all curve points
+      ...revenuePoints,
+      // End at bottom-right
+      { x: revenuePoints[revenuePoints.length - 1].x, y: chartStartY + chartHeight }
+    ];
+
+    // Create the area fill using a curved shape approximation
     for (let i = 0; i < revenuePoints.length - 1; i++) {
       const currentPoint = revenuePoints[i];
       const nextPoint = revenuePoints[i + 1];
       
-      // Calculate heights for current segment
-      const currentHeight = chartStartY + chartHeight - currentPoint.y;
-      const nextHeight = chartStartY + chartHeight - nextPoint.y;
-      const avgHeight = (currentHeight + nextHeight) / 2;
+      // Create trapezoid segments for smooth area fill
+      const trapezoidId = `areaTrapezoid_${i}_${Date.now()}`;
       
-      // Create main area segment
-      const segmentId = `areaSegment_${i}_${Date.now()}`;
+      // Calculate the four corners of the trapezoid
+      const bottomY = chartStartY + chartHeight;
+      const segmentWidth = nextPoint.x - currentPoint.x;
+      
       requests.push({
         createShape: {
-          objectId: segmentId,
+          objectId: trapezoidId,
           shapeType: 'RECTANGLE',
           elementProperties: {
             pageObjectId: slideId,
             size: {
-              height: { magnitude: avgHeight, unit: 'PT' },
+              height: { magnitude: Math.max(bottomY - currentPoint.y, bottomY - nextPoint.y), unit: 'PT' },
               width: { magnitude: segmentWidth, unit: 'PT' }
             },
             transform: {
               scaleX: 1,
               scaleY: 1,
-              translateX: currentPoint.x - (segmentWidth * 0.1),
-              translateY: chartStartY + chartHeight - avgHeight,
+              translateX: currentPoint.x,
+              translateY: Math.min(currentPoint.y, nextPoint.y),
               unit: 'PT'
             }
           }
@@ -800,7 +811,7 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
 
       requests.push({
         updateShapeProperties: {
-          objectId: segmentId,
+          objectId: trapezoidId,
           fields: 'shapeBackgroundFill',
           shapeProperties: {
             shapeBackgroundFill: {
@@ -811,80 +822,37 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
                     green: 0.3,
                     blue: 0.9
                   }
-                }
+                },
+                alpha: 0.7
               }
             }
           }
         }
       });
-
-      // Add curved transition using ellipse
-      if (Math.abs(currentHeight - nextHeight) > 10) {
-        const transitionId = `transition_${i}_${Date.now()}`;
-        const ellipseHeight = Math.abs(currentHeight - nextHeight) * 0.8;
-        const ellipseY = Math.min(currentPoint.y, nextPoint.y) - (ellipseHeight * 0.3);
-        
-        requests.push({
-          createShape: {
-            objectId: transitionId,
-            shapeType: 'ELLIPSE',
-            elementProperties: {
-              pageObjectId: slideId,
-              size: {
-                height: { magnitude: ellipseHeight, unit: 'PT' },
-                width: { magnitude: segmentWidth * 0.6, unit: 'PT' }
-              },
-              transform: {
-                scaleX: 1,
-                scaleY: 1,
-                translateX: currentPoint.x + (segmentWidth * 0.2),
-                translateY: ellipseY,
-                unit: 'PT'
-              }
-            }
-          }
-        });
-
-        requests.push({
-          updateShapeProperties: {
-            objectId: transitionId,
-            fields: 'shapeBackgroundFill',
-            shapeProperties: {
-              shapeBackgroundFill: {
-                solidFill: {
-                  color: {
-                    rgbColor: {
-                      red: 0.4,
-                      green: 0.3,
-                      blue: 0.9
-                    }
-                  }
-                }
-              }
-            }
-          }
-        });
-      }
     }
 
-    // Add top curve line using small ellipses
-    revenuePoints.forEach((point, index) => {
-      const dotId = `curveDot_${index}_${Date.now()}`;
+    // Create the smooth curved line on top
+    for (let i = 0; i < revenuePoints.length - 1; i++) {
+      const currentPoint = revenuePoints[i];
+      const nextPoint = revenuePoints[i + 1];
+      
+      const lineId = `curveLine_${i}_${Date.now()}`;
+      
       requests.push({
-        createShape: {
-          objectId: dotId,
-          shapeType: 'ELLIPSE',
+        createLine: {
+          objectId: lineId,
+          lineCategory: 'CURVED',
           elementProperties: {
             pageObjectId: slideId,
             size: {
-              height: { magnitude: 8, unit: 'PT' },
-              width: { magnitude: 8, unit: 'PT' }
+              height: { magnitude: Math.abs(nextPoint.y - currentPoint.y), unit: 'PT' },
+              width: { magnitude: Math.abs(nextPoint.x - currentPoint.x), unit: 'PT' }
             },
             transform: {
               scaleX: 1,
               scaleY: 1,
-              translateX: point.x - 4,
-              translateY: point.y - 4,
+              translateX: Math.min(currentPoint.x, nextPoint.x),
+              translateY: Math.min(currentPoint.y, nextPoint.y),
               unit: 'PT'
             }
           }
@@ -892,11 +860,11 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
       });
 
       requests.push({
-        updateShapeProperties: {
-          objectId: dotId,
-          fields: 'shapeBackgroundFill,outline',
-          shapeProperties: {
-            shapeBackgroundFill: {
+        updateLineProperties: {
+          objectId: lineId,
+          fields: 'lineFill',
+          lineProperties: {
+            lineFill: {
               solidFill: {
                 color: {
                   rgbColor: {
@@ -906,16 +874,48 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string) {
                   }
                 }
               }
+            }
+          }
+        }
+      });
+    }
+
+    // Add data points as small circles
+    revenuePoints.forEach((point, index) => {
+      const dotId = `dataPoint_${index}_${Date.now()}`;
+      requests.push({
+        createShape: {
+          objectId: dotId,
+          shapeType: 'ELLIPSE',
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 6, unit: 'PT' },
+              width: { magnitude: 6, unit: 'PT' }
             },
-            outline: {
-              outlineFill: {
-                solidFill: {
-                  color: {
-                    rgbColor: {
-                      red: 1,
-                      green: 1,
-                      blue: 1
-                    }
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: point.x - 3,
+              translateY: point.y - 3,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+
+      requests.push({
+        updateShapeProperties: {
+          objectId: dotId,
+          fields: 'shapeBackgroundFill',
+          shapeProperties: {
+            shapeBackgroundFill: {
+              solidFill: {
+                color: {
+                  rgbColor: {
+                    red: 0.4,
+                    green: 0.3,
+                    blue: 0.9
                   }
                 }
               }
