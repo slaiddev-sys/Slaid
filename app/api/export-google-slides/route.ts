@@ -76,7 +76,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Parse state to get layout information
-    const { layoutName, layoutData } = JSON.parse(state);
+    const stateData = JSON.parse(state);
+    const { layoutName, layoutData } = stateData;
     console.log('Creating presentation for:', layoutName);
 
     // Exchange code for tokens
@@ -123,7 +124,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Create requests to populate the slide based on layout type
-    const requests = await createSlideRequests(layoutName, layoutData, slideId);
+    const requests = await createSlideRequests(layoutName, layoutData, slideId, stateData);
 
     console.log('Adding content requests:', requests.length);
 
@@ -152,7 +153,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function createSlideRequests(layoutName: string, layoutData: any, slideId: string) {
+async function createSlideRequests(layoutName: string, layoutData: any, slideId: string, stateData: any) {
   const requests: any[] = [];
 
   // Add layout-specific content based on layout type
@@ -173,7 +174,7 @@ async function createSlideRequests(layoutName: string, layoutData: any, slideId:
       requests.push(...createExecutiveSummaryRequests(layoutData, slideId));
       break;
     case 'Full Width Chart':
-      requests.push(...await createFullWidthChartRequests(layoutData, slideId, state));
+      requests.push(...await createFullWidthChartRequests(layoutData, slideId, stateData));
       break;
   }
 
@@ -602,7 +603,7 @@ function createExecutiveSummaryRequests(layoutData: any, slideId: string) {
   return requests;
 }
 
-async function createFullWidthChartRequests(layoutData: any, slideId: string, state: any) {
+async function createFullWidthChartRequests(layoutData: any, slideId: string, stateData: any) {
   const requests: any[] = [];
 
   // Create title
@@ -692,12 +693,12 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string, st
 
   // Check if we have a chart image ID to retrieve from store
   let chartImageData = null;
-  if (state.chartImageId) {
-    chartImageData = chartImageStore.get(state.chartImageId);
+  if (stateData.chartImageId) {
+    chartImageData = chartImageStore.get(stateData.chartImageId);
     if (chartImageData) {
       console.log('Retrieved chart image from store!');
       // Clean up after use
-      chartImageStore.delete(state.chartImageId);
+      chartImageStore.delete(stateData.chartImageId);
     }
   }
 
