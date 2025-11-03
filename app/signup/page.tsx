@@ -6,16 +6,16 @@ import { useRouter } from "next/navigation";
 import { signInWithGoogle } from "../../lib/auth";
 import SupabaseSetupNotice from "../../components/SupabaseSetupNotice";
 
-const imgLogo41 = "/Slaid logo Official.png";
+const imgLogo41 = "/slaid logo verde.png";
 const imgBackground = "http://localhost:3845/assets/c8cea87b5bbb736c60e6d80d56ee2ee70dd81613.png";
 
 function TypewriterPlaceholder() {
   const phrases = [
-    "Design a stunning pitch deck in seconds",
-    "Turn messy notes into beautiful slides",
-    "Generate a branded sales report instantly",
-    "Convert raw data into compelling stories",
-    "Create clean, on-brand presentations fast",
+    "Build a forecast presentation with this spreadsheet.",
+    "Create a data room from this financial data.",
+    "Make a performance review for the marketing team.",
+    "Turn this into a client report with insights.",
+    "Summarize this sales report in 5 slides.",
   ];
   const [index, setIndex] = useState(0);
   const [displayed, setDisplayed] = useState("");
@@ -76,7 +76,7 @@ export default function SignUpPage() {
   return (
     <div className="min-h-screen flex flex-row">
       {/* Left column: Sign up form */}
-      <div className="w-[45%] bg-[#1c1c1c] flex flex-col justify-center px-16 pb-12 min-h-screen">
+      <div className="w-[45%] bg-white flex flex-col justify-center px-16 pb-12 min-h-screen">
         <div className="mx-auto w-full max-w-sm">
           {/* Slaid Logo */}
           <div className="mb-10 flex items-center gap-2">
@@ -88,7 +88,7 @@ export default function SignUpPage() {
             </button>
           </div>
           {/* Heading */}
-          <h1 className="text-white text-xl font-medium font-sans mb-6">Create your account</h1>
+          <h1 className="text-xl font-medium font-sans mb-6" style={{ color: '#002903' }}>Create your account</h1>
           
           {/* Supabase Setup Notice */}
           {!isSupabaseConfigured && <SupabaseSetupNotice />}
@@ -111,7 +111,8 @@ export default function SignUpPage() {
           <button 
             onClick={handleGoogleSignUp}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-2 border border-white/20 text-white text-base font-medium font-sans rounded-md py-3 bg-transparent hover:bg-white/10 hover:border-white/40 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center gap-2 border text-base font-medium font-sans rounded-md py-3 bg-transparent hover:bg-gray-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+            style={{ borderColor: '#002903', color: '#002903' }}
           >
             <span className="w-5 h-5 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 18 18"><g><path fill="#4285F4" d="M17.64 9.2045c0-.638-.057-1.252-.163-1.84H9v3.481h4.844a4.137 4.137 0 0 1-1.797 2.717v2.26h2.908c1.703-1.57 2.685-3.885 2.685-6.618z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.805 5.96-2.18l-2.908-2.26c-.807.54-1.84.86-3.052.86-2.348 0-4.337-1.587-5.05-3.724H.96v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.856A5.41 5.41 0 0 1 3.5 9c0-.644.11-1.272.304-1.856V4.812H.96A8.997 8.997 0 0 0 0 9c0 1.418.34 2.76.96 3.944l2.99-2.088z"/><path fill="#EA4335" d="M9 3.579c1.32 0 2.5.454 3.43 1.346l2.572-2.572C13.47.805 11.43 0 9 0A8.997 8.997 0 0 0 .96 4.812l2.99 2.332C4.663 5.166 6.652 3.579 9 3.579z"/></g></svg>
@@ -120,9 +121,9 @@ export default function SignUpPage() {
           </button>
         </div>
         {/* Login link */}
-        <div className="text-center text-sm text-white font-sans mt-8">
+        <div className="text-center text-sm font-sans mt-8" style={{ color: '#002903' }}>
           Already have an account?{' '}
-          <Link href="/login" className="text-white font-bold underline">Log in</Link>
+          <Link href="/login" className="font-bold underline" style={{ color: '#002903' }}>Log in</Link>
         </div>
       </div>
       {/* Right column: Visual representation */}
@@ -130,7 +131,11 @@ export default function SignUpPage() {
         {/* Figma background image below gradient */}
         <div className="absolute inset-0 [background-size:2006.59px_1200px] bg-repeat bg-top-left mix-blend-overlay opacity-60" style={{ backgroundImage: `url('${imgBackground}')` }} />
         {/* Gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-[#1E44BA]/70 via-[#7e22ce]/60 to-[#1E44BA]/50" />
+        <div className="absolute inset-0 bg-gradient-to-br from-[#002903] via-[#004505] to-[#001a02]" />
+        {/* Blurred green circles */}
+        <div className="absolute top-20 left-20 w-32 h-32 rounded-full blur-3xl opacity-30" style={{ backgroundColor: '#005406' }} />
+        <div className="absolute bottom-32 right-16 w-48 h-48 rounded-full blur-3xl opacity-25" style={{ backgroundColor: '#005406' }} />
+        <div className="absolute top-1/2 left-1/3 w-24 h-24 rounded-full blur-2xl opacity-20" style={{ backgroundColor: '#005406' }} />
         {/* Centered input box visual */}
         <div className="relative z-10 flex items-center justify-center w-full h-full">
           <div className="bg-white rounded-lg shadow-lg px-6 py-3 flex items-center min-w-[220px] w-full max-w-md">
@@ -139,7 +144,7 @@ export default function SignUpPage() {
               placeholder={TypewriterPlaceholder()}
               disabled
             />
-            <button className="ml-2 bg-[#1E44BA] rounded-full w-8 h-8 flex items-center justify-center">
+            <button className="ml-2 rounded-full w-8 h-8 flex items-center justify-center" style={{ backgroundColor: '#002903' }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
             </button>
           </div>
