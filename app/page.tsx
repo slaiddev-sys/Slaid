@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import WaitlistForm from "../components/WaitlistForm";
 
 // TypewriterWord component
 function TypewriterWord() {
@@ -40,7 +41,7 @@ function TypewriterWord() {
 
 // Figma design implementation for the homepage
 const imgImageBlur = "http://localhost:3845/assets/ae21641b719b2b1802127d43331c7044aeb90ed2.png";
-const imgLogo41 = "/Slaid logo Official.png";
+const imgLogo41 = "/slaid logo verde.png";
 const imgVector = "http://localhost:3845/assets/6b865160961a492cd8b2f516e437a92bcb222845.svg";
 const imgVector1 = "http://localhost:3845/assets/3eaf1cac6c496c5dcbedce61eed5dc6c519cf09a.svg";
 const imgVector2 = "http://localhost:3845/assets/98cb3a12042ce357ef3f9c7e7a8d2a104823edd6.svg";
@@ -193,213 +194,157 @@ function Component1({ variant = "1" }: Component1Props) {
   );
 }
 
-// Input component for text-based presentation generation
+// File upload and waitlist signup component
 function HomeInput() {
-  const [inputValue, setInputValue] = useState("");
+  const [email, setEmail] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const handleGenerate = async () => {
-    if (!inputValue.trim()) {
-      return; // No input provided
+  const handleWaitlistSignup = async () => {
+    if (!email.trim()) {
+      return;
     }
-
-    // Redirect to signup page when button is activated (blue)
+    
+    // For now, just redirect to signup
     window.location.href = '/signup';
   };
 
   return (
-    <>
-      <div className="relative w-full max-w-[784px] rounded-[14px] bg-[rgba(29,41,61,0.3)] shadow-2xl border border-white/5 backdrop-blur-md px-8 py-6 flex flex-col gap-4">
-
-        {/* Text input mode */}
-        <div className="flex flex-row items-center gap-4">
-          <input
-            className="flex-1 bg-transparent outline-none border-none text-white/90 placeholder-white/60 text-lg font-sans py-2 px-0"
-            placeholder="Describe your slide presentation"
-            type="text"
-            value={inputValue}
-            onChange={e => setInputValue(e.target.value)}
-            onKeyPress={e => e.key === 'Enter' && handleGenerate()}
-          />
-          <button
-            onClick={handleGenerate}
-            className={
-              `rounded-full w-9 h-9 flex items-center justify-center shadow-md transition ` +
-              (inputValue.trim()
-                ? "bg-[#2563eb] hover:bg-[#1d4ed8] text-white"
-                : "bg-[#45556c] hover:bg-[#314158] text-white/80") +
-              " focus:outline-none"
-            }
-          >
-            <span className="sr-only">Generate</span>
-            <span className="inline-block">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-            </span>
-          </button>
-        </div>
-        
-        {/* Chips row */}
-        <div className="flex flex-wrap gap-2 mt-2">
-          {['Logo','Font','Excel','Word'].map((label, i) => (
-            <button 
-              key={label} 
-              onClick={() => window.location.href = '/signup'}
-              className="flex items-center gap-1 px-3 py-1 rounded-[8.75px] bg-[rgba(49,65,88,0.4)] text-white/90 text-xs font-medium font-sans border border-white/10 shadow hover:bg-[#314158] transition focus:outline-none"
-            >
-              {label === 'Logo' && (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              )}
-              {label === 'Font' && (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 4h8a4 4 0 014 4 4 4 0 01-4 4H6z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 12h9a4 4 0 014 4 4 4 0 01-4 4H6z" />
-                </svg>
-              )}
-              {label === 'Excel' && (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 3v6h6" />
-                </svg>
-              )}
-              {label === 'Word' && (
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-              )}
-              {label}
-            </button>
-          ))}
-        </div>
+    <div className="w-full max-w-md">
+      <div className="flex flex-row items-center gap-4 mb-4">
+        <input
+          className="flex-1 bg-gray-50 rounded-full px-6 py-3 placeholder-gray-500 text-base font-sans focus:outline-none"
+          style={{ 
+            color: '#002903',
+            border: '1px solid #d1d5db'
+          }}
+          onFocus={(e) => e.target.style.border = '2px solid #002903'}
+          onBlur={(e) => e.target.style.border = '1px solid #d1d5db'}
+          placeholder="Enter your email"
+          type="email"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+          onKeyPress={e => e.key === 'Enter' && handleWaitlistSignup()}
+        />
+        <button
+          onClick={handleWaitlistSignup}
+          className="text-white px-8 py-3 rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 whitespace-nowrap"
+          style={{ backgroundColor: '#002903' }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
+        >
+          Join Waitlist →
+        </button>
       </div>
       
-      {/* Helper text */}
-      <div className="mt-4 text-center text-xs text-white/50 font-sans">
-        Press Enter to generate • Web interface
+      {/* Maker Avatars and Count */}
+      <div className="flex items-center gap-4">
+        <div className="flex -space-x-2">
+          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold">
+            M
+          </div>
+          <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold">
+            A
+          </div>
+          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold">
+            S
+          </div>
+        </div>
+        <span className="text-sm font-medium" style={{ color: '#002903' }}>163+ makers have already joined</span>
       </div>
-    </>
+    </div>
   );
 }
 
 export default function Component1920WLight() {
   return (
-    <div className="bg-[#0A0015] box-border flex flex-col items-center justify-start pb-[177px] pt-0 px-0 relative min-h-screen w-full">
-      {/* Background overlays and gradients: even darker, premium look */}
-      <div className="[background-size:109.03%_100%] absolute bg-no-repeat bg-top bottom-0 filter left-0 right-0 top-0 z-0 opacity-10 blur-[2px]" style={{ backgroundImage: `url('${imgImageBlur}')` }} />
-      
-      {/* Slides Showcase Background - Blended */}
-      <div className="absolute inset-0 z-0 pointer-events-none opacity-[0.03]">
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ 
-            backgroundImage: `url('/slides-showcase.png')`,
-            filter: 'blur(1px) brightness(0.4) contrast(1.2)'
-          }}
-        />
+    <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden">
+      {/* Background Image - Right Side */}
+      <div 
+        className="absolute right-0 top-0 bottom-0 w-1/2 bg-cover bg-center bg-no-repeat z-0 hidden lg:block"
+        style={{ backgroundImage: `url('/home-background.png')` }}
+      />
+      {/* Navigation Bar - Logo Only */}
+      <div className="relative z-10 box-border flex flex-row items-center justify-start max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 w-full">
+        <div className="bg-center bg-contain bg-no-repeat h-[28px] sm:h-[36px] shrink-0 w-[90px] sm:w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
       </div>
-      
-      {/* Strong, dark gradient overlay */}
-      <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-br from-[#0A0015] via-[#0F0030] via-[#1A0033] via-[#1C0059] to-[#2A1B69] opacity-98" />
-      {/* Intense soft purple radial glow behind heading */}
-      <div className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full bg-[#1C0059]/8 blur-3xl z-0" />
-      <div className="absolute bottom-0 left-0 opacity-[0.06] right-0 top-0 z-0">
-        {/* Overlay blurs (unchanged) */}
-        <div className="absolute flex h-[0px] items-center justify-center left-[14.742px] top-[31.49px] w-[0px]">
-          <div className="flex-none rotate-[12deg]">
-            <div className="bg-[rgba(81,162,255,0.08)] blur-[6px] filter h-[154px] rounded-[12.75px] w-[252px]" data-name="Overlay+Blur" id="node-2_63" />
-          </div>
-        </div>
-        <div className="absolute flex h-[0px] items-center justify-center right-[49.953px] top-[102.102px] w-[0px]">
-          <div className="flex-none rotate-[354deg]">
-            <div className="bg-[rgba(194,122,255,0.06)] blur-sm filter h-[126px] rounded-[8.75px] w-[196px]" data-name="Overlay+Blur" id="node-2_66" />
-          </div>
-        </div>
-        <div className="absolute bottom-[106.309px] flex h-[0px] items-center justify-center left-[476.493px] w-[0px]">
-          <div className="flex-none rotate-[3deg]">
-            <div className="bg-[rgba(124,134,255,0.08)] blur-[6px] filter h-[140px] rounded-[8.75px] w-56" data-name="Overlay+Blur" id="node-2_69" />
-          </div>
-        </div>
-        <div className="absolute flex h-[0px] items-center justify-center top-[147.619px] translate-x-[-50%] w-[0px]" style={{ left: "calc(50% + 105.002px)" }}>
-          <div className="flex-none rotate-[348deg]">
-            <div className="bg-[rgba(166,132,255,0.06)] blur-sm filter h-[133px] rounded-[12.75px] w-[210px]" data-name="Overlay+Blur" id="node-2_72" />
-          </div>
-        </div>
-        <div className="absolute bottom-[44.038px] flex h-[0px] items-center justify-center right-[632.954px] w-[0px]">
-          <div className="flex-none rotate-[6deg]">
-            <div className="bg-[rgba(43,127,255,0.08)] blur-[6px] filter h-[147px] rounded-[8.75px] w-[238px]" data-name="Overlay+Blur" id="node-2_75" />
-          </div>
-        </div>
-        <div className="absolute flex h-[0px] items-center justify-center right-[477.198px] top-[219.315px] w-[0px]">
-          <div className="flex-none rotate-[357deg]">
-            <div className="bg-[rgba(173,70,255,0.06)] blur-sm filter h-28 rounded-[8.75px] w-[182px]" data-name="Overlay+Blur" id="node-2_78" />
-          </div>
-        </div>
-        <div className="absolute bottom-[152.965px] flex h-[0px] items-center justify-center left-[631.379px] w-[0px]">
-          <div className="flex-none rotate-[9deg]">
-            <div className="bg-[rgba(97,95,255,0.08)] blur-[6px] filter h-[126px] rounded-[12.75px] w-[203px]" data-name="Overlay+Blur" id="node-2_81" />
-          </div>
-        </div>
-      </div>
-      {/* Navigation Bar */}
-      <div className="relative z-10 box-border flex flex-row items-center justify-center max-w-[1120px] px-[21px] py-3.5 w-full">
-        <div className="flex flex-row items-start w-[359.33px]">
-          <div className="bg-center bg-contain bg-no-repeat h-[36px] shrink-0 w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
-        </div>
-        <div className="flex flex-row items-center justify-center w-[359.33px]">
-          <a className="text-[13.2px] text-white/80 font-sans hover:underline" href="/pricing">Pricing</a>
-        </div>
-        <div className="flex flex-row gap-1 items-center justify-end w-[359.34px]">
-          <button 
-            onClick={() => window.location.href = '/login'}
-            className="h-[31.5px] px-3.5 py-1.5 rounded-[6.75px] text-white text-[13.2px] font-medium font-sans bg-transparent hover:bg-white/10 transition shadow-sm"
-          >
-            Login
-          </button>
-          <button 
-            onClick={() => window.location.href = '/signup'}
-            className="h-[31.5px] px-3.5 py-1.5 rounded-[6.75px] text-black text-[13.2px] font-medium font-sans bg-white hover:bg-white/80 hover:text-black hover:shadow-md transition-all duration-200 shadow focus:outline-none"
-          >
-            Sign Up
-          </button>
-        </div>
-      </div>
-      {/* Main Content: adjust top padding for better vertical centering */}
-      <main className="relative z-10 flex flex-col items-center justify-center w-full min-h-screen px-4 pt-24 pb-0" style={{ justifyContent: 'flex-start', minHeight: '80vh' }}>
-        {/* Tagline */}
-        <div className="mb-6 flex items-center justify-center relative">
-          <span className="backdrop-blur-md bg-[rgba(29,41,61,0.4)] rounded-full px-6 py-2 flex items-center gap-2 shadow-md border border-white/10">
-            <span className="inline-block w-2 h-2 bg-[#51a2ff] rounded-full shadow-[0_2px_8px_0_rgba(81,162,255,0.5)]"></span>
-            <span className="text-white text-xs font-medium font-sans">AI assistant to build presentations</span>
+      {/* Main Content: left-aligned layout */}
+      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 pt-4 sm:pt-8 max-w-6xl mx-auto">
+        {/* Launch Date Badge */}
+        <div className="mb-4 sm:mb-6 flex items-center justify-start relative">
+          <span className="bg-gray-100 rounded-[14px] px-4 sm:px-6 py-2 flex items-center gap-2 border border-gray-200">
+            <span className="text-gray-800 text-xs sm:text-sm font-medium font-sans">LAUNCHING NOV 9TH, 2025</span>
           </span>
         </div>
-        {/* Heading */}
-        <h1 className="font-instrument-serif flex flex-row items-center justify-center text-[2.8rem] sm:text-[3.3rem] md:text-[3.7rem] lg:text-[52.5px] font-normal text-white leading-tight mb-2">
-          <span>Design presentations that&nbsp;</span>
-          <span className="relative inline-flex items-center pl-4 pr-3 py-1 border-2 border-[#51a2ff] shadow-[0_8px_32px_-8px_rgba(81,162,255,0.25)] bg-gradient-to-br from-[#51a2ff22] to-[#9810fa22] text-white">
-            <TypewriterWord />
-            {/* Four white dots with blue border, one at each corner */}
-            <span className="absolute left-[-3.5px] top-[-3.5px] w-[7px] h-[7px] bg-white border-2 border-[#51a2ff]" />
-            <span className="absolute right-[-3.5px] top-[-3.5px] w-[7px] h-[7px] bg-white border-2 border-[#51a2ff]" />
-            <span className="absolute left-[-3.5px] bottom-[-3.5px] w-[7px] h-[7px] bg-white border-2 border-[#51a2ff]" />
-            <span className="absolute right-[-3.5px] bottom-[-3.5px] w-[7px] h-[7px] bg-white border-2 border-[#51a2ff]" />
-          </span>
-        </h1>
-        {/* Subheading */}
-        <p className="max-w-[588px] text-center text-[16.3px] text-white/80 font-sans mb-8">Presentations designed to fit your brand, not the other way around.</p>
-        {/* Input Card */}
-        <HomeInput />
-        {/* Preset Buttons */}
-        <div className="flex flex-wrap gap-3 justify-center mt-6">
-          {['Pitch Deck','Sales Report','Product Launch','Investor Update','Monthly Review'].map(label => (
-            <button 
-              key={label} 
-              onClick={() => window.location.href = '/signup'}
-              className="px-5 py-2 rounded-full bg-[rgba(29,41,61,0.3)] text-white/80 text-xs font-medium font-sans border border-white/10 shadow hover:bg-[#314158] transition focus:outline-none"
-            >
-              {label}
-            </button>
-          ))}
+        {/* Main Content Row - Title and Upload Files */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start justify-between w-full max-w-6xl pr-0 lg:pr-4">
+          {/* Left Side - Title and Description */}
+          <div className="flex-1 max-w-3xl">
+            {/* Heading */}
+            <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] xl:text-[52.5px] font-normal leading-none mb-2 text-left tracking-tighter" style={{ color: '#002903' }}>
+                <div>
+                  Convert excels{" "}
+                  <span className="inline-flex items-center mx-1 sm:mx-2">
+                    <img src="/google-sheets.png" alt="Google Sheets" className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
+                  </span>
+                  to
+                </div>
+                <div>
+                  professional{" "}
+                  <span className="inline-flex items-center mx-1 sm:mx-2">
+                    <img src="/google-slide.png" alt="Google Slides" className="h-6 sm:h-8 lg:h-10 w-auto" />
+                  </span>
+                </div>
+                <div>
+                  presentations{" "}
+                  <span className="inline-flex items-center mx-1 sm:mx-2">
+                    <img src="/power-point.png" alt="PowerPoint" className="h-6 sm:h-8 lg:h-10 w-auto" />
+                  </span>
+                </div>
+            </h1>
+            {/* Subheading */}
+            <p className="max-w-[588px] text-left text-sm sm:text-base lg:text-[16.3px] font-sans mb-6 sm:mb-8" style={{ color: '#002903' }}>
+              Unlock the potential of your Excel data with our AI-powered<br className="hidden sm:block" />
+              <span className="sm:hidden"> </span>storytelling and presentation generator.
+            </p>
+            
+            {/* Email Signup Section */}
+            <WaitlistForm />
+          </div>
+          
+          {/* Right Side - Upload Files - HIDDEN TEMPORARILY */}
+          <div className="relative w-full max-w-md ml-0 lg:ml-24 mt-8 lg:mt-0 hidden">
+            <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border border-gray-100 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative">
+              {/* Layered Cards Background */}
+              <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
+                {/* Back card */}
+                <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform rotate-3 translate-x-2 translate-y-2 transition-transform duration-300 group-hover:translate-x-6"></div>
+                {/* Middle card */}
+                <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform -rotate-1 translate-x-1 translate-y-1 transition-transform duration-300 group-hover:-translate-x-4"></div>
+                {/* Front card */}
+                <div className="relative w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-start p-3 sm:p-4 transition-transform duration-300">
+                  {/* Document header lines */}
+                  <div className="w-full mb-6">
+                    <div className="h-1.5 bg-gray-200 rounded mb-2"></div>
+                    <div className="h-1.5 bg-gray-200 rounded w-2/3 mb-2"></div>
+                    <div className="h-1.5 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                  
+                  {/* Google Sheets icon in center */}
+                  <div className="flex-1 flex items-center justify-center">
+                    <img src="/google-sheets.png" alt="Google Sheets" className="w-12 h-16 sm:w-14 sm:h-18 lg:w-16 lg:h-20 object-contain" />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
+                <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>Upload Files</h3>
+                <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>Drag and drop your files here, or <button className="text-blue-500 hover:underline">click to select</button>.</p>
+                <p className="text-xs text-center" style={{ color: '#002903' }}>Support formats: .xlsx, .xsl, .csv</p>
+              </div>
+            </div>
+          </div>
         </div>
+        
       </main>
     </div>
   );
