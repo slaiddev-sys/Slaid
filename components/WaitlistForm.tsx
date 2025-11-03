@@ -97,7 +97,7 @@ export default function WaitlistForm() {
           <img src="/Ellipse (1).png" alt="Maker Avatar" className="w-8 h-8 rounded-full border-2 border-white" />
           <img src="/Ellipse (2).png" alt="Maker Avatar" className="w-8 h-8 rounded-full border-2 border-white" />
         </div>
-        <span className="text-sm font-medium" style={{ color: '#002903' }}>163+ people have already joined</span>
+        <span className="text-sm font-medium" style={{ color: '#002903' }}>23+ people have already joined</span>
       </div>
     </div>
   );

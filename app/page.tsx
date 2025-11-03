@@ -249,7 +249,7 @@ function HomeInput() {
             S
           </div>
         </div>
-        <span className="text-sm font-medium" style={{ color: '#002903' }}>163+ makers have already joined</span>
+        <span className="text-sm font-medium" style={{ color: '#002903' }}>23+ makers have already joined</span>
       </div>
     </div>
   );
