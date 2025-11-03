@@ -81,7 +81,7 @@ const ExcelKPIDashboard: React.FC<ExcelKPIDashboardProps> = ({ title = "Key Perf
   };
 
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="kpi-dashboard">
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-6">
         <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -154,7 +154,7 @@ const ExcelTrendChart: React.FC<ExcelTrendChartProps> = ({ title = "Revenue Perf
   const formattedGrowth = `${isPositive ? '+' : ''}${growthPercentage.toFixed(1)}%`;
 
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="trend-chart">
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-6 ml-6">
         <h2 className="text-2xl font-medium text-black">{title}</h2>
@@ -252,7 +252,7 @@ const ExcelFullWidthChart: React.FC<ExcelFullWidthChartProps> = ({ title = "Perf
   };
 
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="fullwidth-chart">
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title Section */}
       <div className="mb-6 ml-6 flex items-start justify-between">
         <h1 className="text-2xl font-medium text-black">{title}</h1>
@@ -295,7 +295,7 @@ const ExcelComparisonLayout: React.FC<ExcelComparisonLayoutProps> = ({ title = "
   };
 
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="comparison-chart">
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
       {/* Title */}
       <div className="mb-4">
         <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
@@ -423,24 +423,13 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
 
-      // Clone the response to handle both JSON and text parsing
-      const responseClone = response.clone();
-      
-      let data;
       if (!response.ok) {
         const errorText = await response.text();
         console.error('API Error:', errorText);
         throw new Error(`API Error: ${response.status} - ${errorText}`);
       }
 
-      try {
-        data = await responseClone.json();
-      } catch (jsonError) {
-        console.error('Failed to parse JSON response:', jsonError);
-        const responseText = await response.text();
-        console.error('Response text:', responseText);
-        throw new Error('Server returned invalid JSON response');
-      }
+      const data = await response.json();
       
       if (data.authUrl) {
         // Open Google OAuth in a new window
@@ -536,7 +525,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
   };
 
   return (
-    <>
+    <div className="flex gap-3 mb-4">
       <button
         onClick={handleGoogleSlidesExport}
         disabled={isExporting}
@@ -575,7 +564,7 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
         </svg>
         Export to PowerPoint
       </button>
-    </>
+    </div>
   );
 };
 
@@ -583,285 +572,58 @@ const ExcelLayoutsPage: React.FC = () => {
   const [selectedLayout, setSelectedLayout] = useState('table');
 
   // Function to copy chart as image to clipboard
-  const copyChartAsImage = async () => {
+  const copyChartAsImage = async (chartElement: HTMLElement, chartTitle: string) => {
     try {
-      // Find the chart container that includes both chart and legend
-      let chartContainer: HTMLElement | null = null;
+      // Import html2canvas dynamically
+      const html2canvas = (await import('html2canvas')).default;
       
-      // First, try to find the parent container that includes both chart and legend
-      if (selectedLayout === 'fullwidth') {
-        const layoutEl = document.querySelector('[data-chart-container="fullwidth-chart"]');
-        // Look for the container that has both recharts and legend
-        chartContainer = layoutEl?.querySelector('.w-full') as HTMLElement;
-        if (!chartContainer) {
-          chartContainer = layoutEl as HTMLElement;
-        }
-      } else if (selectedLayout === 'kpi') {
-        const layoutEl = document.querySelector('[data-chart-container="kpi-dashboard"]');
-        chartContainer = layoutEl?.querySelector('.w-full') as HTMLElement;
-        if (!chartContainer) {
-          chartContainer = layoutEl as HTMLElement;
-        }
-      } else if (selectedLayout === 'trend') {
-        const layoutEl = document.querySelector('[data-chart-container="trend-chart"]');
-        chartContainer = layoutEl?.querySelector('.w-full') as HTMLElement;
-        if (!chartContainer) {
-          chartContainer = layoutEl as HTMLElement;
-        }
-      } else if (selectedLayout === 'comparison') {
-        const layoutEl = document.querySelector('[data-chart-container="comparison-chart"]');
-        chartContainer = layoutEl?.querySelector('.w-full') as HTMLElement;
-        if (!chartContainer) {
-          chartContainer = layoutEl as HTMLElement;
-        }
-      }
+      // Find the chart container (the ChartBlock element)
+      const chartContainer = chartElement.querySelector('.recharts-wrapper') || chartElement;
       
       if (!chartContainer) {
-        // Fallback: try to find the recharts responsive container parent
-        const rechartsEl = document.querySelector('.recharts-responsive-container');
-        if (rechartsEl) {
-          // Go up to find parent that likely contains legend too
-          chartContainer = rechartsEl.parentElement as HTMLElement;
-        }
-      }
-      
-      if (!chartContainer) {
-        // Final fallback: try to find any chart container
-        chartContainer = document.querySelector('[data-chart-container]') as HTMLElement;
-      }
-      
-      if (!chartContainer) {
-        throw new Error('Chart container not found. Please make sure a chart layout is selected and the chart has loaded.');
+        throw new Error('Chart container not found');
       }
 
-      console.log('Found chart container:', chartContainer);
-
-      // Wait longer for animations and ensure chart is fully rendered
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Force a repaint to ensure everything is rendered
-      chartContainer.style.transform = 'translateZ(0)';
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      
-      // Force legend dots to be visible - target the actual legend structure
-      // ChartBlock uses div elements with backgroundColor for legend dots
-      const legendDots = chartContainer.querySelectorAll('.w-1\\.5.h-1\\.5.rounded-full, [class*="w-1.5"][class*="h-1.5"][class*="rounded-full"]');
-      legendDots.forEach((dot, index) => {
-        if (index === 0) {
-          (dot as HTMLElement).style.backgroundColor = '#3b82f6'; // Blue for Revenue
-          (dot as HTMLElement).style.setProperty('background-color', '#3b82f6', 'important');
-        } else if (index === 1) {
-          (dot as HTMLElement).style.backgroundColor = '#a855f7'; // Purple for GMV  
-          (dot as HTMLElement).style.setProperty('background-color', '#a855f7', 'important');
-        }
-      });
-      
-      // Also try alternative selectors for legend dots
-      const alternativeDots = chartContainer.querySelectorAll('div[style*="background-color"], .flex.items-center.gap-1 > div:first-child');
-      alternativeDots.forEach((dot, index) => {
-        const element = dot as HTMLElement;
-        if (element.className.includes('rounded-full') || element.style.borderRadius === '50%') {
-          if (index === 0) {
-            element.style.backgroundColor = '#3b82f6';
-            element.style.setProperty('background-color', '#3b82f6', 'important');
-          } else if (index === 1) {
-            element.style.backgroundColor = '#a855f7';
-            element.style.setProperty('background-color', '#a855f7', 'important');
-          }
-        }
-      });
-
-      // Import html2canvas dynamically and handle oklch error
-      let html2canvas;
-      try {
-        html2canvas = (await import('html2canvas')).default;
-      } catch (importError) {
-        console.error('Failed to import html2canvas:', importError);
-        throw new Error('Failed to load image capture library');
-      }
-
-      // Create canvas with high quality settings
-      const canvas = await html2canvas(chartContainer, {
+      // Create canvas from the chart
+      const canvas = await html2canvas(chartContainer as HTMLElement, {
         backgroundColor: '#ffffff',
-        scale: 2, // Higher scale for better quality
-        useCORS: true, // Enable CORS for better rendering
-        allowTaint: true, // Allow taint for better quality
-        logging: false,
+        scale: 2, // Higher resolution
+        useCORS: true,
+        allowTaint: true,
         width: chartContainer.clientWidth,
         height: chartContainer.clientHeight,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: window.innerWidth,
-        windowHeight: window.innerHeight,
-        onclone: (clonedDoc) => {
-          // Add CSS to override any problematic colors and improve rendering
-          const style = clonedDoc.createElement('style');
-          style.textContent = `
-            * {
-              color: inherit !important;
-              background-color: inherit !important;
-              border-color: inherit !important;
-              -webkit-font-smoothing: antialiased !important;
-              -moz-osx-font-smoothing: grayscale !important;
-              text-rendering: optimizeLegibility !important;
-            }
-            
-            /* Legend dot colors - ChartBlock uses div elements for legend dots */
-            .flex.items-center.gap-1 > div:first-child,
-            .w-1\\.5.h-1\\.5.rounded-full,
-            [class*="w-1.5"][class*="h-1.5"][class*="rounded-full"] {
-              background-color: #3b82f6 !important; /* Default to blue */
-            }
-            
-            /* Force specific legend dot colors based on position */
-            .flex.justify-center.items-center.gap-4 > div:first-child .w-1\\.5.h-1\\.5.rounded-full,
-            .flex.justify-center.items-center.gap-4 > div:first-child [class*="w-1.5"][class*="h-1.5"][class*="rounded-full"] {
-              background-color: #3b82f6 !important; /* Blue for first item (Revenue) */
-            }
-            
-            .flex.justify-center.items-center.gap-4 > div:last-child .w-1\\.5.h-1\\.5.rounded-full,
-            .flex.justify-center.items-center.gap-4 > div:last-child [class*="w-1.5"][class*="h-1.5"][class*="rounded-full"] {
-              background-color: #a855f7 !important; /* Purple for last item (GMV) */
-            }
-            
-            /* Alternative selectors for different legend structures */
-            div[style*="background-color"] {
-              background-color: inherit !important;
-            }
-            
-            /* Tailwind color overrides */
-            .text-blue-600 { color: #2563eb !important; }
-            .text-green-600 { color: #16a34a !important; }
-            .text-purple-500 { color: #a855f7 !important; }
-            .bg-blue-600 { background-color: #2563eb !important; }
-            .bg-green-600 { background-color: #16a34a !important; }
-            .bg-purple-500 { background-color: #a855f7 !important; }
-            .bg-white { background-color: #ffffff !important; }
-            .text-black { color: #000000 !important; }
-            .text-gray-600 { color: #4b5563 !important; }
-            .text-gray-700 { color: #374151 !important; }
-            .text-gray-800 { color: #1f2937 !important; }
-            .text-gray-900 { color: #111827 !important; }
-            
-            /* SVG rendering improvements */
-            svg {
-              shape-rendering: geometricPrecision !important;
-            }
-            
-            /* Force all SVG elements to render properly */
-            svg circle, svg rect, svg path {
-              shape-rendering: geometricPrecision !important;
-            }
-          `;
-          clonedDoc.head.appendChild(style);
-          
-          // Also manually set legend dot colors if found - target div elements
-          const legendDots = clonedDoc.querySelectorAll('.w-1\\.5.h-1\\.5.rounded-full, [class*="w-1.5"][class*="h-1.5"][class*="rounded-full"]');
-          legendDots.forEach((dot, index) => {
-            const element = dot as HTMLElement;
-            if (index === 0) {
-              element.style.backgroundColor = '#3b82f6'; // Blue for Revenue
-              element.style.setProperty('background-color', '#3b82f6', 'important');
-            } else if (index === 1) {
-              element.style.backgroundColor = '#a855f7'; // Purple for GMV
-              element.style.setProperty('background-color', '#a855f7', 'important');
-            }
-          });
-          
-          // Also try alternative approach for legend dots
-          const alternativeDots = clonedDoc.querySelectorAll('div[style*="background-color"]');
-          alternativeDots.forEach((dot, index) => {
-            const element = dot as HTMLElement;
-            if (element.className.includes('rounded-full') && (element.className.includes('w-1.5') || element.className.includes('h-1.5'))) {
-              if (index === 0) {
-                element.style.backgroundColor = '#3b82f6';
-                element.style.setProperty('background-color', '#3b82f6', 'important');
-              } else if (index === 1) {
-                element.style.backgroundColor = '#a855f7';
-                element.style.setProperty('background-color', '#a855f7', 'important');
-              }
-            }
-          });
-        }
       });
-
-      console.log('Canvas created:', canvas.width, 'x', canvas.height);
 
       // Convert canvas to blob
       canvas.toBlob(async (blob) => {
         if (blob) {
           try {
-            // Check if clipboard API is available
-            if (navigator.clipboard && window.ClipboardItem) {
-              // Copy to clipboard
-              await navigator.clipboard.write([
-                new ClipboardItem({
-                  'image/png': blob
-                })
-              ]);
-              
-              // Show success feedback
-              alert(`${selectedLayoutName} copied to clipboard! You can now paste it into Google Slides.`);
-            } else {
-              throw new Error('Clipboard API not supported');
-            }
+            // Copy to clipboard
+            await navigator.clipboard.write([
+              new ClipboardItem({
+                'image/png': blob
+              })
+            ]);
+            
+            // Show success feedback
+            alert(`${chartTitle} copied to clipboard! You can now paste it into Google Slides.`);
           } catch (clipboardError) {
             console.error('Failed to copy to clipboard:', clipboardError);
             // Fallback: download the image
             const url = URL.createObjectURL(blob);
             const link = document.createElement('a');
             link.href = url;
-            link.download = `${selectedLayoutName.replace(/\s+/g, '_')}.png`;
-            document.body.appendChild(link);
+            link.download = `${chartTitle.replace(/\s+/g, '_')}.png`;
             link.click();
-            document.body.removeChild(link);
             URL.revokeObjectURL(url);
-            alert(`${selectedLayoutName} downloaded in high quality! You can upload it to Google Slides.`);
+            alert(`${chartTitle} downloaded! You can upload it to Google Slides.`);
           }
-        } else {
-          throw new Error('Failed to create image blob');
         }
-      }, 'image/png', 1.0); // Maximum quality PNG
+      }, 'image/png');
       
     } catch (error) {
       console.error('Failed to copy chart:', error);
-      
-      // If the error is about oklch, provide a specific message
-      if (error.message && error.message.includes('oklch')) {
-        alert('Browser compatibility issue detected. The chart will be downloaded instead of copied to clipboard.');
-        // Force download fallback
-        try {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          canvas.width = 800;
-          canvas.height = 600;
-          if (ctx) {
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#000000';
-            ctx.font = '20px Arial';
-            ctx.fillText('Chart export failed due to browser compatibility.', 50, 100);
-            ctx.fillText('Please try using a different browser or update your current browser.', 50, 150);
-          }
-          
-          canvas.toBlob((blob) => {
-            if (blob) {
-              const url = URL.createObjectURL(blob);
-              const link = document.createElement('a');
-              link.href = url;
-              link.download = `${selectedLayoutName.replace(/\s+/g, '_')}_error.png`;
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              URL.revokeObjectURL(url);
-            }
-          }, 'image/png');
-        } catch (fallbackError) {
-          console.error('Fallback also failed:', fallbackError);
-        }
-      } else {
-        alert(`Failed to copy chart: ${error.message}. Please try again.`);
-      }
+      alert('Failed to copy chart. Please try again.');
     }
   };
 
@@ -920,7 +682,12 @@ const ExcelLayoutsPage: React.FC = () => {
             {/* Copy Chart Button - only show for layouts with charts */}
             {(selectedLayout === 'kpi' || selectedLayout === 'trend' || selectedLayout === 'fullwidth' || selectedLayout === 'comparison') && (
               <button
-                onClick={copyChartAsImage}
+                onClick={() => {
+                  const layoutContainer = document.querySelector('.w-full.max-w-4xl') as HTMLElement;
+                  if (layoutContainer) {
+                    copyChartAsImage(layoutContainer, `${selectedLayoutName} Chart`);
+                  }
+                }}
                 className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-colors flex items-center gap-1.5"
                 title="Copy chart as image to clipboard"
               >

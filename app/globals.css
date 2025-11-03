@@ -114,3 +114,40 @@ body {
 .bg-accent-teal { background-color: var(--color-accent-teal); }
 
 /* (animation rules removed on request) */
+
+/* Fix for oklch color function browser compatibility */
+@supports not (color: oklch(0.5 0.2 180)) {
+  /* Fallback colors for browsers that don't support oklch */
+  :root {
+    --tw-color-primary: #3b82f6;
+    --tw-color-secondary: #8b5cf6;
+    --tw-color-accent: #10b981;
+  }
+}
+
+/* Force override any oklch colors that might be generated */
+* {
+  color-scheme: light;
+}
+
+/* Prevent oklch colors in all elements */
+*,
+*::before,
+*::after {
+  /* Override any potential oklch colors with safe fallbacks */
+  --tw-text-opacity: 1;
+  --tw-bg-opacity: 1;
+  --tw-border-opacity: 1;
+}
+
+/* Specific overrides for common Tailwind classes that might use oklch */
+.text-blue-500 { color: rgb(59 130 246) !important; }
+.text-blue-600 { color: rgb(37 99 235) !important; }
+.text-blue-700 { color: rgb(29 78 216) !important; }
+.bg-blue-500 { background-color: rgb(59 130 246) !important; }
+.bg-blue-600 { background-color: rgb(37 99 235) !important; }
+.bg-blue-700 { background-color: rgb(29 78 216) !important; }
+.text-green-500 { color: rgb(34 197 94) !important; }
+.text-green-600 { color: rgb(22 163 74) !important; }
+.bg-green-500 { background-color: rgb(34 197 94) !important; }
+.bg-green-600 { background-color: rgb(22 163 74) !important; }

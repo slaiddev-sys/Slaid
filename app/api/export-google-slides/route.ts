@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library';
+import { captureChartImage } from '../../../lib/chart-capture';
 
 // Google OAuth2 configuration
 const oauth2Client = new OAuth2Client(
@@ -15,9 +16,6 @@ const SCOPES = [
   'https://www.googleapis.com/auth/drive.file'
 ];
 
-// Store chart images temporarily (in production, use Redis or database)
-const chartImageStore = new Map<string, string>();
-
 export async function POST(request: NextRequest) {
   try {
     console.log('=== Google Slides Export Debug ===');
@@ -25,7 +23,15 @@ export async function POST(request: NextRequest) {
     console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set');
     console.log('NEXT_PUBLIC_BASE_URL:', process.env.NEXT_PUBLIC_BASE_URL || 'Not set');
 
-    const { layoutName, layoutData, action, chartImageData } = await request.json();
+    let requestBody;
+    try {
+      requestBody = await request.json();
+    } catch (jsonError) {
+      console.error('Failed to parse JSON request body:', jsonError);
+      return NextResponse.json({ error: 'Invalid JSON in request body' }, { status: 400 });
+    }
+
+    const { layoutName, layoutData, action } = requestBody;
     console.log('Request data:', { layoutName, action });
 
     if (action === 'authenticate') {
@@ -34,19 +40,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Google OAuth credentials not configured' }, { status: 500 });
       }
 
-      // Store chart image if provided
-      let chartImageId = null;
-      if (chartImageData) {
-        chartImageId = `chart_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        chartImageStore.set(chartImageId, chartImageData);
-        console.log('Chart image stored with ID:', chartImageId);
-      }
-
       // Generate authentication URL
       const authUrl = oauth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: SCOPES,
-        state: JSON.stringify({ layoutName, layoutData, chartImageId })
+        state: JSON.stringify({ layoutName, layoutData })
       });
 
       console.log('Generated auth URL:', authUrl);
@@ -76,8 +74,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Parse state to get layout information
-    const stateData = JSON.parse(state);
-    const { layoutName, layoutData } = stateData;
+    const { layoutName, layoutData } = JSON.parse(state);
     console.log('Creating presentation for:', layoutName);
 
     // Exchange code for tokens
@@ -124,7 +121,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Create requests to populate the slide based on layout type
-    const requests = await createSlideRequests(layoutName, layoutData, slideId, stateData);
+    const requests = await createSlideRequests(layoutName, layoutData, slideId);
 
     console.log('Adding content requests:', requests.length);
 
@@ -153,35 +150,35 @@ export async function GET(request: NextRequest) {
   }
 }
 
-async function createSlideRequests(layoutName: string, layoutData: any, slideId: string, stateData: any) {
+async function createSlideRequests(layoutName: string, layoutData: any, slideId: string) {
   const requests: any[] = [];
 
   // Add layout-specific content based on layout type
   switch (layoutName) {
     case 'Trend Chart':
-      requests.push(...createTrendChartRequests(layoutData, slideId));
+      requests.push(...await createTrendChartRequests(layoutData, slideId));
       break;
     case 'KPI Dashboard':
-      requests.push(...createKPIDashboardRequests(layoutData, slideId));
+      requests.push(...await createKPIDashboardRequests(layoutData, slideId));
       break;
     case 'Data Table':
       requests.push(...createDataTableRequests(layoutData, slideId));
       break;
     case 'Comparison View':
-      requests.push(...createComparisonRequests(layoutData, slideId));
+      requests.push(...await createComparisonRequests(layoutData, slideId));
       break;
     case 'Executive Summary':
       requests.push(...createExecutiveSummaryRequests(layoutData, slideId));
       break;
     case 'Full Width Chart':
-      requests.push(...await createFullWidthChartRequests(layoutData, slideId, stateData));
+      requests.push(...await createFullWidthChartRequests(layoutData, slideId));
       break;
   }
 
   return requests;
 }
 
-function createTrendChartRequests(layoutData: any, slideId: string) {
+async function createTrendChartRequests(layoutData: any, slideId: string) {
   const requests: any[] = [];
 
   // Create title
@@ -227,155 +224,100 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
     }
   });
 
-  // Create chart area (left side) - simulate bars with rectangles
-  const chartData = [
-    { label: 'Q1 2023', value: 52.2 },
-    { label: 'Q2 2023', value: 58.6 },
-    { label: 'Q3 2023', value: 43.8 },
-    { label: 'Q4 2023', value: 47.8 }
-  ];
+  // Capture chart as high-quality image
+  console.log('Capturing chart as image for Trend Chart...');
+  
+  try {
+    // Prepare chart data for capture
+    const chartDataForCapture = {
+      type: 'area',
+      labels: ['Q1 2023', 'Q2 2023', 'Q3 2023', 'Q4 2023'],
+      series: [
+        { id: 'Revenue', data: [52.2, 58.6, 43.8, 47.8] }
+      ],
+      stacked: false,
+      showLegend: true
+    };
+    
+    // Call our direct chart capture function (same logic as copy/paste)
+    const image = await captureChartImage(chartDataForCapture, 350, 200);
 
-  const maxValue = Math.max(...chartData.map(d => d.value));
-  const chartStartX = 50;
-  const chartStartY = 120;
-  const barWidth = 60;
-  const barSpacing = 80;
-  const maxBarHeight = 200;
-
-  chartData.forEach((data, index) => {
-    const barHeight = (data.value / maxValue) * maxBarHeight;
-    const barX = chartStartX + (index * barSpacing);
-    const barY = chartStartY + (maxBarHeight - barHeight);
-
-     // Create bar rectangle with rounded corners
-     const barId = `bar_${index}_${Date.now()}`;
-     requests.push({
-       createShape: {
-         objectId: barId,
-         shapeType: 'ROUND_RECTANGLE',
-         elementProperties: {
-           pageObjectId: slideId,
-           size: {
-             height: { magnitude: barHeight, unit: 'PT' },
-             width: { magnitude: barWidth, unit: 'PT' }
-           },
-           transform: {
-             scaleX: 1,
-             scaleY: 1,
-             translateX: barX,
-             translateY: barY,
-             unit: 'PT'
-           }
-         }
-       }
-     });
-
-    // Style the bar
-    requests.push({
-      updateShapeProperties: {
-        objectId: barId,
-        fields: 'shapeBackgroundFill',
-        shapeProperties: {
-          shapeBackgroundFill: {
-            solidFill: {
-              color: {
-                rgbColor: {
-                  red: 0.4,
-                  green: 0.3,
-                  blue: 0.9
-                }
-              }
+    if (image) {
+      
+      // Create image element in Google Slides
+      const imageId = `chartImage_${Date.now()}`;
+      requests.push({
+        createImage: {
+          objectId: imageId,
+          url: `data:image/png;base64,${image}`,
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 200, unit: 'PT' },
+              width: { magnitude: 350, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: 50,
+              translateY: 120,
+              unit: 'PT'
             }
           }
         }
-      }
-    });
-
-    // Add label below bar
-    const labelId = `label_${index}_${Date.now()}`;
+      });
+      
+      console.log('High-quality chart image added successfully to Google Slides!');
+    } else {
+      console.log('Chart capture failed, falling back to placeholder');
+      // Add a placeholder rectangle if image capture fails
+      const placeholderId = `placeholder_${Date.now()}`;
+      requests.push({
+        createShape: {
+          objectId: placeholderId,
+          shapeType: 'RECTANGLE',
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 200, unit: 'PT' },
+              width: { magnitude: 350, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: 50,
+              translateY: 120,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to capture chart image, falling back to placeholder:', error);
+    // Add a placeholder rectangle if image capture fails
+    const placeholderId = `placeholder_${Date.now()}`;
     requests.push({
       createShape: {
-        objectId: labelId,
-        shapeType: 'TEXT_BOX',
+        objectId: placeholderId,
+        shapeType: 'RECTANGLE',
         elementProperties: {
           pageObjectId: slideId,
           size: {
-            height: { magnitude: 30, unit: 'PT' },
-            width: { magnitude: barWidth + 20, unit: 'PT' }
+            height: { magnitude: 200, unit: 'PT' },
+            width: { magnitude: 350, unit: 'PT' }
           },
           transform: {
             scaleX: 1,
             scaleY: 1,
-            translateX: barX - 10,
-            translateY: chartStartY + maxBarHeight + 10,
+            translateX: 50,
+            translateY: 120,
             unit: 'PT'
           }
         }
       }
     });
-
-    requests.push({
-      insertText: {
-        objectId: labelId,
-        text: data.label
-      }
-    });
-
-    requests.push({
-      updateTextStyle: {
-        objectId: labelId,
-        fields: 'fontSize,fontFamily',
-        textRange: { type: 'ALL' },
-        style: {
-          fontSize: { magnitude: 10, unit: 'PT' },
-          fontFamily: 'Helvetica'
-        }
-      }
-    });
-
-    // Add value on top of bar
-    const valueId = `value_${index}_${Date.now()}`;
-    requests.push({
-      createShape: {
-        objectId: valueId,
-        shapeType: 'TEXT_BOX',
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: 20, unit: 'PT' },
-            width: { magnitude: barWidth, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: barX,
-            translateY: barY - 25,
-            unit: 'PT'
-          }
-        }
-      }
-    });
-
-    requests.push({
-      insertText: {
-        objectId: valueId,
-        text: data.value.toString()
-      }
-    });
-
-    requests.push({
-      updateTextStyle: {
-        objectId: valueId,
-        fields: 'fontSize,fontFamily,bold',
-        textRange: { type: 'ALL' },
-        style: {
-          fontSize: { magnitude: 12, unit: 'PT' },
-          fontFamily: 'Helvetica',
-          bold: true
-        }
-      }
-    });
-  });
+  }
 
   // Create insights panel (right side)
   const insightsId = `insights_${Date.now()}`;
@@ -434,7 +376,7 @@ function createTrendChartRequests(layoutData: any, slideId: string) {
   return requests;
 }
 
-function createKPIDashboardRequests(layoutData: any, slideId: string) {
+async function createKPIDashboardRequests(layoutData: any, slideId: string) {
   const requests: any[] = [];
 
   // Add KPI data as text boxes
@@ -445,6 +387,7 @@ function createKPIDashboardRequests(layoutData: any, slideId: string) {
     { title: 'Target Achievement', value: '94.2%', change: '-5.8%' }
   ];
 
+  // Create KPI cards
   kpis.forEach((kpi, index) => {
     const x = (index % 2) * 250 + 50;
     const y = Math.floor(index / 2) * 150 + 100;
@@ -478,6 +421,49 @@ function createKPIDashboardRequests(layoutData: any, slideId: string) {
       }
     });
   });
+
+  // Add a small chart below the KPIs
+  try {
+    const chartDataForCapture = {
+      type: 'area',
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      series: [
+        { id: 'Revenue', data: [6500, 7200, 6800, 7500, 8100, 8500] },
+        { id: 'GMV', data: [4200, 4800, 4400, 5100, 5600, 6000] }
+      ],
+      stacked: false,
+      showLegend: true
+    };
+    
+    const image = await captureChartImage(chartDataForCapture, 450, 150);
+
+    if (image) {
+      
+      const imageId = `kpiChart_${Date.now()}`;
+      requests.push({
+        createImage: {
+          objectId: imageId,
+          url: `data:image/png;base64,${image}`,
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 150, unit: 'PT' },
+              width: { magnitude: 450, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: 75,
+              translateY: 350,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to capture KPI chart:', error);
+  }
 
   return requests;
 }
@@ -513,25 +499,26 @@ function createDataTableRequests(layoutData: any, slideId: string) {
   return requests;
 }
 
-function createComparisonRequests(layoutData: any, slideId: string) {
+async function createComparisonRequests(layoutData: any, slideId: string) {
   const requests: any[] = [];
-  const comparisonId = `comparison_${Date.now()}`;
 
+  // Create title
+  const titleId = `title_${Date.now()}`;
   requests.push({
     createShape: {
-      objectId: comparisonId,
+      objectId: titleId,
       shapeType: 'TEXT_BOX',
       elementProperties: {
         pageObjectId: slideId,
         size: {
-          height: { magnitude: 250, unit: 'PT' },
-          width: { magnitude: 450, unit: 'PT' }
+          height: { magnitude: 50, unit: 'PT' },
+          width: { magnitude: 400, unit: 'PT' }
         },
         transform: {
           scaleX: 1,
           scaleY: 1,
           translateX: 50,
-          translateY: 100,
+          translateY: 50,
           unit: 'PT'
         }
       }
@@ -540,12 +527,83 @@ function createComparisonRequests(layoutData: any, slideId: string) {
 
   requests.push({
     insertText: {
-      objectId: comparisonId,
-      text: `Performance Comparison
+      objectId: titleId,
+      text: 'Performance Comparison'
+    }
+  });
 
-Actual vs Target:
+  // Add comparison chart
+  try {
+    const chartDataForCapture = {
+      type: 'area',
+      labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+      series: [
+        { id: 'Actual', data: [156, 168, 162, 162] },
+        { id: 'Target', data: [165, 170, 175, 180] }
+      ],
+      stacked: false,
+      showLegend: true
+    };
+    
+    const image = await captureChartImage(chartDataForCapture, 400, 200);
+
+    if (image) {
+      
+      const imageId = `comparisonChart_${Date.now()}`;
+      requests.push({
+        createImage: {
+          objectId: imageId,
+          url: `data:image/png;base64,${image}`,
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 200, unit: 'PT' },
+              width: { magnitude: 400, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: 50,
+              translateY: 120,
+              unit: 'PT'
+            }
+          }
+        }
+      });
+    }
+  } catch (error) {
+    console.error('Failed to capture comparison chart:', error);
+  }
+
+  // Add summary text on the right
+  const summaryId = `summary_${Date.now()}`;
+  requests.push({
+    createShape: {
+      objectId: summaryId,
+      shapeType: 'TEXT_BOX',
+      elementProperties: {
+        pageObjectId: slideId,
+        size: {
+          height: { magnitude: 200, unit: 'PT' },
+          width: { magnitude: 250, unit: 'PT' }
+        },
+        transform: {
+          scaleX: 1,
+          scaleY: 1,
+          translateX: 480,
+          translateY: 120,
+          unit: 'PT'
+        }
+      }
+    }
+  });
+
+  requests.push({
+    insertText: {
+      objectId: summaryId,
+      text: `Actual vs Target:
 Q1: $156K vs $165K
-Q2: $168K vs $170K
+Q2: $168K vs $170K  
 Q3: $162K vs $175K
 Q4: $162K vs $180K
 
@@ -603,7 +661,7 @@ function createExecutiveSummaryRequests(layoutData: any, slideId: string) {
   return requests;
 }
 
-async function createFullWidthChartRequests(layoutData: any, slideId: string, stateData: any) {
+async function createFullWidthChartRequests(layoutData: any, slideId: string) {
   const requests: any[] = [];
 
   // Create title
@@ -691,61 +749,70 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string, st
     }
   });
 
-  // Check if we have a chart image ID to retrieve from store
-  let chartImageData = null;
-  if (stateData.chartImageId) {
-    chartImageData = chartImageStore.get(stateData.chartImageId);
-    if (chartImageData) {
-      console.log('Retrieved chart image from store!');
-      // Clean up after use
-      chartImageStore.delete(stateData.chartImageId);
-    }
-  }
-
-  // Check if we have a captured chart image
-  if (chartImageData) {
-    console.log('Using captured chart image from frontend!');
+  // Capture chart as high-quality image
+  console.log('Capturing chart as image for Full Width Chart...');
+  
+  try {
+    // Prepare chart data for capture
+    const chartDataForCapture = {
+      type: 'area',
+      labels: layoutData.chartData?.labels || ['Q1', 'Q2', 'Q3', 'Q4'],
+      series: layoutData.chartData?.series || [
+        { id: 'Sales', name: 'Sales', data: [2500, 5200, 8100, 12000] },
+        { id: 'Marketing', name: 'Marketing', data: [1800, 3600, 5800, 8500] }
+      ],
+      stacked: true,
+      showLegend: true
+    };
     
-    // Create image element in Google Slides using the captured chart
-    const imageId = `chartImage_${Date.now()}`;
-    requests.push({
-      createImage: {
-        objectId: imageId,
-        url: `data:image/jpeg;base64,${chartImageData}`,
-        elementProperties: {
-          pageObjectId: slideId,
-          size: {
-            height: { magnitude: 300, unit: 'PT' },
-            width: { magnitude: 600, unit: 'PT' }
-          },
-          transform: {
-            scaleX: 1,
-            scaleY: 1,
-            translateX: 100,
-            translateY: 150,
-            unit: 'PT'
+    // Call our direct chart capture function (same logic as copy/paste)
+    const image = await captureChartImage(chartDataForCapture, 600, 300);
+
+    if (image) {
+      
+      // Create image element in Google Slides
+      const imageId = `chartImage_${Date.now()}`;
+      requests.push({
+        createImage: {
+          objectId: imageId,
+          url: `data:image/png;base64,${image}`,
+          elementProperties: {
+            pageObjectId: slideId,
+            size: {
+              height: { magnitude: 300, unit: 'PT' },
+              width: { magnitude: 600, unit: 'PT' }
+            },
+            transform: {
+              scaleX: 1,
+              scaleY: 1,
+              translateX: 100,
+              translateY: 150,
+              unit: 'PT'
+            }
           }
         }
-      }
-    });
-    
-    console.log('Real chart image added successfully to Google Slides!');
-    return requests;
+      });
+      
+      console.log('High-quality chart image added successfully to Google Slides!');
+      return requests;
+    } else {
+      console.log('Chart capture failed, falling back to placeholder');
+    }
+  } catch (error) {
+    console.error('Failed to capture chart image, falling back to placeholder:', error);
   }
-  
-  console.log('No chart image provided, using styled placeholder...');
 
-  // Create a styled chart placeholder that looks professional
-  const chartBgId = `chartBg_${Date.now()}`;
+  // Fallback: Create a simple placeholder
+  const placeholderId = `placeholder_${Date.now()}`;
   requests.push({
     createShape: {
-      objectId: chartBgId,
+      objectId: placeholderId,
       shapeType: 'RECTANGLE',
       elementProperties: {
         pageObjectId: slideId,
         size: {
-          height: { magnitude: 300, unit: 'PT' },
-          width: { magnitude: 600, unit: 'PT' }
+          height: { magnitude: 250, unit: 'PT' },
+          width: { magnitude: 500, unit: 'PT' }
         },
         transform: {
           scaleX: 1,
@@ -760,81 +827,17 @@ async function createFullWidthChartRequests(layoutData: any, slideId: string, st
 
   requests.push({
     updateShapeProperties: {
-      objectId: chartBgId,
-      fields: 'shapeBackgroundFill,outline',
+      objectId: placeholderId,
+      fields: 'shapeBackgroundFill',
       shapeProperties: {
         shapeBackgroundFill: {
           solidFill: {
             color: {
               rgbColor: {
-                red: 0.98,
-                green: 0.98,
-                blue: 0.98
+                red: 0.95,
+                green: 0.95,
+                blue: 0.95
               }
-            }
-          }
-        },
-        outline: {
-          outlineFill: {
-            solidFill: {
-              color: {
-                rgbColor: {
-                  red: 0.9,
-                  green: 0.9,
-                  blue: 0.9
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  });
-
-  // Add chart placeholder text
-  const chartTextId = `chartText_${Date.now()}`;
-  requests.push({
-    createShape: {
-      objectId: chartTextId,
-      shapeType: 'TEXT_BOX',
-      elementProperties: {
-        pageObjectId: slideId,
-        size: {
-          height: { magnitude: 60, unit: 'PT' },
-          width: { magnitude: 400, unit: 'PT' }
-        },
-        transform: {
-          scaleX: 1,
-          scaleY: 1,
-          translateX: 200,
-          translateY: 270,
-          unit: 'PT'
-        }
-      }
-    }
-  });
-
-  requests.push({
-    insertText: {
-      objectId: chartTextId,
-      text: '📊 Stacked Area Chart\n(High-quality chart images coming soon)'
-    }
-  });
-
-  requests.push({
-    updateTextStyle: {
-      objectId: chartTextId,
-      fields: 'fontSize,fontFamily,foregroundColor',
-      textRange: { type: 'ALL' },
-      style: {
-        fontSize: { magnitude: 14, unit: 'PT' },
-        fontFamily: 'Helvetica',
-        foregroundColor: {
-          opaqueColor: {
-            rgbColor: {
-              red: 0.4,
-              green: 0.4,
-              blue: 0.4
             }
           }
         }

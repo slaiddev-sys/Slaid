@@ -2012,7 +2012,7 @@ export default function EditorPage() {
   };
 
   // Function to render slide content
-  const renderSlideContent = (isPresentationMode = false) => {
+  const renderSlideContent = (slideIndex?: number, isPresentationMode = false) => {
     // TEST: Disabled - show real presentation data
     const testBlueGradient = false; // DISABLED: Show real Claude-generated presentations
     
@@ -2054,10 +2054,11 @@ export default function EditorPage() {
 
     const presentationData = lastAssistantMessage?.presentationData;
     // Use memoized slides to prevent unnecessary re-renders
-    const currentSlide = memoizedSlides?.[activeSlide] || presentationData?.slides?.[activeSlide];
+    const slideIndexToUse = slideIndex !== undefined ? slideIndex : activeSlide;
+    const currentSlide = memoizedSlides?.[slideIndexToUse] || presentationData?.slides?.[slideIndexToUse];
     
     console.log('🎬 Rendering slide:', {
-      slideIndex: activeSlide,
+      slideIndex: slideIndexToUse,
       totalSlides: presentationData?.slides?.length,
       currentSlide: currentSlide,
       blockCount: currentSlide?.blocks?.length
@@ -2178,9 +2179,9 @@ export default function EditorPage() {
         {/* Overlay with fade-in */}
         <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" />
         {/* Modal with fade and scale transition */}
-        <div className="relative bg-[#18191c] rounded-2xl shadow-xl w-full max-w-sm p-6 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
+        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
           <button
-            className="absolute top-4 right-4 text-[#99a1af] hover:text-white text-xl font-bold focus:outline-none"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => {
               setShowCreditsModal(false);
               refreshCredits(); // Refresh credits when modal closes
@@ -2192,31 +2193,31 @@ export default function EditorPage() {
               <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
-          <h2 className="text-white text-lg font-semibold mb-1">Presentation Credits</h2>
+          <h2 className="text-gray-900 text-lg font-semibold mb-1">Presentation Credits</h2>
           <p className="text-[#d1d5dc] text-sm mb-4">Credits are the currency you use to generate slides, content, and AI-powered features in your presentations.</p>
           <hr className="border-[#23272f] mb-4" />
-          <div className="text-xs text-[#99a1af] mb-2">Your credits</div>
+          <div className="text-xs text-gray-500 mb-2">Your credits</div>
           <div className="flex items-center gap-2 mb-6">
-            <img src="/credit-icon.png" alt="Credit Icon" className="w-8 h-8 object-contain" />
+            <img src="/ai credit-icon.png" alt="Credit Icon" className="w-8 h-8 object-contain" />
             {creditsLoading ? (
-              <span className="text-[#99a1af] text-base font-semibold">Loading...</span>
+              <span className="text-gray-500 text-base font-semibold">Loading...</span>
             ) : creditsError ? (
               <span className="text-red-400 text-base font-semibold">Error loading credits</span>
             ) : (
               <>
-                <span className="text-white text-base font-semibold">
+                <span className="text-gray-900 text-base font-semibold">
                   {credits?.remaining_credits?.toLocaleString() || '0'}
                 </span>
-            <span className="text-[#99a1af] text-base ml-1">remaining</span>
+            <span className="text-gray-500 text-base ml-1">remaining</span>
               </>
             )}
           </div>
-          <button className="w-full border border-[#23272f] text-white font-medium rounded-lg py-2 mb-3 text-base bg-transparent hover:bg-[#23272f] hover:scale-110 transition duration-200 ease-in-out" onClick={() => { 
+          <button className="w-full border border-[#23272f] text-gray-900 font-medium rounded-lg py-2 mb-3 text-base bg-transparent hover:bg-[#002903] hover:scale-110 transition duration-200 ease-in-out" onClick={() => { 
             setShowCreditsModal(false); 
             setShowCreditPacksModal(true); 
             refreshCredits(); // Refresh credits when switching modals
           }}>Purchase credit packs</button>
-          <button className="w-full bg-gradient-to-r from-[#2563eb] to-[#a855f7] text-white font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
+          <button className="w-full bg-gradient-to-r from-[#2563eb] to-[#a855f7] text-gray-900 font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
         </div>
         <style jsx>{`
           .animate-modal-in {
@@ -2285,9 +2286,9 @@ export default function EditorPage() {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" />
-        <div className="relative bg-[#18191c] rounded-2xl shadow-xl w-full max-w-lg p-6 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
+        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
           <button
-            className="absolute top-4 right-4 text-[#99a1af] hover:text-white text-xl font-bold focus:outline-none"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => setShowCreditPacksModal(false)}
             aria-label="Close"
           >
@@ -2296,29 +2297,29 @@ export default function EditorPage() {
               <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
             </svg>
           </button>
-          <h2 className="text-white text-lg font-semibold mb-1">Purchase credit packs to create more with Slaid</h2>
+          <h2 className="text-gray-900 text-lg font-semibold mb-1">Purchase credit packs to create more with Slaid</h2>
           <p className="text-[#d1d5dc] text-sm mb-4">Upgrading to a higher tier plan will offer more value for the money</p>
           <div className="mb-4 flex flex-col gap-2">
             {packs.map((pack, i) => (
               <button
                 key={pack.credits}
-                className="flex items-center justify-between py-3 px-3 rounded-lg transition-all duration-150 group hover:bg-[#2563eb] focus:bg-[#2563eb] outline-none"
+                className="flex items-center justify-between py-3 px-3 rounded-lg transition-all duration-150 group hover:bg-[#002903] focus:bg-[#002903] outline-none"
                 type="button"
                 onClick={() => handleCreditPurchase(pack)}
               >
                 <span className="flex items-center gap-2">
                   <span className="relative w-6 h-6">
-                    <img src="/credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain absolute inset-0 transition-opacity duration-150 group-hover:opacity-0" />
+                    <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain absolute inset-0 transition-opacity duration-150 group-hover:opacity-0" />
                     <img src="/credit-2-icon.png" alt="Credit Icon Hover" className="w-6 h-6 object-contain absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
                   </span>
-                  <span className="text-white text-base font-semibold group-hover:text-white">{pack.credits.toLocaleString()}</span>
+                  <span className="text-gray-900 text-base font-semibold group-hover:text-gray-900">{pack.credits.toLocaleString()}</span>
                 </span>
-                <span className="text-[#d1d5dc] text-base font-medium group-hover:text-white">{pack.price}</span>
+                <span className="text-[#d1d5dc] text-base font-medium group-hover:text-gray-900">{pack.price}</span>
               </button>
             ))}
           </div>
-          <button className="w-full border border-[#23272f] text-white font-medium rounded-lg py-2 text-base bg-transparent hover:bg-[#23272f] hover:scale-110 transition duration-200 ease-in-out mb-3" onClick={() => setShowCreditPacksModal(false)}>Cancel</button>
-          <button className="w-full bg-gradient-to-r from-[#2563eb] to-[#a855f7] text-white font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
+          <button className="w-full border border-[#23272f] text-gray-900 font-medium rounded-lg py-2 text-base bg-transparent hover:bg-[#002903] hover:scale-110 transition duration-200 ease-in-out mb-3" onClick={() => setShowCreditPacksModal(false)}>Cancel</button>
+          <button className="w-full bg-gradient-to-r from-[#2563eb] to-[#a855f7] text-gray-900 font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
         </div>
         <style jsx>{`
           .animate-modal-in {
@@ -2340,7 +2341,7 @@ export default function EditorPage() {
       <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M4.5 7.5l2 2 3-3" stroke="#05DF72" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
     );
     const CROSS_ICON = (
-      <span className="text-[#6a7282] text-[12.3px]">×</span>
+      <span className="text-gray-500 text-[12.3px]">×</span>
     );
 
     const plans = [
@@ -2356,13 +2357,13 @@ export default function EditorPage() {
           { text: "No export feature", included: false },
           { text: "No preview feature", included: false },
         ],
-        buttonColor: "bg-[#364153] text-white hover:bg-[#4a5565]",
+        buttonColor: "bg-[#364153] text-gray-900 hover:bg-[#4a5565]",
         border: "border-[#364153]",
       },
       {
         name: "Pro",
-        monthly: { price: "$25", period: "/month", save: null, buttonColor: "bg-blue-600 text-white hover:bg-blue-700" },
-        annual: { price: "$250", period: "/year", save: "Save $50 per year", buttonColor: "bg-blue-600 text-white hover:bg-blue-700" },
+        monthly: { price: "$25", period: "/month", save: null, buttonColor: "bg-blue-600 text-gray-900 hover:bg-blue-700" },
+        annual: { price: "$250", period: "/year", save: "Save $50 per year", buttonColor: "bg-blue-600 text-gray-900 hover:bg-blue-700" },
         desc: ["Designed for professionals and", "freelancers."],
         iconBg: "bg-blue-600",
         features: [
@@ -2395,13 +2396,13 @@ export default function EditorPage() {
             </div>
             {isToggle && (
               <div className="flex items-center gap-2">
-                <span className="text-[#99a1af] text-[13px]">Monthly</span>
+                <span className="text-gray-500 text-[13px]">Monthly</span>
                 <label className="relative inline-block w-10 align-middle select-none cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={isAnnual} onChange={onToggle} />
-                  <span className="block w-10 h-5 bg-[#23272f] rounded-full shadow-inner transition peer-checked:bg-blue-600" />
+                  <span className="block w-10 h-5 bg-[#002903] rounded-full shadow-inner transition peer-checked:bg-blue-600" />
                   <span className="dot absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition peer-checked:left-6" />
                 </label>
-                <span className="text-[#99a1af] text-[13px]">Annual</span>
+                <span className="text-gray-500 text-[13px]">Annual</span>
               </div>
             )}
           </div>
@@ -2409,24 +2410,24 @@ export default function EditorPage() {
           <div className="flex flex-col flex-1 min-h-[220px]">
             {/* Plan name */}
             <div className="mb-1">
-              <p className="text-white text-[13.45px] leading-[21px] font-normal">{plan.name}</p>
+              <p className="text-gray-900 text-[13.45px] leading-[21px] font-normal">{plan.name}</p>
             </div>
             {/* Price */}
             <div className="mb-1 flex items-end gap-2">
-              <p className="text-white text-[28px] leading-[36px] font-normal">{priceData.price}</p>
-              <span className="text-[#99a1af] text-[16px] font-normal">{priceData.period}</span>
+              <p className="text-gray-900 text-[28px] leading-[36px] font-normal">{priceData.price}</p>
+              <span className="text-gray-500 text-[16px] font-normal">{priceData.period}</span>
             </div>
             {/* Save text */}
             {priceData.save && <div className="text-[#05DF72] text-[13px] font-medium mb-1">{priceData.save}</div>}
             {/* Description */}
             <div className="mb-4">
               {plan.desc.map((line: string, i: number) => (
-                <p key={i} className="text-[#99a1af] text-[11.15px] leading-[17.5px] font-normal">{line}</p>
+                <p key={i} className="text-gray-500 text-[11.15px] leading-[17.5px] font-normal">{line}</p>
               ))}
             </div>
             {/* Including label */}
             <div className="mb-2">
-              <p className="text-[#99a1af] text-[11.34px] leading-[17.5px] font-normal">Including</p>
+              <p className="text-gray-500 text-[11.34px] leading-[17.5px] font-normal">Including</p>
             </div>
             {/* Feature list */}
             <div className="flex flex-col gap-[9.5px] mb-8">
@@ -2435,7 +2436,7 @@ export default function EditorPage() {
                   <span className="flex items-center justify-center w-3.5 h-3.5">
                     {f.included ? CHECK_ICON : CROSS_ICON}
                   </span>
-                  <span className={f.included ? "text-[#d1d5dc] text-[11.15px] leading-[17.5px] font-normal" : "text-[#6a7282] text-[11.15px] leading-[17.5px] font-normal line-through"}>{f.text}</span>
+                  <span className={f.included ? "text-[#d1d5dc] text-[11.15px] leading-[17.5px] font-normal" : "text-gray-500 text-[11.15px] leading-[17.5px] font-normal line-through"}>{f.text}</span>
                 </div>
               ))}
             </div>
@@ -2450,7 +2451,7 @@ export default function EditorPage() {
             />
           ) : plan.name === "Free" ? (
             <button 
-              className="w-full h-[31.5px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-[#2a2a2a] text-[#99a1af] cursor-not-allowed"
+              className="w-full h-[31.5px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-[#2a2a2a] text-gray-500 cursor-not-allowed"
               disabled
             >
               Current plan
@@ -2467,9 +2468,9 @@ export default function EditorPage() {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" onClick={() => setShowPricingModal(false)} />
-        <div className="relative bg-[#18191c] rounded-2xl shadow-xl w-full max-w-4xl p-8 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
+        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl p-8 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
           <button
-            className="absolute top-4 right-4 text-[#99a1af] hover:text-white text-xl font-bold focus:outline-none"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => setShowPricingModal(false)}
             aria-label="Close"
           >
@@ -2479,7 +2480,7 @@ export default function EditorPage() {
             </svg>
           </button>
           <div className="text-center mb-8">
-            <h1 className="text-white text-[32px] font-normal leading-[42px] mb-3">Pricing</h1>
+            <h1 className="text-gray-900 text-[32px] font-normal leading-[42px] mb-3">Pricing</h1>
             <p className="text-[#D1D5DC] text-[13.5px] leading-[21px] max-w-2xl mx-auto">Start for free. Upgrade to get the capacity that exactly matches your team's needs.</p>
           </div>
           <div className="flex flex-col md:flex-row gap-1 w-full max-w-2xl justify-center mx-auto">
@@ -2504,9 +2505,9 @@ export default function EditorPage() {
   function HelpModal() {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-        <div className="bg-[#18191c] rounded-2xl shadow-xl w-full max-w-sm p-6 border border-[#31343b] animate-modal-in transition-all duration-300 opacity-100 scale-100">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-gray-200 animate-modal-in transition-all duration-300 opacity-100 scale-100">
           <button
-            className="absolute top-4 right-4 text-[#99a1af] hover:text-white text-xl font-bold focus:outline-none"
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => setShowHelpModal(false)}
             aria-label="Close"
           >
@@ -2517,8 +2518,8 @@ export default function EditorPage() {
           </button>
           
           <div className="flex flex-col gap-3">
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-[#23272f] transition rounded-lg">
-              <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-[#99a1af]">
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-[#002903] transition rounded-lg">
+              <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500">
                 <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/>
                 <path d="M10 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 <circle cx="10" cy="14" r="1" fill="currentColor"/>
@@ -2526,15 +2527,15 @@ export default function EditorPage() {
               Get support
             </button>
             
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-[#23272f] transition rounded-lg">
-              <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-[#99a1af]">
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-[#002903] transition rounded-lg">
+              <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500">
                 <path d="M10 2l2.39 4.84L18 7.27l-3.91 3.81L14.18 16 10 13.27 5.82 16l.91-4.92L2 7.27l5.61-.43L10 2z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
               </svg>
               What's new
             </button>
             
-            <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-white hover:bg-[#23272f] transition rounded-lg">
-              <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-[#99a1af]">
+            <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-[#002903] transition rounded-lg">
+              <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500">
                 <path d="M3 8.5a7 7 0 1 1 14 0c0 2.5-2 4.5-7 7-5-2.5-7-4.5-7-7z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
                 <circle cx="10" cy="8.5" r="2" fill="currentColor"/>
               </svg>
@@ -2590,7 +2591,7 @@ export default function EditorPage() {
                 setShowApiOverloadModal(false);
                 // Optionally trigger a retry here
               }}
-              className="flex-1 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
+              className="flex-1 px-4 py-2 text-sm font-medium text-gray-900 bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
             >
               Try Again
             </button>
@@ -2639,22 +2640,22 @@ export default function EditorPage() {
           }
         }}
       >
-        <div className="bg-[#18191c] rounded-2xl shadow-xl w-full max-w-md h-[600px] max-h-screen overflow-y-auto p-7 relative border border-[#31343b] animate-modal-in transition-all duration-300 opacity-100 scale-100 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md h-[600px] max-h-screen overflow-y-auto p-7 relative border border-gray-200 animate-modal-in transition-all duration-300 opacity-100 scale-100 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]">
           <button
-            className="absolute top-5 right-5 text-[#99a1af] hover:text-white text-xl font-bold focus:outline-none"
+            className="absolute top-5 right-5 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => setShowSettingsModal(false)}
             aria-label="Close"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5"/><line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
-          <h2 className="text-white text-2xl font-bold mb-1">Settings</h2>
-          <p className="text-[#b0b3b8] text-sm mb-6">Manage your account and workspace preferences</p>
+          <h2 className="text-gray-900 text-2xl font-bold mb-1">Settings</h2>
+          <p className="text-gray-500 text-sm mb-6">Manage your account and workspace preferences</p>
           {/* Account Section */}
           <div className="mb-7">
-            <h3 className="text-white text-lg font-semibold mb-3">Account</h3>
-            <label className="block text-[#b0b3b8] text-xs mb-1">Display Name</label>
+            <h3 className="text-gray-900 text-lg font-semibold mb-3">Account</h3>
+            <label className="block text-gray-500 text-xs mb-1">Display Name</label>
             <input 
-              className="w-full bg-[#18191c] border border-[#31343b] rounded px-3 py-2 text-white mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]" 
+              className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]" 
               value={localDisplayName}
               onChange={(e) => setLocalDisplayName(e.target.value)}
               onBlur={(e) => {
@@ -2671,26 +2672,25 @@ export default function EditorPage() {
                 }
               }}
             />
-            <label className="block text-[#b0b3b8] text-xs mb-1">Email</label>
+            <label className="block text-gray-500 text-xs mb-1">Email</label>
             <input 
-              className="w-full bg-[#18191c] border border-[#31343b] rounded px-3 py-2 text-white mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]" 
+              className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]" 
               value={user?.email || ''} 
               disabled
             />
           </div>
           {/* Subscription Plan Section */}
           <div className="mb-7">
-            <h3 className="text-white text-lg font-semibold mb-3">Subscription Plan</h3>
-            <div className="bg-[#18191c] border border-[#31343b] rounded-lg p-4 mb-2">
+            <h3 className="text-gray-900 text-lg font-semibold mb-3">Subscription Plan</h3>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 mb-2">
               <div className="flex items-center justify-between mb-1">
-                <div className="text-white font-semibold">Free Plan</div>
-                <span className="bg-[#2563eb] text-white text-xs font-semibold px-2 py-0.5 rounded">Active</span>
+                <div className="text-gray-900 font-semibold">Free Plan</div>
               </div>
-              <div className="text-[#b0b3b8] text-sm mb-2">$0.00/month</div>
-              <div className="text-[#b0b3b8] text-xs mb-3">Basic features with limited presentations and standard support.</div>
+              <div className="text-gray-500 text-sm mb-2">$0.00/month</div>
+              <div className="text-gray-500 text-xs mb-3">Basic features with limited presentations and standard support.</div>
               <div className="flex gap-2">
                 <button 
-                  className="bg-[#2563eb] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#1d4ed8] transition" 
+                  className="bg-[#002903] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#002903]/90 transition" 
                   onClick={() => {
                     setShowSettingsModal(false);
                     setShowPricingModal(true);
@@ -2705,33 +2705,33 @@ export default function EditorPage() {
           <div className="mb-7">
             <button 
               onClick={handleLogout}
-              className="w-full bg-black hover:bg-gray-800 text-white font-medium rounded px-3 py-2 text-sm transition"
+              className="w-full bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] font-medium rounded px-3 py-2 text-sm transition"
             >
               Log Out
             </button>
           </div>
           {/* Delete Account Section */}
           <div className="mb-0">
-            <h3 className="text-white text-lg font-semibold mb-3">Delete Account</h3>
+            <h3 className="text-gray-900 text-lg font-semibold mb-3">Delete Account</h3>
             <div className="bg-[#3a2323] border border-red-700 rounded-lg p-4 mb-5">
               <div className="text-[#fca5a5] text-sm mb-3">Once you delete your account, there is no going back. Please be certain.</div>
               <button 
-                className="bg-[#ef4444] text-white font-semibold rounded px-4 py-2 text-sm hover:bg-[#dc2626] transition"
+                className="bg-[#ef4444] text-gray-900 font-semibold rounded px-4 py-2 text-sm hover:bg-[#dc2626] transition"
                 onClick={() => setShowDeleteConfirmation(true)}
               >
                 Delete Account
               </button>
             </div>
-            <hr className="border-[#31343b] mb-4" />
+            <hr className="border-gray-200 mb-4" />
             <div className="flex justify-end gap-3">
               <button 
-                className="text-[#b0b3b8] hover:text-white font-medium rounded px-3 py-1 text-sm transition"
+                className="text-gray-500 hover:text-gray-900 font-medium rounded px-3 py-1 text-sm transition"
                 onClick={() => setShowSettingsModal(false)}
               >
                 Cancel
               </button>
               <button 
-                className="bg-[#2563eb] text-white font-semibold rounded px-4 py-2 text-sm hover:bg-[#1d4ed8] transition"
+                className="bg-[#f3f4f6] text-[#002903] font-semibold rounded px-4 py-2 text-sm hover:bg-gray-200 transition"
                 onClick={() => setShowSettingsModal(false)}
               >
                 Save Changes
@@ -2799,7 +2799,7 @@ export default function EditorPage() {
 
     return (
       <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80">
-        <div className="bg-[#18191c] rounded-2xl shadow-xl w-full max-w-md p-6 border border-red-700">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-red-700">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
               <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2807,8 +2807,8 @@ export default function EditorPage() {
               </svg>
             </div>
             <div>
-              <h3 className="text-white text-lg font-semibold">Delete Account</h3>
-              <p className="text-[#b0b3b8] text-sm">This action cannot be undone</p>
+              <h3 className="text-gray-900 text-lg font-semibold">Delete Account</h3>
+              <p className="text-gray-500 text-sm">This action cannot be undone</p>
             </div>
           </div>
           
@@ -2816,7 +2816,7 @@ export default function EditorPage() {
             <p className="text-[#fca5a5] text-sm mb-3">
               Are you sure you want to delete your account? This will permanently remove:
             </p>
-            <ul className="text-[#b0b3b8] text-sm space-y-1 ml-4">
+            <ul className="text-gray-500 text-sm space-y-1 ml-4">
               <li>• All your presentations and workspaces</li>
               <li>• Your account data and settings</li>
               <li>• Your subscription (if any)</li>
@@ -2828,14 +2828,14 @@ export default function EditorPage() {
           
           <div className="flex gap-3">
             <button
-              className="flex-1 bg-[#31343b] text-white font-medium rounded px-4 py-2 text-sm hover:bg-[#3a3d44] transition"
+              className="flex-1 bg-[#31343b] text-gray-900 font-medium rounded px-4 py-2 text-sm hover:bg-[#3a3d44] transition"
               onClick={() => setShowDeleteConfirmation(false)}
               disabled={isDeleting}
             >
               Cancel
             </button>
             <button
-              className="flex-1 bg-[#ef4444] text-white font-semibold rounded px-4 py-2 text-sm hover:bg-[#dc2626] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-[#ef4444] text-gray-900 font-semibold rounded px-4 py-2 text-sm hover:bg-[#dc2626] transition disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleDeleteAccount}
               disabled={isDeleting}
             >
@@ -3428,7 +3428,7 @@ export default function EditorPage() {
         console.log('✅✅✅ State restoration completed')
       }}
     >
-      <div className="min-h-screen w-full flex flex-row bg-[#18191c] font-sans">
+      <div className="min-h-screen w-full flex flex-row bg-white font-sans">
       {showCreditsModal && <CreditsModal />}
       {showCreditPacksModal && <CreditPacksModal />}
       {showPricingModal && <PricingModal />}
@@ -3439,55 +3439,55 @@ export default function EditorPage() {
       {showHelpDropdown && (
         <div
           ref={helpDropdownRef}
-          className="absolute left-full top-0 ml-2 mt-1 w-64 bg-[#23272f] rounded-xl shadow-xl border border-[#31343b] py-2 px-0 z-50 animate-modal-in"
+          className="absolute left-full top-0 ml-2 mt-1 w-64 bg-[#002903] rounded-xl shadow-xl border border-gray-200 py-2 px-0 z-50 animate-modal-in"
         >
           <button 
-            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-[#18191c] transition"
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
             onClick={() => {
               setShowHelpDropdown(false);
               setShowHelpModal(true);
             }}
           >
-            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-[#99a1af]"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="14" r="1" fill="currentColor"/></svg>
+            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="14" r="1" fill="currentColor"/></svg>
             Get support
           </button>
           <button 
-            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-[#18191c] transition"
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
             onClick={() => {
               setShowHelpDropdown(false);
               setShowHelpModal(true);
             }}
           >
-            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-[#99a1af]"><path d="M10 2l2.39 4.84L18 7.27l-3.91 3.81L14.18 16 10 13.27 5.82 16l.91-4.92L2 7.27l5.61-.43L10 2z" stroke="currentColor" strokeWidth="1.5" fill="none"/></svg>
+            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><path d="M10 2l2.39 4.84L18 7.27l-3.91 3.81L14.18 16 10 13.27 5.82 16l.91-4.92L2 7.27l5.61-.43L10 2z" stroke="currentColor" strokeWidth="1.5" fill="none"/></svg>
             What's new
           </button>
           <button 
-            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-white hover:bg-[#18191c] transition"
+            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
             onClick={() => {
               setShowHelpDropdown(false);
               setShowHelpModal(true);
             }}
           >
-            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-[#99a1af]"><path d="M3 8.5a7 7 0 1 1 14 0c0 2.5-2 4.5-7 7-5-2.5-7-4.5-7-7z" stroke="currentColor" strokeWidth="1.5" fill="none"/><circle cx="10" cy="8.5" r="2" fill="currentColor"/></svg>
+            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><path d="M3 8.5a7 7 0 1 1 14 0c0 2.5-2 4.5-7 7-5-2.5-7-4.5-7-7z" stroke="currentColor" strokeWidth="1.5" fill="none"/><circle cx="10" cy="8.5" r="2" fill="currentColor"/></svg>
             Join slack community
           </button>
         </div>
       )}
       {/* Sidebar */}
-      <aside className={`flex flex-col h-screen bg-[#111113] transition-all duration-300 ease-in-out ${sidebarCollapsed ? "w-14" : "w-[300px]"}`}>
+      <aside className={`flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarCollapsed ? "w-14" : "w-[300px]"}`}>
         {sidebarCollapsed ? (
           <>
             {/* Top: sidebar toggle icon (points left) */}
             <div className="flex flex-col items-center pt-4">
               <button
-                className="w-9 h-9 rounded-xl bg-[#23272f] flex items-center justify-center mb-4"
+                className="w-9 h-9 rounded-xl bg-transparent hover:bg-gray-100 flex items-center justify-center mb-4 transition"
                 aria-label="Open sidebar"
                 onClick={() => {
                   setSidebarCollapsed(false);
                   refreshCredits(); // Refresh credits when sidebar opens
                 }}
               >
-                <img src="/slide-icon.png" alt="Slide Icon" className="w-6 h-6 object-contain transform rotate-180" />
+                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
               </button>
             </div>
             {/* Middle: empty space */}
@@ -3495,12 +3495,12 @@ export default function EditorPage() {
             {/* Bottom: hex/star, credits, avatar */}
             <div className="flex flex-col items-center mb-4 gap-2">
               <button onClick={() => setShowCreditsModal(true)} className="focus:outline-none hover:scale-125 transition duration-200 ease-in-out">
-                <img src="/credit-icon.png" alt="Credit Icon" className="w-9 h-9 object-contain" />
+                <img src="/ai credit-icon.png" alt="Credit Icon" className="w-9 h-9 object-contain" />
               </button>
-              <div className="text-white font-bold text-xs leading-none">
+              <div className="text-gray-900 font-bold text-xs leading-none">
                 {creditsLoading ? 'Loading...' : (credits?.remaining_credits?.toLocaleString() || '0')}
               </div>
-              <div className="h-9 w-9 rounded-full bg-[#23272f] flex items-center justify-center text-white font-bold text-lg">
+              <div className="h-9 w-9 rounded-full bg-[#f3f4f6] flex items-center justify-center text-gray-900 font-bold text-lg">
                 {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
               </div>
             </div>
@@ -3508,9 +3508,9 @@ export default function EditorPage() {
         ) : (
           <>
             {/* Workspace section at the top */}
-            <div className="px-4 pt-4 pb-2 flex items-center gap-3 min-w-0 justify-between">
+            <div className="px-4 pt-4 pb-4 flex items-center gap-3 min-w-0 justify-between border-b border-gray-200">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="h-9 w-9 rounded-full bg-[#23272f] flex items-center justify-center text-white font-bold text-lg">
+                <div className="h-8 w-8 rounded-full bg-[#f3f4f6] flex items-center justify-center text-gray-700 font-medium text-sm">
                   {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
                 </div>
                 <div className="flex flex-col min-w-0">
@@ -3574,38 +3574,29 @@ export default function EditorPage() {
                           }
                         }}
                         onClick={e => e.stopPropagation()}
-                        className="bg-transparent border-none outline-none text-white font-semibold text-sm max-w-[140px]"
+                        className="bg-transparent border-none outline-none text-gray-900 font-medium text-sm max-w-[140px]"
                       />
                     ) : (
-                      <span className="text-white font-semibold text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
+                      <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
                     )}
-                    <button
-                      className="ml-1 text-[#b0b3b8] hover:text-white transition"
-                      onClick={() => setEditingWorkspace(true)}
-                      aria-label="Edit workspace name"
-                    >
-                      <svg width="16" height="16" fill="none" viewBox="0 0 24 24" className="text-current">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                        <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    </button>
                   </div>
-                  <span className="text-[#99a1af] text-xs mt-0.5">Free plan</span>
+                  <span className="text-gray-500 text-xs">Free plan</span>
                 </div>
               </div>
+              {/* Sidebar toggle button */}
               <button
-                className="p-0 bg-transparent border-none outline-none"
-                onClick={() => setSidebarCollapsed((c) => !c)}
-                aria-label="Toggle sidebar"
+                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                aria-label="Collapse sidebar"
+                onClick={() => setSidebarCollapsed(true)}
               >
-                <img src="/slide-icon.png" alt="Slide Icon" className="w-6 h-6 object-contain" />
+                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-5 h-5 object-contain" />
               </button>
             </div>
             {/* Main scrollable section */}
             <div className="flex-1 min-h-0 flex flex-col">
               <div className="px-4 mt-3">
                 <button
-                  className="w-full flex items-center justify-start gap-2 bg-[#23272f] hover:bg-[#23272f]/80 text-white rounded-lg py-2.5 mb-4 shadow-sm transition pl-3"
+                  className="w-full flex items-center justify-start gap-2 bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] rounded-lg py-1.5 mb-3 transition font-medium pl-3"
                   onClick={async () => {
                     const currentPresentations = workspacePresentations[currentWorkspace] || [];
                     const newId = currentPresentations.length ? Math.max(...currentPresentations.map(p => p.id)) + 1 : 1;
@@ -3693,26 +3684,26 @@ export default function EditorPage() {
                     }, 0);
                   }}
                 >
-                  <img src="/plus-icon.png" alt="Plus" className="w-4 h-4 object-contain" />
+                  <span className="text-[#002903] text-lg font-bold leading-none">+</span>
                   <span className="font-medium text-sm">New presentation</span>
                 </button>
               </div>
               <div className="px-4 mt-2 flex-1 min-h-0 flex flex-col">
-                <div className="text-[#6a7282] text-[11px] font-semibold tracking-widest mb-2 ml-1 uppercase">PRESENTATIONS</div>
+                <div className="text-gray-500 text-xs font-medium mb-3 uppercase tracking-wide">PRESENTATIONS</div>
                 <div className="flex flex-col gap-1 overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]">
                   {(workspacePresentations[currentWorkspace] || []).map(p => (
                     <div
                       key={p.id}
-                      className={`w-full text-left px-3 py-2 rounded-lg ${
-                        // If we're editing the currently selected presentation, keep blue on it
+                      className={`w-full text-left px-3 py-1.5 rounded-lg ${
+                        // If we're editing the currently selected presentation, keep selection on it
                         (editingTitle === currentPresentationId && p.id === currentPresentationId) ||
-                        // Show blue selection on original presentation if we're editing a different one
+                        // Show selection on original presentation if we're editing a different one
                         (originalSelectedPresentation !== null && editingTitle !== null && editingTitle !== currentPresentationId && p.id === originalSelectedPresentation) ||
-                        // Show blue selection on current presentation if not editing
+                        // Show selection on current presentation if not editing
                         (editingTitle === null && p.id === currentPresentationId)
-                          ? "bg-[#2563eb] text-white font-semibold text-sm" 
-                          : "text-white hover:bg-[#30353e] text-sm"
-                      } font-medium transition group relative`}
+                          ? "bg-[#002903] text-white font-medium" 
+                          : "text-gray-700 hover:bg-gray-100 font-normal"
+                      } text-sm transition group relative cursor-pointer`}
                     >
                       {editingTitle === p.id ? (
                         <>
@@ -3911,25 +3902,26 @@ export default function EditorPage() {
               </div>
             </div>
             {/* Fixed bottom section */}
-            <div className="px-4 pb-4">
-              <button className="w-full bg-gradient-to-r from-[#2563eb] to-[#a855f7] text-white font-semibold rounded-lg py-2 mb-3 text-sm shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
-              <div className="flex items-center justify-between bg-[#18191c] border border-[#23272f] rounded-lg px-3 py-2 mb-4">
-                <span className="flex items-center gap-1 text-white text-sm font-medium">
-                  <button onClick={() => setShowCreditsModal(true)} className="focus:outline-none hover:scale-125 transition duration-200 ease-in-out">
-                    <img src="/credit-icon.png" alt="Credit Icon" className="w-7 h-7 object-contain" />
-                  </button>
-                  {creditsLoading ? 'Loading...' : (credits?.remaining_credits?.toLocaleString() || '0')}
+            <div className="px-4 pb-4 border-t border-gray-200 pt-4">
+              <button className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium rounded-lg py-1.5 mb-4 text-sm transition" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
+              <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5 mb-4">
+                <span className="flex items-center gap-2 text-gray-700 text-sm font-medium">
+                  <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain" />
+                  {creditsLoading ? 'Loading...' : (credits?.remaining_credits?.toLocaleString() || '96')}
                 </span>
-                <button className="bg-[#155dfc] text-white text-xs font-semibold rounded px-3 py-1 ml-2 hover:bg-[#2563eb] hover:scale-105 transition duration-200 ease-in-out" onClick={() => setShowCreditsModal(true)}>Buy more</button>
+                <button className="bg-[#002903] text-white text-xs font-medium rounded-md px-3 py-1.5 hover:bg-[#002903]/90 transition" onClick={() => setShowCreditsModal(true)}>Buy more</button>
               </div>
-              <button className="w-full flex items-center gap-2 text-[#99a1af] text-sm py-2 px-2 rounded-lg hover:bg-[#23272f] transition mb-1" onClick={() => setShowSettingsModal(true)}>
-                <img src="/settings-icon.png" alt="Settings Icon" className="w-5 h-5 object-contain" />
+              <button className="w-full flex items-center gap-3 text-gray-600 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-100 transition mb-2" onClick={() => setShowSettingsModal(true)}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-500">
+                  <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" strokeWidth="2"/>
+                </svg>
                 Settings
               </button>
               <button
                 ref={helpButtonRef}
                 data-featurebase-feedback
-                className="w-full flex items-center gap-2 text-[#99a1af] text-sm py-2 px-2 rounded-lg hover:bg-[#23272f] transition mb-1"
+                className="w-full flex items-center gap-3 text-gray-600 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-100 transition"
                 onClick={e => {
                   e.stopPropagation();
                   console.log('🔘 Help & Support button clicked with data-featurebase-feedback');
@@ -3950,7 +3942,11 @@ export default function EditorPage() {
                   }
                 }}
               >
-                <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-[#99a1af]"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="14" r="1" fill="currentColor"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-500">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
                 Help & support
               </button>
             </div>
@@ -3960,15 +3956,15 @@ export default function EditorPage() {
       {/* Main content: chat + slide preview */}
       <main className="flex-1 flex flex-row h-screen">
         {/* Chat/editor column */}
-        <section className="w-[420px] flex flex-col h-full bg-[#2a2a2a] border-r border-[#23272f] px-0 py-0">
+        <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-2 relative">
-            <h2 className="text-white text-xl font-bold break-words w-full line-clamp-2">
+            <h2 className="text-[#002903] text-xl font-medium break-words w-full line-clamp-2">
               {currentPresentation?.title || "Untitled Presentation"}
             </h2>
             {/* Three dots icon */}
             <button
-              className="ml-2 p-2 rounded-full hover:bg-[#23272f] transition text-[#b0b3b8]"
+              className="ml-2 p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
               onClick={e => {
                 e.stopPropagation();
                 setShowTitleMenu(v => !v);
@@ -3982,11 +3978,11 @@ export default function EditorPage() {
               </svg>
             </button>
           </div>
-          <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]">
+          <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full w-full">
                 <img src="/Favicon Slaid.png" alt="Slaid Icon" className="w-10 h-10 object-contain mb-3 mt-12" />
-                <div className="text-white text-base font-normal mb-4">Ask slaid what you want...</div>
+                <div className="text-[#002903] text-base font-normal mb-4">Ask slaid what you want...</div>
               </div>
             ) : (
               <div className="flex flex-col gap-6 mb-6 mt-6">
@@ -4000,9 +3996,9 @@ export default function EditorPage() {
                         <div className="flex items-end flex-wrap gap-2 mb-1">
                           {msg.attachments.map((file, idx) => (
                             file.type.startsWith('image/') ? (
-                              <img key={file.url} src={file.url} alt="Attachment" className="w-16 h-16 object-cover rounded-md border border-[#31343b]" />
+                              <img key={file.url} src={file.url} alt="Attachment" className="w-16 h-16 object-cover rounded-md border border-gray-200" />
                             ) : (
-                              <div key={file.url} className="w-16 h-16 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center border border-[#31343b]">
+                              <div key={file.url} className="w-16 h-16 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center border border-gray-200">
                                 {file.name.toLowerCase().endsWith('.pdf') && (
                                   <img src="/pdf-icon.png" alt="PDF Icon" className="w-8 h-8 mb-1 object-contain" />
                                 )}
@@ -4012,17 +4008,17 @@ export default function EditorPage() {
                                 {file.name.toLowerCase().endsWith('.xls') || file.name.toLowerCase().endsWith('.xlsx') ? (
                                   <img src="/xls-icon.png" alt="XLS Icon" className="w-8 h-8 mb-1 object-contain" />
                                 ) : null}
-                                <span className="text-xs text-[#b0b3b8] truncate w-14 text-center">{file.name}</span>
+                                <span className="text-xs text-gray-500 truncate w-14 text-center">{file.name}</span>
                               </div>
                             )
                           ))}
                         </div>
                       )}
                       <div className="flex flex-row-reverse items-end gap-2">
-                        <div className="h-9 w-9 rounded-full bg-[#23272f] flex items-center justify-center text-white font-bold text-lg">
+                        <div className="h-9 w-9 rounded-full bg-[#f3f4f6] flex items-center justify-center text-gray-900 font-medium text-lg">
                           {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
                         </div>
-                        <div className="bg-[#374151] text-white rounded-xl px-4 py-2 max-w-xs mb-1 text-sm">{msg.text}</div>
+                        <div className="bg-[#f3f3f5] text-[#002903] rounded-xl px-4 py-2 max-w-xs mb-1 text-sm">{msg.text}</div>
                       </div>
                     </div>
                   ) : msg.role === 'assistant' ? (
@@ -4030,29 +4026,29 @@ export default function EditorPage() {
                       {msg.isLoading ? (
                         // Loading state with Cursor-style UI
                         <div className="flex flex-col w-full">
-                          <div className="flex items-center gap-2 text-[#b0b3b8] text-sm mb-3">
+                          <div className="flex items-center gap-2 text-[#002903] text-sm mb-3">
                             <LoadingCircle size={16} color="#2563eb" progress={generationProgress} />
                             <span className="font-semibold">Reasoning</span>
                           </div>
-                          <div className="text-[#b0b3b8] text-sm leading-relaxed whitespace-pre-line mb-3">
+                          <div className="text-[#002903] text-sm leading-relaxed whitespace-pre-line mb-3">
                             {currentReasoningStep}
                           </div>
                         </div>
                       ) : (
                         // Regular completed message
                         <>
-                          <div className="text-[#b0b3b8] text-sm mb-2"><span className="font-semibold text-[#b0b3b8]">Reasoning</span></div>
-                          <div className="text-[#b0b3b8] text-sm mb-3">{msg.text}</div>
+                          <div className="text-[#002903] text-sm mb-2"><span className="font-semibold text-[#002903]">Reasoning</span></div>
+                          <div className="text-[#002903] text-sm mb-3">{msg.text}</div>
                           <div className={`rounded-lg px-4 py-3 flex flex-col border w-full max-w-xs ${(() => {
                             const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
                             const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
-                            return msg.version === currentActiveVersion ? 'bg-[#23272f] border-[#31343b]' : 'bg-[#23272f] border-[#31343b] opacity-80';
+                            return msg.version === currentActiveVersion ? 'bg-[#f3f4f6] border-gray-200' : 'bg-[#f3f4f6] border-gray-200 opacity-80';
                           })()}`}>
                             <div className="flex items-center justify-between mb-1">
                               <span className={(() => {
                                 const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
                                 const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
-                                return msg.version === currentActiveVersion ? 'text-[#00e676] font-semibold text-sm' : 'text-white font-medium text-sm';
+                                return msg.version === currentActiveVersion ? 'text-[#002903] font-semibold text-sm' : 'text-[#002903] font-medium text-sm';
                               })()}>{truncateVersionTitle(msg.userMessage || 'True Full Screen Slide Display')}</span>
                               {(() => {
                                 const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
@@ -4062,7 +4058,7 @@ export default function EditorPage() {
                                   return <span className="flex items-center gap-1 text-xs text-[#00e676]">●<span>Version {msg.version}</span></span>;
                                 } else if (msg.version !== undefined) {
                                   return (
-                                    <button className="text-[#b0b3b8] text-xs hover:text-white hover:underline transition" onClick={() => {
+                                    <button className="text-gray-500 text-xs hover:text-gray-900 hover:underline transition" onClick={() => {
                                       console.log('🔄 VERSION HISTORY: Go back button clicked for version', msg.version);
                                       console.log('🔄 VERSION HISTORY: Current activeVersion before click:', activeVersion);
                                       setActiveVersion(msg.version!);
@@ -4078,7 +4074,7 @@ export default function EditorPage() {
                               const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
                               const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
                               return msg.version !== undefined && msg.version !== currentActiveVersion ? (
-                                <div className="text-[#6a7282] text-xs">Version {msg.version}</div>
+                                <div className="text-gray-500 text-xs">Version {msg.version}</div>
                               ) : null;
                             })()}
                           </div>
@@ -6155,12 +6151,12 @@ export default function EditorPage() {
                 e.target.value = '';
               }}
             />
-            <div className="bg-[#2a2a2a] rounded-2xl border border-[#31343b] flex flex-col">
+            <div className="bg-white flex flex-col">
               {attachedFiles.length > 0 && (
                 <div className="flex items-center gap-2 px-4 pt-4 flex-wrap">
                   {attachedFiles.map((file, idx) => (
                     file.type.startsWith('image/') ? (
-                      <div key={file.url} className="relative group w-20 h-20 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center overflow-hidden border border-[#31343b]">
+                      <div key={file.url} className="relative group w-20 h-20 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center overflow-hidden border border-gray-200">
                         <div className="relative w-full h-full">
                           <img src={file.url} alt="Attachment" className="w-full h-full object-cover" />
                           
@@ -6186,7 +6182,7 @@ export default function EditorPage() {
                         
                         <button
                           type="button"
-                          className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-[#23272f] rounded-full text-[#b0b3b8] hover:text-white hover:bg-[#ef4444] transition opacity-0 group-hover:opacity-100"
+                          className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-[#002903] rounded-full text-gray-500 hover:text-gray-900 hover:bg-[#ef4444] transition opacity-0 group-hover:opacity-100"
                           onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== idx))}
                           aria-label="Remove attachment"
                         >
@@ -6198,13 +6194,13 @@ export default function EditorPage() {
                         
                         {/* Error tooltip */}
                         {file.uploadError && (
-                          <div className="absolute -top-8 left-0 right-0 bg-red-600 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                          <div className="absolute -top-8 left-0 right-0 bg-red-600 text-gray-900 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
                             {file.uploadError}
                           </div>
                         )}
                       </div>
                     ) : (
-                      <div key={file.url} className="relative group w-16 h-16 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center border border-[#31343b]">
+                      <div key={file.url} className="relative group w-16 h-16 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center border border-gray-200">
                         {file.name.toLowerCase().endsWith('.pdf') && (
                           <img src="/pdf-icon.png" alt="PDF Icon" className="w-8 h-8 mb-1 object-contain" />
                         )}
@@ -6214,10 +6210,10 @@ export default function EditorPage() {
                         {file.name.toLowerCase().endsWith('.xls') || file.name.toLowerCase().endsWith('.xlsx') ? (
                           <img src="/xls-icon.png" alt="XLS Icon" className="w-8 h-8 mb-1 object-contain" />
                         ) : null}
-                        <span className="text-xs text-[#b0b3b8] truncate w-14 text-center">{file.name}</span>
+                        <span className="text-xs text-gray-500 truncate w-14 text-center">{file.name}</span>
                         <button
                           type="button"
-                          className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-[#23272f] rounded-full text-[#b0b3b8] hover:text-white hover:bg-[#ef4444] transition opacity-0 group-hover:opacity-100"
+                          className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-[#002903] rounded-full text-gray-500 hover:text-gray-900 hover:bg-[#ef4444] transition opacity-0 group-hover:opacity-100"
                           onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== idx))}
                           aria-label="Remove attachment"
                         >
@@ -6231,6 +6227,7 @@ export default function EditorPage() {
                   ))}
                 </div>
               )}
+              <div className="bg-[#f3f3f5] rounded-lg">
               <textarea
                 ref={textareaRef}
                 rows={1}
@@ -6250,134 +6247,35 @@ export default function EditorPage() {
                     }
                   }
                 }}
-                className={`bg-[#2a2a2a] outline-none border-none ${chatInput ? 'text-white' : 'text-[#b0b3b8]'} text-base placeholder-[#6a7282] px-4 pt-5 pb-16 rounded-t-2xl w-full focus:text-white resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#23272f]`}
+                  className={`bg-transparent outline-none border-none ${chatInput ? 'text-[#002903]' : 'text-gray-500'} text-base placeholder-[#717182] px-4 pt-5 pb-16 w-full focus:text-[#002903] focus:outline-none focus:ring-0 focus:border-none resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100`}
                 placeholder="Ask what you want"
                 style={{ minHeight: '56px', maxHeight: '180px' }}
               />
               
-              <div className="w-full h-px bg-[#2a2a2a]" />
-              <div className="w-full h-px bg-[#2a2a2a]" />
-              <div className="flex items-center justify-between px-4 py-2 bg-[#2a2a2a] rounded-b-2xl">
-                <div className="relative">
-                  <button 
-                    type="button" 
-                    className="text-[#b0b3b8] hover:text-white hover:bg-[#23272f] p-2 rounded-md transition" 
-                    onClick={() => document.getElementById('file-upload-input')?.click()}
-                  >
-                    <img src="/attach-icon.png" alt="Attach" className="w-5 h-5 object-contain" />
-                  </button>
-                  {/* Hidden file input for Excel and Word files */}
-                  <input
-                    id="file-upload-input"
-                    type="file"
-                    accept=".xlsx,.xls,.docx"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        const fileExtension = file.name.split('.').pop()?.toLowerCase();
-                        if (fileExtension === 'xlsx' || fileExtension === 'xls' || fileExtension === 'docx' || fileExtension === 'pdf') {
-                          // Process file and add to attachedFiles for icon display
-                          const fileUrl = URL.createObjectURL(file);
-                          const newAttachment = {
-                            url: fileUrl,
-                            type: file.type,
-                            name: file.name,
-                            isUploaded: true,
-                            uploadStatus: 'completed' as const
-                          };
-                          
-                          setAttachedFiles(prev => [...prev, newAttachment]);
-                          
-                          // Process the file data in the background for chart generation
-                          if (fileExtension === 'xlsx' || fileExtension === 'xls') {
-                            const reader = new FileReader();
-                            reader.onload = (event) => {
-                              try {
-                                const data = new Uint8Array(event.target?.result as ArrayBuffer);
-                                const XLSX = require('xlsx');
-                                const workbook = XLSX.read(data, { type: 'array' });
-                                
-                                const result: any = {
-                                  sheets: {},
-                                  summary: {
-                                    totalSheets: workbook.SheetNames.length,
-                                    sheetNames: workbook.SheetNames
-                                  }
-                                };
-
-                                workbook.SheetNames.forEach((sheetName: string) => {
-                                  const worksheet = workbook.Sheets[sheetName];
-                                  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
-                                  const objectData = XLSX.utils.sheet_to_json(worksheet);
-                                  
-                                  result.sheets[sheetName] = {
-                                    raw: jsonData,
-                                    objects: objectData,
-                                    range: worksheet['!ref'],
-                                    rowCount: jsonData.length,
-                                    columnCount: jsonData[0]?.length || 0
-                                  };
-                                });
-
-                                handleFileDataExtracted(result, file.name, 'excel');
-                              } catch (error) {
-                                console.error('Error processing Excel file:', error);
-                              }
-                            };
-                            reader.readAsArrayBuffer(file);
-                          } else if (fileExtension === 'docx') {
-                            const reader = new FileReader();
-                            reader.onload = async (event) => {
-                              try {
-                                const arrayBuffer = event.target?.result as ArrayBuffer;
-                                const mammoth = require('mammoth');
-                                const result = await mammoth.extractRawText({ arrayBuffer });
-                                
-                                const processedData = {
-                                  text: result.value,
-                                  wordCount: result.value.split(/\s+/).length,
-                                  characterCount: result.value.length,
-                                  paragraphs: result.value.split('\n').filter((p: string) => p.trim().length > 0),
-                                  messages: result.messages
-                                };
-
-                                handleFileDataExtracted(processedData, file.name, 'word');
-                              } catch (error) {
-                                console.error('Error processing Word file:', error);
-                              }
-                            };
-                            reader.readAsArrayBuffer(file);
-                          }
-                        }
-                      }
-                      // Reset the input
-                      e.target.value = '';
-                    }}
-                    className="hidden"
-                  />
+                <div className="flex items-center justify-end px-4 py-2">
+                <button type="submit" className={`rounded-full w-8 h-8 flex items-center justify-center transition ${chatInput ? 'bg-[#002903] text-white' : 'bg-gray-200 text-gray-500 hover:bg-[#002903] hover:text-white'}`} disabled={!chatInput.trim()}><svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path d="M10 15V5M10 5l-5 5m5-5l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
                 </div>
-                <button type="submit" className={`rounded-full w-8 h-8 flex items-center justify-center transition ml-auto ${(chatInput || attachedFiles.length > 0 || fileData) ? 'bg-[#2563eb] text-white' : 'bg-[#31343b] text-[#b0b3b8] hover:bg-[#2563eb] hover:text-white'}`} disabled={!chatInput.trim() && !fileData}><svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path d="M10 15V5M10 5l-5 5m5-5l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
               </div>
             </div>
           </form>
           {/* Render the error popup above the input box */}
           {showInputError && (
             <div className="w-full flex justify-center mb-2">
-              <div className="bg-red-600 text-white text-sm rounded-lg px-4 py-2 shadow-lg">You need to write</div>
+              <div className="bg-red-600 text-gray-900 text-sm rounded-lg px-4 py-2 shadow-lg">You need to write</div>
             </div>
           )}
         </section>
         {/* Slide preview column */}
-        <section className="flex-1 flex flex-col h-full bg-[#18191c]">
+        <section className="flex-1 flex flex-col h-full bg-white">
           {/* Top bar */}
-          <div className="bg-[#212121] border-b border-[#31343b] px-8 py-4 flex justify-end">
+          <div className="bg-[#F9FAFB] border-b border-gray-200 px-8 py-4 flex justify-end">
             <div className="flex gap-3">
-              <button className="flex items-center justify-center hover:bg-[#23242a] text-gray-300 px-3 py-2 rounded-lg font-medium text-sm transition" onClick={() => {
+              <button className="flex items-center justify-center hover:bg-gray-100 text-gray-600 px-3 py-2 rounded-lg font-medium text-sm transition" onClick={() => {
                 setShowFullscreenPreview(true);
               }}>
                 <img src="/preview-icon.png" alt="Preview" className="w-4 h-4 object-contain" />
               </button>
-              <button className="flex items-center justify-center bg-white hover:bg-gray-100 hover:scale-110 text-gray-700 p-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm transform" onClick={() => {
+              <button className="flex items-center justify-center bg-[#002903] hover:bg-[#002903]/90 hover:scale-110 text-white p-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm transform" onClick={() => {
                 // Check if user has Pro plan for Export feature
                 if (credits?.plan_type === 'free') {
                   setShowPricingModal(true);
@@ -6390,122 +6288,44 @@ export default function EditorPage() {
             </div>
           </div>
           {/* Slide content area */}
-          <div className="flex-1 flex flex-col px-4 md:px-8 py-6">
-            <div className="flex-1 flex flex-col items-center justify-center">
-                              <div
-          className="bg-white relative overflow-hidden shadow-lg flex items-center justify-center"
-          style={{
-            width: sidebarCollapsed ? '881px' : '640px',   // Smaller when sidebar open
-            height: sidebarCollapsed ? '495px' : '360px',   // Proportionally smaller (640/881 = 360/495)
-            transition: 'width 300ms ease-in-out, height 300ms ease-in-out'
-          }}
-          key={`canvas-${messages.length}`}
-        >
-          <div 
-            className="slide-content"
-            style={{
-              transform: sidebarCollapsed ? 'scale(1)' : 'scale(0.726)', // Scale content down when sidebar open (640/881 = 0.726)
-              transformOrigin: 'center center',
-              width: '881px',
-              height: '495px',
-              transition: 'transform 300ms ease-in-out'
-            }}>
-            {renderSlideContent()}
-          </div>
-        </div>
-            </div>
-            {/* Slide timeline */}
-            <div className="w-full max-w-5xl mx-auto mt-6">
-              <div className="bg-[#23272f] rounded-2xl border border-[#31343b] px-4 md:px-8 py-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[#b0b3b8] text-sm font-medium">Slide Timeline</span>
-                  <div className="flex items-center gap-4">
-                    <span className="text-[#b0b3b8] text-sm font-medium">{`${activeSlide + 1} of ${slides.length}`}</span>
+          <div className="flex-1 flex flex-col px-4 md:px-8 py-6 bg-[#f9fafb] overflow-y-auto">
+            <div className="flex flex-col items-center gap-6 bg-[#f9fafb]">
+              {slides.map((slide: any, slideIndex: number) => (
+                <div
+                  key={`slide-${slideIndex}`}
+                  className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200"
+                  style={{
+                    width: sidebarCollapsed ? '881px' : '640px',
+                    height: sidebarCollapsed ? '495px' : '360px',
+                    transition: 'width 300ms ease-in-out, height 300ms ease-in-out'
+                  }}
+                >
+                  <div 
+                    className="slide-content"
+                    style={{
+                      transform: sidebarCollapsed ? 'scale(1)' : 'scale(0.726)',
+                      transformOrigin: 'center center',
+                      width: '881px',
+                      height: '495px',
+                      transition: 'transform 300ms ease-in-out'
+                    }}
+                  >
+                    {renderSlideContent(slideIndex)}
                   </div>
                 </div>
-              <div className="flex items-center justify-between w-full">
-                {/* Left arrow */}
-                <button
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-[#2563eb] border border-[#31343b] shadow-sm mr-4 disabled:opacity-40 hover:bg-[#2563eb] hover:text-white transition"
-                  onClick={() => setActiveSlide(s => Math.max(0, s - 1))}
-                  disabled={startIdx === 0}
-                >
-                  <svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path d="M12 15l-4-5 4-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
-                {/* Slides */}
-                <div className={`flex gap-2 transition-all duration-300 ease-in-out ${sidebarCollapsed ? 'max-w-[750px]' : 'max-w-[450px]'}`}>
-                  {visibleSlides.map((slide: any, i: number) => {
-                    const realIdx = startIdx + i;
-                    const isDragging = draggedSlideIndex === realIdx;
-                    const isDragOver = dragOverIndex === realIdx;
-                    
-                    return (
-                      <div key={realIdx} className="relative flex flex-col items-center group">
-                        {/* Delete button */}
-                        {slides.length > 1 && (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDeleteSlide(realIdx);
-                            }}
-                            className="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-sm transition-all duration-200 z-10 opacity-0 group-hover:opacity-100 hover:scale-110"
-                            title="Delete slide"
-                          >
-                            <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                          </button>
-                        )}
-                        <div
-                          draggable
-                          onDragStart={(e) => handleDragStart(e, realIdx)}
-                          onDragOver={(e) => handleDragOver(e, realIdx)}
-                          onDragLeave={handleDragLeave}
-                          onDrop={(e) => handleDrop(e, realIdx)}
-                          onDragEnd={handleDragEnd}
-                          className={`flex flex-col items-center justify-center px-2 py-2 rounded-lg bg-white shadow-sm transition-all cursor-move min-w-[100px] max-w-[100px] h-[60px] ${
-                            realIdx === activeSlide 
-                              ? 'border-2 border-[#2563eb]' 
-                              : 'border border-gray-300'
-                          } ${
-                            isDragging 
-                              ? 'opacity-50 scale-95' 
-                              : ''
-                          } ${
-                            isDragOver && !isDragging 
-                              ? 'border-2 border-green-400 bg-green-50' 
-                              : ''
-                          } hover:shadow-md`}
-                          onClick={() => setActiveSlide(realIdx)}
-                        >
-                          <div className="text-[#6a7282] text-xs font-semibold pointer-events-none">{realIdx + 1}</div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                {/* Right arrow */}
-                <button
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-white text-[#2563eb] border border-[#31343b] shadow-sm ml-4 disabled:opacity-40 hover:bg-[#2563eb] hover:text-white transition"
-                  onClick={() => setActiveSlide(s => Math.min(slides.length - 1, s + 1))}
-                  disabled={endIdx >= slides.length}
-                >
-                  <svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path d="M8 15l4-5-4-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
-                </button>
-              </div>
+              ))}
             </div>
           </div>
-        </div>
         </section>
       </main>
       {showTitleMenu && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" onClick={() => setShowTitleMenu(false)} />
-          <div className="relative w-[400px] bg-[#18191c] rounded-2xl shadow-xl border border-[#23272f] py-6 px-6 animate-modal-in z-10">
-            <div className="text-[#b0b3b8] text-xs font-medium tracking-wide mb-2 px-1">Presentation options</div>
+          <div className="relative w-[400px] bg-white rounded-2xl shadow-xl border border-[#23272f] py-6 px-6 animate-modal-in z-10">
+            <div className="text-gray-500 text-xs font-medium tracking-wide mb-2 px-1">Presentation options</div>
             <div className="flex flex-col gap-1 mb-2 px-1">
               <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-white hover:bg-[#2563eb]"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#002903]"
                 onClick={async () => {
                   console.log('🔄🔄🔄 DUPLICATING PRESENTATION:', currentPresentation);
                   
@@ -6599,7 +6419,7 @@ export default function EditorPage() {
                 Duplicate
               </button>
               <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-white hover:bg-[#2563eb]"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#002903]"
                 onClick={() => {
                   setShowTitleMenu(false);
                   setShowFullscreenPreview(true);
@@ -6608,7 +6428,7 @@ export default function EditorPage() {
                 Preview presentation
               </button>
               <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-white hover:bg-[#2563eb]"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#002903]"
                 onClick={() => {
                   setShowTitleMenu(false);
                   // Check if user has Pro plan for Export feature
@@ -6622,7 +6442,7 @@ export default function EditorPage() {
                 Export as PDF
               </button>
               <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-[#ef4444] hover:bg-[#ef4444] hover:text-white" 
+                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-[#ef4444] hover:bg-[#ef4444] hover:text-gray-900" 
                 onClick={async () => {
                   console.log('🗑️🗑️🗑️ DELETING PRESENTATION from database:', currentPresentationId)
                   
@@ -6769,21 +6589,21 @@ export default function EditorPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" onClick={() => setShowExportModal(false)} />
           <div className="relative bg-[#2a2a2a] rounded-2xl shadow-xl w-full max-w-md p-6 border border-[#404040] animate-modal-in z-10">
-            <h2 className="text-white text-xl font-semibold mb-4">Export Presentation</h2>
-            <p className="text-[#b0b3b8] text-sm mb-6">
-              Your presentation <span className="text-white font-medium">{currentPresentation?.title || 'Untitled'}</span> contains <span className="text-white font-medium">{slides.length} slides</span>.
+            <h2 className="text-gray-900 text-xl font-semibold mb-4">Export Presentation</h2>
+            <p className="text-gray-500 text-sm mb-6">
+              Your presentation <span className="text-gray-900 font-medium">{currentPresentation?.title || 'Untitled'}</span> contains <span className="text-gray-900 font-medium">{slides.length} slides</span>.
             </p>
             
             {/* Progress Bar */}
             {isExporting && (
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[#b0b3b8] text-xs">Generating PDF...</span>
-                  <span className="text-[#b0b3b8] text-xs">{Math.round(exportProgress)}%</span>
+                  <span className="text-gray-500 text-xs">Generating PDF...</span>
+                  <span className="text-gray-500 text-xs">{Math.round(exportProgress)}%</span>
                 </div>
                 <div className="w-full bg-[#404040] rounded-full h-2">
                   <div 
-                    className="bg-[#2563eb] h-2 rounded-full transition-all duration-300 ease-out"
+                    className="bg-[#002903] h-2 rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${exportProgress}%` }}
                   />
                 </div>
@@ -6791,7 +6611,7 @@ export default function EditorPage() {
             )}
             
             <button 
-              className="w-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white font-medium py-3 px-4 rounded-lg transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#002903] hover:bg-[#1d4ed8] text-gray-900 font-medium py-3 px-4 rounded-lg transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleExportPDF}
               disabled={isExporting}
             >
@@ -6890,7 +6710,7 @@ export default function EditorPage() {
           </div>
           
           {/* Slide counter */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-gray-900 text-sm bg-black/50 px-3 py-1 rounded-full">
             {activeSlide + 1} / {slides.length}
           </div>
         </div>

@@ -1,23 +1,18 @@
-import { NextRequest, NextResponse } from 'next/server';
 import puppeteer from 'puppeteer';
 
-export async function POST(request: NextRequest) {
+// Direct chart capture function using Puppeteer (same logic as copy/paste)
+export async function captureChartImage(chartData: any, width: number = 800, height: number = 400): Promise<string | null> {
+  let browser;
   try {
-    const { chartData, width = 800, height = 400 } = await request.json();
-    
-    console.log('📊 Chart Capture: Starting capture for chart data:', { 
+    console.log('📊 Direct Chart Capture: Starting capture for chart data:', { 
       type: chartData.type, 
       seriesCount: chartData.series?.length,
       width, 
       height 
     });
 
-    if (!chartData) {
-      return NextResponse.json({ error: 'Chart data is required' }, { status: 400 });
-    }
-
     // Launch Puppeteer
-    const browser = await puppeteer.launch({
+    browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security', '--allow-running-insecure-content']
     });
@@ -31,7 +26,7 @@ export async function POST(request: NextRequest) {
       deviceScaleFactor: 2
     });
 
-    // Create HTML content with the chart
+    // Create HTML content with the chart (same as copy/paste logic)
     const chartHtml = `
     <!DOCTYPE html>
     <html>
@@ -82,6 +77,10 @@ export async function POST(request: NextRequest) {
           color: #6b7280;
           font-weight: normal;
         }
+        /* Force specific colors to avoid oklch issues */
+        * {
+          color-scheme: light;
+        }
       </style>
     </head>
     <body>
@@ -100,7 +99,7 @@ export async function POST(request: NextRequest) {
           return point;
         });
         
-        // Colors for the chart
+        // Colors for the chart (same as copy/paste)
         const colors = ['#3b82f6', '#a855f7', '#10b981', '#f59e0b', '#ef4444'];
         
         function Chart() {
@@ -184,9 +183,9 @@ export async function POST(request: NextRequest) {
     await page.setContent(chartHtml);
     
     // Wait for the chart to be rendered
-    await page.waitForFunction(() => window.chartReady, { timeout: 10000 });
+    await page.waitForFunction(() => window.chartReady, { timeout: 30000 });
     
-    // Wait a bit more for any animations
+    // Wait a bit more for any animations (same as copy/paste)
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Take screenshot of the chart
@@ -201,21 +200,15 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    await browser.close();
-    
-    console.log('✅ Chart Capture: Successfully captured chart image');
-    
-    return NextResponse.json({ 
-      image: screenshot,
-      width: width * 2,
-      height: height * 2
-    });
+    console.log('✅ Direct Chart Capture: Successfully captured chart image');
+    return screenshot;
 
   } catch (error) {
-    console.error('❌ Chart Capture: Failed to capture chart:', error);
-    return NextResponse.json(
-      { error: 'Failed to capture chart image' },
-      { status: 500 }
-    );
+    console.error('❌ Direct Chart Capture: Failed to capture chart:', error);
+    return null;
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
   }
 }
