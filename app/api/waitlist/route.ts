@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { Resend } from 'resend';
 import { createClient } from '@supabase/supabase-js';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend only if API key is available
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -51,9 +52,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send confirmation email to user
-    try {
-      await resend.emails.send({
+    // Send confirmation email to user (only if Resend is configured)
+    if (resend && process.env.RESEND_FROM_EMAIL) {
+      try {
+        await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL!,
         to: email,
         subject: 'Welcome to Slaid Waitlist! 🎉',
@@ -76,15 +78,19 @@ export async function POST(request: NextRequest) {
             </p>
           </div>
         `,
-      });
-    } catch (emailError) {
-      console.error('Email error:', emailError);
-      // Don't fail the request if email fails, user is still added to waitlist
+        });
+      } catch (emailError) {
+        console.error('Email error:', emailError);
+        // Don't fail the request if email fails, user is still added to waitlist
+      }
+    } else {
+      console.log('Resend not configured, skipping confirmation email');
     }
 
-    // Send notification email to admin
-    try {
-      await resend.emails.send({
+    // Send notification email to admin (only if Resend is configured)
+    if (resend && process.env.RESEND_FROM_EMAIL && process.env.RESEND_TO_EMAIL) {
+      try {
+        await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL!,
         to: process.env.RESEND_TO_EMAIL!,
         subject: 'New Waitlist Signup - Slaid',
@@ -96,9 +102,12 @@ export async function POST(request: NextRequest) {
             <p><strong>Total signups:</strong> Check your Supabase dashboard for current count</p>
           </div>
         `,
-      });
-    } catch (adminEmailError) {
-      console.error('Admin email error:', adminEmailError);
+        });
+      } catch (adminEmailError) {
+        console.error('Admin email error:', adminEmailError);
+      }
+    } else {
+      console.log('Resend not configured, skipping admin notification email');
     }
 
     return NextResponse.json(
