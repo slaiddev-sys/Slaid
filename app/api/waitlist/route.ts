@@ -21,15 +21,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If Supabase is not configured, just log and return success
+    // If Supabase is not configured, return error
     if (!supabase) {
-      console.log('Waitlist signup (no DB):', email);
+      console.error('❌ SUPABASE NOT CONFIGURED! Missing environment variables:', {
+        hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+        hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+        email: email
+      });
       return NextResponse.json(
-        { 
-          message: 'Successfully joined waitlist!',
-          email: email.toLowerCase()
-        },
-        { status: 201 }
+        { error: 'Database not configured. Please contact support.' },
+        { status: 500 }
       );
     }
 
@@ -62,7 +63,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log('Waitlist signup successful:', email);
+    console.log('✅ WAITLIST SIGNUP SUCCESSFUL - SAVED TO DATABASE:', {
+      email: email,
+      supabaseConfigured: true,
+      insertedData: data
+    });
 
     return NextResponse.json(
       { 
