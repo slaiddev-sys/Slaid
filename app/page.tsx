@@ -264,15 +264,15 @@ export default function Component1920WLight() {
         style={{ backgroundImage: `url('/home-background.png')` }}
       />
       {/* Navigation Bar - Logo Only */}
-      <div className="relative z-10 box-border flex flex-row items-center justify-start max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 w-full">
+      <div className="relative z-10 box-border flex flex-row items-center justify-start max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto px-4 sm:px-6 py-4 sm:py-8 w-full">
         <div className="bg-center bg-contain bg-no-repeat h-[28px] sm:h-[36px] shrink-0 w-[90px] sm:w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
       </div>
       {/* Main Content: left-aligned layout */}
-      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 pt-4 sm:pt-8 max-w-6xl mx-auto">
+      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 pt-4 sm:pt-8 max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto">
         {/* Launch Date Badge */}
         <div className="mb-4 sm:mb-6 flex items-center justify-start relative">
           <span className="bg-gray-100 rounded-[14px] px-4 sm:px-6 py-2 flex items-center gap-2 border border-gray-200">
-            <span className="text-gray-800 text-xs sm:text-sm font-medium font-sans">LAUNCHING NOV 9TH, 2025</span>
+            <span className="text-gray-800 text-xs sm:text-sm 2xl:text-base font-medium font-sans">LAUNCHING NOV 9TH, 2025</span>
           </span>
         </div>
         {/* Main Content Row - Title and Upload Files */}
@@ -280,29 +280,29 @@ export default function Component1920WLight() {
           {/* Left Side - Title and Description */}
           <div className="flex-1 max-w-3xl">
             {/* Heading */}
-            <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] xl:text-[52.5px] font-normal leading-none mb-2 text-left tracking-tighter" style={{ color: '#002903' }}>
+            <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] xl:text-[52.5px] 2xl:text-[4rem] font-normal leading-none mb-2 text-left tracking-tighter" style={{ color: '#002903' }}>
                 <div>
                   Convert excels{" "}
                   <span className="inline-flex items-center mx-1 sm:mx-2">
-                    <img src="/google-sheets.png" alt="Google Sheets" className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10" />
+                    <img src="/google-sheets.png" alt="Google Sheets" className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 2xl:w-12 2xl:h-12" />
                   </span>
                   to
                 </div>
                 <div>
                   professional{" "}
                   <span className="inline-flex items-center mx-1 sm:mx-2">
-                    <img src="/google-slide.png" alt="Google Slides" className="h-6 sm:h-8 lg:h-10 w-auto" />
+                    <img src="/google-slide.png" alt="Google Slides" className="h-6 sm:h-8 lg:h-10 2xl:h-12 w-auto" />
                   </span>
                 </div>
                 <div>
                   presentations{" "}
                   <span className="inline-flex items-center mx-1 sm:mx-2">
-                    <img src="/power-point.png" alt="PowerPoint" className="h-6 sm:h-8 lg:h-10 w-auto" />
+                    <img src="/power-point.png" alt="PowerPoint" className="h-6 sm:h-8 lg:h-10 2xl:h-12 w-auto" />
                   </span>
                 </div>
             </h1>
             {/* Subheading */}
-            <p className="max-w-[588px] text-left text-sm sm:text-base lg:text-[16.3px] font-sans mb-6 sm:mb-8" style={{ color: '#002903' }}>
+            <p className="max-w-[588px] text-left text-sm sm:text-base lg:text-[16.3px] 2xl:text-lg font-sans mb-6 sm:mb-8" style={{ color: '#002903' }}>
               Unlock the potential of your Excel data with our AI-powered<br className="hidden sm:block" />
               <span className="sm:hidden"> </span>storytelling and presentation generator.
             </p>
