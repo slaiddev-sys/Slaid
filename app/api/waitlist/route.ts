@@ -1,4 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client only if keys are available
+const supabase = process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY 
+  ? createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY
+    )
+  : null;
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,9 +21,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // For now, just log the email and return success
-    // This removes all external dependencies
-    console.log('Waitlist signup:', email);
+    // If Supabase is not configured, just log and return success
+    if (!supabase) {
+      console.log('Waitlist signup (no DB):', email);
+      return NextResponse.json(
+        { 
+          message: 'Successfully joined waitlist!',
+          email: email.toLowerCase()
+        },
+        { status: 201 }
+      );
+    }
+
+    // Check if email already exists
+    const { data: existingUser, error: checkError } = await supabase
+      .from('waitlist')
+      .select('email')
+      .eq('email', email.toLowerCase())
+      .single();
+
+    if (existingUser) {
+      return NextResponse.json(
+        { error: 'Email already registered for waitlist' },
+        { status: 409 }
+      );
+    }
+
+    // Insert into waitlist
+    const { data, error } = await supabase
+      .from('waitlist')
+      .insert([{ email: email.toLowerCase() }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Database error:', error);
+      return NextResponse.json(
+        { error: 'Failed to join waitlist' },
+        { status: 500 }
+      );
+    }
+
+    console.log('Waitlist signup successful:', email);
 
     return NextResponse.json(
       { 
