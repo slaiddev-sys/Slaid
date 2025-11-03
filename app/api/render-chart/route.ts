@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
 
 // Simple canvas-based chart generator as fallback
 function generateSimpleChart(chartData: any, width: number, height: number): string {
@@ -42,8 +41,9 @@ export async function POST(request: NextRequest) {
     console.log('Chart data received:', JSON.stringify(chartData, null, 2));
     console.log('Dimensions:', { width, height });
 
-    // Launch Puppeteer
-    const browser = await puppeteer.launch({
+    // Launch Puppeteer (dynamic import)
+    const puppeteer = await import('puppeteer');
+    const browser = await puppeteer.default.launch({
       headless: true,
       args: [
         '--no-sandbox', 

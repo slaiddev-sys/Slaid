@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+// Dynamic import for puppeteer
 import PDFMerger from 'pdf-merger-js';
 
 export async function POST(request: NextRequest) {
@@ -12,8 +12,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No slides provided' }, { status: 400 });
     }
 
-    // Launch Puppeteer
-    const browser = await puppeteer.launch({
+    // Launch Puppeteer (dynamic import)
+    const puppeteer = await import('puppeteer');
+    const browser = await puppeteer.default.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security', '--allow-running-insecure-content']
     });

@@ -1,4 +1,4 @@
-import puppeteer from 'puppeteer';
+// Dynamic import for puppeteer to avoid bundling issues
 
 // Direct chart capture function using Puppeteer (same logic as copy/paste)
 export async function captureChartImage(chartData: any, width: number = 800, height: number = 400): Promise<string | null> {
@@ -11,8 +11,9 @@ export async function captureChartImage(chartData: any, width: number = 800, hei
       height 
     });
 
-    // Launch Puppeteer
-    browser = await puppeteer.launch({
+    // Launch Puppeteer (dynamic import)
+    const puppeteer = await import('puppeteer');
+    browser = await puppeteer.default.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security', '--allow-running-insecure-content']
     });
