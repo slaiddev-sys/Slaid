@@ -20,8 +20,7 @@ const plans = [
     desc: ["Perfect for testing the product with no", "commitment."],
     iconBg: "bg-emerald-500",
     features: [
-      { text: "200 credits", included: true },
-      { text: "1 workspace", included: true },
+      { text: "20 credits", included: true },
       { text: "Unlimited presentations", included: true },
       { text: "Export as PDF", included: true },
       { text: "Slide preview", included: true },
@@ -31,13 +30,12 @@ const plans = [
   },
   {
     name: "Pro",
-    monthly: { price: "$25", period: "/month", save: null, buttonColor: "bg-blue-600 text-white hover:bg-blue-700" },
-    annual: { price: "$250", period: "/year", save: "Save $50 per year", buttonColor: "bg-blue-600 text-white hover:bg-blue-700" },
-    desc: ["Designed for professionals and", "freelancers."],
+    monthly: { price: "$30", period: "/month", save: null, buttonColor: "bg-blue-600 text-white hover:bg-blue-700" },
+    annual: { price: "$270", period: "/year", save: "Save $90 per year", buttonColor: "bg-blue-600 text-white hover:bg-blue-700" },
+    desc: ["Designed for professionals."],
     iconBg: "bg-blue-600",
     features: [
-      { text: "2,500 credits", included: true },
-      { text: "Unlimited workspaces", included: true },
+      { text: "500 credits", included: true },
       { text: "Unlimited presentations", included: true },
       { text: "Slide preview before generating", included: true },
       { text: "Export as PDF", included: true },

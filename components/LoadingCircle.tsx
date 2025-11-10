@@ -9,7 +9,7 @@ interface LoadingCircleProps {
 
 export const LoadingCircle: React.FC<LoadingCircleProps> = ({ 
   size = 16, 
-  color = '#2563eb',
+  color = '#002903',
   className = '',
   progress = 0
 }) => {

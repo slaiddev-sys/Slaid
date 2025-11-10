@@ -202,7 +202,7 @@ export default function Index_LeftAgendaRightText({
 
   useEffect(() => {
     setCurrentAgenda(agenda);
-  }, [agenda]);
+  }, [JSON.stringify(agenda)]);
   
 
   // Individual selection states for agenda items

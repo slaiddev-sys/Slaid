@@ -2,9 +2,12 @@ interface ExcelData {
   sheets: Record<string, {
     raw: any[][];
     objects: any[];
+    actualHeaders: any[]; // The actual column headers from the first row
+    rowLabels: Array<{rowIndex: number, label: string, labelColumn: number, excelRow: number}>; // Row labels from first few columns
     range: string;
     rowCount: number;
     columnCount: number;
+    sheetType?: 'dashboard' | 'tabular' | 'mixed'; // Auto-detected sheet type
   }>;
   summary: {
     totalSheets: number;
@@ -33,14 +36,20 @@ export class FileDataProcessor {
     const sheets = data.sheets;
     const sheetNames = data.summary.sheetNames;
     
-    // Extract key insights from Excel data
-    let summary = `Excel file "${fileName}" contains ${data.summary.totalSheets} sheet(s): ${sheetNames.join(', ')}.`;
+    // Detect file type from filename
+    const isCSV = fileName.toLowerCase().endsWith('.csv');
+    const fileTypeLabel = isCSV ? 'CSV' : 'Excel';
+    
+    console.log(`FileDataProcessor: Processing ${fileTypeLabel} file "${fileName}" with ${data.summary.totalSheets} sheet(s)`);
+    
+    // Extract key insights from file data
+    let summary = `${fileTypeLabel} file "${fileName}" contains ${data.summary.totalSheets} ${isCSV ? 'data table(s)' : 'sheet(s)'}: ${sheetNames.join(', ')}.`;
     let structuredData: any = {
       totalSheets: data.summary.totalSheets,
       sheets: {}
     };
     
-    let promptContext = `Based on the Excel file "${fileName}" with the following data:\n\n`;
+    let promptContext = `Based on the ${fileTypeLabel} file "${fileName}" with the following data:\n\n`;
 
     // Process each sheet
     sheetNames.forEach(sheetName => {
@@ -48,10 +57,107 @@ export class FileDataProcessor {
       const hasData = sheet.objects.length > 0;
       
       if (hasData) {
-        // Get column headers (first row) and ensure they are strings
-        const headers = (sheet.raw[0] || []).map((header: any) => 
-          header != null ? String(header).trim() : ''
-        ).filter((header: string) => header.length > 0);
+        // Use the actual headers extracted during parsing, with fallback to raw data
+        let headers: string[] = [];
+        
+        console.log(`FileDataProcessor: Debug sheet data for "${sheetName}":`, {
+          hasActualHeaders: !!sheet.actualHeaders,
+          actualHeadersLength: sheet.actualHeaders?.length || 0,
+          actualHeaders: sheet.actualHeaders,
+          rawFirstRow: sheet.raw?.[0],
+          hasRowLabels: !!sheet.rowLabels,
+          rowLabelsLength: sheet.rowLabels?.length || 0,
+          sampleRowLabel: sheet.rowLabels?.[0],
+          sampleObjectKeys: Object.keys(sheet.objects[0] || {}),
+          firstObjectSample: sheet.objects[0]
+        });
+        
+        // SPECIAL DEBUG for CSV files
+        if (fileName.toLowerCase().endsWith('.csv')) {
+          console.log(`🚨 CSV SPECIFIC DEBUG for "${sheetName}":`);
+          console.log(`📋 Raw first row:`, sheet.raw?.[0]);
+          console.log(`📊 Actual headers:`, sheet.actualHeaders);
+          console.log(`🔍 Object keys:`, Object.keys(sheet.objects[0] || {}));
+          console.log(`🎯 Should headers be used?`, sheet.actualHeaders && sheet.actualHeaders.length > 0);
+        }
+
+        // FORCE use of actual headers - ignore object keys if they're just numbers
+        if (sheet.actualHeaders && sheet.actualHeaders.length > 0) {
+          // Use the actual headers from the Excel file
+          headers = sheet.actualHeaders.map((header: any) => 
+            header != null ? String(header).trim() : ''
+          ).filter((header: string) => header.length > 0);
+          console.log(`FileDataProcessor: FORCED actual headers for "${sheetName}":`, headers);
+          
+          // CRITICAL: Re-map the data objects to use these headers instead of numeric keys
+          const remappedObjects = sheet.objects.map((row: any, rowIndex: number) => {
+            const newRow: any = { ...row }; // Keep internal fields like _rowLabel
+            const objectKeys = Object.keys(row).filter(key => !key.startsWith('_'));
+            
+            // Debug for specific problematic rows
+            if (rowIndex < 5 || (row._rowLabel && row._rowLabel.includes('Inflación'))) {
+              console.log(`🔍 REMAPPING DEBUG Row ${rowIndex + 1} (${row._rowLabel}):`);
+              console.log(`  📋 Original keys: [${objectKeys.join(', ')}]`);
+              console.log(`  📊 Headers to map: [${headers.join(', ')}]`);
+              console.log(`  🎯 Original values: [${objectKeys.map(k => row[k]).join(', ')}]`);
+            }
+            
+            // Clear old numeric keys and map to proper headers
+            objectKeys.forEach(key => delete newRow[key]);
+            
+            // Map each header to its corresponding value by position
+            headers.forEach((header, index) => {
+              const oldKey = objectKeys[index];
+              if (oldKey && row[oldKey] !== undefined) {
+                newRow[header] = row[oldKey];
+                
+                // Debug the mapping
+                if (rowIndex < 5 || (row._rowLabel && row._rowLabel.includes('Inflación'))) {
+                  console.log(`    ✅ Mapped "${oldKey}" → "${header}" = "${row[oldKey]}"`);
+                }
+              } else {
+                newRow[header] = null;
+                
+                if (rowIndex < 5 || (row._rowLabel && row._rowLabel.includes('Inflación'))) {
+                  console.log(`    ❌ No value for "${header}" (oldKey: "${oldKey}")`);
+                }
+              }
+            });
+            
+            return newRow;
+          });
+          
+          // Replace the objects with remapped ones
+          sheet.objects = remappedObjects;
+          console.log(`FileDataProcessor: REMAPPED objects to use proper headers. Sample:`, sheet.objects[0]);
+        } else {
+          // Fallback: try to get headers from object keys if they look meaningful
+          const sampleRow = sheet.objects[0];
+          if (sampleRow) {
+            const objectKeys = Object.keys(sampleRow).filter(key => !key.startsWith('_'));
+            console.log(`FileDataProcessor: Sample object keys for "${sheetName}":`, objectKeys);
+            
+            // Check if keys look like meaningful headers (contain letters, not just numbers)
+            const meaningfulKeys = objectKeys.filter(key => {
+              return /[a-zA-Z]/.test(key) && key !== '__EMPTY' && !key.startsWith('__EMPTY');
+            });
+            
+            if (meaningfulKeys.length > 0) {
+              headers = meaningfulKeys;
+              console.log(`FileDataProcessor: Using meaningful object keys for "${sheetName}":`, headers);
+            } else {
+              // Last resort: use raw data first row
+              headers = (sheet.raw[0] || []).map((header: any) => 
+                header != null ? String(header).trim() : ''
+              ).filter((header: string) => header.length > 0);
+              console.log(`FileDataProcessor: Using fallback raw headers for "${sheetName}":`, headers);
+            }
+          } else {
+            headers = [];
+            console.log(`FileDataProcessor: No headers found for "${sheetName}"`);
+          }
+        }
+        
         const dataRows = sheet.objects;
         
         // Identify numeric columns for potential charts

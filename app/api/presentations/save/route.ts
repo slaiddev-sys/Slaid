@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { savePresentation } from '../../../../lib/database'
+import { savePresentation, getOrCreateDefaultWorkspace } from '../../../../lib/database-new'
 import { supabase } from '../../../../lib/supabase'
 
 export async function POST(request: NextRequest) {
@@ -7,16 +7,15 @@ export async function POST(request: NextRequest) {
     const requestBody = await request.json()
     console.log('📡 API: Raw request body:', requestBody)
     
-    let presentationId, workspace, state
+    let presentationId, state
     
     // Handle both old and new request formats
     if (requestBody.state) {
-      // New format: { presentationId, workspace, state }
-      ({ presentationId, workspace, state } = requestBody)
+      // New format: { presentationId, state }
+      ({ presentationId, state } = requestBody)
     } else {
-      // Old format: { presentationId, workspace, slides, messages, title, activeSlide }
+      // Old format: { presentationId, slides, messages, title, activeSlide }
       presentationId = requestBody.presentationId
-      workspace = requestBody.workspace
       state = {
         slides: requestBody.slides,
         messages: requestBody.messages,
@@ -25,94 +24,66 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Get user authentication (REQUIRED for new presentations)
-    let userId: string | undefined
+    // Get user authentication (REQUIRED)
     const authHeader = request.headers.get('authorization')
     
-    console.log('🔐 AUTH CHECK: Processing save request', {
-      hasAuthHeader: !!authHeader,
-      authHeaderFormat: authHeader ? (authHeader.startsWith('Bearer ') ? 'Bearer format' : 'Invalid format') : 'None',
-      authHeaderLength: authHeader?.length || 0
-    })
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('🚨 BLOCKING: No authentication provided')
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
     
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1]
-      try {
-        const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-        if (!authError && user) {
-          userId = user.id
-          console.log('✅ User authenticated for save:', user.email, 'ID:', userId)
-        } else {
-          console.log('⚠️ Auth header present but user not found:', authError?.message)
-        }
-      } catch (error) {
-        console.log('⚠️ Error verifying auth token:', error)
-      }
-    } else {
-      console.log('⚠️ No valid auth header found')
-      
-      // 🚨 CRITICAL: For new presentations, require authentication
-      // Only allow saving without auth for existing presentations (backward compatibility)
-      const { data: existingPresentation } = await supabase
-        .from('presentations')
-        .select('id')
-        .eq('id', presentationId)
-        .single()
-      
-      if (!existingPresentation) {
-        console.error('🚨 BLOCKING: New presentation creation without authentication')
-        return NextResponse.json(
-          { error: 'Authentication required for new presentations' },
-          { status: 401 }
-        )
-      } else {
-        console.log('⚠️ Allowing save for existing presentation without auth (backward compatibility)')
-      }
+    const token = authHeader.split(' ')[1]
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
+      console.error('🚨 BLOCKING: Invalid authentication')
+      return NextResponse.json(
+        { error: 'Invalid authentication' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = user.id
+    console.log('✅ User authenticated for save:', user.email, 'ID:', userId)
+
+    // Get or create user's default workspace
+    const workspace = await getOrCreateDefaultWorkspace(userId)
+    
+    if (!workspace) {
+      return NextResponse.json(
+        { error: 'Failed to get workspace' },
+        { status: 500 }
+      )
     }
 
     console.log('📡 API: Saving presentation to Supabase:', {
       presentationId,
-      workspace,
+      workspaceId: workspace.id,
+      workspaceName: workspace.name,
       userId,
       slidesCount: state?.slides?.length,
       messagesCount: state?.messages?.length,
-      hasAuth: !!userId,
-      title: state?.title,
-      authHeaderPresent: !!authHeader,
-      authHeaderFormat: authHeader ? (authHeader.startsWith('Bearer ') ? 'Bearer format' : 'Invalid format') : 'None'
+      title: state?.title
     })
 
-    // 🚨 CRITICAL DEBUG: Log when presentations are saved without user_id
-    if (!userId) {
-      console.error('🚨 CRITICAL: Presentation being saved WITHOUT user_id!', {
-        presentationId,
-        workspace,
-        title: state?.title,
-        authHeaderPresent: !!authHeader,
-        authHeaderFormat: authHeader ? (authHeader.startsWith('Bearer ') ? 'Bearer format' : 'Invalid format') : 'None'
-      })
-      
-      // 🔧 TEMPORARY FIX: For now, allow saving without user_id but log it
-      console.log('⚠️ ALLOWING save without user_id for backward compatibility')
-    } else {
-      console.log('✅ Presentation being saved WITH user_id:', userId)
-    }
-
-    if (!presentationId || !workspace || !state) {
+    if (!presentationId || !state) {
       return NextResponse.json(
-        { error: 'Missing required fields: presentationId, workspace, state' },
+        { error: 'Missing required fields: presentationId, state' },
         { status: 400 }
       )
     }
 
-    // Save to Supabase
+    // Save to Supabase with UUID-based system
     const result = await savePresentation(
-      presentationId,
-      workspace,
-      state.title || `Presentation ${presentationId}`,
+      presentationId, // Now a UUID string
+      workspace.id,   // Workspace UUID
+      state.title || `Untitled Presentation`,
       state.slides || [],
       state.messages || [],
-      userId
+      userId          // Required user ID
     )
 
     console.log('✅ API: Presentation saved successfully')

@@ -69,11 +69,19 @@ export async function signInWithGoogle() {
     }
 
     console.log('🔐 Starting Google OAuth flow...');
+    console.log('🔐 Current origin:', window.location.origin);
+    
+    // Use localhost for development, otherwise use the current origin
+    const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const redirectOrigin = isLocalhost ? 'http://localhost:3000' : window.location.origin;
+    const redirectUrl = `${redirectOrigin}/auth/callback`;
+    
+    console.log('🔐 Redirect URL:', redirectUrl);
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: redirectUrl,
         queryParams: {
           access_type: 'offline',
           prompt: 'consent',

@@ -1,44 +1,54 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { loadPresentation } from '../../../../lib/database'
+import { loadPresentation } from '../../../../lib/database-new'
 import { supabase } from '../../../../lib/supabase'
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const presentationId = parseInt(searchParams.get('presentationId') || '0')
-    const workspace = searchParams.get('workspace') || ''
+    const presentationId = searchParams.get('presentationId') || ''
 
-    // Get user authentication (optional for backward compatibility)
-    let userId: string | undefined
+    // Get user authentication (REQUIRED)
     const authHeader = request.headers.get('authorization')
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.split(' ')[1]
-      const { data: { user }, error: authError } = await supabase.auth.getUser(token)
-      if (!authError && user) {
-        userId = user.id
-      }
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('🚨 BLOCKING: No authentication provided')
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
     }
+    
+    const token = authHeader.split(' ')[1]
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
+      console.error('🚨 BLOCKING: Invalid authentication')
+      return NextResponse.json(
+        { error: 'Invalid authentication' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = user.id
 
     console.log('📡 API: Loading presentation from Supabase:', {
       presentationId,
-      workspace,
       userId
     })
 
-    if (!presentationId || !workspace) {
+    if (!presentationId) {
       return NextResponse.json(
-        { error: 'Missing required parameters: presentationId, workspace' },
+        { error: 'Missing required parameter: presentationId' },
         { status: 400 }
       )
     }
 
-    // Load from Supabase
-    const presentation = await loadPresentation(presentationId, workspace, userId)
+    // Load from Supabase with UUID-based system
+    const presentation = await loadPresentation(presentationId, userId)
     
     console.log('📡 API: Load result:', {
       found: !!presentation,
-      presentationTitle: presentation?.title,
-      hasUserId: !!presentation?.user_id
+      presentationTitle: presentation?.title
     })
 
     if (!presentation) {

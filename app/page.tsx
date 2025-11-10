@@ -1,7 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import WaitlistForm from "../components/WaitlistForm";
 
 // TypewriterWord component
 function TypewriterWord() {
@@ -194,78 +193,34 @@ function Component1({ variant = "1" }: Component1Props) {
   );
 }
 
-// File upload and waitlist signup component
-function HomeInput() {
-  const [email, setEmail] = useState("");
-  const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const handleWaitlistSignup = async () => {
-    if (!email.trim()) {
-      return;
-    }
-    
-    // For now, just redirect to signup
-    window.location.href = '/signup';
-  };
-
-  return (
-    <div className="w-full max-w-md">
-      <div className="flex flex-row items-center gap-4 mb-4">
-        <input
-          className="flex-1 bg-gray-50 rounded-full px-6 py-3 placeholder-gray-500 text-base font-sans focus:outline-none"
-          style={{ 
-            color: '#002903',
-            border: '1px solid #d1d5db'
-          }}
-          onFocus={(e) => e.target.style.border = '2px solid #002903'}
-          onBlur={(e) => e.target.style.border = '1px solid #d1d5db'}
-          placeholder="Enter your email"
-          type="email"
-          value={email}
-          onChange={e => setEmail(e.target.value)}
-          onKeyPress={e => e.key === 'Enter' && handleWaitlistSignup()}
-        />
-        <button
-          onClick={handleWaitlistSignup}
-          className="text-white px-8 py-3 rounded-full font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 whitespace-nowrap"
-          style={{ backgroundColor: '#002903' }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
-        >
-          Join Waitlist →
-        </button>
-      </div>
-      
-      {/* Maker Avatars and Count */}
-      <div className="flex items-center gap-4">
-        <div className="flex -space-x-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold">
-            M
-          </div>
-          <div className="w-8 h-8 bg-gradient-to-br from-green-400 to-green-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold">
-            A
-          </div>
-          <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-purple-600 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold">
-            S
-          </div>
-        </div>
-        <span className="text-sm font-medium" style={{ color: '#002903' }}>23+ makers have already joined</span>
-      </div>
-    </div>
-  );
-}
-
 export default function Component1920WLight() {
   return (
     <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden">
-      {/* Background Image - Right Side */}
-      <div 
-        className="absolute right-0 top-0 bottom-0 w-1/2 bg-cover bg-center bg-no-repeat z-0 hidden lg:block"
-        style={{ backgroundImage: `url('/home-background.png')` }}
-      />
-      {/* Navigation Bar - Logo Only */}
-      <div className="relative z-10 box-border flex flex-row items-center justify-start max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto px-4 sm:px-6 py-4 sm:py-8 w-full">
+      {/* Navigation Bar - Logo and Auth Buttons */}
+      <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto px-4 sm:px-6 py-4 sm:py-8 w-full">
         <div className="bg-center bg-contain bg-no-repeat h-[28px] sm:h-[36px] shrink-0 w-[90px] sm:w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
+        
+        {/* Auth Buttons */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          <a
+            href="/login"
+            className="text-sm sm:text-base font-medium px-4 sm:px-6 py-2 rounded-full transition-colors"
+            style={{ color: '#002903' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            Login
+          </a>
+          <a
+            href="/signup"
+            className="text-sm sm:text-base font-medium text-white px-4 sm:px-6 py-2 rounded-full transition-colors"
+            style={{ backgroundColor: '#002903' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
+          >
+            Sign Up
+          </a>
+        </div>
       </div>
       {/* Main Content: left-aligned layout */}
       <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 pt-4 sm:pt-8 max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto">
@@ -306,42 +261,41 @@ export default function Component1920WLight() {
               Unlock the potential of your Excel data with our AI-powered<br className="hidden sm:block" />
               <span className="sm:hidden"> </span>storytelling and presentation generator.
             </p>
-            
-            {/* Email Signup Section */}
-            <WaitlistForm />
           </div>
           
-          {/* Right Side - Upload Files - HIDDEN TEMPORARILY */}
-          <div className="relative w-full max-w-md ml-0 lg:ml-24 mt-8 lg:mt-0 hidden">
-            <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border border-gray-100 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative">
-              {/* Layered Cards Background */}
-              <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
-                {/* Back card */}
-                <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform rotate-3 translate-x-2 translate-y-2 transition-transform duration-300 group-hover:translate-x-6"></div>
-                {/* Middle card */}
-                <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform -rotate-1 translate-x-1 translate-y-1 transition-transform duration-300 group-hover:-translate-x-4"></div>
-                {/* Front card */}
-                <div className="relative w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-start p-3 sm:p-4 transition-transform duration-300">
-                  {/* Document header lines */}
-                  <div className="w-full mb-6">
-                    <div className="h-1.5 bg-gray-200 rounded mb-2"></div>
-                    <div className="h-1.5 bg-gray-200 rounded w-2/3 mb-2"></div>
-                    <div className="h-1.5 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                  
-                  {/* Google Sheets icon in center */}
-                  <div className="flex-1 flex items-center justify-center">
-                    <img src="/google-sheets.png" alt="Google Sheets" className="w-12 h-16 sm:w-14 sm:h-18 lg:w-16 lg:h-20 object-contain" />
+          {/* Right Side - Upload Files */}
+          <div className="relative w-full max-w-md ml-0 lg:ml-24 mt-8 lg:mt-0">
+            <a href="/login" className="block">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border border-gray-100 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative cursor-pointer transition-transform hover:scale-[1.02]">
+                {/* Layered Cards Background */}
+                <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
+                  {/* Back card */}
+                  <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform rotate-3 translate-x-2 translate-y-2 transition-transform duration-300 group-hover:translate-x-6"></div>
+                  {/* Middle card */}
+                  <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform -rotate-1 translate-x-1 translate-y-1 transition-transform duration-300 group-hover:-translate-x-4"></div>
+                  {/* Front card */}
+                  <div className="relative w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-start p-3 sm:p-4 transition-transform duration-300">
+                    {/* Document header lines */}
+                    <div className="w-full mb-6">
+                      <div className="h-1.5 bg-gray-200 rounded mb-2"></div>
+                      <div className="h-1.5 bg-gray-200 rounded w-2/3 mb-2"></div>
+                      <div className="h-1.5 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                    
+                    {/* Google Sheets icon in center */}
+                    <div className="flex-1 flex items-center justify-center">
+                      <img src="/google-sheets.png" alt="Google Sheets" className="w-12 h-16 sm:w-14 sm:h-18 lg:w-16 lg:h-20 object-contain" />
+                    </div>
                   </div>
                 </div>
+                
+                <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>Upload Files</h3>
+                  <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>Drag and drop your files here, or <span className="text-blue-500 hover:underline">click to select</span>.</p>
+                  <p className="text-xs text-center" style={{ color: '#002903' }}>Support formats: .xlsx, .xsl, .csv</p>
+                </div>
               </div>
-              
-              <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
-                <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>Upload Files</h3>
-                <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>Drag and drop your files here, or <button className="text-blue-500 hover:underline">click to select</button>.</p>
-                <p className="text-xs text-center" style={{ color: '#002903' }}>Support formats: .xlsx, .xsl, .csv</p>
-              </div>
-            </div>
+            </a>
           </div>
         </div>
         

@@ -27,6 +27,13 @@ function cn(...classes: (string | undefined)[]): string {
   return classes.filter(Boolean).join(' ');
 }
 
+// Utility function to truncate long chart labels
+function truncateLabel(label: string | number, maxLength: number = 10): string {
+  const str = String(label);
+  if (str.length <= maxLength) return str;
+  return str.substring(0, maxLength) + '...';
+}
+
 // Chart type definition
 export type ChartKind = 'line' | 'bar' | 'stacked-bar' | 'stackedBar' | 'bar-stacked' | 'area' | 'pie' | 'scatter' | 'combo' | 'table' | 'heatmap' | 'waterfall' | 'funnel';
 
@@ -208,8 +215,8 @@ const ChartBlock = React.memo(function ChartBlock({
   description,
   className,
   showLegend = true,
-  legendPosition = 'top',
-  legendSize = 'medium',
+  legendPosition = 'bottom',
+  legendSize = 'small',
   showGrid = true,
   curved = false,
   stacked = false,
@@ -432,7 +439,7 @@ const ChartBlock = React.memo(function ChartBlock({
       // For pie charts, use all series as individual slices
       return seriesWithColors.map((series, index) => ({
         name: series.id,
-        value: series.data[0] || 0, // Each series should have one value for pie charts
+        value: series.data?.[0] || 0, // Each series should have one value for pie charts
         fill: series.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
       }));
     } else {
@@ -440,7 +447,7 @@ const ChartBlock = React.memo(function ChartBlock({
       return labels.map((label, index) => {
         const dataPoint: any = { name: label };
         seriesWithColors.forEach(s => {
-          dataPoint[s.id] = s.data[index] || 0;
+          dataPoint[s.id] = s.data?.[index] || 0;
         });
         return dataPoint;
       });
@@ -474,12 +481,14 @@ const ChartBlock = React.memo(function ChartBlock({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <YAxis 
                 stroke="#64748b" 
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <Tooltip 
                 contentStyle={{
@@ -543,12 +552,14 @@ const ChartBlock = React.memo(function ChartBlock({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <YAxis 
                 stroke="#64748b" 
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <Tooltip 
                 contentStyle={{
@@ -640,9 +651,10 @@ const ChartBlock = React.memo(function ChartBlock({
                     } : { r: 74, g: 58, b: 255 }; // fallback to primary color
                   };
                   const rgb = hexToRgb(baseColor);
+                  const gradientId = s.id || `series-${index}`;
                   
                   return (
-                    <linearGradient key={`gradient-${s.id}`} id={`areaGradient-${s.id}`} x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient key={`gradient-${gradientId}`} id={`areaGradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={baseColor} stopOpacity={0.8} />
                       <stop offset="50%" stopColor={`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`} />
                       <stop offset="100%" stopColor={`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`} />
@@ -657,12 +669,14 @@ const ChartBlock = React.memo(function ChartBlock({
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <YAxis 
                 stroke="#64748b" 
                 fontSize={10}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <Tooltip 
                 contentStyle={{
@@ -690,13 +704,14 @@ const ChartBlock = React.memo(function ChartBlock({
 
               {seriesWithColors.map((s, index) => {
                 const isSingleSeries = series.length === 1;
+                const gradientId = s.id || `series-${index}`;
                 return (
                   <Area
-                    key={`area-${s.id}-${index}`}
+                    key={`area-${gradientId}-${index}`}
                     type={curved ? "monotone" : "linear"}
-                    dataKey={s.id}
+                    dataKey={s.id || gradientId}
                     stroke={s.color}
-                    fill={`url(#areaGradient-${s.id})`}
+                    fill={`url(#areaGradient-${gradientId})`}
                     strokeWidth={2}
                     dot={false}
                     activeDot={{ r: 6, stroke: 'white', strokeWidth: 2, fill: s.color }}
@@ -767,6 +782,7 @@ const ChartBlock = React.memo(function ChartBlock({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <YAxis 
                 type="number"
@@ -775,6 +791,7 @@ const ChartBlock = React.memo(function ChartBlock({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <Tooltip 
                 contentStyle={{
@@ -822,12 +839,14 @@ const ChartBlock = React.memo(function ChartBlock({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <YAxis 
                 stroke="#64748b" 
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <Tooltip 
                 contentStyle={{
@@ -985,12 +1004,14 @@ const ChartBlock = React.memo(function ChartBlock({
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <YAxis 
                 stroke="#64748b" 
                 fontSize={12}
                 tickLine={false}
                 axisLine={false}
+                tickFormatter={(value) => truncateLabel(value, 10)}
               />
               <Tooltip 
                 contentStyle={{

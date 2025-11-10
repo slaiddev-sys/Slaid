@@ -29,8 +29,14 @@ class AnthropicWrapper {
   private client: Anthropic;
 
   constructor(apiKey?: string) {
+    const finalApiKey = apiKey || process.env.ANTHROPIC_API_KEY;
+    
+    if (!finalApiKey) {
+      throw new Error('Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your .env.local file.');
+    }
+    
     this.client = new Anthropic({
-      apiKey: apiKey || process.env.ANTHROPIC_API_KEY,
+      apiKey: finalApiKey,
     });
   }
 

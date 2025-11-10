@@ -1,85 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { deletePresentation } from '../../../../lib/database-new'
 import { supabase } from '../../../../lib/supabase'
 
 export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const presentationId = parseInt(searchParams.get('presentationId') || '0')
-    const workspace = searchParams.get('workspace') || ''
+    const presentationId = searchParams.get('presentationId') || ''
+
+    // Get user authentication (REQUIRED)
+    const authHeader = request.headers.get('authorization')
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('🚨 BLOCKING: No authentication provided')
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      )
+    }
+    
+    const token = authHeader.split(' ')[1]
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token)
+    
+    if (authError || !user) {
+      console.error('🚨 BLOCKING: Invalid authentication')
+      return NextResponse.json(
+        { error: 'Invalid authentication' },
+        { status: 401 }
+      )
+    }
+    
+    const userId = user.id
 
     console.log('📡 API: Deleting presentation from Supabase:', {
       presentationId,
-      workspace
+      userId
     })
 
-    if (!presentationId || !workspace) {
+    if (!presentationId) {
       return NextResponse.json(
-        { error: 'Missing required parameters: presentationId, workspace' },
+        { error: 'Missing required parameter: presentationId' },
         { status: 400 }
       )
     }
 
-    // First, get all slides for this presentation to delete their blocks
-    const { data: slides, error: slidesError } = await supabase
-      .from('slides')
-      .select('id')
-      .eq('presentation_id', presentationId)
-
-    if (slidesError) {
-      console.error('❌ Failed to fetch slides for deletion:', slidesError)
-      throw slidesError
-    }
-
-    // Delete blocks first (foreign key constraint)
-    if (slides && slides.length > 0) {
-      const slideIds = slides.map(s => s.id)
-      const { error: blocksError } = await supabase
-        .from('blocks')
-        .delete()
-        .in('slide_id', slideIds)
-
-      if (blocksError) {
-        console.error('❌ Failed to delete blocks:', blocksError)
-        throw blocksError
-      }
-      console.log('✅ Deleted blocks for presentation')
-    }
-
-    // Delete slides
-    const { error: slidesDeleteError } = await supabase
-      .from('slides')
-      .delete()
-      .eq('presentation_id', presentationId)
-
-    if (slidesDeleteError) {
-      console.error('❌ Failed to delete slides:', slidesDeleteError)
-      throw slidesDeleteError
-    }
-    console.log('✅ Deleted slides for presentation')
-
-    // Delete messages
-    const { error: messagesError } = await supabase
-      .from('messages')
-      .delete()
-      .eq('presentation_id', presentationId)
-
-    if (messagesError) {
-      console.error('❌ Failed to delete messages:', messagesError)
-      throw messagesError
-    }
-    console.log('✅ Deleted messages for presentation')
-
-    // Finally, delete the presentation itself
-    const { error: presentationError } = await supabase
-      .from('presentations')
-      .delete()
-      .eq('id', presentationId)
-      .eq('workspace', workspace)
-
-    if (presentationError) {
-      console.error('❌ Failed to delete presentation:', presentationError)
-      throw presentationError
-    }
+    // Delete presentation (CASCADE will handle slides, blocks, messages)
+    await deletePresentation(presentationId, userId)
 
     console.log('✅ API: Presentation deleted successfully from database')
 

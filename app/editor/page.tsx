@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import * as React from 'react';
 import Head from 'next/head';
+import { v4 as uuidv4 } from 'uuid';
 
 // Import SlaidAI component system
 import { TextBlock, BackgroundBlock, ImageBlock } from '../../components/blocks';
@@ -24,6 +25,29 @@ import { Roadmap_Timeline } from '../../components/layouts/Roadmap/index';
 import { Product_iPhoneStandalone, Product_MacBookCentered, Product_iPhoneInCenter, Product_PhysicalProduct, McBook_Feature, iPhone_HandFeature, iPhone_StandaloneFeature } from '../../components/layouts/Product/index';
 import { Pricing_Plans } from '../../components/layouts/Pricing/index';
 import { Content_TextImageDescription } from '../../components/layouts/Content/index';
+// Import Responsive Excel Layouts
+import { 
+  ExcelCenteredCover_Responsive, 
+  ExcelKPIDashboard_Responsive, 
+  ExcelTrendChart_Responsive, 
+  ExcelDataTable_Responsive, 
+  ExcelBackCover_Responsive,
+  ExcelBottomCover_Responsive,
+  ExcelLeftCover_Responsive,
+  ExcelIndex_Responsive,
+  ExcelTableOfContents_Responsive,
+  ExcelFullWidthChart_Responsive,
+  ExcelFullWidthChartCategorical_Responsive,
+  ExcelFullWidthChartWithTable_Responsive,
+  ExcelComparisonLayout_Responsive,
+  ExcelExperienceDrivenTwoRows_Responsive,
+  ExcelExperienceFullText_Responsive,
+  ExcelHowItWorks_Responsive,
+  ExcelFoundationAI_Responsive,
+  ExcelMilestone_Responsive,
+  ExcelResultsTestimonial_Responsive,
+  ExcelBackCoverLeft_Responsive
+} from '../../components/layouts/ExcelResponsive';
 import LoadingCircle from '../../components/LoadingCircle';
 import TypewriterText from '../../components/TypewriterText';
 import { generateReasoningWithTiming } from '../../utils/generateReasoning';
@@ -81,6 +105,35 @@ export default function EditorPage() {
     isAuthenticated
   } = useUserWorkspaces();
   
+  // Helper function to get auth headers for API calls
+  const getAuthHeaders = useCallback(async () => {
+    try {
+      // First try to get the current session
+      let { data: { session } } = await supabase.auth.getSession();
+      
+      // If no session, try refreshing it
+      if (!session?.access_token) {
+        console.warn('⚠️ No active session found - attempting to refresh');
+        const { data: refreshData } = await supabase.auth.refreshSession();
+        session = refreshData.session;
+      }
+      
+      if (!session?.access_token) {
+        console.error('❌ No session found even after refresh - user needs to log in');
+        throw new Error('Authentication required - please log in');
+      }
+      
+      console.log('✅ Auth headers ready with token');
+      return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      };
+    } catch (error) {
+      console.error('❌ Failed to get auth headers:', error);
+      throw error; // Re-throw so the caller knows auth failed
+    }
+  }, []);
+  
   // Check for export mode from URL parameters
   const [isExportMode, setIsExportMode] = useState(false);
   const [exportSlideIndex, setExportSlideIndex] = useState(0);
@@ -97,25 +150,48 @@ export default function EditorPage() {
       const workspaceParam = urlParams.get('workspace');
       const slideDataParam = urlParams.get('slideData');
       
+      console.log('📄 useEffect: Checking URL params:', {
+        export: exportParam,
+        hasSlideData: !!slideDataParam,
+        slideDataLength: slideDataParam?.length,
+        hasWindowData: !!(window as any).__EXPORT_SLIDE_DATA__,
+        url: window.location.href
+      });
+      
       if (exportParam === 'true') {
+        console.log('📄 Export mode detected!');
         setIsExportMode(true);
         setExportSlideIndex(slideIndexParam ? parseInt(slideIndexParam) : 0);
         setExportPresentationId(presentationIdParam);
         setExportWorkspace(workspaceParam);
         
-        // Parse slide data from URL
-        if (slideDataParam) {
+        // First check for injected slide data (from Puppeteer)
+        if ((window as any).__EXPORT_SLIDE_DATA__) {
           try {
-            const slideData = JSON.parse(decodeURIComponent(slideDataParam));
+            console.log('📄 Using injected slide data from window.__EXPORT_SLIDE_DATA__');
+            const slideData = (window as any).__EXPORT_SLIDE_DATA__;
+            console.log('✅ Successfully loaded slide data:', slideData);
+            console.log('✅ Slide blocks:', slideData.blocks);
             setExportSlideData(slideData);
-            console.log('📄 Export mode: Loaded slide data:', slideData);
-            console.log('📄 Export mode: Slide blocks:', slideData.blocks);
+          } catch (error) {
+            console.error('❌ Export mode: Failed to use injected slide data:', error);
+          }
+        }
+        // Fallback to URL parameter (for backwards compatibility)
+        else if (slideDataParam) {
+          try {
+            console.log('📄 Parsing slideData parameter from URL...');
+            const slideData = JSON.parse(decodeURIComponent(slideDataParam));
+            console.log('✅ Successfully parsed slide data:', slideData);
+            console.log('✅ Slide blocks:', slideData.blocks);
+            setExportSlideData(slideData);
           } catch (error) {
             console.error('❌ Export mode: Failed to parse slide data:', error);
-            console.error('❌ Export mode: Raw slideDataParam:', slideDataParam);
+            console.error('❌ Export mode: Raw slideDataParam length:', slideDataParam?.length);
+            console.error('❌ Export mode: First 200 chars:', slideDataParam?.substring(0, 200));
           }
         } else {
-          console.log('📄 Export mode: No slideData parameter found');
+          console.error('❌ Export mode: No slideData found in window or URL!');
         }
         
         // Set the active slide to the export slide
@@ -136,6 +212,7 @@ export default function EditorPage() {
   const [isMounted, setIsMounted] = useState(false);
   // Define a type for messages
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [userPlan, setUserPlan] = useState<'free' | 'pro'>('free');
   const [showCreditsModal, setShowCreditsModal] = useState(false);
   const [showCreditPacksModal, setShowCreditPacksModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -191,10 +268,10 @@ export default function EditorPage() {
     { id: 4, title: "Q4 Strategy Review" },
   ];
   const initialSlides = [{ title: "New Slide 1" }];
-  const [workspacePresentations, setWorkspacePresentations] = useState<{ [key: string]: { id: number; title: string }[] }>({});
+  const [workspacePresentations, setWorkspacePresentations] = useState<{ [key: string]: { id: string; title: string }[] }>({});
   console.log('🚨🚨🚨 EDITOR PAGE: workspacePresentations state initialized');
-  const [workspaceSlides, setWorkspaceSlides] = useState<{ [key: string]: { [presentationId: number]: { title: string }[] } }>({});
-  const [currentPresentationId, setCurrentPresentationId] = useState(1);
+  const [workspaceSlides, setWorkspaceSlides] = useState<{ [key: string]: { [presentationId: string]: { title: string }[] } }>({});
+  const [currentPresentationId, setCurrentPresentationId] = useState<string>(uuidv4());
 
   // Persist activeVersion to localStorage
   React.useEffect(() => {
@@ -217,6 +294,200 @@ export default function EditorPage() {
   const [isDataLoaded, setIsDataLoaded] = useState(false); // Track if database data has been loaded
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingStep, setOnboardingStep] = useState(1); // 1: Upload Files, 2: Description, 3: Slide Count & Summary
+  const [selectedSlideCount, setSelectedSlideCount] = useState(''); // No default selection
+  
+  // Helper function to convert slide count text to number
+  const getSlideCountNumber = (slideCountText: string): number => {
+    switch (slideCountText) {
+      case 'Less than 5':
+        return 5;
+      case '6-10':
+        return 8;
+      case '11-15':
+        return 13;
+      case '16-20':
+        return 18;
+      case 'More than 20':
+        return 25; // Now we can handle more slides with batching!
+      default:
+        // Try parsing as number for backward compatibility
+        const parsed = parseInt(slideCountText);
+        return isNaN(parsed) ? 5 : parsed; // No cap anymore!
+    }
+  };
+  
+  // File upload and analysis states (from test-excel logic)
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState('');
+  const [comprehensiveAnalysis, setComprehensiveAnalysis] = useState('');
+  const [presentationPrompt, setPresentationPrompt] = useState('');
+  const [isAnalyzingPrompt, setIsAnalyzingPrompt] = useState(false);
+  const [promptAnalysis, setPromptAnalysis] = useState('');
+  const [uploadError, setUploadError] = useState('');
+  const [isLoading, setIsLoading] = useState(false); // For presentation generation loading
+  const [loadingStep, setLoadingStep] = useState(1); // Track which loading step is active (1, 2, or 3)
+  const [batchProgress, setBatchProgress] = useState({ current: 0, total: 0, slideRange: '' }); // Track batch generation progress
+  const [selectedChartColor, setSelectedChartColor] = useState('#ff0000'); // Default to red
+  const [colorPickerPosition, setColorPickerPosition] = useState({ x: 50, y: 50 }); // Cursor position in %
+  const [selectedHue, setSelectedHue] = useState(0); // Current hue value (red by default)
+
+  // Handle sequential loading steps (10 seconds each)
+  useEffect(() => {
+    if (!isLoading) {
+      setLoadingStep(1); // Reset to step 1 when not loading
+      return;
+    }
+
+    // Step 1: Analyzing content (0-10s)
+    const step1Timer = setTimeout(() => {
+      setLoadingStep(2); // Move to step 2 after 10s
+    }, 10000);
+
+    // Step 2: Generating slides (10-20s)
+    const step2Timer = setTimeout(() => {
+      setLoadingStep(3); // Move to step 3 after 20s
+    }, 20000);
+
+    return () => {
+      clearTimeout(step1Timer);
+      clearTimeout(step2Timer);
+    };
+  }, [isLoading]);
+
+  // File upload and analysis handlers (from test-excel logic)
+  const handleFileUpload = async (selectedFile: File) => {
+    console.log('handleFileUpload called with:', selectedFile.name);
+    setIsUploading(true);
+    setUploadError('');
+    setUploadResult(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Upload failed');
+      }
+
+      setUploadResult(result);
+      setUploadedFiles([selectedFile]);
+      console.log('Upload result:', result);
+      
+      // Automatically perform comprehensive analysis after upload
+      await performComprehensiveAnalysis(result);
+      
+    } catch (err) {
+      console.error('Upload error:', err);
+      const errorMessage = err instanceof Error ? err.message : 'Upload failed';
+      setUploadError(errorMessage);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const performComprehensiveAnalysis = async (fileData: any) => {
+    setIsAnalyzing(true);
+    setUploadError('');
+
+    try {
+      const response = await fetch('/api/test-excel-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileData: fileData,
+          prompt: 'Please analyze this Excel file and tell me exactly what data you can see. List all the values, headers, and structure you can extract from this file.'
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Analysis failed');
+      }
+
+      setAnalysisResult(result.analysis);
+      setComprehensiveAnalysis(result.comprehensiveAnalysis || '');
+      
+      // Update uploadResult with processed data for presentation generation (same as test-excel)
+      if (result.processedData) {
+        setUploadResult((prev: any) => ({
+          ...prev,
+          processedData: result.processedData
+        }));
+      }
+      
+      // Move to step 2 after successful analysis
+      setOnboardingStep(2);
+      
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Analysis failed');
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handlePresentationPromptAnalysis = async () => {
+    if (!presentationPrompt.trim() || !uploadResult) return;
+
+    setIsAnalyzingPrompt(true);
+    setUploadError('');
+    setPromptAnalysis('');
+
+    try {
+      const response = await fetch('/api/test-excel-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileData: uploadResult,
+          presentationPrompt: presentationPrompt.trim()
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Prompt analysis failed');
+      }
+
+      setPromptAnalysis(result.promptAnalysis || 'Analysis completed successfully');
+      
+      // Move to step 3 after successful prompt analysis
+      setOnboardingStep(3);
+      
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Prompt analysis failed');
+    } finally {
+      setIsAnalyzingPrompt(false);
+    }
+  };
+
+  // Helper function to convert HSL to HEX
+  const hslToHex = (h: number, s: number, l: number) => {
+    l /= 100;
+    const a = s * Math.min(l, 1 - l) / 100;
+    const f = (n: number) => {
+      const k = (n + h / 30) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color).toString(16).padStart(2, '0');
+    };
+    return `#${f(0)}${f(8)}${f(4)}`;
+  };
   const titleMenuRef = useRef<HTMLDivElement>(null);
   const dotsButtonRef = useRef<HTMLButtonElement>(null);
   
@@ -320,6 +591,13 @@ export default function EditorPage() {
   // Function to reload workspace presentations using the new API
   const reloadWorkspacePresentations = async () => {
     try {
+      // Check if user is authenticated
+      if (!user) {
+        console.warn('⚠️ Cannot reload presentations: user not authenticated');
+        setIsDataLoaded(true);
+        return [];
+      }
+      
       console.log('🔄🔄🔄 RELOADING ALL WORKSPACE PRESENTATIONS for:', currentWorkspace)
       console.log('🔄🔄🔄 WORKSPACE DEBUG:', {
         currentWorkspace,
@@ -339,110 +617,120 @@ export default function EditorPage() {
         return [];
       }
       
-      // Get authentication headers if user is logged in
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
-
+      // Get authentication headers
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          headers['Authorization'] = `Bearer ${session.access_token}`;
-          console.log('🔐 Using auth header for presentation list');
+        const headers = await getAuthHeaders();
+        
+        // Call the new list presentations API
+        const response = await fetch(`/api/presentations/list`, {
+          method: 'GET',
+          headers,
+        });
+
+        if (!response.ok) {
+          console.error('❌ Failed to list presentations:', response.status, response.statusText);
+          // Fallback to empty array but ensure workspace exists
+          setWorkspacePresentations(prev => ({
+            ...prev,
+            [currentWorkspace]: []
+          }));
+          setIsDataLoaded(true);
+          return [];
         }
-      } catch (authError) {
-        console.warn('⚠️ Could not get auth session for presentation list:', authError);
-      }
 
-      // Call the new list presentations API
-      const response = await fetch(`/api/presentations/list?workspace=${encodeURIComponent(currentWorkspace)}`, {
-        method: 'GET',
-        headers,
-      });
+        const result = await response.json();
+        if (!result.success) {
+          console.error('❌ API returned error:', result.error);
+          // Fallback to empty array but ensure workspace exists
+          setWorkspacePresentations(prev => ({
+            ...prev,
+            [currentWorkspace]: []
+          }));
+          setIsDataLoaded(true);
+          return [];
+        }
 
-      if (!response.ok) {
-        console.error('❌ Failed to list presentations:', response.status, response.statusText);
-        // Fallback to empty array but ensure workspace exists
+        const presentations = result.presentations || [];
+        console.log('✅ Loaded presentations from API:', presentations.length);
+        
+        // Update workspace presentations
+        const existingPresentations = presentations.map((p: any) => ({
+          id: p.id,
+          title: p.title
+        }));
+
         setWorkspacePresentations(prev => ({
           ...prev,
-          [currentWorkspace]: []
+          [currentWorkspace]: existingPresentations
         }));
-        setIsDataLoaded(true);
-        return [];
-      }
 
-      const result = await response.json();
-      if (!result.success) {
-        console.error('❌ API returned error:', result.error);
-        // Fallback to empty array but ensure workspace exists
-        setWorkspacePresentations(prev => ({
-          ...prev,
-          [currentWorkspace]: []
-        }));
-        setIsDataLoaded(true);
-        return [];
-      }
-
-      const presentations = result.presentations || [];
-      console.log('✅ Loaded presentations from API:', presentations.length);
-      
-      // Update workspace presentations
-      const existingPresentations = presentations.map((p: any) => ({
-        id: p.id,
-        title: p.title
-      }));
-
-      setWorkspacePresentations(prev => ({
-        ...prev,
-        [currentWorkspace]: existingPresentations
-      }));
-
-      // Load slides for each presentation
-      const slidePromises = presentations.map(async (presentation: any) => {
-        try {
-          const slideResponse = await fetch(`/api/presentations/load?presentationId=${presentation.id}&workspace=${encodeURIComponent(currentWorkspace)}`, {
-            method: 'GET',
-            headers,
-          });
+        // Load slides and messages for each presentation
+        const dataPromises = presentations.map(async (presentation: any) => {
+          try {
+            const dataResponse = await fetch(`/api/presentations/load?presentationId=${presentation.id}`, {
+              method: 'GET',
+              headers,
+            });
           
-          if (slideResponse.ok) {
-            const slideResult = await slideResponse.json();
-            if (slideResult?.success && slideResult?.state?.slides) {
+          if (dataResponse.ok) {
+            const dataResult = await dataResponse.json();
+            if (dataResult?.success && dataResult?.state) {
               return {
                 presentationId: presentation.id,
-                slides: slideResult.state.slides.map((slide: any, index: number) => ({
+                slides: dataResult.state.slides?.map((slide: any, index: number) => ({
                   title: slide.title || `Slide ${index + 1}`
-                }))
+                })) || [],
+                messages: dataResult.state.messages || []
               };
             }
           }
         } catch (error) {
-          console.error('❌ Failed to load slides for presentation:', presentation.id, error);
+          console.error('❌ Failed to load data for presentation:', presentation.id, error);
         }
         return null;
-      });
-      
-      const slideResults = await Promise.all(slidePromises);
-      const validSlideResults = slideResults.filter(Boolean) as { presentationId: number; slides: { title: string }[] }[];
-      
-      // Update workspace slides
-      setWorkspaceSlides(prev => {
-        const updated = { ...prev };
-        if (!updated[currentWorkspace]) {
-          updated[currentWorkspace] = {};
-        }
-        
-        validSlideResults.forEach(result => {
-          updated[currentWorkspace][result.presentationId] = result.slides;
         });
         
+        const dataResults = await Promise.all(dataPromises);
+        const validDataResults = dataResults.filter(Boolean) as { presentationId: string; slides: { title: string }[]; messages: any[] }[];
+        
+        // Update workspace slides
+        setWorkspaceSlides(prev => {
+          const updated = { ...prev };
+          if (!updated[currentWorkspace]) {
+            updated[currentWorkspace] = {};
+          }
+          
+          validDataResults.forEach(result => {
+            updated[currentWorkspace][result.presentationId] = result.slides;
+          });
+          
           return updated;
         });
-      
-      // Mark data as loaded
-      setIsDataLoaded(true);
-      
-      return existingPresentations;
+        
+        // Update presentation messages
+        setPresentationMessages(prev => {
+          const updated = { ...prev };
+          
+          validDataResults.forEach(result => {
+            updated[result.presentationId] = result.messages;
+          });
+          
+          return updated;
+        });
+        
+        // Mark data as loaded
+        setIsDataLoaded(true);
+        
+        return existingPresentations;
+      } catch (error) {
+        console.error('❌ Failed to get auth or load presentations:', error);
+        setWorkspacePresentations(prev => ({
+          ...prev,
+          [currentWorkspace]: []
+        }));
+        setIsDataLoaded(true);
+        return [];
+      }
     } catch (error) {
       console.error('❌ Failed to reload workspace presentations:', error);
       // Ensure workspace exists even on error
@@ -637,30 +925,80 @@ export default function EditorPage() {
     }
   }, [currentWorkspace]);
 
+  // Replace messages state with a per-presentation messages state
+  const [presentationMessages, setPresentationMessages] = useState<{ [presentationId: number]: { id?: string; role: string; text: string; version?: number; userMessage?: string; image?: string; file?: { url: string; name: string; type: string }; attachments?: Array<{ url: string; type: string; name: string }>; isLoading?: boolean; presentationData?: any; }[] }>({});
+
+  // Track if we've done the initial empty check
+  const hasCheckedForEmptyWorkspace = useRef(false);
+
   // When switching workspace, update presentations, slides, and reset selection
   useEffect(() => {
+    console.log('🔄 useEffect triggered:', { isDataLoaded, currentWorkspace, allWorkspaces: Object.keys(workspacePresentations), presentationsCount: workspacePresentations[currentWorkspace]?.length });
+    
     // Skip initialization until data is loaded from database
-    if (!isDataLoaded) return;
-    
-    let pres = workspacePresentations[currentWorkspace];
-    
-    // If workspace is empty, create a default presentation (but not for new workspaces)
-    if (!pres || pres.length === 0) {
-      const defaultPresentation = { id: 1, title: "Untitled presentation" };
-      setWorkspacePresentations(prev => ({
-        ...prev,
-        [currentWorkspace]: [defaultPresentation]
-      }));
-      setWorkspaceSlides(prev => ({
-        ...prev,
-        [currentWorkspace]: {
-          ...(prev[currentWorkspace] || {}),
-          1: [{ title: "New Slide 1" }]
-        }
-      }));
-      setCurrentPresentationId(1);
-      setActiveSlide(0);
+    if (!isDataLoaded) {
+      console.log('⏸️ Skipping - data not loaded yet');
       return;
+    }
+    
+    // Get the workspace key - if currentWorkspace is empty, use the first available workspace
+    const workspaceKey = currentWorkspace || Object.keys(workspacePresentations)[0] || '';
+    console.log('🔑 Using workspace key:', workspaceKey);
+    
+    let pres = workspacePresentations[workspaceKey];
+    console.log('📊 Presentations to check:', pres?.length || 0, pres);
+    
+    // Only check for empty workspace on initial load, not when switching presentations
+    if (!hasCheckedForEmptyWorkspace.current) {
+      console.log('🔍 First time check - checking if workspace is empty or all presentations are unused');
+      hasCheckedForEmptyWorkspace.current = true;
+      
+      // If workspace is empty, show onboarding instead of creating a default presentation
+      if (!pres || pres.length === 0) {
+        console.log('📭 No presentations found - showing onboarding');
+        setShowOnboarding(true);
+        setOnboardingStep(1);
+        return;
+      }
+      
+      // Check if all presentations are "empty" (created but never used)
+      // An empty presentation has: 1 slide, no messages (or only system messages), and default slide title
+      console.log('🔍 Starting empty check for', pres.length, 'presentations');
+      console.log('🔍 Available slides data:', workspaceSlides[workspaceKey]);
+      console.log('🔍 Available messages data:', presentationMessages);
+      
+      const allPresentationsEmpty = pres.every(presentation => {
+        const presentationSlides = workspaceSlides[workspaceKey]?.[presentation.id] || [];
+        const messages = presentationMessages[presentation.id] || [];
+        
+        // Count user messages (not system messages)
+        const userMessages = messages.filter((msg: any) => msg.role === 'user').length;
+        
+        const isEmpty = (
+          presentationSlides.length <= 1 && // Only has default slide or less
+          userMessages === 0 && // No user messages
+          (presentationSlides.length === 0 || presentationSlides[0]?.title?.includes('New Slide')) // Default slide title
+        );
+        
+        console.log(`🔍 Checking if presentation "${presentation.title}" (${presentation.id}) is empty:`, {
+          slides: presentationSlides.length,
+          userMessages,
+          totalMessages: messages.length,
+          firstSlideTitle: presentationSlides[0]?.title,
+          isEmpty
+        });
+        
+        return isEmpty;
+      });
+      
+      console.log('🎯 All presentations empty?', allPresentationsEmpty);
+      
+      if (allPresentationsEmpty) {
+        console.log('📭 All presentations are empty - showing onboarding');
+        setShowOnboarding(true);
+        setOnboardingStep(1);
+        return;
+      }
     }
     
     // Handle existing presentations - but only set presentation if we don't have one selected
@@ -677,13 +1015,9 @@ export default function EditorPage() {
       setActiveSlide(0);
       }
     }
-  }, [currentWorkspace, workspacePresentations, isDataLoaded]);
+  }, [currentWorkspace, workspacePresentations, isDataLoaded, workspaceSlides, presentationMessages]);
 
   const currentPresentation = workspacePresentations[currentWorkspace]?.find(p => p.id === currentPresentationId);
-
-
-  // Replace messages state with a per-presentation messages state
-  const [presentationMessages, setPresentationMessages] = useState<{ [presentationId: number]: { id?: string; role: string; text: string; version?: number; userMessage?: string; image?: string; file?: { url: string; name: string; type: string }; attachments?: Array<{ url: string; type: string; name: string }>; isLoading?: boolean; presentationData?: any; }[] }>({});
 
   // Helper to get current messages
   const messages = presentationMessages[currentPresentationId] || [];
@@ -1457,6 +1791,31 @@ export default function EditorPage() {
     iPhone_StandaloneFeature,
     Pricing_Plans,
     Content_TextImageDescription,
+    // Responsive Excel Layouts - Phase 1
+    ExcelCenteredCover_Responsive,
+    ExcelKPIDashboard_Responsive,
+    ExcelTrendChart_Responsive,
+    ExcelDataTable_Responsive,
+    ExcelBackCover_Responsive,
+    // Responsive Excel Layouts - Phase 2
+    ExcelBottomCover_Responsive,
+    ExcelLeftCover_Responsive,
+    ExcelIndex_Responsive,
+    ExcelTableOfContents_Responsive,
+    // Responsive Excel Layouts - Phase 3
+    ExcelFullWidthChart_Responsive,
+    ExcelFullWidthChartCategorical_Responsive,
+    ExcelFullWidthChartWithTable_Responsive,
+    ExcelComparisonLayout_Responsive,
+    // Responsive Excel Layouts - Phase 4
+    ExcelExperienceDrivenTwoRows_Responsive,
+    ExcelExperienceFullText_Responsive,
+    ExcelHowItWorks_Responsive,
+    ExcelFoundationAI_Responsive,
+    // Responsive Excel Layouts - Phase 5
+    ExcelMilestone_Responsive,
+    ExcelResultsTestimonial_Responsive,
+    ExcelBackCoverLeft_Responsive,
     // Legacy component fallbacks (render as empty divs to prevent errors)
     SectionSpace: () => <div className="h-4" />
   };
@@ -1646,6 +2005,31 @@ export default function EditorPage() {
     propsToPass.useFixedDimensions = true;
     propsToPass.canvasWidth = 881;
     propsToPass.canvasHeight = 495;
+    
+    // 🔧 DISABLE ANIMATIONS IN EXPORT MODE FOR PROPER PDF RENDERING
+    if (isExportMode) {
+      // For layouts with chart prop
+      if (propsToPass.chart) {
+        propsToPass.chart = {
+          ...propsToPass.chart,
+          animate: false
+        };
+      }
+      // For layouts with chartData prop
+      if (propsToPass.chartData) {
+        propsToPass.chartData = {
+          ...propsToPass.chartData,
+          animate: false
+        };
+      }
+      // For layouts with multiple charts
+      if (propsToPass.charts && Array.isArray(propsToPass.charts)) {
+        propsToPass.charts = propsToPass.charts.map((chart: any) => ({
+          ...chart,
+          animate: false
+        }));
+      }
+    }
     
     // Add language parameter for layout components that support it
     const languageAwareComponents = [
@@ -2117,7 +2501,7 @@ export default function EditorPage() {
         {/* Content container: no padding to match layout preview page */}
         <div className="w-full h-full relative z-10">
           {/* Render all blocks - simplified for clean slate approach */}
-          {currentSlide.blocks.map((block: any, index: number) => (
+          {(currentSlide.blocks || []).map((block: any, index: number) => (
             <div key={`${currentSlide.id}-${index}-${currentSlide._lastModified || Date.now()}`}>
               {renderBlock(block, index, isPresentationMode)}
             </div>
@@ -2174,12 +2558,23 @@ export default function EditorPage() {
 
   // Modal component
   function CreditsModal() {
+    if (!showCreditsModal) return null;
+    
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn"
+        onClick={() => {
+          setShowCreditsModal(false);
+          refreshCredits();
+        }}
+      >
         {/* Overlay with fade-in */}
-        <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" />
+        <div className="absolute inset-0 bg-black/60" />
         {/* Modal with fade and scale transition */}
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
+        <div 
+          className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-[#23272f] animate-scaleIn"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => {
@@ -2194,7 +2589,7 @@ export default function EditorPage() {
             </svg>
           </button>
           <h2 className="text-gray-900 text-lg font-semibold mb-1">Presentation Credits</h2>
-          <p className="text-[#d1d5dc] text-sm mb-4">Credits are the currency you use to generate slides, content, and AI-powered features in your presentations.</p>
+          <p className="text-gray-600 text-sm mb-4">Credits are the currency you use to generate slides, content, and AI-powered features in your presentations.</p>
           <hr className="border-[#23272f] mb-4" />
           <div className="text-xs text-gray-500 mb-2">Your credits</div>
           <div className="flex items-center gap-2 mb-6">
@@ -2212,27 +2607,19 @@ export default function EditorPage() {
               </>
             )}
           </div>
-          <button className="w-full border border-[#23272f] text-gray-900 font-medium rounded-lg py-2 mb-3 text-base bg-transparent hover:bg-[#002903] hover:scale-110 transition duration-200 ease-in-out" onClick={() => { 
+          <button className="w-full border border-[#23272f] text-gray-900 font-medium rounded-lg py-2 mb-3 text-base bg-transparent hover:bg-gray-50 hover:scale-105 transition duration-200 ease-in-out" onClick={() => { 
             setShowCreditsModal(false); 
             setShowCreditPacksModal(true); 
             refreshCredits(); // Refresh credits when switching modals
           }}>Purchase credit packs</button>
-          <button className="w-full bg-gradient-to-r from-[#2563eb] to-[#a855f7] text-gray-900 font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
+          <button className="w-full bg-[#002903] text-white font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
         </div>
-        <style jsx>{`
-          .animate-modal-in {
-            animation: modalIn 0.3s cubic-bezier(0.4,0,0.2,1);
-          }
-          @keyframes modalIn {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-          }
-        `}</style>
       </div>
     );
   }
 
   function CreditPacksModal() {
+    if (!showCreditPacksModal) return null;
     const packs = [
       { credits: 200, price: "$10", productId: "9acd1a25-9f4b-48fb-861d-6ca663b89fa1" },
       { credits: 400, price: "$20", productId: "ffe50868-199d-4476-b948-ab67c3894522" },
@@ -2284,9 +2671,15 @@ export default function EditorPage() {
       }
     };
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" />
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn"
+        onClick={() => setShowCreditPacksModal(false)}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div 
+          className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 border border-[#23272f] animate-scaleIn"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => setShowCreditPacksModal(false)}
@@ -2298,47 +2691,36 @@ export default function EditorPage() {
             </svg>
           </button>
           <h2 className="text-gray-900 text-lg font-semibold mb-1">Purchase credit packs to create more with Slaid</h2>
-          <p className="text-[#d1d5dc] text-sm mb-4">Upgrading to a higher tier plan will offer more value for the money</p>
+          <p className="text-gray-600 text-sm mb-4">Upgrading to a higher tier plan will offer more value for the money</p>
           <div className="mb-4 flex flex-col gap-2">
             {packs.map((pack, i) => (
               <button
                 key={pack.credits}
-                className="flex items-center justify-between py-3 px-3 rounded-lg transition-all duration-150 group hover:bg-[#002903] focus:bg-[#002903] outline-none"
+                className="flex items-center justify-between py-3 px-3 rounded-lg transition-all duration-150 group hover:bg-gray-50 focus:bg-gray-50 outline-none"
                 type="button"
                 onClick={() => handleCreditPurchase(pack)}
               >
                 <span className="flex items-center gap-2">
-                  <span className="relative w-6 h-6">
-                    <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain absolute inset-0 transition-opacity duration-150 group-hover:opacity-0" />
-                    <img src="/credit-2-icon.png" alt="Credit Icon Hover" className="w-6 h-6 object-contain absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150" />
-                  </span>
-                  <span className="text-gray-900 text-base font-semibold group-hover:text-gray-900">{pack.credits.toLocaleString()}</span>
+                  <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain" />
+                  <span className="text-gray-600 text-base font-semibold group-hover:text-gray-900">{pack.credits.toLocaleString()}</span>
                 </span>
-                <span className="text-[#d1d5dc] text-base font-medium group-hover:text-gray-900">{pack.price}</span>
+                <span className="text-gray-600 text-base font-medium group-hover:text-gray-900">{pack.price}</span>
               </button>
             ))}
           </div>
-          <button className="w-full border border-[#23272f] text-gray-900 font-medium rounded-lg py-2 text-base bg-transparent hover:bg-[#002903] hover:scale-110 transition duration-200 ease-in-out mb-3" onClick={() => setShowCreditPacksModal(false)}>Cancel</button>
-          <button className="w-full bg-gradient-to-r from-[#2563eb] to-[#a855f7] text-gray-900 font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
+          <button className="w-full border border-[#23272f] text-gray-900 font-medium rounded-lg py-2 text-base bg-transparent hover:bg-gray-50 hover:scale-105 transition duration-200 ease-in-out mb-3" onClick={() => setShowCreditPacksModal(false)}>Cancel</button>
+          <button className="w-full bg-[#002903] text-white font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
         </div>
-        <style jsx>{`
-          .animate-modal-in {
-            animation: modalIn 0.3s cubic-bezier(0.4,0,0.2,1);
-          }
-          @keyframes modalIn {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-          }
-        `}</style>
       </div>
     );
   }
 
   function PricingModal() {
+    if (!showPricingModal) return null;
     const [isAnnualPro, setIsAnnualPro] = useState(false);
     
     const CHECK_ICON = (
-      <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M4.5 7.5l2 2 3-3" stroke="#05DF72" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M4.5 7.5l2 2 3-3" stroke="#002903" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
     );
     const CROSS_ICON = (
       <span className="text-gray-500 text-[12.3px]">×</span>
@@ -2349,10 +2731,9 @@ export default function EditorPage() {
         name: "Free",
         price: "$0",
         desc: ["Perfect for testing the product with no", "commitment."],
-        iconBg: "bg-emerald-500",
+        iconBg: "bg-[#002903]",
         features: [
-          { text: "200 credits", included: true },
-          { text: "1 workspace", included: true },
+          { text: "20 credits", included: true },
           { text: "Unlimited presentations", included: true },
           { text: "No export feature", included: false },
           { text: "No preview feature", included: false },
@@ -2362,13 +2743,12 @@ export default function EditorPage() {
       },
       {
         name: "Pro",
-        monthly: { price: "$25", period: "/month", save: null, buttonColor: "bg-blue-600 text-gray-900 hover:bg-blue-700" },
-        annual: { price: "$250", period: "/year", save: "Save $50 per year", buttonColor: "bg-blue-600 text-gray-900 hover:bg-blue-700" },
-        desc: ["Designed for professionals and", "freelancers."],
-        iconBg: "bg-blue-600",
+        monthly: { price: "$30", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
+        annual: { price: "$270", period: "/year", save: "Save $90 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
+        desc: ["Designed for professionals."],
+        iconBg: "bg-[#002903]",
         features: [
-          { text: "2,500 credits", included: true },
-          { text: "Unlimited workspaces", included: true },
+          { text: "500 credits", included: true },
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
           { text: "Export as PDF", included: true },
@@ -2384,7 +2764,7 @@ export default function EditorPage() {
       // Get the appropriate Polar product ID based on plan and billing cycle
       const productId = plan.name === "Pro" ? getProductId(isAnnual) : null;
       return (
-        <div key={plan.name} className={`relative bg-[#1c1c1c] border ${plan.border} rounded-[12.75px] flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-xs min-w-[280px] mx-auto`}>
+        <div key={plan.name} className={`relative bg-white border ${plan.border} rounded-[12.75px] flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-xs min-w-[280px] mx-auto`}>
           {/* Header: icon left, toggle right */}
           <div className="flex flex-row items-center justify-between mb-3">
             <div className={`w-[42px] h-[42px] rounded-[8.75px] flex items-center justify-center ${plan.iconBg} relative`}>
@@ -2396,13 +2776,13 @@ export default function EditorPage() {
             </div>
             {isToggle && (
               <div className="flex items-center gap-2">
-                <span className="text-gray-500 text-[13px]">Monthly</span>
+                <span className="text-gray-600 text-[13px]">Monthly</span>
                 <label className="relative inline-block w-10 align-middle select-none cursor-pointer">
                   <input type="checkbox" className="sr-only peer" checked={isAnnual} onChange={onToggle} />
-                  <span className="block w-10 h-5 bg-[#002903] rounded-full shadow-inner transition peer-checked:bg-blue-600" />
+                  <span className="block w-10 h-5 bg-[#002903] rounded-full shadow-inner transition peer-checked:bg-[#002903]" />
                   <span className="dot absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition peer-checked:left-6" />
                 </label>
-                <span className="text-gray-500 text-[13px]">Annual</span>
+                <span className="text-gray-600 text-[13px]">Annual</span>
               </div>
             )}
           </div>
@@ -2415,19 +2795,19 @@ export default function EditorPage() {
             {/* Price */}
             <div className="mb-1 flex items-end gap-2">
               <p className="text-gray-900 text-[28px] leading-[36px] font-normal">{priceData.price}</p>
-              <span className="text-gray-500 text-[16px] font-normal">{priceData.period}</span>
+              <span className="text-gray-600 text-[16px] font-normal">{priceData.period}</span>
             </div>
             {/* Save text */}
-            {priceData.save && <div className="text-[#05DF72] text-[13px] font-medium mb-1">{priceData.save}</div>}
+            {priceData.save && <div className="text-[#002903] text-[13px] font-medium mb-1">{priceData.save}</div>}
             {/* Description */}
             <div className="mb-4">
               {plan.desc.map((line: string, i: number) => (
-                <p key={i} className="text-gray-500 text-[11.15px] leading-[17.5px] font-normal">{line}</p>
+                <p key={i} className="text-gray-600 text-[11.15px] leading-[17.5px] font-normal">{line}</p>
               ))}
             </div>
             {/* Including label */}
             <div className="mb-2">
-              <p className="text-gray-500 text-[11.34px] leading-[17.5px] font-normal">Including</p>
+              <p className="text-gray-600 text-[11.34px] leading-[17.5px] font-normal">Including</p>
             </div>
             {/* Feature list */}
             <div className="flex flex-col gap-[9.5px] mb-8">
@@ -2436,26 +2816,39 @@ export default function EditorPage() {
                   <span className="flex items-center justify-center w-3.5 h-3.5">
                     {f.included ? CHECK_ICON : CROSS_ICON}
                   </span>
-                  <span className={f.included ? "text-[#d1d5dc] text-[11.15px] leading-[17.5px] font-normal" : "text-gray-500 text-[11.15px] leading-[17.5px] font-normal line-through"}>{f.text}</span>
+                  <span className={f.included ? "text-gray-900 text-[11.15px] leading-[17.5px] font-normal" : "text-gray-500 text-[11.15px] leading-[17.5px] font-normal line-through"}>{f.text}</span>
                 </div>
               ))}
             </div>
           </div>
           {/* Button */}
-          {plan.name === "Pro" && productId ? (
+          {plan.name === "Free" && credits?.plan_type === 'free' ? (
+            <button 
+              className="w-full h-[31.5px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              disabled
+            >
+              Current plan
+            </button>
+          ) : plan.name === "Free" && credits?.plan_type === 'pro' ? (
+            <button 
+              className="w-full h-[31.5px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
+            >
+              Downgrade plan
+            </button>
+          ) : plan.name === "Pro" && credits?.plan_type === 'pro' ? (
+            <button 
+              className="w-full h-[31.5px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              disabled
+            >
+              Current plan
+            </button>
+          ) : plan.name === "Pro" && productId ? (
             <PolarCheckout
               productId={productId}
               planName={plan.name}
               isAnnual={isAnnual}
               className={priceData.buttonColor}
             />
-          ) : plan.name === "Free" ? (
-            <button 
-              className="w-full h-[31.5px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-[#2a2a2a] text-gray-500 cursor-not-allowed"
-              disabled
-            >
-              Current plan
-            </button>
           ) : (
             <button className={`w-full h-[31.5px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal transition ${priceData.buttonColor}`}>
               Get Started
@@ -2466,9 +2859,15 @@ export default function EditorPage() {
     }
 
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" onClick={() => setShowPricingModal(false)} />
-        <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl p-8 border border-[#23272f] transition-all duration-300 ease-out opacity-100 scale-100 animate-modal-in">
+      <div 
+        className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn"
+        onClick={() => setShowPricingModal(false)}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+        <div 
+          className="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl p-8 border border-[#23272f] animate-scaleIn"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => setShowPricingModal(false)}
@@ -2481,22 +2880,13 @@ export default function EditorPage() {
           </button>
           <div className="text-center mb-8">
             <h1 className="text-gray-900 text-[32px] font-normal leading-[42px] mb-3">Pricing</h1>
-            <p className="text-[#D1D5DC] text-[13.5px] leading-[21px] max-w-2xl mx-auto">Start for free. Upgrade to get the capacity that exactly matches your team's needs.</p>
+            <p className="text-gray-600 text-[13.5px] leading-[21px] max-w-2xl mx-auto">Start for free. Upgrade to get the capacity that exactly matches your team's needs.</p>
           </div>
           <div className="flex flex-col md:flex-row gap-1 w-full max-w-2xl justify-center mx-auto">
             <PlanCard plan={plans[0]} isAnnual={false} onToggle={()=>{}} />
             <PlanCard plan={plans[1]} isAnnual={isAnnualPro} onToggle={() => setIsAnnualPro(v => !v)} />
           </div>
         </div>
-        <style jsx>{`
-          .animate-modal-in {
-            animation: modalIn 0.3s cubic-bezier(0.4,0,0.2,1);
-          }
-          @keyframes modalIn {
-            0% { opacity: 0; transform: scale(0.95); }
-            100% { opacity: 1; transform: scale(1); }
-          }
-        `}</style>
       </div>
     );
   }
@@ -2612,6 +3002,8 @@ export default function EditorPage() {
 
   // Settings Modal
   function SettingsModal() {
+    if (!showSettingsModal) return null;
+    
     const { user, signOut } = useAuth();
     const [localDisplayName, setLocalDisplayName] = useState(workspaceDisplayName);
     
@@ -2632,15 +3024,13 @@ export default function EditorPage() {
     
     return (
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
-        onClick={(e) => {
-          // Close modal when clicking on backdrop
-          if (e.target === e.currentTarget) {
-            setShowSettingsModal(false);
-          }
-        }}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fadeIn"
+        onClick={() => setShowSettingsModal(false)}
       >
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md h-[600px] max-h-screen overflow-y-auto p-7 relative border border-gray-200 animate-modal-in transition-all duration-300 opacity-100 scale-100 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]">
+        <div 
+          className="bg-white rounded-2xl shadow-xl w-full max-w-md h-[600px] max-h-screen overflow-y-auto p-7 relative border border-gray-200 animate-scaleIn scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
             className="absolute top-5 right-5 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => setShowSettingsModal(false)}
@@ -3043,7 +3433,7 @@ export default function EditorPage() {
           break;
         case 'ArrowRight':
           e.preventDefault();
-          if (activeSlide < slides.length - 1) {
+          if (activeSlide < memoizedSlides.length - 1) {
             setActiveSlide(activeSlide + 1);
           }
           break;
@@ -3056,7 +3446,7 @@ export default function EditorPage() {
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [showFullscreenPreview, activeSlide, slides.length]);
+  }, [showFullscreenPreview, activeSlide, memoizedSlides.length]);
 
   // Drag and drop handlers for slide reordering
   const handleDragStart = (e: React.DragEvent, slideIndex: number) => {
@@ -3200,23 +3590,39 @@ export default function EditorPage() {
 
   // Export mode: render only the slide content for PDF generation
   if (isExportMode) {
-    console.log('📄 Export mode: Rendering with data:', { 
+    console.log('📄📄📄 EXPORT MODE ACTIVE: Rendering with data:', { 
       hasSlideData: !!exportSlideData, 
-      slideData: exportSlideData,
+      slideDataId: exportSlideData?.id,
+      slideDataType: exportSlideData?.type,
+      slideDataBlocks: exportSlideData?.blocks?.length,
       isDataLoaded: isDataLoaded 
     });
     
+    // ALWAYS render .slide-content div to prevent timeout, even if there's an error
     // If we don't have slide data yet, show loading
     if (!exportSlideData) {
       return (
         <div className="bg-white" style={{ width: '1920px', height: '1080px', overflow: 'hidden', position: 'relative' }}>
-          <div className="flex items-center justify-center w-full h-full">
-            <div className="text-gray-500">Loading slide data...</div>
+          <div 
+            className="slide-content"
+            style={{
+              width: '881px',
+              height: '495px',
+              transform: 'none',
+              position: 'absolute',
+              top: '0px',
+              left: '0px'
+            }}
+          >
+            <div className="flex items-center justify-center w-full h-full">
+              <div className="text-gray-500">Loading slide data...</div>
+            </div>
           </div>
         </div>
       );
     }
     
+    // CRITICAL: Wrap everything in try-catch to ensure .slide-content always renders
     return (
       <div className="bg-white" style={{ width: '1920px', height: '1080px', overflow: 'hidden', position: 'relative' }}>
         <div 
@@ -3230,7 +3636,37 @@ export default function EditorPage() {
             left: '0px'
           }}
         >
-          {renderSlideContent()}
+          {(() => {
+            try {
+              if (!exportSlideData.blocks || !Array.isArray(exportSlideData.blocks)) {
+                console.error('❌ No blocks found in exportSlideData');
+                return <div className="p-4 text-red-800">No blocks to render</div>;
+              }
+              
+              return exportSlideData.blocks.map((block: any, index: number) => {
+                try {
+                  console.log('📄📄📄 Export mode: Rendering block', index, block.type, 'Props keys:', Object.keys(block.props || {}));
+                  const result = renderBlock(block, index, false);
+                  console.log('✅✅✅ Export mode: Successfully rendered block', index, block.type);
+                  return result;
+                } catch (error) {
+                  console.error('❌❌❌ Error rendering block in export mode:', block.type, error);
+                  return (
+                    <div key={index} className="p-4 bg-red-100 text-red-800 text-xs">
+                      Error rendering {block.type}: {error instanceof Error ? error.message : String(error)}
+                    </div>
+                  );
+                }
+              });
+            } catch (error) {
+              console.error('❌ Critical error in export mode rendering:', error);
+              return (
+                <div className="p-4 bg-red-100 text-red-800">
+                  Critical rendering error: {error instanceof Error ? error.message : String(error)}
+                </div>
+              );
+            }
+          })()}
         </div>
       </div>
     );
@@ -3242,6 +3678,20 @@ export default function EditorPage() {
       <ProtectedRoute>
         <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
           <LoadingCircle />
+        </div>
+      </ProtectedRoute>
+    );
+  }
+
+  // Show loading state while checking for presentations
+  if (!isDataLoaded) {
+    return (
+      <ProtectedRoute>
+        <div className="flex items-center justify-center h-screen w-screen bg-white">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-[#002903] border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-[#002903] text-lg font-medium">Loading...</p>
+          </div>
         </div>
       </ProtectedRoute>
     );
@@ -3429,13 +3879,14 @@ export default function EditorPage() {
       }}
     >
       <div className="min-h-screen w-full flex flex-row bg-white font-sans">
-      {showCreditsModal && <CreditsModal />}
-      {showCreditPacksModal && <CreditPacksModal />}
-      {showPricingModal && <PricingModal />}
-      {showSettingsModal && <SettingsModal />}
+      <CreditsModal />
+      <CreditPacksModal />
+      <PricingModal />
+      <SettingsModal />
       {showHelpModal && <HelpModal />}
       {showApiOverloadModal && <ApiOverloadModal />}
       <DeleteConfirmationModal />
+      
       {showHelpDropdown && (
         <div
           ref={helpDropdownRef}
@@ -3500,7 +3951,7 @@ export default function EditorPage() {
               <div className="text-gray-900 font-bold text-xs leading-none">
                 {creditsLoading ? 'Loading...' : (credits?.remaining_credits?.toLocaleString() || '0')}
               </div>
-              <div className="h-9 w-9 rounded-full bg-[#f3f4f6] flex items-center justify-center text-gray-900 font-bold text-lg">
+              <div className="h-9 w-9 rounded-full bg-[#002903] flex items-center justify-center text-white font-bold text-lg">
                 {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
               </div>
             </div>
@@ -3510,7 +3961,7 @@ export default function EditorPage() {
             {/* Workspace section at the top */}
             <div className="px-4 pt-4 pb-4 flex items-center gap-3 min-w-0 justify-between border-b border-gray-200">
               <div className="flex items-center gap-3 min-w-0">
-                <div className="h-8 w-8 rounded-full bg-[#f3f4f6] flex items-center justify-center text-gray-700 font-medium text-sm">
+                <div className="h-8 w-8 rounded-full bg-[#002903] flex items-center justify-center text-white font-medium text-sm">
                   {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
                 </div>
                 <div className="flex flex-col min-w-0">
@@ -3580,7 +4031,9 @@ export default function EditorPage() {
                       <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
                     )}
                   </div>
-                  <span className="text-gray-500 text-xs">Free plan</span>
+                  <span className="text-gray-500 text-xs">
+                    {credits?.plan_type === 'pro' ? 'Pro plan' : 'Free plan'}
+                  </span>
                 </div>
               </div>
               {/* Sidebar toggle button */}
@@ -3598,8 +4051,14 @@ export default function EditorPage() {
                 <button
                   className="w-full flex items-center justify-start gap-2 bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] rounded-lg py-1.5 mb-3 transition font-medium pl-3"
                   onClick={async () => {
+                    // 🚨 CRITICAL: SET ONBOARDING FIRST - BEFORE ANY OTHER STATE UPDATES
+                    console.log('🚀🚀🚀 SETTING ONBOARDING STATE FIRST - BEFORE EVERYTHING ELSE');
+                    setShowOnboarding(true);
+                    setOnboardingStep(1);
+                    console.log('✅✅✅ ONBOARDING STATE SET FIRST - should be visible immediately');
+                    
                     const currentPresentations = workspacePresentations[currentWorkspace] || [];
-                    const newId = currentPresentations.length ? Math.max(...currentPresentations.map(p => p.id)) + 1 : 1;
+                    const newId = uuidv4(); // Generate UUID for new presentation
                     const newPresentation = { id: newId, title: "Untitled Presentation" };
                     
                     // Track this ID for future reloads
@@ -3630,53 +4089,12 @@ export default function EditorPage() {
                     // 🚨 PREVENT AUTO-LOADING: Mark this as a new presentation to prevent SimpleAutosave from loading old data
                     window.slaidNewPresentationFlag = newId;
                     
-                    console.log('💾💾💾 CREATING NEW PRESENTATION with clean state:', { id: newId, title: "Untitled Presentation" })
+                    console.log('💾💾💾 CREATING NEW PRESENTATION (in-memory only, will save after generation):', { id: newId, title: "Untitled Presentation" })
                     
-                    try {
-                      // Create a single instruction slide with no messages
-                      const instructionSlide = {
-                        id: 'slide-1',
-                        blocks: [
-                          {
-                            type: 'BackgroundBlock',
-                            props: { color: 'bg-white' }
-                          },
-                          {
-                            type: 'TextBlock',
-                            props: {
-                              text: 'To generate your presentation write in the input box below',
-                              fontSize: 'text-xl',
-                              textAlign: 'text-center',
-                              color: 'text-gray-600'
-                            }
-                          }
-                        ]
-                      };
-                      
-                      // Save to database with instruction slide but NO messages
-                      const response = await fetch('/api/presentations/save', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                          presentationId: newId, 
-                          workspace: currentWorkspace, 
-                          state: {
-                            title: "Untitled Presentation",
-                            slides: [instructionSlide],
-                            messages: [], // NO messages - completely empty chat
-                            activeSlide: 0
-                          }
-                        })
-                      });
-                      
-                      if (response.ok) {
-                        console.log('✅✅✅ NEW PRESENTATION WITH INSTRUCTION SLIDE SAVED TO DATABASE')
-                      } else {
-                        console.error('❌❌❌ Failed to save new presentation:', response.status)
-                      }
-                    } catch (error) {
-                      console.error('❌❌❌ Error creating new presentation:', error)
-                    }
+                    // MVP: Don't save to database yet - only save after user generates content through onboarding
+                    // The presentation will be saved automatically when slides are generated
+                    
+                    // Onboarding already set at the beginning - no need to set again
                     
                     // Use setTimeout to ensure the state has updated before starting to edit
                     setTimeout(() => {
@@ -3737,42 +4155,43 @@ export default function EditorPage() {
                             }
                             
                             // Save title to database when editing finishes
+                            // BUT ONLY if the presentation has messages (i.e., has been used)
                             const saveTitle = async () => {
-                              const headers: Record<string, string> = {
-                                'Content-Type': 'application/json',
-                              };
-
                               try {
-                                const { data: { session } } = await supabase.auth.getSession();
-                                if (session?.access_token) {
-                                  headers['Authorization'] = `Bearer ${session.access_token}`;
+                                const messages = presentationMessages[p.id] || [];
+                                
+                                // MVP: Don't save if presentation is still empty (no messages)
+                                if (messages.length === 0) {
+                                  console.log('⏭️ Skipping save - presentation is empty (no messages yet)');
+                                  return;
                                 }
-                              } catch (authError) {
-                                console.warn('⚠️ Could not get auth session for save:', authError);
-                              }
-
-                              fetch('/api/presentations/save', {
-                                method: 'POST',
-                                headers,
-                                body: JSON.stringify({ 
-                                  presentationId: p.id,
-                                  workspace: currentWorkspace, 
-                                  state: {
-                                    title: finalTitle,
-                                    slides: [{ id: 'slide-1', blocks: [] }],
-                                    messages: [],
-                                    activeSlide: 0
+                                
+                                const headers = await getAuthHeaders();
+                                
+                                fetch('/api/presentations/save', {
+                                  method: 'POST',
+                                  headers,
+                                  body: JSON.stringify({ 
+                                    presentationId: p.id,
+                                    state: {
+                                      title: finalTitle,
+                                      slides: [{ id: 'slide-1', blocks: [] }],
+                                      messages: [],
+                                      activeSlide: 0
+                                    }
+                                  })
+                                }).then(response => {
+                                  if (response.ok) {
+                                    console.log('✅ Title saved successfully:', finalTitle);
+                                  } else {
+                                    console.error('❌ Failed to save title:', response.status);
                                   }
-                                })
-                              }).then(response => {
-                                if (response.ok) {
-                                  console.log('✅ Title saved successfully:', finalTitle);
-                                } else {
-                                  console.error('❌ Failed to save title:', response.status);
-                                }
-                              }).catch(error => {
-                                console.error('❌ Error saving title:', error);
-                              });
+                                }).catch(error => {
+                                  console.error('❌ Error saving title:', error);
+                                });
+                              } catch (error) {
+                                console.error('❌ Error getting auth headers:', error);
+                              }
                             };
                             saveTitle();
                             
@@ -3795,44 +4214,45 @@ export default function EditorPage() {
                               }
                               
                               // Save title to database when Enter is pressed
+                              // BUT ONLY if the presentation has messages (i.e., has been used)
                               const saveTitleOnEnter = async () => {
-                                const headers: Record<string, string> = {
-                                  'Content-Type': 'application/json',
-                                };
-
                                 try {
-                                  const { data: { session } } = await supabase.auth.getSession();
-                                  if (session?.access_token) {
-                                    headers['Authorization'] = `Bearer ${session.access_token}`;
+                                  const messages = presentationMessages[p.id] || [];
+                                  
+                                  // MVP: Don't save if presentation is still empty (no messages)
+                                  if (messages.length === 0) {
+                                    console.log('⏭️ Skipping save on Enter - presentation is empty (no messages yet)');
+                                    return;
                                   }
-                                } catch (authError) {
-                                  console.warn('⚠️ Could not get auth session for save:', authError);
-                                }
-
-                                fetch('/api/presentations/save', {
-                                  method: 'POST',
-                                  headers,
-                                  body: JSON.stringify({ 
-                                    presentationId: p.id,
-                                    workspace: currentWorkspace, 
-                                    state: {
-                                      title: finalTitle,
-                                      slides: [{ id: 'slide-1', blocks: [] }],
-                                      messages: [],
-                                      activeSlide: 0
-                                    }
-                                  })
-                                }).then(response => {
-                                  if (response.ok) {
-                                    console.log('✅ Title saved successfully on Enter:', finalTitle);
+                                  
+                                  const headers = await getAuthHeaders();
+                                  
+                                  fetch('/api/presentations/save', {
+                                    method: 'POST',
+                                    headers,
+                                    body: JSON.stringify({ 
+                                      presentationId: p.id,
+                                      state: {
+                                        title: finalTitle,
+                                        slides: [{ id: 'slide-1', blocks: [] }],
+                                        messages: [],
+                                        activeSlide: 0
+                                      }
+                                    })
+                                  }).then(response => {
+                                    if (response.ok) {
+                                      console.log('✅ Title saved successfully on Enter:', finalTitle);
                                   } else {
                                     console.error('❌ Failed to save title on Enter:', response.status);
                                   }
                                 }).catch(error => {
                                   console.error('❌ Error saving title on Enter:', error);
                                 });
-                              };
-                              saveTitleOnEnter();
+                              } catch (error) {
+                                console.error('❌ Error getting auth headers:', error);
+                              }
+                            };
+                            saveTitleOnEnter();
                               
                               // Don't switch presentations - just finish editing
                               setEditingTitle(null);
@@ -3864,6 +4284,34 @@ export default function EditorPage() {
                               // Only change selection if we're not currently editing any title
                               if (editingTitle === null) {
                                 setCurrentPresentationId(p.id);
+                                
+                                // Close onboarding when switching to any existing presentation
+                                if (showOnboarding) {
+                                  setShowOnboarding(false);
+                                  setOnboardingStep(1);
+                                  
+                                  // Clean up: Remove any empty presentations that were never saved to database
+                                  // (presentations with no messages and only created in-memory)
+                                  const currentPresentations = workspacePresentations[currentWorkspace] || [];
+                                  const filteredPresentations = currentPresentations.filter(presentation => {
+                                    // Keep the presentation we're switching to
+                                    if (presentation.id === p.id) return true;
+                                    
+                                    // Check if this presentation has any messages
+                                    const hasMessages = (presentationMessages[presentation.id]?.length || 0) > 0;
+                                    
+                                    // Only keep presentations that have messages (were actually generated/saved)
+                                    return hasMessages;
+                                  });
+                                  
+                                  if (filteredPresentations.length !== currentPresentations.length) {
+                                    console.log('🧹 Cleaning up empty unsaved presentations');
+                                    setWorkspacePresentations(prev => ({
+                                      ...prev,
+                                      [currentWorkspace]: filteredPresentations
+                                    }));
+                                  }
+                                }
                               }
                             }}
                             onDoubleClick={(e) => {
@@ -3955,8 +4403,9 @@ export default function EditorPage() {
       </aside>
       {/* Main content: chat + slide preview */}
       <main className="flex-1 flex flex-row h-screen">
-        {/* Chat/editor column */}
-        <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
+        {/* Chat/editor column - Hide during onboarding */}
+        {!showOnboarding && (
+          <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-2 relative">
             <h2 className="text-[#002903] text-xl font-medium break-words w-full line-clamp-2">
@@ -3992,33 +4441,11 @@ export default function EditorPage() {
                 {messages.map((msg, i) =>
                   msg.role === 'user' ? (
                     <div key={msg.id || `user-${i}`} className="flex flex-col items-end gap-1">
-                      {msg.attachments && msg.attachments.length > 0 && (
-                        <div className="flex items-end flex-wrap gap-2 mb-1">
-                          {msg.attachments.map((file, idx) => (
-                            file.type.startsWith('image/') ? (
-                              <img key={file.url} src={file.url} alt="Attachment" className="w-16 h-16 object-cover rounded-md border border-gray-200" />
-                            ) : (
-                              <div key={file.url} className="w-16 h-16 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center border border-gray-200">
-                                {file.name.toLowerCase().endsWith('.pdf') && (
-                                  <img src="/pdf-icon.png" alt="PDF Icon" className="w-8 h-8 mb-1 object-contain" />
-                                )}
-                                {file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx') ? (
-                                  <img src="/doc-icon.png" alt="DOC Icon" className="w-8 h-8 mb-1 object-contain" />
-                                ) : null}
-                                {file.name.toLowerCase().endsWith('.xls') || file.name.toLowerCase().endsWith('.xlsx') ? (
-                                  <img src="/xls-icon.png" alt="XLS Icon" className="w-8 h-8 mb-1 object-contain" />
-                                ) : null}
-                                <span className="text-xs text-gray-500 truncate w-14 text-center">{file.name}</span>
-                              </div>
-                            )
-                          ))}
-                        </div>
-                      )}
                       <div className="flex flex-row-reverse items-end gap-2">
-                        <div className="h-9 w-9 rounded-full bg-[#f3f4f6] flex items-center justify-center text-gray-900 font-medium text-lg">
+                        <div className="h-9 w-9 rounded-full bg-[#002903] flex items-center justify-center text-white font-medium text-lg">
                           {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
                         </div>
-                        <div className="bg-[#f3f3f5] text-[#002903] rounded-xl px-4 py-2 max-w-xs mb-1 text-sm">{msg.text}</div>
+                        <div className="bg-[#002903] text-white rounded-xl px-4 py-2 max-w-xs mb-1 text-sm">{msg.text}</div>
                       </div>
                     </div>
                   ) : msg.role === 'assistant' ? (
@@ -4027,7 +4454,7 @@ export default function EditorPage() {
                         // Loading state with Cursor-style UI
                         <div className="flex flex-col w-full">
                           <div className="flex items-center gap-2 text-[#002903] text-sm mb-3">
-                            <LoadingCircle size={16} color="#2563eb" progress={generationProgress} />
+                            <LoadingCircle size={16} color="#002903" progress={generationProgress} />
                             <span className="font-semibold">Reasoning</span>
                           </div>
                           <div className="text-[#002903] text-sm leading-relaxed whitespace-pre-line mb-3">
@@ -4849,6 +5276,18 @@ export default function EditorPage() {
                             ]
                           };
                         });
+                        
+                        // Close onboarding after successful generation
+                        if (showOnboarding) {
+                          setShowOnboarding(false);
+                          setOnboardingStep(1); // Reset for next time
+                          
+                          // Clear the generation timeout
+                          if ((window as any).generationTimeout) {
+                            clearTimeout((window as any).generationTimeout);
+                            (window as any).generationTimeout = null;
+                          }
+                        }
                         
                         // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
                         setWorkspacePresentations(prev => {
@@ -6265,17 +6704,584 @@ export default function EditorPage() {
             </div>
           )}
         </section>
-        {/* Slide preview column */}
-        <section className="flex-1 flex flex-col h-full bg-white">
+        )}
+        {/* Onboarding Flow - Replace main content area */}
+        {showOnboarding ? (
+          <section className={`flex-1 flex flex-col items-center ${onboardingStep === 3 && selectedSlideCount ? 'justify-start' : 'justify-center'} bg-[#f9fafb] h-full p-8`}>
+            {onboardingStep === 1 && (
+              <div className="relative w-full max-w-md">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border border-gray-100 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative">
+                  {/* Layered Cards Background */}
+                  <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
+                    {/* Back card */}
+                    <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform rotate-3 translate-x-2 translate-y-2 transition-transform duration-300 group-hover:translate-x-6"></div>
+                    {/* Middle card */}
+                    <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform -rotate-1 translate-x-1 translate-y-1 transition-transform duration-300 group-hover:-translate-x-4"></div>
+                    {/* Front card */}
+                    <div className="relative w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-start p-3 sm:p-4 transition-transform duration-300">
+                      {/* Document header lines */}
+                      <div className="w-full mb-6">
+                        <div className="h-1.5 bg-gray-200 rounded mb-2"></div>
+                        <div className="h-1.5 bg-gray-200 rounded w-2/3 mb-2"></div>
+                        <div className="h-1.5 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                      
+                      {/* Google Sheets icon in center */}
+                      <div className="flex-1 flex items-center justify-center">
+                        <img src="/google-sheets.png" alt="Google Sheets" className="w-12 h-16 sm:w-14 sm:h-18 lg:w-16 lg:h-20 object-contain" />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
+                    <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>Upload Files</h3>
+                    {isUploading || isAnalyzing ? (
+                      <div className="text-center">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#002903] mx-auto mb-2"></div>
+                        <p className="text-sm text-[#002903]">
+                          {isUploading ? 'Uploading file...' : 'Analyzing data...'}
+                        </p>
+                      </div>
+                    ) : (
+                    <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>
+                      Drag and drop your files here, or{' '}
+                  <button 
+                        className="text-blue-500 hover:underline"
+                        onClick={() => {
+                          // Trigger file input click
+                          const input = document.createElement('input');
+                          input.type = 'file';
+                          input.multiple = true;
+                          input.accept = '.xlsx,.xls,.csv,.docx,.doc,.pdf';
+                      input.onchange = (e) => {
+                        const files = Array.from((e.target as HTMLInputElement).files || []);
+                        console.log('Files selected:', files);
+                        if (files.length > 0) {
+                                // Handle file upload with comprehensive analysis
+                                handleFileUpload(files[0]);
+                        }
+                      };
+                          input.click();
+                        }}
+                      >
+                        click to select
+                      </button>.
+                    </p>
+                        )}
+                        
+                        {uploadError && (
+                          <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <p className="text-sm text-red-600 text-center">{uploadError}</p>
+                            {uploadError.includes('taking longer than expected') && (
+                              <div className="mt-2 text-xs text-gray-600 text-center">
+                                <p>Try reducing your dataset size or simplifying your prompt.</p>
+                                <button 
+                                  onClick={() => setUploadError('')}
+                                  className="mt-1 text-blue-600 hover:underline"
+                                >
+                                  Try Again
+                                </button>
+                </div>
+                            )}
+                          </div>
+                        )}
+                    
+                    <p className="text-xs text-center mt-2" style={{ color: '#002903' }}>Support formats: .xlsx, .xsl, .csv</p>
+                </div>
+              </div>
+            </div>
+            )}
+
+            {onboardingStep === 2 && (
+              <div className="max-w-2xl w-full relative">
+                {/* Back Button */}
+                <button
+                  onClick={() => setOnboardingStep(1)}
+                  className="absolute top-0 left-0 p-2 text-[#002903] hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Go back"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m15 18-6-6 6-6"/>
+                  </svg>
+                </button>
+                
+                {/* Title */}
+                <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">Describe what your presentation will be about</h2>
+
+                {/* Text Area with Send Button */}
+                <div className="mb-8 relative">
+                  <textarea
+                    className="w-full h-40 p-4 pr-16 bg-[#f3f4f6] border-none rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#002903] focus:border-transparent placeholder-[#717182] text-[#002903]"
+                    placeholder="Enter your description here..."
+                    style={{ fontSize: '16px' }}
+                    value={presentationPrompt}
+                    onChange={(e) => setPresentationPrompt(e.target.value)}
+                  />
+                  {/* Send Button */}
+                  <button 
+                    className="absolute bottom-4 right-4 w-8 h-8 bg-[#002903] hover:bg-[#002903]/90 rounded-full flex items-center justify-center transition disabled:opacity-50"
+                    onClick={handlePresentationPromptAnalysis}
+                    disabled={!presentationPrompt.trim() || isAnalyzingPrompt}
+                  >
+                    {isAnalyzingPrompt ? (
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
+                      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    </svg>
+                    )}
+                  </button>
+                </div>
+                
+                {uploadError && (
+                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600 text-center">{uploadError}</p>
+                  </div>
+                )}
+            </div>
+            )}
+
+            {onboardingStep === 3 && !selectedSlideCount && (
+              <div className="max-w-2xl w-full relative">
+                {/* Back Button */}
+                <button
+                  onClick={() => setOnboardingStep(2)}
+                  className="absolute top-0 left-0 p-2 text-[#002903] hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Go back"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m15 18-6-6 6-6"/>
+                  </svg>
+                </button>
+                
+                {/* Title */}
+                <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">¿How many slides do you want?</h2>
+
+                {/* Slide Count Selection Buttons */}
+                <div className="flex flex-wrap justify-center gap-4">
+                  {['Less than 5', '6-10', '11-15', '16-20', 'More than 20'].map((option) => (
+                    <button 
+                      key={option}
+                      className="px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-gray-700 hover:border-[#002903] hover:text-[#002903] font-medium transition"
+                      onClick={() => {
+                        setSelectedSlideCount(option);
+                      }}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {onboardingStep === 3 && selectedSlideCount && (
+              <div className="w-full flex flex-col items-start justify-start pt-0">
+                {/* Back Button - Only show when NOT loading */}
+                {!isLoading && (
+                <button
+                    onClick={() => {
+                      setSelectedSlideCount('');
+                    }}
+                    className="mb-6 p-2 text-[#002903] hover:bg-gray-100 rounded-full transition-colors"
+                  aria-label="Go back"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="m15 18-6-6 6-6"/>
+                  </svg>
+                </button>
+                )}
+                
+                {isLoading ? (
+                  /* Multi-Step Loading State */
+                  <div className="flex flex-col items-start gap-6 w-full max-w-md mx-auto py-8">
+                    {/* Loading Step 1 - Analyzing content */}
+                    <div className="flex items-center gap-4 w-full">
+                      {loadingStep > 1 ? (
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-green-100 rounded-full">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
+                          <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
+                          <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h3 className="text-base font-medium text-gray-900">Analyzing content</h3>
+                        <p className="text-sm text-gray-500">Processing your data and requirements</p>
+                      </div>
+                    </div>
+
+                    {/* Loading Step 2 - Generating slides */}
+                    <div className={`flex items-center gap-4 w-full ${loadingStep < 2 ? 'opacity-50' : ''}`}>
+                      {loadingStep > 2 ? (
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-green-100 rounded-full">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M20 6L9 17l-5-5" />
+                          </svg>
+                        </div>
+                      ) : loadingStep === 2 ? (
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
+                          <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
+                          <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-gray-100 rounded-full">
+                          <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h3 className={`text-base font-medium ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-900'}`}>Generating slides...</h3>
+                        <p className={`text-sm ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-500'}`}>
+                          {batchProgress.total > 1 ? (
+                            `Batch ${batchProgress.current}/${batchProgress.total}: Slides ${batchProgress.slideRange}`
+                          ) : (
+                            'Creating your presentation structure'
+                          )}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Loading Step 3 - Applying design */}
+                    <div className={`flex items-center gap-4 w-full ${loadingStep < 3 ? 'opacity-50' : ''}`}>
+                      {loadingStep === 3 ? (
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
+                          <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
+                          <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
+                        </div>
+                      ) : (
+                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-gray-100 rounded-full">
+                          <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                        </div>
+                      )}
+                      <div className="flex-1">
+                        <h3 className={`text-base font-medium ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-900'}`}>Applying design</h3>
+                        <p className={`text-sm ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-500'}`}>Styling your slides</p>
+                      </div>
+                    </div>
+
+                    {/* Error Display */}
+                    {uploadError && (
+                      <div className="w-full mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                        <p className="text-sm text-red-600 text-center">{uploadError}</p>
+                        {uploadError.includes('timeout') && (
+                          <>
+                            <p className="text-xs text-red-500 text-center mt-2">
+                              Try reducing your dataset size or simplifying your prompt.
+                            </p>
+                            <button 
+                              className="mt-3 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                              onClick={() => {
+                                setIsLoading(false);
+                                setUploadError('');
+                              }}
+                            >
+                              Try Again
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* SlaidAI Message - Centered Container */
+                  <div className="flex flex-col w-full max-w-3xl mx-auto">
+                    {/* Header - Left Aligned */}
+                    <div className="flex items-center gap-2 mb-4">
+                      {/* SlaidAI Avatar */}
+                      <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
+                        <img 
+                          src="/slaid-favicon-verde.png" 
+                          alt="SlaidAI" 
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                      <span className="text-sm font-medium text-[#002903]">SlaidAI</span>
+                      <span className="text-xs text-gray-500">Ready to generate</span>
+                </div>
+
+                    {/* Scrollable Container for Presentation Preview with Fade */}
+                    <div className="relative w-full">
+                      <div className="max-h-[calc(100vh-280px)] overflow-y-auto pr-2">
+                        {/* AI-Style Conversational Response */}
+                        <div className="text-gray-700 leading-relaxed space-y-4">
+                          {/* Opening paragraph with preserved formatting */}
+                          <div className="text-sm whitespace-pre-wrap">
+                            {promptAnalysis || `Based on your uploaded file "${uploadedFiles[0]?.name || 'data'}" and the request "${presentationPrompt}", I'll create a comprehensive ${selectedSlideCount}-slide presentation that analyzes your data structure, extracts key insights, and presents them in a professional format with charts, tables, and interpretative content.`}
+              </div>
+
+                          {/* Presentation structure as flowing text */}
+                          <p className="text-sm font-medium text-gray-800">Here's the structure I'll create:</p>
+                          
+                          <div className="space-y-2 text-sm">
+                            {Array.from({length: getSlideCountNumber(selectedSlideCount)}, (_, index) => {
+                              const slideTypes = ['Cover', 'Table of Contents', 'Data Overview', 'Key Insights', 'Charts & Analysis', 'Conclusions', 'Next Steps', 'Back Cover'];
+                              const slideTitle = slideTypes[index] || `Content Slide ${index - 6}`;
+                              return (
+                                <div key={index} className="flex items-start gap-2">
+                                  <span className="text-gray-500 font-medium min-w-[70px]">Slide {index + 1}:</span>
+                                  <span className="text-gray-700">{slideTitle}</span>
+            </div>
+                              );
+                            })}
+            </div>
+
+                          {/* Closing paragraph */}
+                          <p className="text-sm text-gray-600 italic">
+                            Each slide will feature professional layouts with data visualization, interpretative insights, and adaptive content tailored to your specific data.
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Bottom Fade Effect */}
+                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f9fafb] to-transparent pointer-events-none"></div>
+                    </div>
+
+                    {/* Generate Button - Centered */}
+                  <button
+                      className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
+                      disabled={isLoading}
+                      onClick={async () => {
+                        // Validate all required fields
+                        if (!uploadResult || !selectedSlideCount || !presentationPrompt.trim()) {
+                          console.error('❌ Missing required fields:', {
+                            hasUploadResult: !!uploadResult,
+                            selectedSlideCount,
+                            presentationPrompt: presentationPrompt.trim()
+                          });
+                          setUploadError('Please ensure all fields are filled: file uploaded, slide count selected, and description provided.');
+                          return;
+                        }
+
+                        // Convert slide count text to number
+                        const slideCountNum = getSlideCountNumber(selectedSlideCount);
+                        
+                        if (slideCountNum < 1) {
+                          console.error('❌ Invalid slide count:', selectedSlideCount);
+                          setUploadError('Please select a valid slide count.');
+                          return;
+                        }
+
+                        setIsLoading(true);
+                        setUploadError('');
+
+                        // Calculate batches (10 slides per batch)
+                        const SLIDES_PER_BATCH = 10;
+                        const totalBatches = Math.ceil(slideCountNum / SLIDES_PER_BATCH);
+                        
+                        console.log(`📦 Batched generation: ${slideCountNum} slides in ${totalBatches} batch(es)`);
+
+                        // Set timeout for 5 minutes (to accommodate multiple batches)
+                        const timeoutId = setTimeout(() => {
+                          setIsLoading(false);
+                          setUploadError('Presentation generation timed out. Please try again with a smaller dataset or simpler prompt.');
+                        }, 300000); // 5 minutes
+                        
+                        (window as any).generationTimeout = timeoutId;
+
+                        try {
+                          let allSlides: any[] = [];
+                          
+                          // Generate slides in batches
+                          for (let batchNum = 1; batchNum <= totalBatches; batchNum++) {
+                            const slideStart = (batchNum - 1) * SLIDES_PER_BATCH + 1;
+                            const slideEnd = Math.min(batchNum * SLIDES_PER_BATCH, slideCountNum);
+                            
+                            // Update batch progress
+                            setBatchProgress({
+                              current: batchNum,
+                              total: totalBatches,
+                              slideRange: `${slideStart}-${slideEnd}`
+                            });
+                            
+                            console.log(`🚀 Batch ${batchNum}/${totalBatches}: Generating slides ${slideStart}-${slideEnd}...`);
+                            
+                            // Get auth headers for credit tracking
+                            const { data: { session } } = await supabase.auth.getSession();
+                            const excelHeaders: Record<string, string> = {
+                              'Content-Type': 'application/json',
+                            };
+                            
+                            if (session?.access_token) {
+                              excelHeaders['Authorization'] = `Bearer ${session.access_token}`;
+                              console.log('🔐 Auth header added for Excel generation credit tracking');
+                            } else {
+                              console.warn('⚠️ No auth token found - credits may not be deducted');
+                            }
+                            
+                            const response = await fetch('/api/generate-excel-presentation', {
+                              method: 'POST',
+                              headers: excelHeaders,
+                              body: JSON.stringify({
+                                uploadResult: uploadResult,
+                                presentationPrompt: presentationPrompt.trim(),
+                                slideCount: slideCountNum,
+                                comprehensiveAnalysis: comprehensiveAnalysis,
+                                batchNumber: batchNum,
+                                totalBatches: totalBatches,
+                                slideStart: slideStart,
+                                slideEnd: slideEnd
+                              })
+                            });
+
+                            console.log(`📡 Batch ${batchNum} response status:`, response.status);
+
+                            if (!response.ok) {
+                              const error = await response.json();
+                              console.error(`❌ Batch ${batchNum} error:`, error);
+                              throw new Error(error.error || `Failed to generate batch ${batchNum}`);
+                            }
+
+                            const result = await response.json();
+                            console.log(`✅ Batch ${batchNum} generated successfully!`);
+                            console.log(`📊 Batch ${batchNum} slides:`, result.presentation?.slides?.length);
+                            
+                            // Merge slides from this batch
+                            if (result.presentation?.slides) {
+                              allSlides = allSlides.concat(result.presentation.slides);
+                            }
+                          }
+
+                          console.log('✅ All batches completed!');
+                          console.log('📊 Total slides generated:', allSlides.length);
+
+                          // Create presentation data from merged batches
+                          const presentationData = {
+                            id: Date.now(),
+                            title: uploadResult.fileName ? `${uploadResult.fileName} Analysis` : 'Data Analysis',
+                            slideCount: allSlides.length,
+                            slides: allSlides,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString()
+                          };
+
+                          // Set up the editor with the generated presentation
+                          setChatInput(presentationPrompt);
+                          
+                          if (uploadedFiles.length > 0) {
+                            const fileData = uploadedFiles.map(file => ({
+                              url: URL.createObjectURL(file),
+                              type: file.type.includes('excel') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? 'excel' : 
+                                    file.type.includes('csv') || file.name.endsWith('.csv') ? 'csv' : 'document',
+                              name: file.name,
+                              isUploaded: true,
+                              uploadStatus: 'completed' as const
+                            }));
+                            setAttachedFiles(fileData);
+                          }
+
+                          // Add the presentation data to messages
+                          const userMessage = { 
+                            id: `user-${Date.now()}-${Math.random()}`,
+                            role: "user" as const, 
+                            text: presentationPrompt, 
+                            attachments: uploadedFiles.map(file => ({
+                              url: URL.createObjectURL(file),
+                              type: file.type.includes('excel') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? 'excel' : 
+                                    file.type.includes('csv') || file.name.endsWith('.csv') ? 'csv' : 'document',
+                              name: file.name,
+                              isUploaded: true,
+                              uploadStatus: 'completed' as const
+                            }))
+                          };
+                          
+                          const assistantMessage = { 
+                            id: `assistant-${Date.now()}-${Math.random()}`,
+                            role: "assistant" as const, 
+                            text: `Successfully created "${presentationData.title}"\n\nPresentation structure:\n${presentationData.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title}`).join('\n')}\n\nYour ${presentationData.slideCount}-slide presentation is ready for review and editing.`,
+                            isLoading: false,
+                            presentationData: presentationData,
+                            userMessage: presentationPrompt,
+                            version: 1
+                          };
+
+                          setPresentationMessages(prev => ({
+                            ...prev,
+                            [currentPresentationId]: [userMessage, assistantMessage]
+                          }));
+
+                          // Close onboarding and show editor
+                      setShowOnboarding(false);
+                          setOnboardingStep(1);
+                          
+                          // Clear input and attachments
+                          setChatInput("");
+                          setAttachedFiles([]);
+                          
+                          // Clear the generation timeout
+                          if ((window as any).generationTimeout) {
+                            clearTimeout((window as any).generationTimeout);
+                            (window as any).generationTimeout = null;
+                          }
+                          
+                        } catch (err) {
+                          console.error('❌ Generation error:', err);
+                          
+                          // Clear the generation timeout
+                          if ((window as any).generationTimeout) {
+                            clearTimeout((window as any).generationTimeout);
+                            (window as any).generationTimeout = null;
+                          }
+                          
+                          const errorMessage = err instanceof Error ? err.message : 'Generation failed';
+                          setUploadError(errorMessage);
+                          
+                          // Show error in alert for debugging
+                          alert(`Presentation generation failed:\n\n${errorMessage}\n\nPlease check the browser console for details.`);
+                        } finally {
+                          setIsLoading(false);
+                          setBatchProgress({ current: 0, total: 0, slideRange: '' }); // Reset batch progress
+                        }
+                    }}
+                  >
+                    Generate Presentation
+                  </button>
+                </div>
+          )}
+            </div>
+          )}
+
+        </section>
+        ) : (
+          /* Normal Slide preview column */
+          <section className="flex-1 flex flex-col h-full bg-white">
           {/* Top bar */}
           <div className="bg-[#F9FAFB] border-b border-gray-200 px-8 py-4 flex justify-end">
             <div className="flex gap-3">
-              <button className="flex items-center justify-center hover:bg-gray-100 text-gray-600 px-3 py-2 rounded-lg font-medium text-sm transition" onClick={() => {
-                setShowFullscreenPreview(true);
+              {/* Edit in... button - Hidden for now, will be implemented in future */}
+              <button className="hidden flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition border border-gray-200" onClick={() => {
+                // TODO: Implement edit in external apps functionality
+                console.log('Edit in external apps clicked');
               }}>
-                <img src="/preview-icon.png" alt="Preview" className="w-4 h-4 object-contain" />
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-600">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Edit in...</span>
+                <div className="flex items-center gap-1 ml-1">
+                  {/* Google Slides icon */}
+                  <img src="/google-slide.png" alt="Google Slides" className="w-5 h-5 object-contain" />
+                  {/* PowerPoint icon */}
+                  <img src="/power-point.png" alt="PowerPoint" className="w-5 h-5 object-contain" />
+                </div>
               </button>
-              <button className="flex items-center justify-center bg-[#002903] hover:bg-[#002903]/90 hover:scale-110 text-white p-2 rounded-lg font-medium text-sm transition-all duration-200 shadow-sm transform" onClick={() => {
+              <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition border border-gray-200" onClick={() => {
+                // Check if user has Pro plan for Preview feature
+                if (credits?.plan_type === 'free') {
+                  setShowPricingModal(true);
+                } else {
+                  setShowFullscreenPreview(true);
+                }
+              }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-black">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span>Preview</span>
+              </button>
+              <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition border border-gray-200" onClick={() => {
                 // Check if user has Pro plan for Export feature
                 if (credits?.plan_type === 'free') {
                   setShowPricingModal(true);
@@ -6284,6 +7290,7 @@ export default function EditorPage() {
                 }
               }}>
                 <img src="/export-icon.png" alt="Export" className="w-4 h-4 object-contain" />
+                <span>Export</span>
               </button>
             </div>
           </div>
@@ -6291,32 +7298,33 @@ export default function EditorPage() {
           <div className="flex-1 flex flex-col px-4 md:px-8 py-6 bg-[#f9fafb] overflow-y-auto">
             <div className="flex flex-col items-center gap-6 bg-[#f9fafb]">
               {slides.map((slide: any, slideIndex: number) => (
-                <div
+                              <div
                   key={`slide-${slideIndex}`}
                   className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200"
-                  style={{
+          style={{
                     width: sidebarCollapsed ? '881px' : '640px',
                     height: sidebarCollapsed ? '495px' : '360px',
-                    transition: 'width 300ms ease-in-out, height 300ms ease-in-out'
-                  }}
-                >
-                  <div 
-                    className="slide-content"
-                    style={{
+            transition: 'width 300ms ease-in-out, height 300ms ease-in-out'
+          }}
+        >
+          <div 
+            className="slide-content"
+            style={{
                       transform: sidebarCollapsed ? 'scale(1)' : 'scale(0.726)',
-                      transformOrigin: 'center center',
-                      width: '881px',
-                      height: '495px',
-                      transition: 'transform 300ms ease-in-out'
+              transformOrigin: 'center center',
+              width: '881px',
+              height: '495px',
+              transition: 'transform 300ms ease-in-out'
                     }}
                   >
                     {renderSlideContent(slideIndex)}
-                  </div>
-                </div>
+                        </div>
+                      </div>
               ))}
-            </div>
           </div>
+        </div>
         </section>
+        )}
       </main>
       {showTitleMenu && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -6325,14 +7333,14 @@ export default function EditorPage() {
             <div className="text-gray-500 text-xs font-medium tracking-wide mb-2 px-1">Presentation options</div>
             <div className="flex flex-col gap-1 mb-2 px-1">
               <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#002903]"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
                 onClick={async () => {
                   console.log('🔄🔄🔄 DUPLICATING PRESENTATION:', currentPresentation);
                   
                   // Duplicate presentation
                   if (currentPresentation) {
                     const duplicatedPresentation = {
-                      id: Date.now(),
+                      id: uuidv4(), // Generate UUID for duplicate presentation
                       title: `${currentPresentation.title} (Copy)`
                     };
                     
@@ -6355,12 +7363,12 @@ export default function EditorPage() {
                         }
                       }];
                       
+                      const headers = await getAuthHeaders();
                       const response = await fetch('/api/presentations/save', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers,
                         body: JSON.stringify({ 
-                          presentationId: duplicatedPresentation.id, 
-                          workspace: currentWorkspace, 
+                          presentationId: duplicatedPresentation.id,
                           state: {
                             title: duplicatedPresentation.title,
                             slides: slidesToDuplicate,
@@ -6419,16 +7427,21 @@ export default function EditorPage() {
                 Duplicate
               </button>
               <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#002903]"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
                 onClick={() => {
                   setShowTitleMenu(false);
-                  setShowFullscreenPreview(true);
+                  // Check if user has Pro plan for Preview feature
+                  if (credits?.plan_type === 'free') {
+                    setShowPricingModal(true);
+                  } else {
+                    setShowFullscreenPreview(true);
+                  }
                 }}
               >
                 Preview presentation
               </button>
               <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#002903]"
+                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
                 onClick={() => {
                   setShowTitleMenu(false);
                   // Check if user has Pro plan for Export feature
@@ -6442,14 +7455,16 @@ export default function EditorPage() {
                 Export as PDF
               </button>
               <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-[#ef4444] hover:bg-[#ef4444] hover:text-gray-900" 
+                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-[#ef4444] hover:bg-[#f3f4f6]" 
                 onClick={async () => {
                   console.log('🗑️🗑️🗑️ DELETING PRESENTATION from database:', currentPresentationId)
                   
                   // Delete from database first
                   try {
-                    const response = await fetch(`/api/presentations/delete?presentationId=${currentPresentationId}&workspace=${encodeURIComponent(currentWorkspace)}`, {
-                      method: 'DELETE'
+                    const headers = await getAuthHeaders();
+                    const response = await fetch(`/api/presentations/delete?presentationId=${currentPresentationId}`, {
+                      method: 'DELETE',
+                      headers
                     });
                     
                     if (response.ok) {
@@ -6488,7 +7503,7 @@ export default function EditorPage() {
                   // Select the first presentation or create a new one if none exist
                   if (updatedPresentations.length === 0) {
                     console.log('💾💾💾 CREATING DEFAULT PRESENTATION after deletion')
-                    const newId = Date.now();
+                    const newId = uuidv4(); // Generate UUID for new presentation
                     const newPresentation = { id: newId, title: "Untitled presentation" };
                     
                     // Track this ID for future reloads
@@ -6500,48 +7515,35 @@ export default function EditorPage() {
                     }));
                     
                     // Create and save new default presentation with instruction slide
-                    try {
-                      // Create a single instruction slide with no messages
-                      const instructionSlide = {
-                        id: 'slide-1',
-                        blocks: [
-                          {
-                            type: 'BackgroundBlock',
-                            props: { color: 'bg-white' }
-                          },
-                          {
-                            type: 'TextBlock',
-                            props: {
-                              text: 'To generate your presentation write in the input box below',
-                              fontSize: 'text-xl',
-                              textAlign: 'text-center',
-                              color: 'text-gray-600'
-                            }
+                    // Create a single instruction slide with no messages
+                    const instructionSlide = {
+                      id: 'slide-1',
+                      blocks: [
+                        {
+                          type: 'BackgroundBlock',
+                          props: { color: 'bg-white' }
+                        },
+                        {
+                          type: 'TextBlock',
+                          props: {
+                            text: 'To generate your presentation write in the input box below',
+                            fontSize: 'text-xl',
+                            textAlign: 'text-center',
+                            color: 'text-gray-600'
                           }
-                        ]
-                      };
-                      
-                      // Get authentication headers
-                      const headers: Record<string, string> = {
-                        'Content-Type': 'application/json',
-                      };
-
-                      try {
-                        const { data: { session } } = await supabase.auth.getSession();
-                        if (session?.access_token) {
-                          headers['Authorization'] = `Bearer ${session.access_token}`;
                         }
-                      } catch (authError) {
-                        console.warn('⚠️ Could not get auth session for new presentation:', authError);
-                      }
-
-                      // Save to database with instruction slide but NO messages
+                      ]
+                    };
+                    
+                    // Get authentication headers and save to database
+                    try {
+                      const headers = await getAuthHeaders();
+                      
                       const response = await fetch('/api/presentations/save', {
                         method: 'POST',
                         headers,
                         body: JSON.stringify({ 
-                          presentationId: newId, 
-                          workspace: currentWorkspace, 
+                          presentationId: newId,
                           state: {
                             title: "Untitled presentation",
                             slides: [instructionSlide],
@@ -6550,7 +7552,7 @@ export default function EditorPage() {
                           }
                         })
                       });
-                      
+                    
                       if (response.ok) {
                         console.log('✅✅✅ DEFAULT PRESENTATION WITH INSTRUCTION SLIDE SAVED TO DATABASE')
                       } else {
@@ -6588,20 +7590,20 @@ export default function EditorPage() {
       {showExportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" onClick={() => setShowExportModal(false)} />
-          <div className="relative bg-[#2a2a2a] rounded-2xl shadow-xl w-full max-w-md p-6 border border-[#404040] animate-modal-in z-10">
-            <h2 className="text-gray-900 text-xl font-semibold mb-4">Export Presentation</h2>
-            <p className="text-gray-500 text-sm mb-6">
-              Your presentation <span className="text-gray-900 font-medium">{currentPresentation?.title || 'Untitled'}</span> contains <span className="text-gray-900 font-medium">{slides.length} slides</span>.
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 animate-modal-in z-10">
+            <h2 className="text-[#002903] text-xl font-semibold mb-4">Export Presentation</h2>
+            <p className="text-[#002903] text-sm mb-6">
+              Your presentation <span className="text-[#002903] font-medium">{currentPresentation?.title || 'Untitled'}</span> contains <span className="text-[#002903] font-medium">{slides.length} slides</span>.
             </p>
             
             {/* Progress Bar */}
             {isExporting && (
               <div className="mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-500 text-xs">Generating PDF...</span>
-                  <span className="text-gray-500 text-xs">{Math.round(exportProgress)}%</span>
+                  <span className="text-[#002903] text-xs">Generating PDF...</span>
+                  <span className="text-[#002903] text-xs">{Math.round(exportProgress)}%</span>
                 </div>
-                <div className="w-full bg-[#404040] rounded-full h-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-[#002903] h-2 rounded-full transition-all duration-300 ease-out"
                     style={{ width: `${exportProgress}%` }}
@@ -6611,7 +7613,7 @@ export default function EditorPage() {
             )}
             
             <button 
-              className="w-full bg-[#002903] hover:bg-[#1d4ed8] text-gray-900 font-medium py-3 px-4 rounded-lg transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium py-3 px-4 rounded-lg transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleExportPDF}
               disabled={isExporting}
             >
@@ -6643,21 +7645,23 @@ export default function EditorPage() {
           </button>
           
           {/* Slide navigation */}
-          {slides.length > 1 && (
+          {memoizedSlides.length > 1 && (
             <>
               <button 
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition disabled:opacity-30 disabled:cursor-not-allowed z-10 bg-black/20 hover:bg-black/40 rounded-full p-3"
                 onClick={() => setActiveSlide(Math.max(0, activeSlide - 1))}
                 disabled={activeSlide === 0}
+                aria-label="Previous slide"
               >
                 <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
                   <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
               <button 
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition disabled:opacity-30 disabled:cursor-not-allowed z-10 bg-black/20 hover:bg-black/40 rounded-full p-3"
                 onClick={() => setActiveSlide(Math.min(memoizedSlides.length - 1, activeSlide + 1))}
                 disabled={activeSlide === memoizedSlides.length - 1}
+                aria-label="Next slide"
               >
                 <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
                   <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -6703,15 +7707,15 @@ export default function EditorPage() {
                     }
                   }}
                 >
-                  {renderSlideContent(true)}
+                  {renderSlideContent(activeSlide, true)}
                 </div>
               </div>
             </div>
           </div>
           
           {/* Slide counter */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-gray-900 text-sm bg-black/50 px-3 py-1 rounded-full">
-            {activeSlide + 1} / {slides.length}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+            {activeSlide + 1} / {memoizedSlides.length}
           </div>
         </div>
       )}

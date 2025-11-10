@@ -94,6 +94,26 @@ export async function POST(request: NextRequest) {
       type: product.type
     })
 
+    // If this is a Pro plan purchase, upgrade the user's plan_type
+    if (product.type === 'pro_plan') {
+      console.log('🚀 Upgrading user to Pro plan:', userId)
+      
+      const { error: updatePlanError } = await supabaseAdmin
+        .from('user_credits')
+        .update({ 
+          plan_type: 'pro',
+          last_renewal_date: new Date().toISOString()
+        })
+        .eq('user_id', userId)
+
+      if (updatePlanError) {
+        console.error('❌ Failed to upgrade user plan:', updatePlanError)
+        // Don't fail the webhook - credits were added successfully
+      } else {
+        console.log('✅ User plan upgraded to Pro:', userId)
+      }
+    }
+
     return NextResponse.json({ 
       success: true,
       creditsAdded: product.credits,

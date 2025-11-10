@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import ChartBlock from '../../components/blocks/ChartBlock';
+import FileUpload from '../../components/ui/FileUpload';
 
 // Excel-focused layout components designed for PowerPoint/Google Slides compatibility
 interface ExcelDataTableProps {
@@ -9,21 +10,239 @@ interface ExcelDataTableProps {
   data?: any[];
 }
 
-const ExcelDataTable: React.FC<ExcelDataTableProps> = ({ title = "Data Overview", data = [] }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
-    {/* Title - Standard slide title positioning */}
-    <div className="mb-6">
-      <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
+// Centered Cover Layout - Clean and professional for presentations
+interface ExcelCenteredCoverProps {
+  title?: string;
+  description?: string;
+  logoUrl?: string;
+}
+
+const ExcelCenteredCover: React.FC<ExcelCenteredCoverProps> = ({ 
+  title = "Our solution", 
+  description = "Transforming ideas into results with strategy, craft, and measurable impact.",
+  logoUrl = "/logo-placeholder.png"
+}) => (
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg flex flex-col items-center justify-center p-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    {/* Main Title - Bigger size and centered, positioned higher */}
+    <div className="text-center mb-1 -mt-16">
+      <h1 className="text-5xl font-normal text-gray-900 leading-tight">{title}</h1>
+    </div>
+    
+    {/* Description - Smaller text, centered below title with minimal spacing */}
+    <div className="text-center max-w-2xl">
+      <p className="text-sm text-gray-600 leading-relaxed">{description}</p>
+    </div>
+  </div>
+);
+
+// Bottom Cover Layout - Title left, description right, positioned at bottom
+interface ExcelBottomCoverProps {
+  title?: string;
+  description?: string;
+}
+
+const ExcelBottomCover: React.FC<ExcelBottomCoverProps> = ({ 
+  title = "Our solution", 
+  description = "Transforming ideas into results with strategy, craft, and measurable impact."
+}) => (
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg flex flex-col justify-end p-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    {/* Bottom section with title left and description right */}
+    <div className="flex items-end gap-8 mb-1">
+      {/* Title - Left side, large */}
+      <div className="flex-1">
+        <h1 className="text-5xl font-normal text-gray-900 leading-tight text-left">{title}</h1>
+      </div>
+      
+      {/* Description - Right side, smaller */}
+      <div className="flex-1">
+        <p className="text-sm text-gray-600 leading-relaxed text-left">{description}</p>
+      </div>
+    </div>
+  </div>
+);
+
+// Left Cover Layout - Title and description aligned to left side, vertically centered
+interface ExcelLeftCoverProps {
+  title?: string;
+  description?: string;
+}
+
+const ExcelLeftCover: React.FC<ExcelLeftCoverProps> = ({ 
+  title = "Our solution", 
+  description = "Transforming ideas into results with strategy, craft, and measurable impact."
+}) => (
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg flex items-center p-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    {/* Left-aligned content section */}
+    <div className="max-w-sm">
+      {/* Title - Large, left-aligned */}
+      <div className="mb-2">
+        <h1 className="text-5xl font-normal text-gray-900 leading-tight text-left">{title}</h1>
+      </div>
+      
+      {/* Description - Smaller, left-aligned, constrained for two lines */}
+      <div>
+        <p className="text-sm text-gray-600 leading-normal text-left">{description}</p>
+      </div>
+    </div>
+  </div>
+);
+
+// Index Layout - Meeting agenda style with numbered items
+interface ExcelIndexProps {
+  title?: string;
+  items?: Array<{
+    number: string;
+    title: string;
+    description: string;
+  }>;
+}
+
+const ExcelIndex: React.FC<ExcelIndexProps> = ({ 
+  title = "Index",
+  items = [
+    { number: "01", title: "Market Analysis", description: "Current market trends and opportunities" },
+    { number: "02", title: "Product Updates", description: "Latest feature releases and roadmap" },
+    { number: "03", title: "Financial Review", description: "Q4 performance and budget planning" },
+    { number: "04", title: "Strategic Planning", description: "2025 goals and initiatives" },
+    { number: "05", title: "Customer Insights", description: "Voice of customer feedback and analysis" },
+    { number: "06", title: "Next Steps", description: "Action items and follow-up tasks" },
+    { number: "07", title: "Team Updates", description: "Department progress and milestones" },
+    { number: "08", title: "Budget Review", description: "Quarterly budget analysis and planning" },
+    { number: "09", title: "Risk Assessment", description: "Current risks and mitigation strategies" },
+    { number: "10", title: "Innovation Lab", description: "New technology and innovation updates" },
+    { number: "11", title: "Partnership Review", description: "Strategic partnerships and alliances" },
+    { number: "12", title: "Compliance Update", description: "Regulatory changes and compliance status" },
+    { number: "13", title: "Market Expansion", description: "New market opportunities and strategies" },
+    { number: "14", title: "Technology Stack", description: "Technical infrastructure and updates" },
+    { number: "15", title: "Customer Success", description: "Customer satisfaction and retention metrics" },
+    { number: "16", title: "Competitive Analysis", description: "Market positioning and competitor insights" },
+    { number: "17", title: "Resource Planning", description: "Human resources and capacity planning" },
+    { number: "18", title: "Action Items", description: "Summary and next steps assignment" }
+  ]
+}) => (
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-8" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    {/* Title */}
+    <div className="mb-8">
+      <h1 className="text-4xl font-normal text-gray-900 leading-tight text-left">{title}</h1>
+    </div>
+    
+    {/* Three-column grid of agenda items with row dividers */}
+    <div className="space-y-2">
+      {Array.from({ length: Math.ceil(items.length / 3) }, (_, rowIndex) => (
+        <div key={rowIndex}>
+          {/* Row of 3 items */}
+          <div className="grid grid-cols-3 gap-x-8 gap-y-1 mb-1">
+            {items.slice(rowIndex * 3, (rowIndex + 1) * 3).map((item, colIndex) => {
+              const itemIndex = rowIndex * 3 + colIndex;
+              return (
+                <div key={itemIndex} className="flex items-start gap-3">
+                  {/* Number */}
+                  <div className="flex-shrink-0">
+                    <span className="text-lg font-medium text-gray-900">{item.number}</span>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-medium text-gray-900 leading-tight mb-1">{item.title}</h3>
+                    <p className="text-xs text-gray-600 leading-tight">{item.description}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Divider line (except after last row) */}
+          {rowIndex < Math.ceil(items.length / 3) - 1 && (
+            <div className="border-b border-gray-200 mb-1"></div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+// Table of Contents Layout - Two-column layout with page numbers and titles
+interface ExcelTableOfContentsProps {
+  title?: string;
+  items?: Array<{
+    page: string;
+    title: string;
+  }>;
+}
+
+const ExcelTableOfContents: React.FC<ExcelTableOfContentsProps> = ({ 
+  title = "Table of Contents",
+  items = [
+    { page: "1", title: "Executive Summary" },
+    { page: "2", title: "Founders Letter" },
+    { page: "3", title: "Methodology" },
+    { page: "4", title: "Conversion" },
+    { page: "5", title: "Monetization" },
+    { page: "6", title: "Revenue" },
+    { page: "7", title: "Retention & Reactivation" },
+    { page: "8", title: "Acquisition" },
+    { page: "9", title: "Comparing Google Play & the App Store" },
+    { page: "10", title: "Comparing Native & Crossplatform Development" },
+    { page: "11", title: "Web Billing for Subscription Apps" },
+    { page: "12", title: "Breaking Out AI Apps" }
+  ]
+}) => (
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-8 flex" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    {/* Left side - Title only */}
+    <div className="w-1/3 pr-8">
+      <h1 className="text-4xl font-normal text-gray-900 leading-tight text-left">{title}</h1>
+    </div>
+    
+    {/* Right side - All items */}
+    <div className="w-2/3 space-y-1">
+      {items.map((item, index) => (
+        <div key={index}>
+          {/* Item row */}
+          <div className="flex items-start pt-1 pb-2">
+            {/* Page number - black color */}
+            <div className="flex-shrink-0 w-12">
+              <span className="text-base font-medium text-gray-900">{item.page}</span>
+            </div>
+            
+            {/* Title - takes remaining space */}
+            <div className="flex-1 ml-8">
+              <h3 className="text-sm font-normal text-gray-900 leading-tight text-left">{item.title}</h3>
+            </div>
+          </div>
+          
+          {/* Divider line (except after last item) */}
+          {index < items.length - 1 && (
+            <div className="border-b border-gray-200"></div>
+          )}
+        </div>
+      ))}
+    </div>
+  </div>
+);
+
+const ExcelDataTable: React.FC<ExcelDataTableProps> = ({ title = "Performance Overview", data = [] }) => (
+  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+    {/* Title Section */}
+    <div className="mb-6 ml-6 flex items-start justify-between">
+      <h1 className="text-2xl font-medium text-black">{title}</h1>
+      <div className="text-left max-w-md -ml-16">
+        <p className="text-gray-600 text-xs">
+          Comprehensive metrics and key performance indicators
+        </p>
+        <p className="text-gray-600 text-xs">
+          showing quarterly growth trends and revenue optimization.
+        </p>
+      </div>
     </div>
     
     {/* Table - PowerPoint compatible styling */}
-    <div className="overflow-hidden">
+    <div className="overflow-hidden ml-6">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-blue-600 text-white">
-            <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Metric</th>
-            <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Value</th>
-            <th className="border border-gray-300 px-4 py-2 text-left font-semibold">Change</th>
+          <tr style={{ backgroundColor: '#fcfcfc' }} className="text-black">
+            <th className="px-4 py-2 text-left" style={{ borderRight: '0.5px solid #f3f4f6', borderBottom: '0.5px solid #f3f4f6' }}>Metric</th>
+            <th className="px-4 py-2 text-left" style={{ borderRight: '0.5px solid #f3f4f6', borderBottom: '0.5px solid #f3f4f6' }}>Value</th>
+            <th className="px-4 py-2 text-left" style={{ borderBottom: '0.5px solid #f3f4f6' }}>Change</th>
           </tr>
         </thead>
         <tbody>
@@ -34,13 +253,13 @@ const ExcelDataTable: React.FC<ExcelDataTableProps> = ({ title = "Data Overview"
             { metric: "Units Sold", value: "16,200", change: "+15.3%" },
             { metric: "Target Achievement", value: "94.2%", change: "-5.8%" }
           ].map((row, idx) => (
-            <tr key={idx} className={idx % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-              <td className="border border-gray-300 px-4 py-2 font-medium">{row.metric}</td>
-              <td className="border border-gray-300 px-4 py-2">{row.value}</td>
-              <td className={`border border-gray-300 px-4 py-2 font-semibold ${
+            <tr key={idx} style={{ backgroundColor: '#fcfcfc' }}>
+              <td className="px-4 py-2 text-black" style={{ borderRight: '0.5px solid #f3f4f6', ...(idx < 4 && { borderBottom: '0.5px solid #f3f4f6' }) }}>{row.metric}</td>
+              <td className="px-4 py-2 text-black" style={{ borderRight: '0.5px solid #f3f4f6', ...(idx < 4 && { borderBottom: '0.5px solid #f3f4f6' }) }}>{row.value}</td>
+              <td className={`px-4 py-2 ${
                 row.change.startsWith('+') ? 'text-green-600' : 
-                row.change.startsWith('-') ? 'text-red-600' : 'text-gray-600'
-              }`}>{row.change}</td>
+                row.change.startsWith('-') ? 'text-red-600' : 'text-black'
+              }`} style={{ ...(idx < 4 && { borderBottom: '0.5px solid #f3f4f6' }) }}>{row.change}</td>
             </tr>
           ))}
         </tbody>
@@ -80,47 +299,487 @@ const ExcelKPIDashboard: React.FC<ExcelKPIDashboardProps> = ({ title = "Key Perf
     className: 'w-full h-16'
   };
 
+  const conversionChartData = {
+    type: 'bar' as const,
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    series: [{ id: 'Conversion', data: [2.4, 3.1, 2.8, 3.5, 4.2, 3.9] }],
+    showLegend: false,
+    showGrid: false,
+    stacked: false,
+    animate: true,
+    className: 'w-full h-16'
+  };
+
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="kpi-dashboard">
-      {/* Title */}
-      <div className="mb-6">
-        <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="kpi-dashboard">
+      {/* Title Section */}
+      <div className="mb-6 ml-6 flex items-start justify-between">
+        <h1 className="text-2xl font-medium text-black">{title}</h1>
+        <div className="text-left max-w-md -ml-12">
+          <p className="text-gray-600 text-xs">
+            Comprehensive metrics and key performance indicators
+          </p>
+          <p className="text-gray-600 text-xs">
+            showing quarterly growth trends and revenue optimization.
+          </p>
+        </div>
       </div>
       
-      {/* KPI Grid - 2x2 layout compatible with slides */}
-      <div className="grid grid-cols-2 gap-6 h-4/5">
+      {/* KPI Grid - 1x3 layout compatible with slides */}
+      <div className="flex h-4/5 gap-4 ml-4">
         {/* Revenue KPI with chart */}
-        <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4 flex flex-col">
-          <div className="text-3xl font-bold text-blue-600 mb-1">$648K</div>
-          <div className="text-gray-700 font-medium mb-2">Total Revenue</div>
-          <div className="text-sm font-semibold text-green-600 mb-2">+18.2%</div>
-          <div className="flex-1">
+        <div className="flex-1 p-4 flex flex-col">
+          <div className="text-2xl font-medium text-black">$648K</div>
+          <div className="text-gray-700 font-medium">Total Revenue</div>
+          <div className="text-xs text-green-600 mb-2">+18% growth this quarter</div>
+          <div className="flex-1 -ml-14">
             <ChartBlock {...revenueChartData} />
           </div>
         </div>
 
         {/* Units Sold KPI with chart */}
-        <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 flex flex-col">
-          <div className="text-3xl font-bold text-green-600 mb-1">16.2K</div>
-          <div className="text-gray-700 font-medium mb-2">Units Sold</div>
-          <div className="text-sm font-semibold text-green-600 mb-2">+15.3%</div>
-          <div className="flex-1">
+        <div className="flex-1 p-4 flex flex-col">
+          <div className="text-2xl font-medium text-black">16.2K</div>
+          <div className="text-gray-700 font-medium">Units Sold</div>
+          <div className="text-xs text-green-600 mb-2">+15% increase from last month</div>
+          <div className="flex-1 -ml-14">
             <ChartBlock {...unitsChartData} />
           </div>
         </div>
 
-        {/* Average Order Value */}
-        <div className="bg-purple-50 border-2 border-purple-200 rounded-lg p-4 flex flex-col justify-center items-center">
-          <div className="text-3xl font-bold text-purple-600 mb-2">$40</div>
-          <div className="text-gray-700 font-medium mb-1">Avg Order Value</div>
-          <div className="text-sm font-semibold text-green-600">+2.5%</div>
+        {/* Conversion Rate KPI with chart */}
+        <div className="flex-1 p-4 flex flex-col">
+          <div className="text-2xl font-medium text-black">3.2%</div>
+          <div className="text-gray-700 font-medium">Conversion Rate</div>
+          <div className="text-xs text-green-600 mb-2">+12% improvement trend</div>
+          <div className="flex-1 -ml-14">
+            <ChartBlock {...conversionChartData} />
+          </div>
         </div>
 
-        {/* Target Achievement */}
-        <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 flex flex-col justify-center items-center">
-          <div className="text-3xl font-bold text-orange-600 mb-2">94.2%</div>
-          <div className="text-gray-700 font-medium mb-1">Target Achievement</div>
-          <div className="text-sm font-semibold text-red-600">-5.8%</div>
+      </div>
+    </div>
+  );
+};
+
+// Testimonial Layout Component
+const ExcelTestimonial: React.FC<{ title?: string }> = ({ 
+  title = "Performance Overview" 
+}) => {
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12 flex flex-col" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      {/* Title Section */}
+      <div className="mb-6 ml-6">
+        <h1 className="text-2xl font-medium text-black mb-2">{title}</h1>
+        <div className="text-left max-w-lg">
+          <p className="text-gray-600 text-xs">
+            Comprehensive metrics and key performance indicators showing quarterly growth trends and revenue optimization.
+          </p>
+        </div>
+      </div>
+      
+      {/* Content Area - Metrics at Bottom */}
+      <div className="flex-1 flex flex-col justify-end">
+        <div className="flex gap-12 mb-8 ml-8">
+          {/* First Metric */}
+          <div>
+            <div className="text-8xl font-light text-gray-900 mb-2">80<span className="text-5xl">%</span></div>
+            <div className="text-xs text-green-600 mb-1">+35% improvement this year</div>
+            <p className="text-xs text-gray-700 max-w-32">
+              Reduction in scheduling conflicts for global teams.
+            </p>
+          </div>
+          
+          {/* Second Metric */}
+          <div>
+            <div className="text-8xl font-light text-gray-900 mb-2">50<span className="text-5xl">%</span></div>
+            <div className="text-xs text-green-600 mb-1">+22% faster than last quarter</div>
+            <p className="text-xs text-gray-700 max-w-32">
+              Faster meeting setup time due to automation.
+            </p>
+          </div>
+          
+          {/* Third Metric */}
+          <div>
+            <div className="text-8xl font-light text-gray-900 mb-2">95<span className="text-5xl">%</span></div>
+            <div className="text-xs text-green-600 mb-1">+8% increase from last survey</div>
+            <p className="text-xs text-gray-700 max-w-32">
+              User satisfaction rate with the new platform.
+            </p>
+          </div>
+          
+          {/* Fourth Metric */}
+          <div>
+            <div className="text-8xl font-light text-gray-900 mb-2">3.2<span className="text-5xl">x</span></div>
+            <div className="text-xs text-green-600 mb-1">+45% boost since implementation</div>
+            <p className="text-xs text-gray-700 max-w-32">
+              Increase in team productivity and efficiency.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Experience Driven Two Rows Layout
+interface ExcelExperienceDrivenTwoRowsProps {
+  title?: string;
+}
+
+const ExcelExperienceDrivenTwoRows: React.FC<ExcelExperienceDrivenTwoRowsProps> = ({ title = "Performance Overview" }) => {
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      {/* Title Section */}
+      <div className="mb-6 ml-6">
+        <h1 className="text-2xl font-medium text-black mb-2">{title}</h1>
+        <div className="text-left max-w-lg">
+          <p className="text-gray-600 text-xs">
+            Comprehensive metrics and key performance indicators showing quarterly growth trends and revenue optimization.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex h-full">
+        
+        {/* Full Width - Bullet Points in Two Rows */}
+        <div className="w-full flex flex-col ml-6">
+          {/* Bullet Points arranged in 2x2 grid */}
+          <div className="flex-1 flex flex-col justify-center">
+            {/* First Row - Items 1 and 2 */}
+            <div className="flex gap-6 mb-8">
+              {/* Item 1 */}
+              <div className="w-1/2">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1 mr-3">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                      <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      At Twindo, we obsess every day over perfecting our software solution, taking the operational.
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Our dedicated team continuously refines and optimizes every aspect of our platform for maximum efficiency.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Item 2 */}
+              <div className="w-1/2">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1 mr-3">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                      <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      Many companies have tried and failed to build their own software—it's a challenging.
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Complex technical requirements and resource constraints often lead to incomplete or ineffective solutions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Second Row - Items 3 and 4 */}
+            <div className="flex gap-6">
+              {/* Item 3 */}
+              <div className="w-1/2">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1 mr-3">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                      <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      Twindo provides smart, user-friendly software specifically developed to streamline renewable.
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Our intuitive interface and automated workflows reduce complexity while maintaining powerful functionality.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Item 4 */}
+              <div className="w-1/2">
+                <div className="flex items-start">
+                  <div className="flex-shrink-0 mt-1 mr-3">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                      <path d="M7 17L17 7M17 7H7M17 7V17"/>
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      Managing renewable energy operations is complex, but it shouldn't be a burden.
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      We simplify operational challenges through intelligent automation and comprehensive monitoring tools.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// How Savium Works Layout - Title on left, feature cards on right
+interface ExcelHowItWorksProps {
+  title?: string;
+}
+
+const ExcelHowItWorks: React.FC<ExcelHowItWorksProps> = ({ title = "How Savium works" }) => {
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      <div className="flex h-full gap-8">
+        
+        {/* Left Side - Title */}
+        <div className="w-1/3 flex flex-col justify-center ml-6">
+          <h1 className="text-4xl font-medium text-black leading-tight mb-4">
+            {title}
+          </h1>
+          <p className="text-gray-600 text-xs leading-relaxed">
+            Comprehensive metrics and key performance indicators showing quarterly growth trends and revenue optimization.
+          </p>
+        </div>
+        
+        {/* Right Side - Feature Cards in 2x2 Grid with Cross Dividers */}
+        <div className="w-2/3 flex flex-col justify-center pr-6 relative">
+          <div className="grid grid-cols-2 gap-8">
+            
+            {/* Card 1 - Goal-based planning */}
+            <div className="p-4">
+              <div className="mb-3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <path d="M9 11l3 3L22 4"/>
+                  <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>
+                </svg>
+              </div>
+              <h3 className="text-sm font-medium text-black mb-2">Goal-based planning</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Set, track, and achieve personal and business financial goals with ease.
+              </p>
+            </div>
+            
+            {/* Card 2 - Predictive analytics */}
+            <div className="p-4">
+              <div className="mb-3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <path d="M3 3v18h18"/>
+                  <path d="M18.7 8l-5.1 5.2-2.8-2.7L7 14.3"/>
+                </svg>
+              </div>
+              <h3 className="text-sm font-medium text-black mb-2">Predictive analytics</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Use data-driven insights to forecast cash flow and anticipate financial needs.
+              </p>
+            </div>
+            
+            {/* Card 3 - Smart budgeting */}
+            <div className="p-4">
+              <div className="mb-3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path d="M8 14s1.5 2 4 2 4-2 4-2"/>
+                  <line x1="9" y1="9" x2="9.01" y2="9"/>
+                  <line x1="15" y1="9" x2="15.01" y2="9"/>
+                </svg>
+              </div>
+              <h3 className="text-sm font-medium text-black mb-2">Smart budgeting</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Automatically organize income and expenses, giving every dollar a purpose.
+              </p>
+            </div>
+            
+            {/* Card 4 - Secure management */}
+            <div className="p-4">
+              <div className="mb-3">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-600">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <circle cx="12" cy="16" r="1"/>
+                  <path d="M7 11V7a5 5 0 0110 0v4"/>
+                </svg>
+              </div>
+              <h3 className="text-sm font-medium text-black mb-2">Secure management</h3>
+              <p className="text-xs text-gray-600 leading-relaxed">
+                Bank-level encryption and privacy standards ensure complete user trust.
+              </p>
+            </div>
+            
+          </div>
+          
+          {/* Cross Dividers */}
+          {/* Vertical Line */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-px h-full bg-gray-200"></div>
+          {/* Horizontal Line */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 h-px w-full bg-gray-200"></div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Back Cover Layout - Simple ending slide
+interface ExcelBackCoverProps {
+  title?: string;
+  description?: string;
+}
+
+const ExcelBackCover: React.FC<ExcelBackCoverProps> = ({ 
+  title = "Thank You",
+  description = "Questions & Discussion"
+}) => {
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 flex flex-col justify-center items-center text-center" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      
+      {/* Main Title */}
+      <div className="mb-8">
+        <h1 className="text-5xl font-medium text-black mb-2">{title}</h1>
+        <p className="text-base text-gray-600 max-w-2xl">{description}</p>
+      </div>
+      
+      {/* Contact Information */}
+      <div className="space-y-3 text-gray-700">
+        <div className="flex items-center justify-center space-x-8">
+          <span className="text-sm">contact@company.com</span>
+          <span className="text-sm">+1 (555) 123-4567</span>
+        </div>
+        <div className="text-center">
+          <span className="text-sm">123 Business Street, City, State 12345</span>
+        </div>
+        <div className="text-center">
+          <span className="text-sm">www.company.com</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Back Cover Left Aligned Layout - Duplicate with left alignment
+const ExcelBackCoverLeft: React.FC<ExcelBackCoverProps> = ({ 
+  title = "Thank You",
+  description = "Questions & Discussion"
+}) => {
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12 flex flex-col justify-center" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      
+      {/* Main Title */}
+      <div className="mb-8 ml-6">
+        <h1 className="text-5xl font-medium text-black mb-2">{title}</h1>
+        <p className="text-base text-gray-600 max-w-2xl">{description}</p>
+      </div>
+      
+      {/* Contact Information */}
+      <div className="space-y-3 text-gray-700 ml-6">
+        <div className="flex items-start space-x-8">
+          <span className="text-sm">contact@company.com</span>
+          <span className="text-sm">+1 (555) 123-4567</span>
+        </div>
+        <div>
+          <span className="text-sm">123 Business Street, City, State 12345</span>
+        </div>
+        <div>
+          <span className="text-sm">www.company.com</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Experience Full Text Layout (No Image)
+interface ExcelExperienceFullTextProps {
+  title?: string;
+}
+
+const ExcelExperienceFullText: React.FC<ExcelExperienceFullTextProps> = ({ title = "Performance Overview" }) => {
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      {/* Title Section */}
+      <div className="mb-6 ml-6">
+        <h1 className="text-2xl font-medium text-black">{title}</h1>
+      </div>
+
+      <div className="flex h-full gap-8">
+        
+        {/* Left Side - Description Paragraph */}
+        <div className="w-1/2 flex flex-col ml-6">
+          {/* Full Description Text */}
+          <div className="flex-1">
+            <p className="text-xs text-gray-700 leading-relaxed">
+              At Twindo, we obsess every day over perfecting our software solution, taking the operational complexity out of renewable energy management. Many companies have tried and failed to build their own software—it's a challenging endeavor that requires deep technical expertise and significant resources. Our dedicated team continuously refines and optimizes every aspect of our platform for maximum efficiency, ensuring that complex technical requirements don't become barriers to success.
+            </p>
+            <br />
+            <p className="text-xs text-gray-700 leading-relaxed">
+              Twindo provides smart, user-friendly software specifically developed to streamline renewable energy operations. Our intuitive interface and automated workflows reduce complexity while maintaining powerful functionality. Managing renewable energy operations is complex, but it shouldn't be a burden. We simplify operational challenges through intelligent automation and comprehensive monitoring tools, allowing organizations to focus on what matters most—sustainable energy production and growth.
+            </p>
+          </div>
+        </div>
+        
+        {/* Right Side - Additional Description Paragraph */}
+        <div className="w-1/2 flex flex-col ml-6">
+          {/* Additional Description Text */}
+          <div className="flex-1">
+            <p className="text-xs text-gray-700 leading-relaxed">
+              The renewable energy sector demands precision, reliability, and scalability in every operational aspect. Traditional approaches often fall short when dealing with the dynamic nature of renewable resources and the complexity of modern energy systems. Our comprehensive platform addresses these challenges by providing real-time monitoring, predictive analytics, and automated decision-making capabilities that adapt to changing conditions and optimize performance continuously.
+            </p>
+            <br />
+            <p className="text-xs text-gray-700 leading-relaxed">
+              Through years of industry experience and close collaboration with energy professionals, we've developed solutions that not only meet current operational needs but also anticipate future challenges. Our commitment to innovation ensures that clients benefit from cutting-edge technology while maintaining the stability and reliability essential for critical energy infrastructure. This approach has enabled organizations worldwide to achieve unprecedented levels of operational efficiency and sustainable growth.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Milestone Layout Component - Based on attached image structure with Results Testimonial styling
+const ExcelMilestone: React.FC<{ title?: string }> = ({ 
+  title = "Performance Overview" 
+}) => {
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12 flex flex-col" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      {/* Content Area - Milestone Left Aligned */}
+      <div className="flex-1 flex flex-col justify-center ml-6">
+        {/* Milestone Label */}
+        <div className="mb-4">
+          <p className="text-sm text-gray-600 text-left">Milestone</p>
+        </div>
+        
+        {/* Main Milestone Content */}
+        <div className="text-left mb-4">
+          <div className="text-9xl font-light text-gray-900 leading-none mb-2">
+            500<span className="text-6xl">+</span>
+          </div>
+          <div className="text-lg text-green-600 flex items-center">
+            <span className="mr-2">↑</span>
+            <span>32.85% vs last year</span>
+          </div>
+        </div>
+        
+        {/* Description Texts - Side by Side */}
+        <div className="flex gap-8">
+          <div className="max-w-xs text-left">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Through strategic marketing initiatives and innovative product development, Quantum achieved remarkable growth by welcoming over 500 new clients, validating our position as a leading provider of quantum solutions.
+            </p>
+          </div>
+          <div className="max-w-xs text-left">
+            <p className="text-sm text-gray-700 leading-relaxed">
+              Our comprehensive approach to client acquisition and retention has resulted in sustained revenue growth and market expansion. The implementation of advanced analytics and customer feedback systems has optimized our service delivery.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -173,22 +832,9 @@ const ExcelTrendChart: React.FC<ExcelTrendChartProps> = ({ title = "Revenue Perf
             <h3 className="text-sm font-semibold text-gray-900 mb-1">Overall Performance</h3>
             <div className="flex items-center gap-2">
               <span className="text-2xl font-medium text-black">{formattedGrowth}</span>
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                isPositive ? 'bg-green-500' : 'bg-red-500'
-              }`}>
-                <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                  <path 
-                    d={isPositive 
-                      ? "M6 2L6 10M6 2L3 5M6 2L9 5" 
-                      : "M6 10L6 2M6 10L3 7M6 10L9 7"
-                    } 
-                    stroke="white" 
-                    strokeWidth="1.5" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
+              <span className={`${isPositive ? 'text-green-600' : 'text-red-600'} flex items-center`}>
+                <span className="mr-1">{isPositive ? '↑' : '↓'}</span>
+              </span>
             </div>
           </div>
 
@@ -242,7 +888,7 @@ const ExcelFullWidthChart: React.FC<ExcelFullWidthChartProps> = ({ title = "Perf
       { id: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
     ],
     showLegend: true,
-    legendPosition: 'bottom',
+    legendPosition: 'bottom' as const,
     showGrid: true,
     stacked: false,
     animate: true,
@@ -256,7 +902,15 @@ const ExcelFullWidthChart: React.FC<ExcelFullWidthChartProps> = ({ title = "Perf
       {/* Title Section */}
       <div className="mb-6 ml-6 flex items-start justify-between">
         <h1 className="text-2xl font-medium text-black">{title}</h1>
-        <div className="text-left max-w-md -ml-8">
+        <div className="text-left max-w-md -ml-12">
+          {/* Overall Performance Metric */}
+          <div className="flex items-center mb-2">
+            <span className="text-sm font-medium text-black mr-2">Overall performance</span>
+            <span className="text-green-600 flex items-center">
+              <span className="mr-1">↑</span>
+              <span className="text-sm font-medium">+24.8%</span>
+            </span>
+          </div>
           <p className="text-gray-600 text-xs">
             Comprehensive metrics and key performance indicators
           </p>
@@ -269,6 +923,155 @@ const ExcelFullWidthChart: React.FC<ExcelFullWidthChartProps> = ({ title = "Perf
       {/* Full Width Chart */}
       <div className="h-4/5 w-full">
         <ChartBlock {...chartData} />
+      </div>
+    </div>
+  );
+};
+
+interface ExcelFullWidthChartWithTableProps {
+  title?: string;
+}
+
+const ExcelFullWidthChartWithTable: React.FC<ExcelFullWidthChartWithTableProps> = ({ title = "Performance Overview" }) => {
+  // Chart data for area chart with multiple series
+  const chartData = {
+    type: 'area' as const,
+    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    series: [
+      { id: 'Revenue', data: [6500, 8200, 9500, 11200, 15800, 25000] },
+      { id: 'GMV', data: [4200, 5800, 6800, 8500, 12200, 19500] }
+    ],
+    showLegend: true,
+    legendPosition: 'bottom' as const,
+    showGrid: true,
+    stacked: false,
+    animate: true,
+    curved: true,
+    showDots: true,
+    className: 'w-full h-full'
+  };
+
+  // Data table showing chart values
+  const tableData = [
+    { month: 'Jan', revenue: 6500, gmv: 4200 },
+    { month: 'Feb', revenue: 8200, gmv: 5800 },
+    { month: 'Mar', revenue: 9500, gmv: 6800 },
+    { month: 'Apr', revenue: 11200, gmv: 8500 },
+    { month: 'May', revenue: 15800, gmv: 12200 },
+    { month: 'Jun', revenue: 25000, gmv: 19500 }
+  ];
+
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="fullwidth-chart-table">
+      {/* Title Section */}
+      <div className="mb-2 ml-6 flex items-start justify-between">
+        <h1 className="text-2xl font-medium text-black">{title}</h1>
+        <div className="text-left max-w-md -ml-12">
+          {/* Overall Performance Metric */}
+          <div className="flex items-center mb-2">
+            <span className="text-sm font-medium text-black mr-2">Overall performance</span>
+            <span className="text-green-600 flex items-center">
+              <span className="mr-1">↑</span>
+              <span className="text-sm font-medium">+24.8%</span>
+            </span>
+          </div>
+          <p className="text-gray-600 text-xs">
+            Comprehensive metrics and key performance indicators
+          </p>
+          <p className="text-gray-600 text-xs">
+            showing quarterly growth trends and revenue optimization.
+          </p>
+        </div>
+      </div>
+      
+      {/* Chart - Increased height */}
+      <div className="h-3/5 w-full mb-4">
+        <ChartBlock {...chartData} />
+      </div>
+
+      {/* Data Table - Months as columns, metrics as rows */}
+      <div className="ml-6">
+        <table className="w-full text-xs">
+          <thead>
+            <tr>
+              <th 
+                className="text-black text-left p-2"
+                style={{ 
+                  backgroundColor: '#fcfcfc',
+                  borderRight: '0.5px solid #f3f4f6',
+                  borderBottom: '0.5px solid #f3f4f6'
+                }}
+              >
+                Metric
+              </th>
+              {tableData.map((row, idx) => (
+                <th 
+                  key={row.month}
+                  className="text-black text-center p-2"
+                  style={{ 
+                    backgroundColor: '#fcfcfc',
+                    borderBottom: '0.5px solid #f3f4f6',
+                    ...(idx < tableData.length - 1 && { borderRight: '0.5px solid #f3f4f6' })
+                  }}
+                >
+                  {row.month}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {/* Revenue Row */}
+            <tr>
+              <td 
+                className="text-black p-2"
+                style={{ 
+                  backgroundColor: '#fcfcfc',
+                  borderRight: '0.5px solid #f3f4f6',
+                  borderBottom: '0.5px solid #f3f4f6'
+                }}
+              >
+                Revenue ($)
+              </td>
+              {tableData.map((row, idx) => (
+                <td 
+                  key={`revenue-${row.month}`}
+                  className="text-black text-center p-2"
+                  style={{ 
+                    backgroundColor: '#fcfcfc',
+                    borderBottom: '0.5px solid #f3f4f6',
+                    ...(idx < tableData.length - 1 && { borderRight: '0.5px solid #f3f4f6' })
+                  }}
+                >
+                  {row.revenue.toLocaleString()}
+                </td>
+              ))}
+            </tr>
+            {/* GMV Row */}
+            <tr>
+              <td 
+                className="text-black p-2"
+                style={{ 
+                  backgroundColor: '#fcfcfc',
+                  borderRight: '0.5px solid #f3f4f6'
+                }}
+              >
+                GMV ($)
+              </td>
+              {tableData.map((row, idx) => (
+                <td 
+                  key={`gmv-${row.month}`}
+                  className="text-black text-center p-2"
+                  style={{ 
+                    backgroundColor: '#fcfcfc',
+                    ...(idx < tableData.length - 1 && { borderRight: '0.5px solid #f3f4f6' })
+                  }}
+                >
+                  {row.gmv.toLocaleString()}
+                </td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
   );
@@ -288,6 +1091,8 @@ const ExcelComparisonLayout: React.FC<ExcelComparisonLayoutProps> = ({ title = "
       { id: 'Target', data: [165, 170, 175, 180] }
     ],
     showLegend: true,
+    legendPosition: 'bottom' as const,
+    legendSize: 'small' as const,
     showGrid: true,
     stacked: false,
     animate: true,
@@ -295,10 +1100,26 @@ const ExcelComparisonLayout: React.FC<ExcelComparisonLayoutProps> = ({ title = "
   };
 
   return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="comparison-chart">
-      {/* Title */}
-      <div className="mb-4">
-        <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6 pt-12" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }} data-chart-container="comparison-chart">
+      {/* Title Section */}
+      <div className="mb-6 ml-6 flex items-start justify-between">
+        <h1 className="text-2xl font-medium text-black">{title}</h1>
+        <div className="text-left max-w-md ml-6">
+          {/* Overall Performance Metric */}
+          <div className="flex items-center mb-2">
+            <span className="text-sm font-medium text-black mr-2">Overall performance</span>
+            <span className="text-green-600 flex items-center">
+              <span className="mr-1">↑</span>
+              <span className="text-sm font-medium">+24.8%</span>
+            </span>
+          </div>
+          <p className="text-gray-600 text-xs">
+            Comprehensive metrics and key performance indicators
+          </p>
+          <p className="text-gray-600 text-xs">
+            showing quarterly growth trends and revenue optimization.
+          </p>
+        </div>
       </div>
       
       <div className="flex h-5/6 gap-6">
@@ -308,43 +1129,59 @@ const ExcelComparisonLayout: React.FC<ExcelComparisonLayoutProps> = ({ title = "
         </div>
         
         {/* Data Tables - Right 40% */}
-        <div className="w-2/5 grid grid-cols-1 gap-4">
+        <div className="w-2/5 grid grid-cols-1 gap-4 ml-6">
           {/* Actual Performance */}
-          <div className="bg-green-50 border-2 border-green-200 rounded-lg p-3">
-            <h3 className="text-sm font-bold text-green-800 mb-2 text-center">Actual Performance</h3>
-            <div className="space-y-1 text-xs">
-              {[
-                { metric: "Q1 Revenue", value: "$156K" },
-                { metric: "Q2 Revenue", value: "$168K" },
-                { metric: "Q3 Revenue", value: "$162K" },
-                { metric: "Q4 Revenue", value: "$162K" },
+          <div className="overflow-hidden">
+            <h3 className="text-sm text-black mb-2 text-left font-bold">Actual Performance</h3>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr style={{ backgroundColor: '#fcfcfc' }} className="text-black">
+                  <th className="px-3 py-1 text-left text-xs" style={{ borderRight: '0.5px solid #f3f4f6', borderBottom: '0.5px solid #f3f4f6' }}>Quarter</th>
+                  <th className="px-3 py-1 text-left text-xs" style={{ borderBottom: '0.5px solid #f3f4f6' }}>Revenue</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { metric: "Q1", value: "$156K" },
+                  { metric: "Q2", value: "$168K" },
+                  { metric: "Q3", value: "$162K" },
+                  { metric: "Q4", value: "$162K" },
                 { metric: "Total", value: "$648K" }
-              ].map((item, idx) => (
-                <div key={idx} className="flex justify-between">
-                  <span className="text-gray-700">{item.metric}</span>
-                  <span className="font-semibold text-green-700">{item.value}</span>
-                </div>
-              ))}
-            </div>
+                ].map((row, idx) => (
+                  <tr key={idx} style={{ backgroundColor: '#fcfcfc' }}>
+                    <td className="px-3 py-1 text-black text-xs" style={{ borderRight: '0.5px solid #f3f4f6', ...(idx < 4 && { borderBottom: '0.5px solid #f3f4f6' }) }}>{row.metric}</td>
+                    <td className="px-3 py-1 text-black text-xs" style={{ ...(idx < 4 && { borderBottom: '0.5px solid #f3f4f6' }) }}>{row.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
           
           {/* Target Performance */}
-          <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-3">
-            <h3 className="text-sm font-bold text-blue-800 mb-2 text-center">Target Performance</h3>
-            <div className="space-y-1 text-xs">
-              {[
-                { metric: "Q1 Target", value: "$165K" },
-                { metric: "Q2 Target", value: "$170K" },
-                { metric: "Q3 Target", value: "$175K" },
-                { metric: "Q4 Target", value: "$180K" },
+          <div className="overflow-hidden">
+            <h3 className="text-sm text-black mb-2 text-left font-bold">Target Performance</h3>
+            <table className="w-full border-collapse">
+              <thead>
+                <tr style={{ backgroundColor: '#fcfcfc' }} className="text-black">
+                  <th className="px-3 py-1 text-left text-xs" style={{ borderRight: '0.5px solid #f3f4f6', borderBottom: '0.5px solid #f3f4f6' }}>Quarter</th>
+                  <th className="px-3 py-1 text-left text-xs" style={{ borderBottom: '0.5px solid #f3f4f6' }}>Target</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { metric: "Q1", value: "$165K" },
+                  { metric: "Q2", value: "$170K" },
+                  { metric: "Q3", value: "$175K" },
+                  { metric: "Q4", value: "$180K" },
                 { metric: "Total", value: "$690K" }
-              ].map((item, idx) => (
-                <div key={idx} className="flex justify-between">
-                  <span className="text-gray-700">{item.metric}</span>
-                  <span className="font-semibold text-blue-700">{item.value}</span>
-                </div>
-              ))}
-            </div>
+                ].map((row, idx) => (
+                  <tr key={idx} style={{ backgroundColor: '#fcfcfc' }}>
+                    <td className="px-3 py-1 text-black text-xs" style={{ borderRight: '0.5px solid #f3f4f6', ...(idx < 4 && { borderBottom: '0.5px solid #f3f4f6' }) }}>{row.metric}</td>
+                    <td className="px-3 py-1 text-black text-xs" style={{ ...(idx < 4 && { borderBottom: '0.5px solid #f3f4f6' }) }}>{row.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -352,46 +1189,90 @@ const ExcelComparisonLayout: React.FC<ExcelComparisonLayoutProps> = ({ title = "
   );
 };
 
-interface ExcelExecutiveSummaryProps {
+
+// Foundation AI Models Layout - Based on attached image design
+interface ExcelFoundationAIProps {
   title?: string;
 }
 
-const ExcelExecutiveSummary: React.FC<ExcelExecutiveSummaryProps> = ({ title = "Executive Summary" }) => (
-  <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-6" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
-    {/* Title */}
-    <div className="mb-6">
-      <h2 className="text-3xl font-semibold text-black text-center">{title}</h2>
-    </div>
-    
-    {/* Executive summary content - bullet points */}
-    <div className="space-y-4 text-lg">
-      <div className="flex items-start">
-        <div className="w-3 h-3 bg-green-500 rounded-full mt-2 mr-4 flex-shrink-0"></div>
-        <p className="text-gray-800"><strong>Strong Performance:</strong> Achieved $648K total revenue with 94.2% target achievement rate</p>
+const ExcelFoundationAI: React.FC<ExcelFoundationAIProps> = ({ title = "Foundation AI Models" }) => {
+  return (
+    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-8" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
+      <div className="flex h-full gap-8">
+        {/* Left Side - Title and Description */}
+        <div className="w-1/3 flex flex-col justify-between">
+          {/* Title at top */}
+          <div>
+            <h1 className="text-2xl font-medium text-black leading-tight">{title}</h1>
       </div>
       
-      <div className="flex items-start">
-        <div className="w-3 h-3 bg-blue-500 rounded-full mt-2 mr-4 flex-shrink-0"></div>
-        <p className="text-gray-800"><strong>Growth Trend:</strong> 18.2% overall growth with Q2 showing strongest performance (+7.7%)</p>
+          {/* Description at bottom */}
+          <div>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              Most of the world's top artificial intelligence has been trained on foundation models that can be adapted to a wide range of downstream tasks. During 2023, Most of the content in the industry focused on large language models and generative AI applications, but foundation models encompass much more than just text generation.
+            </p>
+          </div>
       </div>
       
-      <div className="flex items-start">
-        <div className="w-3 h-3 bg-orange-500 rounded-full mt-2 mr-4 flex-shrink-0"></div>
-        <p className="text-gray-800"><strong>Seasonal Patterns:</strong> December peak ($68K) and January low ($42K) indicate clear seasonality</p>
-      </div>
-      
-      <div className="flex items-start">
-        <div className="w-3 h-3 bg-purple-500 rounded-full mt-2 mr-4 flex-shrink-0"></div>
-        <p className="text-gray-800"><strong>Opportunity:</strong> $42K revenue gap to targets represents 6.5% improvement potential</p>
-      </div>
-      
-      <div className="flex items-start">
-        <div className="w-3 h-3 bg-red-500 rounded-full mt-2 mr-4 flex-shrink-0"></div>
-        <p className="text-gray-800"><strong>Recommendation:</strong> Focus on Q3/Q4 optimization to capture seasonal upside</p>
+        {/* Middle - Two Metrics at Top and Bottom */}
+        <div className="w-1/4 flex flex-col justify-between h-full">
+          {/* 42% Stat - Top */}
+          <div className="text-left">
+            <div className="text-9xl font-light text-black mb-2">42<span className="text-5xl">%</span></div>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              of organizations say they have deployed and are using one or more AI models.
+            </p>
+          </div>
+          
+          {/* 86% Stat - Bottom */}
+          <div className="text-left">
+            <div className="text-9xl font-light text-black mb-2">86<span className="text-5xl">%</span></div>
+            <p className="text-xs text-gray-600 leading-relaxed">
+              of the organizations that have deployed AI models report that they are seeing a positive ROI.
+            </p>
+          </div>
+        </div>
+        
+        {/* Right Side - Multi-series Bar Chart at Bottom */}
+        <div className="w-2/5 flex flex-col justify-end">
+          {/* ChartBlock Multi-Series Bar Chart */}
+          <div className="h-80">
+            <ChartBlock
+              type="bar"
+              labels={['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually']}
+              series={[
+                { id: 'Operations', data: [85, 65, 45, 25, 15] },
+                { id: 'Analytics', data: [75, 55, 35, 20, 10] },
+                { id: 'Automation', data: [65, 45, 25, 15, 8] }
+              ]}
+              showLegend={false}
+              showGrid={true}
+              stacked={false}
+              animate={true}
+              className="w-full h-full bg-white"
+            />
+          </div>
+          
+          {/* Custom Tiny Legend Below Chart */}
+          <div className="flex justify-center gap-2 mt-1">
+            <div className="flex items-center gap-0.5">
+              <div className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: '#4A3AFF' }}></div>
+              <span className="text-xs text-gray-500">Ops</span>
+            </div>
+            <div className="flex items-center gap-0.5">
+              <div className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: '#C893FD' }}></div>
+              <span className="text-xs text-gray-500">Analytics</span>
+            </div>
+            <div className="flex items-center gap-0.5">
+              <div className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: '#1e40af' }}></div>
+              <span className="text-xs text-gray-500">Auto</span>
+            </div>
+          </div>
       </div>
     </div>
   </div>
 );
+};
 
 // Export buttons component
 interface ExportButtonsProps {
@@ -428,9 +1309,22 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
       
       let data;
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error:', errorText);
-        throw new Error(`API Error: ${response.status} - ${errorText}`);
+        try {
+          const errorData = await response.json();
+          console.error('API Error:', errorData);
+          
+          // Check if it's a Google OAuth configuration error
+          if (errorData.error && errorData.error.includes('Google OAuth credentials not configured')) {
+            alert(`Google Slides Export Setup Required\n\nTo enable Google Slides export, you need to:\n1. Set up Google OAuth credentials in Google Cloud Console\n2. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to your .env.local file\n\nSee the console for detailed setup instructions.`);
+            return;
+          }
+          
+          throw new Error(errorData.error || `API Error: ${response.status}`);
+        } catch (jsonError) {
+          const errorText = await response.text();
+          console.error('API Error:', errorText);
+          throw new Error(`API Error: ${response.status} - ${errorText}`);
+        }
       }
 
       try {
@@ -519,15 +1413,68 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
           target: [165, 170, 175, 180],
           quarters: ['Q1', 'Q2', 'Q3', 'Q4']
         };
-      case 'Executive Summary':
+      case 'Meeting Agenda':
         return {
-          title: 'Executive Summary',
-          points: [
-            'Strong Performance: Achieved $648K total revenue with 94.2% target achievement rate',
-            'Growth Trend: 18.2% overall growth with Q2 showing strongest performance',
-            'Seasonal Patterns: December peak and January low indicate clear seasonality',
-            'Opportunity: $42K revenue gap to targets represents 6.5% improvement potential',
-            'Recommendation: Focus on Q3/Q4 optimization to capture seasonal upside'
+          title: 'Index',
+          items: [
+            { number: "01", title: "Market Analysis", description: "Current market trends and opportunities" },
+            { number: "02", title: "Product Updates", description: "Latest feature releases and roadmap" },
+            { number: "03", title: "Financial Review", description: "Q4 performance and budget planning" },
+            { number: "04", title: "Strategic Planning", description: "2025 goals and initiatives" },
+            { number: "05", title: "Customer Insights", description: "Voice of customer feedback and analysis" },
+            { number: "06", title: "Next Steps", description: "Action items and follow-up tasks" },
+            { number: "07", title: "Team Updates", description: "Department progress and milestones" },
+            { number: "08", title: "Budget Review", description: "Quarterly budget analysis and planning" },
+            { number: "09", title: "Risk Assessment", description: "Current risks and mitigation strategies" },
+            { number: "10", title: "Innovation Lab", description: "New technology and innovation updates" },
+            { number: "11", title: "Partnership Review", description: "Strategic partnerships and alliances" },
+            { number: "12", title: "Compliance Update", description: "Regulatory changes and compliance status" },
+            { number: "13", title: "Market Expansion", description: "New market opportunities and strategies" },
+            { number: "14", title: "Technology Stack", description: "Technical infrastructure and updates" },
+            { number: "15", title: "Customer Success", description: "Customer satisfaction and retention metrics" },
+            { number: "16", title: "Competitive Analysis", description: "Market positioning and competitor insights" },
+            { number: "17", title: "Resource Planning", description: "Human resources and capacity planning" },
+            { number: "18", title: "Action Items", description: "Summary and next steps assignment" }
+          ]
+        };
+      case 'Table of Contents':
+        return {
+          title: 'Table of Contents',
+          items: [
+            { page: "1", title: "Executive Summary" },
+            { page: "2", title: "Founders Letter" },
+            { page: "3", title: "Methodology" },
+            { page: "4", title: "Conversion" },
+            { page: "5", title: "Monetization" },
+            { page: "6", title: "Revenue" },
+            { page: "7", title: "Retention & Reactivation" },
+            { page: "8", title: "Acquisition" },
+            { page: "9", title: "Comparing Google Play & the App Store" },
+            { page: "10", title: "Comparing Native & Crossplatform Development" },
+            { page: "11", title: "Web Billing for Subscription Apps" },
+            { page: "12", title: "Breaking Out AI Apps" }
+          ]
+        };
+      case 'Section Dividers':
+        return {
+          title: 'Executive summary',
+          sectionNumber: '01',
+          content: 'Latest feature releases and roadmap Latest feature releases and roadmap Latest feature releases and roadmap Latest feature releases and roadmap Latest feature releases and roadmap'
+        };
+      case 'Foundation AI Models':
+        return {
+          title: 'Foundation AI Models',
+          stats: [
+            { percentage: '42%', description: 'of organizations say they have deployed and are using one or more AI models.' },
+            { percentage: '86%', description: 'of the organizations that have deployed AI models report that they are seeing a positive ROI.' }
+          ],
+          content: 'Most of the world\'s top artificial intelligence has been trained on foundation models that can be adapted to a wide range of downstream tasks. During 2023, Most of the content in the industry focused on large language models and generative AI applications, but foundation models encompass much more than just text generation.',
+          chartData: [
+            { label: 'Daily', series1: 85, series2: 75, series3: 65 },
+            { label: 'Weekly', series1: 65, series2: 55, series3: 45 },
+            { label: 'Monthly', series1: 45, series2: 35, series3: 25 },
+            { label: 'Quarterly', series1: 25, series2: 20, series3: 15 },
+            { label: 'Annually', series1: 15, series2: 10, series3: 8 }
           ]
         };
       default:
@@ -580,7 +1527,21 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
 };
 
 const ExcelLayoutsPage: React.FC = () => {
-  const [selectedLayout, setSelectedLayout] = useState('table');
+  const [selectedLayout, setSelectedLayout] = useState('centered-cover');
+  const [fileData, setFileData] = useState<any>(null);
+  const [fileName, setFileName] = useState<string>('');
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Handle file data extraction
+  const handleDataExtracted = (extractedData: any, filename: string, fileType: string) => {
+    console.log('📊 Excel data extracted:', { extractedData, filename, fileType });
+    setFileData({ 
+      type: fileType, 
+      processedData: { structuredData: extractedData },
+      fileName: filename 
+    });
+    setFileName(filename);
+  };
 
   // Function to copy chart as image to clipboard
   const copyChartAsImage = async () => {
@@ -827,7 +1788,7 @@ const ExcelLayoutsPage: React.FC = () => {
       console.error('Failed to copy chart:', error);
       
       // If the error is about oklch, provide a specific message
-      if (error.message && error.message.includes('oklch')) {
+      if (error instanceof Error && error.message && error.message.includes('oklch')) {
         alert('Browser compatibility issue detected. The chart will be downloaded instead of copied to clipboard.');
         // Force download fallback
         try {
@@ -860,22 +1821,178 @@ const ExcelLayoutsPage: React.FC = () => {
           console.error('Fallback also failed:', fallbackError);
         }
       } else {
-        alert(`Failed to copy chart: ${error.message}. Please try again.`);
+        alert(`Failed to copy chart: ${error instanceof Error ? error.message : 'Unknown error'}. Please try again.`);
       }
     }
   };
 
-  const layouts = [
-    { id: 'table', name: 'Data Table', component: ExcelDataTable },
-    { id: 'kpi', name: 'KPI Dashboard', component: ExcelKPIDashboard },
-    { id: 'trend', name: 'Trend Chart', component: ExcelTrendChart },
-    { id: 'fullwidth', name: 'Full Width Chart', component: ExcelFullWidthChart },
-    { id: 'comparison', name: 'Comparison View', component: ExcelComparisonLayout },
-    { id: 'summary', name: 'Executive Summary', component: ExcelExecutiveSummary }
-  ];
+  // Generate dynamic props based on Excel data
+  const generateDynamicProps = (layoutId: string, fileData: any) => {
+    if (!fileData || !fileData.processedData?.structuredData) {
+      return {}; // Return empty props if no data
+    }
+
+    const data = fileData.processedData.structuredData;
+    const sheets = data.sheets || {};
+    const sheetNames = Object.keys(sheets);
+    
+    if (sheetNames.length === 0) {
+      return {};
+    }
+
+    // Get the first sheet with data
+    const firstSheetName = sheetNames[0];
+    const firstSheet = sheets[firstSheetName];
+    const sheetData = firstSheet?.objects || [];
+
+    console.log('🔧 Generating dynamic props for:', layoutId, 'with data:', sheetData.slice(0, 3));
+
+    switch (layoutId) {
+      case 'centered-cover':
+        return {
+          title: `${fileName.replace(/\.(xlsx?|csv)$/i, '')} Analysis`,
+          description: `Comprehensive analysis of ${sheetData.length} data points from ${firstSheetName}`
+        };
+
+      case 'table':
+        if (sheetData.length > 0) {
+          const headers = Object.keys(sheetData[0]);
+          return {
+            title: firstSheetName,
+            data: sheetData.slice(0, 10).map((row: any) => {
+              const formattedRow: any = {};
+              headers.forEach(header => {
+                formattedRow[header] = row[header];
+              });
+              return formattedRow;
+            })
+          };
+        }
+        break;
+
+      case 'kpi':
+        if (sheetData.length > 0) {
+          const numericColumns = Object.keys(sheetData[0]).filter(key => {
+            const value = sheetData[0][key];
+            return !isNaN(parseFloat(value)) && isFinite(value);
+          });
+
+          if (numericColumns.length >= 2) {
+            const col1 = numericColumns[0];
+            const col2 = numericColumns[1];
+            const sum1 = sheetData.reduce((sum: number, row: any) => sum + (parseFloat(row[col1]) || 0), 0);
+            const sum2 = sheetData.reduce((sum: number, row: any) => sum + (parseFloat(row[col2]) || 0), 0);
+            const avg1 = sum1 / sheetData.length;
+            const avg2 = sum2 / sheetData.length;
+
+            return {
+              title: `${firstSheetName} KPIs`,
+              kpiCards: [
+                { title: col1, value: sum1.toLocaleString(), subtitle: 'Total', trend: '+15%', icon: '📊' },
+                { title: col2, value: sum2.toLocaleString(), subtitle: 'Total', trend: '+12%', icon: '📈' },
+                { title: 'Average ' + col1, value: avg1.toFixed(2), subtitle: 'Per record', trend: '+8%', icon: '📋' },
+                { title: 'Records', value: sheetData.length.toString(), subtitle: 'Total count', trend: '+100%', icon: '📦' }
+              ]
+            };
+          }
+        }
+        break;
+
+      case 'trend':
+      case 'fullwidth':
+        if (sheetData.length > 0) {
+          const numericColumns = Object.keys(sheetData[0]).filter(key => {
+            const value = sheetData[0][key];
+            return !isNaN(parseFloat(value)) && isFinite(value);
+          });
+
+          if (numericColumns.length >= 1) {
+            const labels = sheetData.map((row: any, index: number) => {
+              // Try to find a date/time column or use index
+              const dateColumns = Object.keys(row).filter(key => 
+                key.toLowerCase().includes('date') || 
+                key.toLowerCase().includes('time') ||
+                key.toLowerCase().includes('month') ||
+                key.toLowerCase().includes('year')
+              );
+              
+              if (dateColumns.length > 0) {
+                return String(row[dateColumns[0]]);
+              }
+              return `Point ${index + 1}`;
+            }).slice(0, 12); // Limit to 12 data points
+
+            const series = numericColumns.slice(0, 2).map((col, index) => ({
+              id: col,
+              data: sheetData.slice(0, 12).map((row: any) => parseFloat(row[col]) || 0),
+              color: index === 0 ? '#4A3AFF' : '#C893FD'
+            }));
+
+            return {
+              title: `${firstSheetName} Trends`,
+              description: `Data visualization from ${fileName}`,
+              chart: {
+                type: 'area',
+                labels,
+                series,
+                showLegend: true,
+                showGrid: true,
+                animate: true,
+                curved: true,
+                legendPosition: 'bottom' as const
+              }
+            };
+          }
+        }
+        break;
+
+      default:
+        return {};
+    }
+
+    return {};
+  };
+
+  const layoutCategories = {
+    'Covers': [
+      { id: 'centered-cover', name: 'Centered Cover', component: ExcelCenteredCover },
+      { id: 'bottom-cover', name: 'Bottom Cover', component: ExcelBottomCover },
+      { id: 'left-cover', name: 'Left Cover', component: ExcelLeftCover }
+    ],
+    'Index': [
+      { id: 'index', name: 'Meeting Agenda', component: ExcelIndex },
+      { id: 'table-of-contents', name: 'Table of Contents', component: ExcelTableOfContents }
+    ],
+    'Data Layouts': [
+      { id: 'table', name: 'Data Table', component: ExcelDataTable },
+      { id: 'kpi', name: 'KPI Dashboard', component: ExcelKPIDashboard },
+      { id: 'trend', name: 'Trend Chart', component: ExcelTrendChart },
+      { id: 'fullwidth', name: 'Full Width Chart', component: ExcelFullWidthChart },
+      { id: 'fullwidth-table', name: 'Chart with Data Table', component: ExcelFullWidthChartWithTable },
+      { id: 'comparison', name: 'Comparison View', component: ExcelComparisonLayout },
+      { id: 'foundation-ai', name: 'Foundation AI Models', component: ExcelFoundationAI },
+      { id: 'testimonial', name: 'Results Testimonial', component: ExcelTestimonial },
+      { id: 'milestone', name: 'Milestone Achievement', component: ExcelMilestone }
+    ],
+    'Interpretation Layouts': [
+      { id: 'experience-full-text', name: 'Experience Full Text', component: ExcelExperienceFullText },
+      { id: 'experience-two-rows', name: 'Experience Two Rows', component: ExcelExperienceDrivenTwoRows },
+      { id: 'how-it-works', name: 'How It Works', component: ExcelHowItWorks }
+    ],
+    'Back Cover Layouts': [
+      { id: 'back-cover', name: 'Back Cover', component: ExcelBackCover },
+      { id: 'back-cover-left', name: 'Back Cover Left', component: ExcelBackCoverLeft }
+    ]
+  };
+
+  // Flatten layouts for backward compatibility
+  const layouts = Object.values(layoutCategories).flat();
 
   const SelectedComponent = layouts.find(l => l.id === selectedLayout)?.component || ExcelDataTable;
   const selectedLayoutName = layouts.find(l => l.id === selectedLayout)?.name || 'Data Table';
+  
+  // Generate dynamic props based on Excel data
+  const dynamicProps = generateDynamicProps(selectedLayout, fileData);
 
   return (
     <div className="min-h-screen bg-gray-100 p-8" style={{ fontFamily: 'Helvetica, Arial, sans-serif' }}>
@@ -886,23 +2003,58 @@ const ExcelLayoutsPage: React.FC = () => {
           <p className="text-gray-600">PowerPoint & Google Slides compatible layouts for Excel data visualization</p>
         </div>
 
-        {/* Layout Selector */}
+        {/* File Upload Section */}
         <div className="mb-8">
-          <div className="flex flex-wrap gap-3">
-            {layouts.map((layout) => (
-              <button
-                key={layout.id}
-                onClick={() => setSelectedLayout(layout.id)}
-                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                  selectedLayout === layout.id
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                }`}
-              >
-                {layout.name}
-              </button>
-            ))}
+          <div className="bg-white rounded-lg shadow-lg p-6">
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Upload Your Excel File</h2>
+            <p className="text-gray-600 mb-4">Upload an Excel file to see your data applied to the layouts below. The layouts will automatically adapt to your data structure.</p>
+            
+            <FileUpload 
+              onDataExtracted={handleDataExtracted}
+              className="mb-4"
+            />
+            
+            {fileData && (
+              <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="text-green-800 font-medium">File processed successfully!</span>
+                </div>
+                <p className="text-green-700 mt-1">
+                  <strong>{fileName}</strong> - Data is now being applied to the layouts below. 
+                  {fileData.processedData?.structuredData?.sheets && 
+                    ` Found ${Object.keys(fileData.processedData.structuredData.sheets).length} sheet(s) with data.`
+                  }
+                </p>
+              </div>
+            )}
           </div>
+        </div>
+
+        {/* Layout Selector - Organized by Categories */}
+        <div className="mb-8">
+          {Object.entries(layoutCategories).map(([category, categoryLayouts]) => (
+            <div key={category} className="mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-3">{category}</h3>
+              <div className="flex flex-wrap gap-3">
+                {categoryLayouts.map((layout) => (
+                  <button
+                    key={layout.id}
+                    onClick={() => setSelectedLayout(layout.id)}
+                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                      selectedLayout === layout.id
+                        ? 'bg-blue-600 text-white'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {layout.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
 
         {/* Layout Preview */}
@@ -911,7 +2063,24 @@ const ExcelLayoutsPage: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-800">
               Preview: {selectedLayoutName}
             </h2>
-            <p className="text-sm text-gray-500">16:9 aspect ratio • PowerPoint/Google Slides compatible</p>
+            <div className="flex items-center gap-4">
+              <p className="text-sm text-gray-500">16:9 aspect ratio • PowerPoint/Google Slides compatible</p>
+              {fileData ? (
+                <div className="flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Using Real Data
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Static Preview
+                </div>
+              )}
+            </div>
           </div>
           
           {/* Export Buttons */}
@@ -935,7 +2104,7 @@ const ExcelLayoutsPage: React.FC = () => {
           
           {/* Layout Container - Fixed 16:9 aspect ratio */}
           <div className="w-full max-w-4xl mx-auto">
-            <SelectedComponent />
+            <SelectedComponent {...dynamicProps} />
           </div>
         </div>
 

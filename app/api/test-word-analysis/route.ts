@@ -5,8 +5,20 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 });
 
+// Check if API key is available
+const hasAnthropicKey = !!process.env.ANTHROPIC_API_KEY;
+
 export async function POST(request: NextRequest) {
   try {
+    // Check if Anthropic API key is configured
+    if (!hasAnthropicKey) {
+      return NextResponse.json({ 
+        error: 'Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your .env.local file.',
+        details: 'To fix this: 1) Get an API key from https://console.anthropic.com/, 2) Add ANTHROPIC_API_KEY=your-key-here to slaidai/.env.local, 3) Restart the development server',
+        missingConfig: 'ANTHROPIC_API_KEY'
+      }, { status: 500 });
+    }
+
     const { fileData, prompt } = await request.json();
     
     console.log('📄 Word Analysis Request:', {

@@ -299,6 +299,45 @@ export default function TextPopup({
     return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
   };
 
+  // Hex to HSV conversion
+  const hexToHsv = (hex: string): { h: number; s: number; v: number } => {
+    // Remove # if present
+    hex = hex.replace('#', '');
+    
+    // Handle 3-character hex codes
+    if (hex.length === 3) {
+      hex = hex.split('').map(char => char + char).join('');
+    }
+    
+    // Parse RGB values
+    const r = parseInt(hex.substr(0, 2), 16) / 255;
+    const g = parseInt(hex.substr(2, 2), 16) / 255;
+    const b = parseInt(hex.substr(4, 2), 16) / 255;
+    
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const diff = max - min;
+    
+    let h = 0;
+    let s = max === 0 ? 0 : diff / max;
+    let v = max;
+    
+    if (diff !== 0) {
+      if (max === r) {
+        h = ((g - b) / diff) % 6;
+      } else if (max === g) {
+        h = (b - r) / diff + 2;
+      } else {
+        h = (r - g) / diff + 4;
+      }
+    }
+    
+    h = Math.round(h * 60);
+    if (h < 0) h += 360;
+    
+    return { h, s, v };
+  };
+
   if (!isOpen) {
     console.log('📝 TextPopup: NOT OPEN, returning null');
     return null;
@@ -323,12 +362,11 @@ export default function TextPopup({
       <div
         ref={popupRef}
         data-text-popup
-        className="fixed z-[2147483647] bg-gray-800 rounded-lg shadow-2xl border border-gray-600 flex items-center overflow-visible animate-in fade-in-0 zoom-in-95 duration-200"
+        className="fixed z-[2147483647] bg-gray-800 rounded-lg border border-gray-600 flex items-center overflow-visible animate-in fade-in-0 zoom-in-95 duration-200"
         style={{
           left: `${smartPosition.x}px`,
           top: `${smartPosition.y}px`,
           // No transform - positioning is handled in FigmaText with clamping
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
         }}
       >
         {/* Font Size Control */}
@@ -585,17 +623,32 @@ export default function TextPopup({
                   
                   {/* Hex Input */}
                   <div className="flex items-center gap-2 w-52">
-                    <span className="text-xs text-gray-300 font-medium">HEX</span>
+                    <span className="text-xs font-medium !text-[#002903]" style={{ color: '#002903' }}>HEX</span>
                     <input
                       type="text"
                       value={customColor}
                       onChange={(e) => {
-                        setCustomColor(e.target.value);
-                        handleCustomColorChange(e.target.value);
+                        const newColor = e.target.value;
+                        setCustomColor(newColor);
+                        handleCustomColorChange(newColor);
+                        
+                        // Update picker positions based on hex input
+                        if (newColor.match(/^#[0-9A-Fa-f]{6}$/)) {
+                          try {
+                            const { h, s, v } = hexToHsv(newColor);
+                            setHuePosition((h / 360) * 100);
+                            setPickerPosition({ 
+                              x: s * 100, 
+                              y: (1 - v) * 100 
+                            });
+                          } catch (error) {
+                            // Ignore invalid hex values
+                          }
+                        }
                       }}
                       onClick={(e) => e.stopPropagation()}
                       placeholder="#414a2e"
-                      className="flex-1 px-2 py-1 text-xs bg-gray-700 border border-gray-600 rounded text-white focus:outline-none focus:border-blue-500"
+                      className="flex-1 px-2 py-1 text-xs bg-gray-700 border border-gray-600 rounded text-black focus:outline-none focus:border-blue-500"
                     />
                   </div>
                 </div>
