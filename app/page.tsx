@@ -223,13 +223,7 @@ export default function Component1920WLight() {
         </div>
       </div>
       {/* Main Content: left-aligned layout */}
-      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 pt-4 sm:pt-8 max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto">
-        {/* Launch Date Badge */}
-        <div className="mb-4 sm:mb-6 flex items-center justify-start relative">
-          <span className="bg-gray-100 rounded-[14px] px-4 sm:px-6 py-2 flex items-center gap-2 border border-gray-200">
-            <span className="text-gray-800 text-xs sm:text-sm 2xl:text-base font-medium font-sans">LAUNCHING NOV 9TH, 2025</span>
-          </span>
-        </div>
+      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 pt-16 sm:pt-24 lg:pt-32 max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto">
         {/* Main Content Row - Title and Upload Files */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start justify-between w-full max-w-6xl pr-0 lg:pr-4">
           {/* Left Side - Title and Description */}
@@ -237,7 +231,7 @@ export default function Component1920WLight() {
             {/* Heading */}
             <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] xl:text-[52.5px] 2xl:text-[4rem] font-normal leading-none mb-2 text-left tracking-tighter" style={{ color: '#002903' }}>
                 <div>
-                  Convert excels{" "}
+                  Convert Data{" "}
                   <span className="inline-flex items-center mx-1 sm:mx-2">
                     <img src="/google-sheets.png" alt="Google Sheets" className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 2xl:w-12 2xl:h-12" />
                   </span>
@@ -250,7 +244,7 @@ export default function Component1920WLight() {
                   </span>
                 </div>
                 <div>
-                  presentations{" "}
+                  Reports{" "}
                   <span className="inline-flex items-center mx-1 sm:mx-2">
                     <img src="/power-point.png" alt="PowerPoint" className="h-6 sm:h-8 lg:h-10 2xl:h-12 w-auto" />
                   </span>
@@ -261,10 +255,21 @@ export default function Component1920WLight() {
               Unlock the potential of your Excel data with our AI-powered<br className="hidden sm:block" />
               <span className="sm:hidden"> </span>storytelling and presentation generator.
             </p>
+            
+            {/* Get Started Button */}
+            <a
+              href="/signup"
+              className="inline-block text-sm sm:text-base font-medium text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-full transition-colors"
+              style={{ backgroundColor: '#002903' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
+            >
+              Get Started
+            </a>
           </div>
           
           {/* Right Side - Upload Files */}
-          <div className="relative w-full max-w-md ml-0 lg:ml-24 mt-8 lg:mt-0">
+          <div className="relative w-full max-w-md ml-0 lg:ml-24 mt-8 lg:-mt-20">
             <a href="/login" className="block">
               <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border border-gray-100 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative cursor-pointer transition-transform hover:scale-[1.02]">
                 {/* Layered Cards Background */}
