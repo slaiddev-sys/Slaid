@@ -195,7 +195,10 @@ function Component1({ variant = "1" }: Component1Props) {
 
 export default function Component1920WLight() {
   return (
-    <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden">
+    <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden" style={{ backgroundImage: 'url(/sheet-background.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+      {/* White overlay to reduce background opacity */}
+      <div className="absolute inset-0 bg-white opacity-70 z-0"></div>
+      
       {/* Navigation Bar - Logo and Auth Buttons */}
       <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto px-4 sm:px-6 py-4 sm:py-8 w-full">
         <div className="bg-center bg-contain bg-no-repeat h-[28px] sm:h-[36px] shrink-0 w-[90px] sm:w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
