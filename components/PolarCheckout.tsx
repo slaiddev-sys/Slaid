@@ -1,6 +1,7 @@
 "use client";
 
 import { polarConfig } from "../lib/polar-config";
+import { useAuth } from "./AuthProvider";
 
 interface PolarCheckoutProps {
   productId: string;
@@ -15,6 +16,7 @@ export default function PolarCheckout({
   isAnnual = false,
   className = "" 
 }: PolarCheckoutProps) {
+  const { user } = useAuth();
 
   // If Polar is not configured, show a regular button
   if (!polarConfig.publicAccessToken || !productId) {
@@ -33,7 +35,14 @@ export default function PolarCheckout({
       className={`w-full h-[31.5px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal transition ${className}`}
       onClick={async () => {
         try {
-          // Create a checkout session using Polar API
+          // Get user email - CRITICAL for webhook matching
+          const userEmail = user?.email;
+          if (!userEmail) {
+            alert('Please log in to subscribe');
+            return;
+          }
+
+          // Create a checkout session using Polar API with pre-filled email
           const response = await fetch('https://api.polar.sh/v1/checkouts/', {
             method: 'POST',
             headers: {
@@ -44,6 +53,7 @@ export default function PolarCheckout({
               product_id: productId,
               success_url: polarConfig.successUrl,
               cancel_url: polarConfig.cancelUrl,
+              customer_email: userEmail, // Pre-fill email to prevent user error
             }),
           });
 
