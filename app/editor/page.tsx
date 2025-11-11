@@ -2733,13 +2733,13 @@ export default function EditorPage() {
         name: "Basic",
         monthly: { price: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903" },
         annual: { price: "$261", period: "/year", save: "Save $87 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903" },
-        desc: ["Perfect for testing the product with no", "commitment."],
+        desc: ["Perfect for getting started."],
         icon: "/Basic Plan.png",
         features: [
           { text: "700 credits", included: true },
           { text: "Unlimited presentations", included: true },
-          { text: "No export feature", included: false },
-          { text: "No preview feature", included: false },
+          { text: "Slide preview before generating", included: true },
+          { text: "Export as PDF", included: true },
         ],
       },
       {
