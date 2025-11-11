@@ -2736,7 +2736,7 @@ export default function EditorPage() {
         desc: ["Perfect for testing the product with no", "commitment."],
         icon: "/Basic Plan.png",
         features: [
-          { text: "20 credits", included: true },
+          { text: "700 credits", included: true },
           { text: "Unlimited presentations", included: true },
           { text: "No export feature", included: false },
           { text: "No preview feature", included: false },
@@ -2749,7 +2749,7 @@ export default function EditorPage() {
         desc: ["Designed for professionals."],
         icon: "/Pro Plan.png",
         features: [
-          { text: "500 credits", included: true },
+          { text: "1500 credits", included: true },
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
           { text: "Export as PDF", included: true },
@@ -2762,7 +2762,7 @@ export default function EditorPage() {
         desc: ["For teams and power users."],
         icon: "/Ultra Red Plan.png",
         features: [
-          { text: "1000 credits", included: true },
+          { text: "3000 credits", included: true },
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
           { text: "Export as PDF", included: true },
