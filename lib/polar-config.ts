@@ -3,10 +3,10 @@ export const polarConfig = {
   // These should be set in your .env.local file
   publicAccessToken: process.env.NEXT_PUBLIC_POLAR_SH_PUBLIC_ACCESS_TOKEN || '',
   
-  // Product IDs - get these from your Polar dashboard
+  // Product IDs - hardcoded for Pro plans
   products: {
-    proMonthly: process.env.NEXT_PUBLIC_POLAR_PRO_MONTHLY_PRODUCT_ID || '',
-    proYearly: process.env.NEXT_PUBLIC_POLAR_PRO_YEARLY_PRODUCT_ID || '',
+    proMonthly: '5a954dc6-891d-428a-a948-05409fe765e2',  // Pro Monthly Plan
+    proYearly: '8739ccac-36f9-4e28-8437-8b36bb1e7d71',   // Pro Yearly Plan
   },
   
   // Credit Pack Product IDs (hardcoded as they're fixed)
