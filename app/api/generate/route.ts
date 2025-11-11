@@ -176,7 +176,7 @@ class RateLimitManager {
 
       // Use our cost tracking wrapper
       const response = await anthropicWrapper.createMessage({
-        model: 'claude-opus-4-20250514',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: requestData.existingPresentation ? 4000 : 6000, // Increased from 3000 to 6000 for complete playbook generation
         temperature: requestData.existingPresentation ? 0.1 : 0.3,
         messages: requestData.messages,
@@ -995,7 +995,7 @@ EXTRACT ONLY:
 DO NOT provide presentation structure - that will come from the Word document.`;
 
               const excelAnalysisResponse = await anthropic.messages.create({
-                model: 'claude-opus-4-20250514',
+                model: 'claude-sonnet-4-20250514',
                 max_tokens: 4000,
                 messages: [{ role: 'user', content: excelAnalysisPrompt }],
               });
@@ -1318,7 +1318,7 @@ Be honest - if you cannot see or read certain parts of the data, say so explicit
         console.log('🚀 Sending Excel data to AI for analysis first...');
         
         const analysisResponse = await anthropic.messages.create({
-          model: 'claude-opus-4-20250514',
+          model: 'claude-sonnet-4-20250514',
           max_tokens: 4000,
           messages: [
             {

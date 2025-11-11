@@ -1287,7 +1287,7 @@ ${whichInterpretationLayouts}
     const dynamicUserContent = aiPrompt.replace(systemPromptStatic, '');
 
     const message = await anthropic.messages.create({
-      model: 'claude-opus-4-20250514', // Using Opus 4.1 for better quality
+      model: 'claude-sonnet-4-20250514', // Using Sonnet 4.5 for optimal quality/cost balance
       max_tokens: 8192,
       system: [
         {

@@ -782,7 +782,7 @@ For a comprehensive presentation, I suggest:
 Be specific, use bullet points, and structure the response like a professional AI assistant would.`;
 
          const response = await anthropic.messages.create({
-           model: 'claude-opus-4-20250514',
+           model: 'claude-sonnet-4-20250514',
            max_tokens: 2000,
            messages: [
              {
