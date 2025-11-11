@@ -2759,7 +2759,7 @@ export default function EditorPage() {
         monthly: { price: "$89", period: "/month", save: null, buttonColor: "bg-[#c2410c] text-white hover:bg-[#ea580c]" },
         annual: { price: "$801", period: "/year", save: "Save $267 per year", buttonColor: "bg-[#c2410c] text-white hover:bg-[#ea580c]" },
         desc: ["For teams and power users."],
-        icon: "/Ultra plan.png",
+        icon: "/Ultra Orange.png",
         features: [
           { text: "1000 credits", included: true },
           { text: "Unlimited presentations", included: true },
