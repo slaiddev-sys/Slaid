@@ -2903,7 +2903,7 @@ export default function EditorPage() {
             <h1 className="text-gray-900 text-[32px] font-normal leading-[42px] mb-3 tracking-tight">Pricing</h1>
             <p className="text-gray-600 text-[13.5px] leading-[21px] max-w-2xl mx-auto">Choose the plan that perfectly fits your needs. Scale up anytime as you grow.</p>
           </div>
-          <div className="flex flex-col md:flex-row gap-1 w-full max-w-4xl justify-center mx-auto">
+          <div className="flex flex-col md:flex-row gap-0.5 w-full max-w-4xl justify-center mx-auto">
             <PlanCard plan={plans[0]} isAnnual={isAnnualBasic} onToggle={() => setIsAnnualBasic(v => !v)} />
             <PlanCard plan={plans[1]} isAnnual={isAnnualPro} onToggle={() => setIsAnnualPro(v => !v)} />
             <PlanCard plan={plans[2]} isAnnual={isAnnualUltra} onToggle={() => setIsAnnualUltra(v => !v)} />
