@@ -7302,15 +7302,15 @@ export default function EditorPage() {
                   key={`slide-${slideIndex}`}
                   className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200"
           style={{
-                    width: sidebarCollapsed ? '881px' : '640px',
-                    height: sidebarCollapsed ? '495px' : '360px',
+                    width: sidebarCollapsed ? '1200px' : '1000px',
+                    height: sidebarCollapsed ? '675px' : '563px',
             transition: 'width 300ms ease-in-out, height 300ms ease-in-out'
           }}
         >
           <div 
             className="slide-content"
             style={{
-                      transform: sidebarCollapsed ? 'scale(1)' : 'scale(0.726)',
+                      transform: sidebarCollapsed ? 'scale(1.36)' : 'scale(1.135)',
               transformOrigin: 'center center',
               width: '881px',
               height: '495px',
