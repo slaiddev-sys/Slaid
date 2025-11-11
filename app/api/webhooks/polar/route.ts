@@ -26,9 +26,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin client not configured' }, { status: 500 })
     }
 
+    // Extract event ID for idempotency
+    const eventId = body.id
+    if (!eventId) {
+      console.error('❌ No event ID in webhook payload')
+      return NextResponse.json({ error: 'No event ID' }, { status: 400 })
+    }
+
     // Handle different event types
     const eventType = body.type
-    console.log('📬 Event type:', eventType)
+    console.log('📬 Event type:', eventType, 'Event ID:', eventId)
 
     // We support checkout.completed, order.paid, subscription.created, and subscription.active
     const supportedEvents = ['checkout.completed', 'order.paid', 'subscription.created', 'subscription.active']
@@ -95,6 +102,30 @@ export async function POST(request: NextRequest) {
 
     const userId = user.id
     console.log('✅ Found user:', { userId, email: customerEmail })
+
+    // Check if this event was already processed (idempotency check)
+    console.log('🔍 Checking if event was already processed:', eventId)
+    const { data: existingTransaction, error: checkError } = await supabaseAdmin
+      .from('credit_transactions')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('description', product.description)
+      .eq('credits_amount', product.credits)
+      .gte('created_at', new Date(Date.now() - 5 * 60 * 1000).toISOString()) // Check last 5 minutes
+      .limit(1)
+
+    if (checkError) {
+      console.error('⚠️ Error checking for duplicate transaction:', checkError)
+      // Continue anyway - better to add credits twice than not at all
+    } else if (existingTransaction && existingTransaction.length > 0) {
+      console.log('✅ Event already processed (duplicate detected), returning success:', eventId)
+      return NextResponse.json({ 
+        success: true,
+        duplicate: true,
+        message: 'Event already processed',
+        eventId
+      })
+    }
 
     // Add credits to user account
     console.log('💳 Adding credits:', { userId, credits: product.credits })
