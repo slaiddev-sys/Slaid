@@ -157,7 +157,7 @@ class RateLimitManager {
 
       // Use our cost tracking wrapper
       const response = await anthropicWrapper.createMessage({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-opus-4-20250514',
         max_tokens: requestData.existingPresentation ? 4000 : 3000,
         temperature: requestData.existingPresentation ? 0.1 : 0.3,
         messages: requestData.messages,

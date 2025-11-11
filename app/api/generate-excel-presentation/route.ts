@@ -1282,7 +1282,7 @@ ${whichInterpretationLayouts}
     console.log('🤖 Sending request to Claude...');
 
     const message = await anthropic.messages.create({
-      model: 'claude-3-5-haiku-20241022', // Back to Haiku - it actually works
+      model: 'claude-opus-4-20250514', // Using Opus 4.1 for better quality
       max_tokens: 8192, // Maximum for Haiku
       messages: [{
         role: 'user',
