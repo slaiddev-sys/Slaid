@@ -6955,17 +6955,13 @@ export default function EditorPage() {
                             setLoadingStep(2);
                             
                             const requestBody = {
-                              excelData: uploadResult.processedData,
-                              prompt: presentationPrompt,
+                              uploadResult: uploadResult,
+                              presentationPrompt: presentationPrompt,
                               slideCount: slidesInBatch,
-                              batchInfo: {
-                                currentBatch: batchIndex + 1,
-                                totalBatches,
-                                startSlide,
-                                endSlide,
-                                totalSlides: slideCountNum
-                              },
-                              uploadedFileName: uploadedFiles[0]?.name || 'data',
+                              batchNumber: batchIndex + 1,
+                              totalBatches: totalBatches,
+                              slideStart: startSlide,
+                              slideEnd: endSlide,
                               comprehensiveAnalysis: comprehensiveAnalysis
                             };
 
