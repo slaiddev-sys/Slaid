@@ -2764,7 +2764,7 @@ export default function EditorPage() {
       // Get the appropriate Polar product ID based on plan and billing cycle
       const productId = plan.name === "Pro" ? getProductId(isAnnual) : null;
       return (
-        <div key={plan.name} className={`relative bg-white border ${plan.border} rounded-[12.75px] flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-xs min-w-[280px] mx-auto`}>
+        <div key={plan.name} className={`relative bg-gray-100 rounded-[12.75px] flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-xs min-w-[280px] mx-auto`}>
           {/* Header: icon left, toggle right */}
           <div className="flex flex-row items-center justify-between mb-3">
             <div className={`w-[42px] h-[42px] rounded-[8.75px] flex items-center justify-center ${plan.iconBg} relative`}>
