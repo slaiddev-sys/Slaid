@@ -2777,8 +2777,8 @@ export default function EditorPage() {
       // Get the appropriate Polar product ID based on plan and billing cycle
       const productId = plan.name === "Pro" ? getProductId(isAnnual) : null;
       
-      // Get toggle colors: green when monthly (unchecked), plan color when annual (checked)
-      const toggleBgColor = isAnnual ? priceData.toggleColor : '#0a5f38';
+      // Get toggle colors: dark grey when monthly (unchecked), plan color when annual (checked)
+      const toggleBgColor = isAnnual ? priceData.toggleColor : '#4B5563';
       
       return (
         <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto`}>
