@@ -2774,8 +2774,8 @@ export default function EditorPage() {
     function PlanCard({ plan, isAnnual = false, onToggle = () => {} }: { plan: any; isAnnual?: boolean; onToggle?: () => void }) {
       const priceData = isAnnual ? plan.annual : plan.monthly;
       
-      // Get the appropriate Polar product ID based on plan and billing cycle
-      const productId = plan.name === "Pro" ? getProductId(isAnnual) : null;
+      // Get the appropriate Polar product ID based on plan name and billing cycle
+      const productId = getProductId(plan.name, isAnnual);
       
       // Get toggle colors: light grey when monthly (unchecked), plan color when annual (checked)
       const toggleBgColor = isAnnual ? priceData.toggleColor : '#9CA3AF';
@@ -2863,7 +2863,7 @@ export default function EditorPage() {
             >
               Current plan
             </button>
-          ) : plan.name === "Pro" && productId ? (
+          ) : productId ? (
             <PolarCheckout
               productId={productId}
               planName={plan.name}
