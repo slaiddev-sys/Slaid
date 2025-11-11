@@ -7744,4 +7744,3 @@ export default function EditorPage() {
     </ProtectedRoute>
   );
 }
-}
