@@ -2886,7 +2886,7 @@ export default function EditorPage() {
       >
         <div className="absolute inset-0 bg-black/60" />
         <div 
-          className="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl p-8 border border-[#23272f] animate-scaleIn"
+          className="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl p-8 animate-scaleIn"
           onClick={(e) => e.stopPropagation()}
         >
           <button
