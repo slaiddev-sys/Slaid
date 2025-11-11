@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, isAdminConfigured } from '../../../../lib/supabase-admin'
 
+// Disable automatic redirects for webhook endpoints
+export const dynamic = 'force-dynamic'
+export const fetchCache = 'force-no-store'
+
 // Product mapping for both credit packs and Pro plans
 const PRODUCT_MAPPING: Record<string, { credits: number; description: string; type: 'credit_pack' | 'pro_plan' }> = {
   // Credit Pack Product IDs
