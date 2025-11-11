@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, isAdminConfigured } from '../../../../lib/supabase-admin'
 
-// Disable automatic redirects for webhook endpoints
-export const dynamic = 'force-dynamic'
-export const fetchCache = 'force-no-store'
-
 // Product mapping for both credit packs and Pro plans
 const PRODUCT_MAPPING: Record<string, { credits: number; description: string; type: 'credit_pack' | 'pro_plan' }> = {
   // Credit Pack Product IDs
@@ -18,15 +14,6 @@ const PRODUCT_MAPPING: Record<string, { credits: number; description: string; ty
   '8739ccac-36f9-4e28-8437-8b36bb1e7d71': { credits: 500, description: 'Pro Yearly Plan - 500 credits', type: 'pro_plan' },
 }
 
-// Add GET handler for debugging
-export async function GET(request: NextRequest) {
-  return NextResponse.json({ 
-    status: 'ok',
-    message: 'Polar webhook endpoint is active',
-    timestamp: new Date().toISOString()
-  })
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -38,15 +25,40 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin client not configured' }, { status: 500 })
     }
 
-    // Verify this is a successful order paid event (or order.created for immediate processing)
-    if (body.type !== 'order.paid' && body.type !== 'order.created') {
-      console.log('⏭️ Ignoring event type:', body.type)
+    // Handle different event types
+    const eventType = body.type
+    console.log('📬 Event type:', eventType)
+
+    // We support checkout.completed, order.paid, subscription.created, and subscription.active
+    const supportedEvents = ['checkout.completed', 'order.paid', 'subscription.created', 'subscription.active']
+    if (!supportedEvents.includes(eventType)) {
+      console.log('⏭️ Ignoring unsupported event:', eventType)
       return NextResponse.json({ received: true })
     }
 
-    const order = body.data
-    const productId = order.product_id
-    const customerEmail = order.customer_email
+    // Extract data based on event type
+    const eventData = body.data
+    let productId: string
+    let customerEmail: string
+
+    if (eventType === 'checkout.completed') {
+      productId = eventData.product_id
+      customerEmail = eventData.customer_email
+    } else if (eventType === 'order.paid') {
+      productId = eventData.product_id
+      customerEmail = eventData.customer?.email || eventData.customer_email
+    } else if (eventType === 'subscription.created' || eventType === 'subscription.active') {
+      productId = eventData.product_id
+      customerEmail = eventData.customer?.email || eventData.user?.email
+    } else {
+      console.error('❌ Unexpected event type:', eventType)
+      return NextResponse.json({ error: 'Unexpected event type' }, { status: 400 })
+    }
+
+    if (!customerEmail) {
+      console.error('❌ No customer email found in webhook data')
+      return NextResponse.json({ error: 'No customer email' }, { status: 400 })
+    }
 
     // Get product info (credit pack or Pro plan)
     const product = PRODUCT_MAPPING[productId]

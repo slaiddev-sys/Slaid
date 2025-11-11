@@ -141,22 +141,6 @@ export default function EditorPage() {
   const [exportWorkspace, setExportWorkspace] = useState<string | null>(null);
   const [exportSlideData, setExportSlideData] = useState<any>(null);
 
-  // Check for credit refresh from successful payment
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      const refreshParam = urlParams.get('refresh');
-      
-      if (refreshParam === 'true') {
-        console.log('💳 Payment success detected - refreshing credits');
-        // Refresh credits to show new purchase
-        refreshCredits();
-        // Clean up URL
-        window.history.replaceState({}, '', '/editor');
-      }
-    }
-  }, [refreshCredits]);
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
