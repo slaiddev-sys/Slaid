@@ -92,7 +92,7 @@ Show me the DETAILED CONTENT from each section, just like what's visible in the 
     while (retryCount < maxRetries) {
       try {
         response = await anthropic.messages.create({
-          model: 'claude-sonnet-4-20250514',
+          model: 'claude-sonnet-4-5-20250929',
           max_tokens: 8192, // Maximum allowed for claude-3-5-haiku-20241022
           messages: [
             {
