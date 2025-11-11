@@ -2833,27 +2833,27 @@ export default function EditorPage() {
           {/* Button */}
           {plan.name === "Basic" && credits?.plan_type === 'free' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
               disabled
             >
               Current plan
             </button>
           ) : plan.name === "Basic" && (credits?.plan_type === 'pro' || credits?.plan_type === 'ultra') ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
+              className="w-full h-[40px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
             >
               Downgrade plan
             </button>
           ) : plan.name === "Pro" && credits?.plan_type === 'pro' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
               disabled
             >
               Current plan
             </button>
           ) : plan.name === "Ultra" && credits?.plan_type === 'ultra' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
               disabled
             >
               Current plan
@@ -2866,7 +2866,7 @@ export default function EditorPage() {
               className={priceData.buttonColor}
             />
           ) : (
-            <button className={`w-full h-[40px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal transition ${priceData.buttonColor}`}>
+            <button className={`w-full h-[40px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition ${priceData.buttonColor}`}>
               Get Started
             </button>
           )}
