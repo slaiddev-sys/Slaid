@@ -5,10 +5,17 @@
       "schedule": "0 0 1 * *"
     }
   ],
-  "rewrites": [
+  "redirects": [
     {
-      "source": "/api/webhooks/:path*",
-      "destination": "/api/webhooks/:path*"
+      "source": "/:path((?!api/webhooks).*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "slaidapp.com"
+        }
+      ],
+      "destination": "https://www.slaidapp.com/:path*",
+      "permanent": true
     }
   ]
 }
