@@ -17,9 +17,19 @@ export const polarConfig = {
     credits2000: '92d6ad27-31d8-4a6d-989a-98da344ad7eb',  // $100
   },
   
-  // URLs
-  successUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/success`,
-  cancelUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/pricing`,
+  // URLs - use current domain or fallback
+  get successUrl() {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/success`;
+    }
+    return `${process.env.NEXT_PUBLIC_BASE_URL || 'https://slaidapp.com'}/success`;
+  },
+  get cancelUrl() {
+    if (typeof window !== 'undefined') {
+      return `${window.location.origin}/pricing`;
+    }
+    return `${process.env.NEXT_PUBLIC_BASE_URL || 'https://slaidapp.com'}/pricing`;
+  },
 };
 
 // Validation function to check if Polar is properly configured
