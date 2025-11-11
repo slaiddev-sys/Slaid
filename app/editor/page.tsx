@@ -7057,7 +7057,7 @@ export default function EditorPage() {
             )}
 
             {onboardingStep === 3 && selectedSlideCount && isLoading && (
-              <div className="w-full flex flex-col items-center justify-start pt-0">
+              <div className="w-full h-full flex flex-col items-center justify-center">
                 {/* Multi-Step Loading State */}
                 <div className="flex flex-col items-start gap-6 w-full max-w-md mx-auto py-8">
                     {/* Loading Step 1 - Analyzing content */}
