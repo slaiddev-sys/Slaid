@@ -2717,6 +2717,7 @@ export default function EditorPage() {
 
   function PricingModal() {
     if (!showPricingModal) return null;
+    const [isAnnualBasic, setIsAnnualBasic] = useState(false);
     const [isAnnualPro, setIsAnnualPro] = useState(false);
     const [isAnnualUltra, setIsAnnualUltra] = useState(false);
     
@@ -2730,7 +2731,8 @@ export default function EditorPage() {
     const plans = [
       {
         name: "Basic",
-        price: "$29",
+        monthly: { price: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903" },
+        annual: { price: "$261", period: "/year", save: "Save $87 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903" },
         desc: ["Perfect for testing the product with no", "commitment."],
         icon: "/Basic Plan.png",
         features: [
@@ -2739,12 +2741,11 @@ export default function EditorPage() {
           { text: "No export feature", included: false },
           { text: "No preview feature", included: false },
         ],
-        buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]",
       },
       {
         name: "Pro",
-        monthly: { price: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]" },
-        annual: { price: "$441", period: "/year", save: "Save $147 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]" },
+        monthly: { price: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059" },
+        annual: { price: "$441", period: "/year", save: "Save $147 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059" },
         desc: ["Designed for professionals."],
         icon: "/Pro Plan.png",
         features: [
@@ -2756,8 +2757,8 @@ export default function EditorPage() {
       },
       {
         name: "Ultra",
-        monthly: { price: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]" },
-        annual: { price: "$801", period: "/year", save: "Save $267 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]" },
+        monthly: { price: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100" },
+        annual: { price: "$801", period: "/year", save: "Save $267 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100" },
         desc: ["For teams and power users."],
         icon: "/Ultra Red Plan.png",
         features: [
@@ -2771,11 +2772,14 @@ export default function EditorPage() {
     ];
 
     function PlanCard({ plan, isAnnual = false, onToggle = () => {} }: { plan: any; isAnnual?: boolean; onToggle?: () => void }) {
-      const isToggle = plan.name === "Pro" || plan.name === "Ultra";
-      const priceData = isToggle ? (isAnnual ? plan.annual : plan.monthly) : { price: plan.price, period: "", save: null, buttonColor: plan.buttonColor };
+      const priceData = isAnnual ? plan.annual : plan.monthly;
       
       // Get the appropriate Polar product ID based on plan and billing cycle
       const productId = plan.name === "Pro" ? getProductId(isAnnual) : null;
+      
+      // Get toggle colors: green when monthly (unchecked), plan color when annual (checked)
+      const toggleBgColor = isAnnual ? priceData.toggleColor : '#0a5f38';
+      
       return (
         <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto`}>
           {/* Header: icon left, toggle right */}
@@ -2783,17 +2787,18 @@ export default function EditorPage() {
             <div className="w-[42px] h-[42px] flex items-center justify-center relative">
               <img src={plan.icon} alt={`${plan.name} Plan Icon`} className="w-[42px] h-[42px] object-contain" />
             </div>
-            {isToggle && (
-              <div className="flex items-center gap-2">
-                <span className="text-gray-600 text-[13px]">Monthly</span>
-                <label className="relative inline-block w-10 align-middle select-none cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" checked={isAnnual} onChange={onToggle} />
-                  <span className="block w-10 h-5 bg-[#002903] rounded-full shadow-inner transition peer-checked:bg-[#002903]" />
-                  <span className="dot absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition peer-checked:left-6" />
-                </label>
-                <span className="text-gray-600 text-[13px]">Annual</span>
-              </div>
-            )}
+            <div className="flex items-center gap-2">
+              <span className="text-gray-600 text-[13px]">Monthly</span>
+              <label className="relative inline-block w-10 align-middle select-none cursor-pointer">
+                <input type="checkbox" className="sr-only peer" checked={isAnnual} onChange={onToggle} />
+                <span 
+                  className="block w-10 h-5 rounded-full shadow-inner transition" 
+                  style={{ backgroundColor: toggleBgColor }}
+                />
+                <span className="dot absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition peer-checked:left-6" />
+              </label>
+              <span className="text-gray-600 text-[13px]">Annual</span>
+            </div>
           </div>
           {/* Card content with fixed min-height for alignment */}
           <div className="flex flex-col flex-1 min-h-[220px]">
@@ -2899,7 +2904,7 @@ export default function EditorPage() {
             <p className="text-gray-600 text-[13.5px] leading-[21px] max-w-2xl mx-auto">Start for free. Upgrade to get the capacity that exactly matches your team's needs.</p>
           </div>
           <div className="flex flex-col md:flex-row gap-1 w-full max-w-4xl justify-center mx-auto">
-            <PlanCard plan={plans[0]} isAnnual={false} onToggle={()=>{}} />
+            <PlanCard plan={plans[0]} isAnnual={isAnnualBasic} onToggle={() => setIsAnnualBasic(v => !v)} />
             <PlanCard plan={plans[1]} isAnnual={isAnnualPro} onToggle={() => setIsAnnualPro(v => !v)} />
             <PlanCard plan={plans[2]} isAnnual={isAnnualUltra} onToggle={() => setIsAnnualUltra(v => !v)} />
           </div>
