@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Extract event ID for idempotency
-    const eventId = body.id
+    // Polar sends the subscription/order ID in data.id, not at root level
+    const eventId = body.data?.id || body.id
     if (!eventId) {
       console.error('❌ No event ID in webhook payload')
       return NextResponse.json({ error: 'No event ID' }, { status: 400 })
