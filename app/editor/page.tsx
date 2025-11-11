@@ -2900,7 +2900,7 @@ export default function EditorPage() {
             </svg>
           </button>
           <div className="text-center mb-8">
-            <h1 className="text-gray-900 text-[48px] font-normal leading-[56px] mb-3 tracking-tight">Pricing</h1>
+            <h1 className="text-gray-900 text-[32px] font-normal leading-[42px] mb-3 tracking-tight">Pricing</h1>
             <p className="text-gray-600 text-[13.5px] leading-[21px] max-w-2xl mx-auto">Start for free. Upgrade to get the capacity that exactly matches your team's needs.</p>
           </div>
           <div className="flex flex-col md:flex-row gap-1 w-full max-w-4xl justify-center mx-auto">
