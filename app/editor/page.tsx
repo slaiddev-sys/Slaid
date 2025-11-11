@@ -2730,7 +2730,7 @@ export default function EditorPage() {
     const plans = [
       {
         name: "Basic",
-        price: "$0",
+        price: "$29",
         desc: ["Perfect for testing the product with no", "commitment."],
         icon: "/Basic Plan.png",
         features: [
@@ -2743,8 +2743,8 @@ export default function EditorPage() {
       },
       {
         name: "Pro",
-        monthly: { price: "$30", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
-        annual: { price: "$270", period: "/year", save: "Save $90 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
+        monthly: { price: "$49", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
+        annual: { price: "$441", period: "/year", save: "Save $147 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
         desc: ["Designed for professionals."],
         icon: "/Pro Plan.png",
         features: [
@@ -2756,8 +2756,8 @@ export default function EditorPage() {
       },
       {
         name: "Ultra",
-        monthly: { price: "$50", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
-        annual: { price: "$450", period: "/year", save: "Save $150 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
+        monthly: { price: "$89", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
+        annual: { price: "$801", period: "/year", save: "Save $267 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
         desc: ["For teams and power users."],
         icon: "/Ultra plan.png",
         features: [
@@ -2777,7 +2777,7 @@ export default function EditorPage() {
       // Get the appropriate Polar product ID based on plan and billing cycle
       const productId = plan.name === "Pro" ? getProductId(isAnnual) : null;
       return (
-        <div key={plan.name} className={`relative bg-gray-100 rounded-[12.75px] flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto`}>
+        <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto`}>
           {/* Header: icon left, toggle right */}
           <div className="flex flex-row items-center justify-between mb-3">
             <div className="w-[42px] h-[42px] flex items-center justify-center relative">
