@@ -25,15 +25,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin client not configured' }, { status: 500 })
     }
 
-    // Verify this is a successful checkout event
-    if (body.type !== 'checkout.completed') {
-      console.log('⏭️ Ignoring non-checkout event:', body.type)
+    // Verify this is a successful order paid event
+    if (body.type !== 'order.paid') {
+      console.log('⏭️ Ignoring non-order.paid event:', body.type)
       return NextResponse.json({ received: true })
     }
 
-    const checkout = body.data
-    const productId = checkout.product_id
-    const customerEmail = checkout.customer_email
+    const order = body.data
+    const productId = order.product_id
+    const customerEmail = order.customer_email
 
     // Get product info (credit pack or Pro plan)
     const product = PRODUCT_MAPPING[productId]
