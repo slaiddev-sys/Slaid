@@ -14,6 +14,15 @@ const PRODUCT_MAPPING: Record<string, { credits: number; description: string; ty
   '8739ccac-36f9-4e28-8437-8b36bb1e7d71': { credits: 500, description: 'Pro Yearly Plan - 500 credits', type: 'pro_plan' },
 }
 
+// Add GET handler for debugging
+export async function GET(request: NextRequest) {
+  return NextResponse.json({ 
+    status: 'ok',
+    message: 'Polar webhook endpoint is active',
+    timestamp: new Date().toISOString()
+  })
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -25,9 +34,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Admin client not configured' }, { status: 500 })
     }
 
-    // Verify this is a successful order paid event
-    if (body.type !== 'order.paid') {
-      console.log('⏭️ Ignoring non-order.paid event:', body.type)
+    // Verify this is a successful order paid event (or order.created for immediate processing)
+    if (body.type !== 'order.paid' && body.type !== 'order.created') {
+      console.log('⏭️ Ignoring event type:', body.type)
       return NextResponse.json({ received: true })
     }
 
