@@ -1281,12 +1281,24 @@ ${whichInterpretationLayouts}
 
     console.log('🤖 Sending request to Claude...');
 
+    // 💾 PROMPT CACHING: Extract static instructions into cacheable system prompt
+    // This saves ~60% on API costs by caching the large instruction set
+    const systemPromptStatic = aiPrompt.substring(aiPrompt.indexOf('AVAILABLE EXCEL LAYOUTS'), aiPrompt.lastIndexOf('Generate a JSON'));
+    const dynamicUserContent = aiPrompt.replace(systemPromptStatic, '');
+
     const message = await anthropic.messages.create({
       model: 'claude-opus-4-20250514', // Using Opus 4.1 for better quality
-      max_tokens: 8192, // Maximum for Haiku
+      max_tokens: 8192,
+      system: [
+        {
+          type: "text",
+          text: systemPromptStatic,
+          cache_control: { type: "ephemeral" }
+        }
+      ],
       messages: [{
         role: 'user',
-        content: aiPrompt
+        content: dynamicUserContent
       }]
     });
 

@@ -164,13 +164,23 @@ class RateLimitManager {
       const userAction = requestData.existingPresentation ? 'modify-slide' : 'create-deck';
       const requestId = Math.random().toString(36).substr(2, 9);
 
+      // 💾 PROMPT CACHING: Convert system prompt to cacheable format
+      // This saves ~60% on API costs by caching the system prompt (which is identical across requests)
+      const systemPromptWithCache = [
+        {
+          type: "text",
+          text: requestData.system,
+          cache_control: { type: "ephemeral" }
+        }
+      ] as any;
+
       // Use our cost tracking wrapper
       const response = await anthropicWrapper.createMessage({
         model: 'claude-opus-4-20250514',
         max_tokens: requestData.existingPresentation ? 4000 : 6000, // Increased from 3000 to 6000 for complete playbook generation
         temperature: requestData.existingPresentation ? 0.1 : 0.3,
         messages: requestData.messages,
-        system: requestData.system,
+        system: systemPromptWithCache, // Use cacheable system prompt format
         kind,
         userAction,
         requestId

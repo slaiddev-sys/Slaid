@@ -6,7 +6,7 @@ export interface AnthropicCallParams {
   messages: Anthropic.Messages.MessageParam[];
   max_tokens: number;
   temperature?: number;
-  system?: string;
+  system?: any; // Allow both string and array for prompt caching support
   kind: 'new' | 'modify';
   userAction?: string;
   requestId?: string;
