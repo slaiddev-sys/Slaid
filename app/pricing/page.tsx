@@ -49,7 +49,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {} }: { plan: any; 
   const priceData = isToggle ? (isAnnual ? plan.annual : plan.monthly) : { price: plan.price, period: "", save: null, buttonColor: plan.buttonColor };
   
   // Get the appropriate Polar product ID based on plan and billing cycle
-  const productId = plan.name === "Pro" ? getProductId(isAnnual) : null;
+  const productId = plan.name === "Pro" ? getProductId(plan.name, isAnnual) : null;
   return (
     <div key={plan.name} className={`relative bg-[#1c1c1c] border ${plan.border} rounded-[12.75px] flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-xs min-w-[280px] mx-auto`}>
       {/* Header: icon left, toggle right */}
