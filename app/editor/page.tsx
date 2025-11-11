@@ -2718,6 +2718,7 @@ export default function EditorPage() {
   function PricingModal() {
     if (!showPricingModal) return null;
     const [isAnnualPro, setIsAnnualPro] = useState(false);
+    const [isAnnualUltra, setIsAnnualUltra] = useState(false);
     
     const CHECK_ICON = (
       <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M4.5 7.5l2 2 3-3" stroke="#002903" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -2728,10 +2729,10 @@ export default function EditorPage() {
 
     const plans = [
       {
-        name: "Free",
+        name: "Basic",
         price: "$0",
         desc: ["Perfect for testing the product with no", "commitment."],
-        iconBg: "bg-[#002903]",
+        icon: "/Basic Plan.png",
         features: [
           { text: "20 credits", included: true },
           { text: "Unlimited presentations", included: true },
@@ -2739,40 +2740,48 @@ export default function EditorPage() {
           { text: "No preview feature", included: false },
         ],
         buttonColor: "bg-[#364153] text-gray-900 hover:bg-[#4a5565]",
-        border: "border-[#364153]",
       },
       {
         name: "Pro",
         monthly: { price: "$30", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
         annual: { price: "$270", period: "/year", save: "Save $90 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
         desc: ["Designed for professionals."],
-        iconBg: "bg-[#002903]",
+        icon: "/Pro Plan.png",
         features: [
           { text: "500 credits", included: true },
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
           { text: "Export as PDF", included: true },
         ],
-        border: "border-[#364153]",
+      },
+      {
+        name: "Ultra",
+        monthly: { price: "$50", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
+        annual: { price: "$450", period: "/year", save: "Save $150 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]" },
+        desc: ["For teams and power users."],
+        icon: "/Ultra plan.png",
+        features: [
+          { text: "1000 credits", included: true },
+          { text: "Unlimited presentations", included: true },
+          { text: "Slide preview before generating", included: true },
+          { text: "Export as PDF", included: true },
+          { text: "Priority support", included: true },
+        ],
       },
     ];
 
     function PlanCard({ plan, isAnnual = false, onToggle = () => {} }: { plan: any; isAnnual?: boolean; onToggle?: () => void }) {
-      const isToggle = plan.name === "Pro";
+      const isToggle = plan.name === "Pro" || plan.name === "Ultra";
       const priceData = isToggle ? (isAnnual ? plan.annual : plan.monthly) : { price: plan.price, period: "", save: null, buttonColor: plan.buttonColor };
       
       // Get the appropriate Polar product ID based on plan and billing cycle
       const productId = plan.name === "Pro" ? getProductId(isAnnual) : null;
       return (
-        <div key={plan.name} className={`relative bg-gray-100 rounded-[12.75px] flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-xs min-w-[280px] mx-auto`}>
+        <div key={plan.name} className={`relative bg-gray-100 rounded-[12.75px] flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto`}>
           {/* Header: icon left, toggle right */}
           <div className="flex flex-row items-center justify-between mb-3">
-            <div className={`w-[42px] h-[42px] rounded-[8.75px] flex items-center justify-center ${plan.iconBg} relative`}>
-              {plan.name === "Pro" ? (
-                <img src="/pro-icon.png" alt="Pro Plan Icon" className="w-5 h-5" />
-              ) : (
-                <img src="/free-icon.png" alt="Free Plan Icon" className="w-5 h-5" />
-              )}
+            <div className="w-[42px] h-[42px] flex items-center justify-center relative">
+              <img src={plan.icon} alt={`${plan.name} Plan Icon`} className="w-[42px] h-[42px] object-contain" />
             </div>
             {isToggle && (
               <div className="flex items-center gap-2">
@@ -2822,20 +2831,27 @@ export default function EditorPage() {
             </div>
           </div>
           {/* Button */}
-          {plan.name === "Free" && credits?.plan_type === 'free' ? (
+          {plan.name === "Basic" && credits?.plan_type === 'free' ? (
             <button 
               className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
               disabled
             >
               Current plan
             </button>
-          ) : plan.name === "Free" && credits?.plan_type === 'pro' ? (
+          ) : plan.name === "Basic" && (credits?.plan_type === 'pro' || credits?.plan_type === 'ultra') ? (
             <button 
               className="w-full h-[40px] rounded-[6.75px] border border-[#4a5565] flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
             >
               Downgrade plan
             </button>
           ) : plan.name === "Pro" && credits?.plan_type === 'pro' ? (
+            <button 
+              className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              disabled
+            >
+              Current plan
+            </button>
+          ) : plan.name === "Ultra" && credits?.plan_type === 'ultra' ? (
             <button 
               className="w-full h-[40px] rounded-[6.75px] border border-gray-300 flex items-center justify-center text-[11.34px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
               disabled
@@ -2865,7 +2881,7 @@ export default function EditorPage() {
       >
         <div className="absolute inset-0 bg-black/60" />
         <div 
-          className="relative bg-white rounded-2xl shadow-xl w-full max-w-4xl p-8 border border-[#23272f] animate-scaleIn"
+          className="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl p-8 border border-[#23272f] animate-scaleIn"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -2882,9 +2898,10 @@ export default function EditorPage() {
             <h1 className="text-gray-900 text-[32px] font-normal leading-[42px] mb-3">Pricing</h1>
             <p className="text-gray-600 text-[13.5px] leading-[21px] max-w-2xl mx-auto">Start for free. Upgrade to get the capacity that exactly matches your team's needs.</p>
           </div>
-          <div className="flex flex-col md:flex-row gap-1 w-full max-w-2xl justify-center mx-auto">
+          <div className="flex flex-col md:flex-row gap-4 w-full max-w-4xl justify-center mx-auto">
             <PlanCard plan={plans[0]} isAnnual={false} onToggle={()=>{}} />
             <PlanCard plan={plans[1]} isAnnual={isAnnualPro} onToggle={() => setIsAnnualPro(v => !v)} />
+            <PlanCard plan={plans[2]} isAnnual={isAnnualUltra} onToggle={() => setIsAnnualUltra(v => !v)} />
           </div>
         </div>
       </div>
@@ -7726,4 +7743,5 @@ export default function EditorPage() {
       <FeaturebaseWidget appId="68fbb468fbac8b30b2071011" />
     </ProtectedRoute>
   );
+}
 }
