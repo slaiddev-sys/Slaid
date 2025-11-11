@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     console.log('🔔 Polar webhook received:', JSON.stringify(body, null, 2))
+    console.log('🔔 Full request headers:', Object.fromEntries(request.headers.entries()))
 
     // Check if admin client is configured
     if (!isAdminConfigured()) {
