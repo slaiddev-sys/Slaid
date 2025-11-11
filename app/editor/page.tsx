@@ -6890,8 +6890,167 @@ export default function EditorPage() {
                     <button 
                       key={option}
                       className="px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-gray-700 hover:border-[#002903] hover:text-[#002903] font-medium transition"
-                      onClick={() => {
+                      onClick={async () => {
+                        // Set slide count and immediately start generation
                         setSelectedSlideCount(option);
+                        
+                        // Validate all required fields
+                        if (!uploadResult || !presentationPrompt.trim()) {
+                          console.error('❌ Missing required fields:', {
+                            hasUploadResult: !!uploadResult,
+                            presentationPrompt: presentationPrompt.trim()
+                          });
+                          setUploadError('Please ensure all fields are filled: file uploaded and description provided.');
+                          return;
+                        }
+
+                        // Convert slide count text to number
+                        const slideCountNum = getSlideCountNumber(option);
+                        
+                        if (slideCountNum < 1) {
+                          console.error('❌ Invalid slide count:', option);
+                          setUploadError('Please select a valid slide count.');
+                          return;
+                        }
+
+                        setIsLoading(true);
+                        setUploadError('');
+
+                        // Calculate batches (10 slides per batch)
+                        const SLIDES_PER_BATCH = 10;
+                        const totalBatches = Math.ceil(slideCountNum / SLIDES_PER_BATCH);
+
+                        console.log(`📊 Starting generation: ${slideCountNum} slides in ${totalBatches} batch(es)`);
+
+                        let allSlides: any[] = [];
+                        let allMessages: any[] = [];
+
+                        try {
+                          for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+                            const startSlide = batchIndex * SLIDES_PER_BATCH + 1;
+                            const endSlide = Math.min((batchIndex + 1) * SLIDES_PER_BATCH, slideCountNum);
+                            const slidesInBatch = endSlide - startSlide + 1;
+
+                            console.log(`📦 Batch ${batchIndex + 1}/${totalBatches}: Generating slides ${startSlide}-${endSlide}`);
+                            
+                            // Update batch progress
+                            setBatchProgress({
+                              current: batchIndex + 1,
+                              total: totalBatches,
+                              slideRange: `${startSlide}-${endSlide}`
+                            });
+
+                            // Step 1: Start analyzing content
+                            setLoadingStep(1);
+
+                            let batchMessages: any[] = [];
+                            if (batchIndex === 0) {
+                              batchMessages = [
+                                { role: 'user', text: presentationPrompt },
+                                { role: 'assistant', text: 'Creating presentation...', isLoading: true }
+                              ];
+                            }
+
+                            // Step 2: Generate slides for this batch
+                            setLoadingStep(2);
+                            
+                            const requestBody = {
+                              excelData: uploadResult.processedData,
+                              prompt: presentationPrompt,
+                              slideCount: slidesInBatch,
+                              batchInfo: {
+                                currentBatch: batchIndex + 1,
+                                totalBatches,
+                                startSlide,
+                                endSlide,
+                                totalSlides: slideCountNum
+                              },
+                              uploadedFileName: uploadedFiles[0]?.name || 'data',
+                              comprehensiveAnalysis: comprehensiveAnalysis
+                            };
+
+                            console.log(`🤖 Sending batch ${batchIndex + 1} to API...`);
+                            
+                            const response = await fetch('/api/generate-excel-presentation', {
+                              method: 'POST',
+                              headers: { 
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ''}`
+                              },
+                              body: JSON.stringify(requestBody)
+                            });
+
+                            if (!response.ok) {
+                              const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                              throw new Error(errorData.error || `Failed to generate presentation (batch ${batchIndex + 1})`);
+                            }
+
+                            const data = await response.json();
+                            console.log(`✅ Batch ${batchIndex + 1} response:`, data);
+
+                            if (data.presentation) {
+                              // Append slides from this batch
+                              allSlides = [...allSlides, ...data.presentation.slides];
+                              console.log(`📚 Total slides so far: ${allSlides.length}`);
+                              
+                              // For first batch, set up messages
+                              if (batchIndex === 0) {
+                                batchMessages = [
+                                  { role: 'user', text: presentationPrompt },
+                                  {
+                                    role: 'assistant',
+                                    text: `Successfully created "${data.presentation.title}"`,
+                                    isLoading: false,
+                                    presentationData: data.presentation
+                                  }
+                                ];
+                                allMessages = batchMessages;
+                              }
+                            } else {
+                              throw new Error(`No presentation data in batch ${batchIndex + 1} response`);
+                            }
+                          }
+
+                          // Step 3: Apply design (all batches complete)
+                          setLoadingStep(3);
+                          await new Promise(resolve => setTimeout(resolve, 500));
+
+                          // After all batches complete, create final presentation with all slides
+                          const finalPresentation = {
+                            title: uploadedFiles[0]?.name?.replace(/\.[^/.]+$/, '') || 'Data Analysis',
+                            slides: allSlides
+                          };
+
+                          console.log('🎉 All batches complete! Final presentation:', {
+                            totalSlides: finalPresentation.slides.length,
+                            batches: Math.ceil(slideCountNum / 10)
+                          });
+
+                          // Set the presentation data with all messages
+                          setPresentationMessages(prev => ({
+                            ...prev,
+                            [currentPresentationId]: [
+                              { role: 'user', text: presentationPrompt },
+                              {
+                                role: 'assistant',
+                                text: `Successfully created "${finalPresentation.title}" with ${finalPresentation.slides.length} slides`,
+                                isLoading: false,
+                                presentationData: finalPresentation
+                              }
+                            ]
+                          }));
+
+                          setShowOnboarding(false);
+                          setIsLoading(false);
+                          setActiveSlide(0);
+
+                        } catch (error: any) {
+                          console.error('❌ Error during batch generation:', error);
+                          setUploadError(error.message || 'Failed to generate presentation');
+                          setIsLoading(false);
+                          setLoadingStep(1);
+                          setBatchProgress({ current: 1, total: 1, slideRange: '' });
+                        }
                       }}
                     >
                       {option}
@@ -6901,24 +7060,9 @@ export default function EditorPage() {
               </div>
             )}
 
-            {onboardingStep === 3 && selectedSlideCount && (
-              <div className="w-full flex flex-col items-start justify-start pt-0">
-                {/* Back Button - Only show when NOT loading */}
-                {!isLoading && (
-                <button
-                    onClick={() => {
-                      setSelectedSlideCount('');
-                    }}
-                    className="mb-6 p-2 text-[#002903] hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label="Go back"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m15 18-6-6 6-6"/>
-                  </svg>
-                </button>
-                )}
-                
-                {isLoading ? (
+            {onboardingStep === 3 && selectedSlideCount && isLoading && (
+              <div className="w-full flex flex-col items-center justify-start pt-0">
+                {(
                   /* Multi-Step Loading State */
                   <div className="flex flex-col items-start gap-6 w-full max-w-md mx-auto py-8">
                     {/* Loading Step 1 - Analyzing content */}
@@ -7012,265 +7156,9 @@ export default function EditorPage() {
                       </div>
                     )}
                   </div>
-                ) : (
-                  /* SlaidAI Message - Centered Container */
-                  <div className="flex flex-col w-full max-w-3xl mx-auto">
-                    {/* Header - Left Aligned */}
-                    <div className="flex items-center gap-2 mb-4">
-                      {/* SlaidAI Avatar */}
-                      <div className="w-8 h-8 flex items-center justify-center flex-shrink-0">
-                        <img 
-                          src="/slaid-favicon-verde.png" 
-                          alt="SlaidAI" 
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
-                      <span className="text-sm font-medium text-[#002903]">SlaidAI</span>
-                      <span className="text-xs text-gray-500">Ready to generate</span>
-                </div>
-
-                    {/* Scrollable Container for Presentation Preview with Fade */}
-                    <div className="relative w-full">
-                      <div className="max-h-[calc(100vh-280px)] overflow-y-auto pr-2">
-                        {/* AI-Style Conversational Response */}
-                        <div className="text-gray-700 leading-relaxed space-y-4">
-                          {/* Opening paragraph with preserved formatting */}
-                          <div className="text-sm whitespace-pre-wrap">
-                            {promptAnalysis || `Based on your uploaded file "${uploadedFiles[0]?.name || 'data'}" and the request "${presentationPrompt}", I'll create a comprehensive ${selectedSlideCount}-slide presentation that analyzes your data structure, extracts key insights, and presents them in a professional format with charts, tables, and interpretative content.`}
               </div>
-
-                          {/* Presentation structure as flowing text */}
-                          <p className="text-sm font-medium text-gray-800">Here's the structure I'll create:</p>
-                          
-                          <div className="space-y-2 text-sm">
-                            {Array.from({length: getSlideCountNumber(selectedSlideCount)}, (_, index) => {
-                              const slideTypes = ['Cover', 'Table of Contents', 'Data Overview', 'Key Insights', 'Charts & Analysis', 'Conclusions', 'Next Steps', 'Back Cover'];
-                              const slideTitle = slideTypes[index] || `Content Slide ${index - 6}`;
-                              return (
-                                <div key={index} className="flex items-start gap-2">
-                                  <span className="text-gray-500 font-medium min-w-[70px]">Slide {index + 1}:</span>
-                                  <span className="text-gray-700">{slideTitle}</span>
-            </div>
-                              );
-                            })}
-            </div>
-
-                          {/* Closing paragraph */}
-                          <p className="text-sm text-gray-600 italic">
-                            Each slide will feature professional layouts with data visualization, interpretative insights, and adaptive content tailored to your specific data.
-                          </p>
-                        </div>
-                      </div>
-                      
-                      {/* Bottom Fade Effect */}
-                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-[#f9fafb] to-transparent pointer-events-none"></div>
-                    </div>
-
-                    {/* Generate Button - Centered */}
-                  <button
-                      className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white py-3 px-6 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-6"
-                      disabled={isLoading}
-                      onClick={async () => {
-                        // Validate all required fields
-                        if (!uploadResult || !selectedSlideCount || !presentationPrompt.trim()) {
-                          console.error('❌ Missing required fields:', {
-                            hasUploadResult: !!uploadResult,
-                            selectedSlideCount,
-                            presentationPrompt: presentationPrompt.trim()
-                          });
-                          setUploadError('Please ensure all fields are filled: file uploaded, slide count selected, and description provided.');
-                          return;
-                        }
-
-                        // Convert slide count text to number
-                        const slideCountNum = getSlideCountNumber(selectedSlideCount);
-                        
-                        if (slideCountNum < 1) {
-                          console.error('❌ Invalid slide count:', selectedSlideCount);
-                          setUploadError('Please select a valid slide count.');
-                          return;
-                        }
-
-                        setIsLoading(true);
-                        setUploadError('');
-
-                        // Calculate batches (10 slides per batch)
-                        const SLIDES_PER_BATCH = 10;
-                        const totalBatches = Math.ceil(slideCountNum / SLIDES_PER_BATCH);
-                        
-                        console.log(`📦 Batched generation: ${slideCountNum} slides in ${totalBatches} batch(es)`);
-
-                        // Set timeout for 5 minutes (to accommodate multiple batches)
-                        const timeoutId = setTimeout(() => {
-                          setIsLoading(false);
-                          setUploadError('Presentation generation timed out. Please try again with a smaller dataset or simpler prompt.');
-                        }, 300000); // 5 minutes
-                        
-                        (window as any).generationTimeout = timeoutId;
-
-                        try {
-                          let allSlides: any[] = [];
-                          
-                          // Generate slides in batches
-                          for (let batchNum = 1; batchNum <= totalBatches; batchNum++) {
-                            const slideStart = (batchNum - 1) * SLIDES_PER_BATCH + 1;
-                            const slideEnd = Math.min(batchNum * SLIDES_PER_BATCH, slideCountNum);
-                            
-                            // Update batch progress
-                            setBatchProgress({
-                              current: batchNum,
-                              total: totalBatches,
-                              slideRange: `${slideStart}-${slideEnd}`
-                            });
-                            
-                            console.log(`🚀 Batch ${batchNum}/${totalBatches}: Generating slides ${slideStart}-${slideEnd}...`);
-                            
-                            // Get auth headers for credit tracking
-                            const { data: { session } } = await supabase.auth.getSession();
-                            const excelHeaders: Record<string, string> = {
-                              'Content-Type': 'application/json',
-                            };
-                            
-                            if (session?.access_token) {
-                              excelHeaders['Authorization'] = `Bearer ${session.access_token}`;
-                              console.log('🔐 Auth header added for Excel generation credit tracking');
-                            } else {
-                              console.warn('⚠️ No auth token found - credits may not be deducted');
-                            }
-                            
-                            const response = await fetch('/api/generate-excel-presentation', {
-                              method: 'POST',
-                              headers: excelHeaders,
-                              body: JSON.stringify({
-                                uploadResult: uploadResult,
-                                presentationPrompt: presentationPrompt.trim(),
-                                slideCount: slideCountNum,
-                                comprehensiveAnalysis: comprehensiveAnalysis,
-                                batchNumber: batchNum,
-                                totalBatches: totalBatches,
-                                slideStart: slideStart,
-                                slideEnd: slideEnd
-                              })
-                            });
-
-                            console.log(`📡 Batch ${batchNum} response status:`, response.status);
-
-                            if (!response.ok) {
-                              const error = await response.json();
-                              console.error(`❌ Batch ${batchNum} error:`, error);
-                              throw new Error(error.error || `Failed to generate batch ${batchNum}`);
-                            }
-
-                            const result = await response.json();
-                            console.log(`✅ Batch ${batchNum} generated successfully!`);
-                            console.log(`📊 Batch ${batchNum} slides:`, result.presentation?.slides?.length);
-                            
-                            // Merge slides from this batch
-                            if (result.presentation?.slides) {
-                              allSlides = allSlides.concat(result.presentation.slides);
-                            }
-                          }
-
-                          console.log('✅ All batches completed!');
-                          console.log('📊 Total slides generated:', allSlides.length);
-
-                          // Create presentation data from merged batches
-                          const presentationData = {
-                            id: Date.now(),
-                            title: uploadResult.fileName ? `${uploadResult.fileName} Analysis` : 'Data Analysis',
-                            slideCount: allSlides.length,
-                            slides: allSlides,
-                            createdAt: new Date().toISOString(),
-                            updatedAt: new Date().toISOString()
-                          };
-
-                          // Set up the editor with the generated presentation
-                          setChatInput(presentationPrompt);
-                          
-                          if (uploadedFiles.length > 0) {
-                            const fileData = uploadedFiles.map(file => ({
-                              url: URL.createObjectURL(file),
-                              type: file.type.includes('excel') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? 'excel' : 
-                                    file.type.includes('csv') || file.name.endsWith('.csv') ? 'csv' : 'document',
-                              name: file.name,
-                              isUploaded: true,
-                              uploadStatus: 'completed' as const
-                            }));
-                            setAttachedFiles(fileData);
-                          }
-
-                          // Add the presentation data to messages
-                          const userMessage = { 
-                            id: `user-${Date.now()}-${Math.random()}`,
-                            role: "user" as const, 
-                            text: presentationPrompt, 
-                            attachments: uploadedFiles.map(file => ({
-                              url: URL.createObjectURL(file),
-                              type: file.type.includes('excel') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls') ? 'excel' : 
-                                    file.type.includes('csv') || file.name.endsWith('.csv') ? 'csv' : 'document',
-                              name: file.name,
-                              isUploaded: true,
-                              uploadStatus: 'completed' as const
-                            }))
-                          };
-                          
-                          const assistantMessage = { 
-                            id: `assistant-${Date.now()}-${Math.random()}`,
-                            role: "assistant" as const, 
-                            text: `Successfully created "${presentationData.title}"\n\nPresentation structure:\n${presentationData.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title}`).join('\n')}\n\nYour ${presentationData.slideCount}-slide presentation is ready for review and editing.`,
-                            isLoading: false,
-                            presentationData: presentationData,
-                            userMessage: presentationPrompt,
-                            version: 1
-                          };
-
-                          setPresentationMessages(prev => ({
-                            ...prev,
-                            [currentPresentationId]: [userMessage, assistantMessage]
-                          }));
-
-                          // Close onboarding and show editor
-                      setShowOnboarding(false);
-                          setOnboardingStep(1);
-                          
-                          // Clear input and attachments
-                          setChatInput("");
-                          setAttachedFiles([]);
-                          
-                          // Clear the generation timeout
-                          if ((window as any).generationTimeout) {
-                            clearTimeout((window as any).generationTimeout);
-                            (window as any).generationTimeout = null;
-                          }
-                          
-                        } catch (err) {
-                          console.error('❌ Generation error:', err);
-                          
-                          // Clear the generation timeout
-                          if ((window as any).generationTimeout) {
-                            clearTimeout((window as any).generationTimeout);
-                            (window as any).generationTimeout = null;
-                          }
-                          
-                          const errorMessage = err instanceof Error ? err.message : 'Generation failed';
-                          setUploadError(errorMessage);
-                          
-                          // Show error in alert for debugging
-                          alert(`Presentation generation failed:\n\n${errorMessage}\n\nPlease check the browser console for details.`);
-                        } finally {
-                          setIsLoading(false);
-                          setBatchProgress({ current: 0, total: 0, slideRange: '' }); // Reset batch progress
-                        }
-                    }}
-                  >
-                    Generate Presentation
-                  </button>
-                </div>
-          )}
-            </div>
-          )}
-
-        </section>
+            )}
+          </section>
         ) : (
           /* Normal Slide preview column */
           <section className="flex-1 flex flex-col h-full bg-white">
