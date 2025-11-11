@@ -2731,12 +2731,11 @@ export default function EditorPage() {
     const plans = [
       {
         name: "Basic",
-        monthly: { price: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903" },
-        annual: { price: "$261", period: "/year", save: "Save $87 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903" },
+        monthly: { price: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "700 credits" },
+        annual: { price: "$261", period: "/year", save: "Save $87 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "8,400 credits" },
         desc: ["Perfect for getting started."],
         icon: "/Basic Plan.png",
-        features: [
-          { text: "700 credits", included: true },
+        baseFeatures: [
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
           { text: "Export as PDF", included: true },
@@ -2744,12 +2743,11 @@ export default function EditorPage() {
       },
       {
         name: "Pro",
-        monthly: { price: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059" },
-        annual: { price: "$441", period: "/year", save: "Save $147 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059" },
+        monthly: { price: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "1500 credits" },
+        annual: { price: "$441", period: "/year", save: "Save $147 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "18,000 credits" },
         desc: ["Designed for professionals."],
         icon: "/Pro Plan.png",
-        features: [
-          { text: "1500 credits", included: true },
+        baseFeatures: [
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
           { text: "Export as PDF", included: true },
@@ -2757,12 +2755,11 @@ export default function EditorPage() {
       },
       {
         name: "Ultra",
-        monthly: { price: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100" },
-        annual: { price: "$801", period: "/year", save: "Save $267 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100" },
+        monthly: { price: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "3000 credits" },
+        annual: { price: "$801", period: "/year", save: "Save $267 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "36,000 credits" },
         desc: ["For teams and power users."],
         icon: "/Ultra Red Plan.png",
-        features: [
-          { text: "3000 credits", included: true },
+        baseFeatures: [
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
           { text: "Export as PDF", included: true },
@@ -2825,7 +2822,15 @@ export default function EditorPage() {
             </div>
             {/* Feature list */}
             <div className="flex flex-col gap-[9.5px] mb-8">
-              {plan.features.map((f: any, i: number) => (
+              {/* Credits - dynamic based on monthly/annual */}
+              <div className="flex flex-row items-center gap-[10.5px]">
+                <span className="flex items-center justify-center w-3.5 h-3.5">
+                  {CHECK_ICON}
+                </span>
+                <span className="text-gray-900 text-[11.15px] leading-[17.5px] font-normal">{priceData.credits}</span>
+              </div>
+              {/* Base features */}
+              {plan.baseFeatures.map((f: any, i: number) => (
                 <div key={i} className="flex flex-row items-center gap-[10.5px]">
                   <span className="flex items-center justify-center w-3.5 h-3.5">
                     {f.included ? CHECK_ICON : CROSS_ICON}
