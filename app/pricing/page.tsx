@@ -139,7 +139,7 @@ const faqData = [
   },
   {
     q: "What does the free plan include?",
-    a: "The free plan includes 100 credits per month, 1 workspace, and unlimited presentations."
+    a: "The free plan includes 100 credits (one-time), 1 workspace, and unlimited presentations."
   },
   {
     q: "What is a credit?",
