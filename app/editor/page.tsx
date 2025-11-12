@@ -141,6 +141,22 @@ export default function EditorPage() {
   const [exportWorkspace, setExportWorkspace] = useState<string | null>(null);
   const [exportSlideData, setExportSlideData] = useState<any>(null);
 
+  // Refresh credits when user returns to tab (after checkout in new window)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        console.log('👁️ Tab became visible - refreshing credits in case of purchase');
+        refreshCredits();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [refreshCredits]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
