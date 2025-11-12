@@ -3224,10 +3224,10 @@ export default function EditorPage() {
           {/* Delete Account Section */}
           <div className="mb-0">
             <h3 className="text-gray-900 text-lg font-semibold mb-3">Delete Account</h3>
-            <div className="bg-[#3a2323] border border-red-700 rounded-lg p-4 mb-5">
-              <div className="text-[#fca5a5] text-sm mb-3">Once you delete your account, there is no going back. Please be certain.</div>
+            <div className="bg-white border border-gray-200 rounded-lg p-4 mb-5">
+              <div className="text-gray-600 text-sm mb-3">Once you delete your account, there is no going back. Please be certain.</div>
               <button 
-                className="bg-[#ef4444] text-gray-900 font-semibold rounded px-4 py-2 text-sm hover:bg-[#dc2626] transition"
+                className="bg-red-600 text-white font-medium rounded px-4 py-2 text-sm hover:bg-red-700 transition"
                 onClick={() => setShowDeleteConfirmation(true)}
               >
                 Delete Account
@@ -3309,11 +3309,11 @@ export default function EditorPage() {
     if (!showDeleteConfirmation) return null;
 
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/80">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-red-700">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center">
-              <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
+              <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
@@ -3324,29 +3324,29 @@ export default function EditorPage() {
           </div>
           
           <div className="mb-6">
-            <p className="text-[#fca5a5] text-sm mb-3">
+            <p className="text-gray-600 text-sm mb-3">
               Are you sure you want to delete your account? This will permanently remove:
             </p>
-            <ul className="text-gray-500 text-sm space-y-1 ml-4">
+            <ul className="text-gray-600 text-sm space-y-1 ml-4">
               <li>• All your presentations and workspaces</li>
               <li>• Your account data and settings</li>
               <li>• Your subscription (if any)</li>
             </ul>
-            <p className="text-[#fca5a5] text-sm mt-3 font-medium">
+            <p className="text-gray-600 text-sm mt-3 font-medium">
               This action is irreversible and cannot be undone.
             </p>
           </div>
           
           <div className="flex gap-3">
             <button
-              className="flex-1 bg-[#31343b] text-gray-900 font-medium rounded px-4 py-2 text-sm hover:bg-[#3a3d44] transition"
+              className="flex-1 bg-gray-100 text-gray-900 font-medium rounded px-4 py-2 text-sm hover:bg-gray-200 transition"
               onClick={() => setShowDeleteConfirmation(false)}
               disabled={isDeleting}
             >
               Cancel
             </button>
             <button
-              className="flex-1 bg-[#ef4444] text-gray-900 font-semibold rounded px-4 py-2 text-sm hover:bg-[#dc2626] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 bg-red-600 text-white font-semibold rounded px-4 py-2 text-sm hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={handleDeleteAccount}
               disabled={isDeleting}
             >
