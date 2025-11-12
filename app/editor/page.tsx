@@ -2842,7 +2842,7 @@ export default function EditorPage() {
             </div>
           </div>
           {/* Button */}
-          {plan.name === "Basic" && credits?.plan_type === 'free' ? (
+          {plan.name === "Basic" && credits?.plan_type === 'basic' ? (
             <button 
               className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
