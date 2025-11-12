@@ -9,6 +9,18 @@ const anthropic = new Anthropic({
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+    
+    // Log raw body FIRST to diagnose any issues
+    console.log('🔍 RAW REQUEST BODY:', {
+      bodyKeys: Object.keys(body),
+      hasUploadResult: 'uploadResult' in body,
+      hasPrompt: 'presentationPrompt' in body,
+      hasSlideCount: 'slideCount' in body,
+      uploadResultType: typeof body.uploadResult,
+      promptType: typeof body.presentationPrompt,
+      slideCountType: typeof body.slideCount
+    });
+    
     const { 
       uploadResult, 
       presentationPrompt, 
@@ -29,6 +41,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!uploadResult || !presentationPrompt || !slideCount) {
+      console.error('❌ VALIDATION FAILED - Missing fields:', {
+        uploadResult: !!uploadResult,
+        presentationPrompt: !!presentationPrompt,
+        slideCount: !!slideCount
+      });
       return NextResponse.json(
         { error: 'Missing required fields: uploadResult, presentationPrompt, or slideCount' },
         { status: 400 }
