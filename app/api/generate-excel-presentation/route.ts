@@ -83,10 +83,24 @@ export async function POST(request: NextRequest) {
     });
 
     // Prepare Excel data summary for AI with sample data
-    let dataSummary = comprehensiveAnalysis || '';
+    // 🚨 CRITICAL: Reduce data to prevent token overflow (max 200k tokens)
+    let dataSummary = '';
     
-    if (!dataSummary && excelData.length > 0) {
-      // If no comprehensive analysis, create a detailed summary with sample data
+    if (comprehensiveAnalysis) {
+      // If comprehensive analysis exists, reduce it to prevent token overflow
+      const maxAnalysisLength = 50000; // Limit to ~50k characters (~12.5k tokens)
+      
+      if (comprehensiveAnalysis.length > maxAnalysisLength) {
+        console.log(`⚠️ Comprehensive analysis too long (${comprehensiveAnalysis.length} chars), reducing to ${maxAnalysisLength} chars`);
+        // Take first 30k and last 20k to preserve structure and summary
+        dataSummary = comprehensiveAnalysis.substring(0, 30000) + 
+                     '\n\n... (data truncated to prevent token overflow) ...\n\n' +
+                     comprehensiveAnalysis.substring(comprehensiveAnalysis.length - 20000);
+      } else {
+        dataSummary = comprehensiveAnalysis;
+      }
+    } else if (excelData.length > 0) {
+      // If no comprehensive analysis, create a lightweight summary
       dataSummary = `Excel Data Structure (${excelData.length} sheet(s)):\n\n`;
       excelData.forEach((sheet: any, i: number) => {
         const sheetName = sheet.sheetName || `Sheet ${i + 1}`;
@@ -94,19 +108,23 @@ export async function POST(request: NextRequest) {
         const headers = sheet.headers || [];
         dataSummary += `📊 ${sheetName}:\n`;
         dataSummary += `   - Rows: ${rowCount}\n`;
-        dataSummary += `   - Columns: ${headers.join(', ')}\n`;
+        dataSummary += `   - Columns (${headers.length}): ${headers.slice(0, 10).join(', ')}${headers.length > 10 ? '...' : ''}\n`;
         
-        // Add sample data if available
+        // Add minimal sample data (only 2 rows instead of 3)
         if (sheet.data && sheet.data.length > 0) {
-          dataSummary += `   - Sample data:\n`;
-          sheet.data.slice(0, 3).forEach((row: any, idx: number) => {
-            const rowData = headers.map((h: string) => `${h}: ${row[h]}`).join(', ');
-            dataSummary += `     Row ${idx + 1}: ${rowData}\n`;
+          dataSummary += `   - Sample (first 2 rows):\n`;
+          sheet.data.slice(0, 2).forEach((row: any, idx: number) => {
+            // Only show first 5 columns to reduce size
+            const limitedHeaders = headers.slice(0, 5);
+            const rowData = limitedHeaders.map((h: string) => `${h}: ${row[h]}`).join(', ');
+            dataSummary += `     ${rowData}${headers.length > 5 ? '...' : ''}\n`;
           });
         }
         dataSummary += '\n';
       });
     }
+    
+    console.log(`📊 Data summary length: ${dataSummary.length} characters (~${Math.ceil(dataSummary.length / 4)} tokens)`);
 
     // Calculate interpretation layout limits for this batch
     const totalSlides = slideCount;
