@@ -3033,6 +3033,7 @@ export default function EditorPage() {
     
     const { user, signOut } = useAuth();
     const [localDisplayName, setLocalDisplayName] = useState(workspaceDisplayName);
+    const [isCancelling, setIsCancelling] = useState(false);
     
     // Update local state when workspaceDisplayName changes
     useEffect(() => {
@@ -3048,6 +3049,77 @@ export default function EditorPage() {
         console.error('❌ Error logging out:', error);
       }
     };
+
+    const handleCancelSubscription = async () => {
+      if (!user || isCancelling) return;
+      
+      const confirmed = window.confirm(
+        'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.'
+      );
+      
+      if (!confirmed) return;
+      
+      setIsCancelling(true);
+      
+      try {
+        console.log('🚫 Cancelling subscription for user:', user.id);
+        
+        // Call your cancel subscription API
+        const response = await fetch('/api/subscriptions/cancel', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to cancel subscription');
+        }
+
+        alert('Your subscription has been cancelled successfully. You will retain access until the end of your billing period.');
+        
+        // Refresh credits to update plan info
+        fetchCredits();
+      } catch (error) {
+        console.error('❌ Error cancelling subscription:', error);
+        alert('Failed to cancel subscription. Please contact support.');
+      } finally {
+        setIsCancelling(false);
+      }
+    };
+
+    // Get plan display info
+    const getPlanInfo = () => {
+      const planType = credits?.plan_type || 'free';
+      const planNames: Record<string, string> = {
+        'free': 'Free Plan',
+        'basic': 'Basic Plan',
+        'pro': 'Pro Plan',
+        'ultra': 'Ultra Plan'
+      };
+      const planPrices: Record<string, string> = {
+        'free': '$0.00/month',
+        'basic': '$29.00/month',
+        'pro': '$49.00/month',
+        'ultra': '$89.00/month'
+      };
+      const planDescriptions: Record<string, string> = {
+        'free': '100 credits (one-time) with basic features.',
+        'basic': '700 credits per month with slide preview and PDF export.',
+        'pro': '1,500 credits per month with all features.',
+        'ultra': '3,000 credits per month with priority support.'
+      };
+      
+      return {
+        name: planNames[planType] || 'Free Plan',
+        price: planPrices[planType] || '$0.00/month',
+        description: planDescriptions[planType] || 'Basic features.',
+        isPaid: planType !== 'free'
+      };
+    };
+
+    const planInfo = getPlanInfo();
     
     return (
       <div 
@@ -3101,20 +3173,42 @@ export default function EditorPage() {
             <h3 className="text-gray-900 text-lg font-semibold mb-3">Subscription Plan</h3>
             <div className="bg-white border border-gray-200 rounded-lg p-4 mb-2">
               <div className="flex items-center justify-between mb-1">
-                <div className="text-gray-900 font-semibold">Free Plan</div>
+                <div className="text-gray-900 font-semibold">{planInfo.name}</div>
               </div>
-              <div className="text-gray-500 text-sm mb-2">$0.00/month</div>
-              <div className="text-gray-500 text-xs mb-3">Basic features with limited presentations and standard support.</div>
+              <div className="text-gray-500 text-sm mb-2">{planInfo.price}</div>
+              <div className="text-gray-500 text-xs mb-3">{planInfo.description}</div>
               <div className="flex gap-2">
-                <button 
-                  className="bg-[#002903] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#002903]/90 transition" 
-                  onClick={() => {
-                    setShowSettingsModal(false);
-                    setShowPricingModal(true);
-                  }}
-                >
-                  Upgrade Plan
-                </button>
+                {!planInfo.isPaid && (
+                  <button 
+                    className="bg-[#002903] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#002903]/90 transition" 
+                    onClick={() => {
+                      setShowSettingsModal(false);
+                      setShowPricingModal(true);
+                    }}
+                  >
+                    Upgrade Plan
+                  </button>
+                )}
+                {planInfo.isPaid && (
+                  <>
+                    <button 
+                      className="bg-[#002903] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#002903]/90 transition" 
+                      onClick={() => {
+                        setShowSettingsModal(false);
+                        setShowPricingModal(true);
+                      }}
+                    >
+                      Change Plan
+                    </button>
+                    <button 
+                      className="bg-red-600 text-white font-medium rounded px-3 py-1 text-sm hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed" 
+                      onClick={handleCancelSubscription}
+                      disabled={isCancelling}
+                    >
+                      {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </div>
