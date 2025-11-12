@@ -6985,10 +6985,7 @@ export default function EditorPage() {
                       key={option}
                       className="px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-gray-700 hover:border-[#002903] hover:text-[#002903] font-medium transition"
                       onClick={async () => {
-                        // Set slide count and immediately start generation
-                        setSelectedSlideCount(option);
-                        
-                        // Validate all required fields
+                        // Validate all required fields FIRST
                         if (!uploadResult || !presentationPrompt.trim()) {
                           console.error('❌ Missing required fields:', {
                             hasUploadResult: !!uploadResult,
@@ -7007,7 +7004,9 @@ export default function EditorPage() {
                           return;
                         }
 
+                        // Set both states together to avoid blank screen
                         setIsLoading(true);
+                        setSelectedSlideCount(option);
                         setUploadError('');
 
                         // Calculate batches (10 slides per batch)
