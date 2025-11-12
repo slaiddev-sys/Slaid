@@ -7135,10 +7135,19 @@ export default function EditorPage() {
 
                         } catch (error: any) {
                           console.error('❌ Error during batch generation:', error);
+                          console.error('❌ Error details:', {
+                            message: error.message,
+                            stack: error.stack,
+                            uploadResult: !!uploadResult,
+                            presentationPrompt: !!presentationPrompt,
+                            selectedSlideCount: option
+                          });
                           setUploadError(error.message || 'Failed to generate presentation');
                           setIsLoading(false);
                           setLoadingStep(1);
                           setBatchProgress({ current: 1, total: 1, slideRange: '' });
+                          setSelectedSlideCount(''); // Reset slide count to show options again
+                          setOnboardingStep(3); // Ensure we stay on step 3
                         }
                       }}
                     >
