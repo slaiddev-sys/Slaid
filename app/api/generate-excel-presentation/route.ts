@@ -431,12 +431,12 @@ RULES:
 2. **CRITICAL - Cover and Back Cover placement (batch-aware):**
    - First slide (slide 1) MUST be ExcelCenteredCover_Responsive
      * ${batchNumber === 1 ? '✅ INCLUDE the cover in THIS batch (you are batch 1)' : '❌ DO NOT include cover in this batch (only in batch 1)'}
-   - Last slide (slide ${slideCount}) MUST be ExcelBackCover_Responsive
-     * ${batchNumber === totalBatches ? `✅ INCLUDE the back cover in THIS batch (you are the last batch, slide ${slideEnd})` : `❌ DO NOT include back cover in this batch (only in batch ${totalBatches}, slide ${slideCount})`}
-   - ${batchNumber === totalBatches ? '**IMPORTANT**: Since you are the LAST batch, your final slide MUST be the back cover' : `**IMPORTANT**: Since you are NOT the last batch, DO NOT add a back cover - batch ${totalBatches} will add it`}
-3. **CRITICAL - Second slide SHOULD be ExcelTableOfContents_Responsive (for presentations with 8+ slides)**
-   - ${batchNumber === 1 ? '✅ INCLUDE the Table of Contents in THIS batch (you are batch 1, slide 2)' : '❌ DO NOT include Table of Contents in this batch (only in batch 1)'}
-   - **CRITICAL**: The Table of Contents MUST list INDIVIDUAL SLIDE TITLES, NOT section names
+   - **Back Cover rules based on presentation length:**
+     * ${slideCount <= 5 ? '❌ DO NOT include back cover (presentations with 1-5 slides do not use back cover)' : slideCount <= 10 ? `${batchNumber === totalBatches ? `✅ INCLUDE the back cover in THIS batch (you are the last batch, slide ${slideEnd})` : `❌ DO NOT include back cover in this batch (only in batch ${totalBatches}, slide ${slideCount})`}` : `${batchNumber === totalBatches ? `✅ INCLUDE the back cover in THIS batch (you are the last batch, slide ${slideEnd})` : `❌ DO NOT include back cover in this batch (only in batch ${totalBatches}, slide ${slideCount})`}`}
+     * ${slideCount <= 5 ? '**IMPORTANT**: Presentations with 1-5 slides = Cover + 3 data layouts + 1 interpretation layout (NO back cover)' : batchNumber === totalBatches ? '**IMPORTANT**: Since you are the LAST batch, your final slide MUST be the back cover' : `**IMPORTANT**: Since you are NOT the last batch, DO NOT add a back cover - batch ${totalBatches} will add it`}
+3. **CRITICAL - Table of Contents rules based on presentation length:**
+   - ${slideCount <= 10 ? '❌ DO NOT include Table of Contents (presentations with 1-10 slides do not use ToC)' : batchNumber === 1 ? '✅ INCLUDE the Table of Contents in THIS batch (you are batch 1, slide 2) - presentations with 11+ slides MUST have ToC' : '❌ DO NOT include Table of Contents in this batch (only in batch 1)'}
+   - ${slideCount > 10 ? `**CRITICAL**: The Table of Contents MUST list INDIVIDUAL SLIDE TITLES, NOT section names
    - **DO NOT group slides into sections** - list each slide individually with its specific title and page number
    - Count every slide: Cover (1), ToC (2), then 3,4,5... up to Back Cover
    - **SKIP these slides in the ToC**: Cover (slide 1), Table of Contents itself (slide 2), Back Cover (last slide)
@@ -453,13 +453,12 @@ RULES:
      * Slide 12: "Conclusiones Clave" → Page 12
    - Use the ACTUAL slide titles from your presentation structure
    - **INCORRECT**: ❌ "Data Analysis" (pages 3-8), "Insights" (pages 9-11)
-   - **CORRECT**: ✅ Individual slide titles with their specific page numbers
-4. **CRITICAL - Second-to-last slide (slide ${slideCount - 1}) MUST be ExcelExperienceFullText_Responsive**
-   - ${batchNumber === totalBatches ? `✅ INCLUDE the conclusions slide in THIS batch (you are the last batch, slide ${slideEnd - 1})` : `❌ DO NOT include conclusions slide in this batch (only in batch ${totalBatches})`}
-   - This layout serves as a conclusions/summary slide before the back cover
-   - Content should synthesize key findings and provide final insights from the Excel data
-   - Title examples: "Key Takeaways", "Final Insights", "Conclusions", "Summary" (or in Spanish: "Conclusiones Clave", "Resumen Final", "Hallazgos Finales")
-   - This is MANDATORY for ALL presentations regardless of length
+   - **CORRECT**: ✅ Individual slide titles with their specific page numbers` : '**IMPORTANT**: No ToC needed for presentations with 1-10 slides'}
+4. **CRITICAL - Conclusions slide rules based on presentation length:**
+   - ${slideCount <= 5 ? `❌ For 1-5 slide presentations: Last slide (slide ${slideCount}) should be an interpretation layout (ExcelExperienceFullText_Responsive) - NO separate conclusions before it` : slideCount <= 10 ? `✅ Second-to-last slide (slide ${slideCount - 1}) MUST be ExcelExperienceFullText_Responsive (conclusions) ${batchNumber === totalBatches ? '- INCLUDE in THIS batch' : '- only in last batch'}` : `✅ Second-to-last slide (slide ${slideCount - 1}) MUST be ExcelExperienceFullText_Responsive (conclusions) ${batchNumber === totalBatches ? '- INCLUDE in THIS batch' : '- only in last batch'}`}
+   - ${slideCount <= 5 ? '**STRUCTURE FOR 1-5 SLIDES**: Cover (slide 1) → 3 data/chart layouts (slides 2-4) → 1 interpretation layout (slide 5)' : 'This layout serves as a conclusions/summary slide before the back cover'}
+   - ${slideCount > 5 ? 'Content should synthesize key findings and provide final insights from the Excel data' : ''}
+   - ${slideCount > 5 ? 'Title examples: "Key Takeaways", "Final Insights", "Conclusions", "Summary" (or in Spanish: "Conclusiones Clave", "Resumen Final", "Hallazgos Finales")' : ''}
 6. **🚨🚨🚨 CRITICAL - LAYOUTS THAT CAN ONLY BE USED ONCE PER PRESENTATION 🚨🚨🚨**
    
    These layouts can be used AT MOST 1 TIME each in the ENTIRE presentation:
