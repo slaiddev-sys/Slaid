@@ -4451,7 +4451,7 @@ export default function EditorPage() {
                   <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain" />
                   {creditsLoading ? 'Loading...' : (credits?.remaining_credits?.toLocaleString() || '96')}
                 </span>
-                <button className="bg-[#002903] text-white text-xs font-medium rounded-md px-3 py-1.5 hover:bg-[#002903]/90 transition" onClick={() => setShowCreditsModal(true)}>Buy more</button>
+                <button className="hidden bg-[#002903] text-white text-xs font-medium rounded-md px-3 py-1.5 hover:bg-[#002903]/90 transition" onClick={() => setShowCreditsModal(true)}>Buy more</button>
               </div>
               <button className="w-full flex items-center gap-3 text-gray-600 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-100 transition mb-2" onClick={() => setShowSettingsModal(true)}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-500">
