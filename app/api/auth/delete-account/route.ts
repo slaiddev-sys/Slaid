@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../../lib/supabase'
+import { supabaseAdmin } from '../../../../lib/supabase-admin'
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -120,17 +121,19 @@ export async function DELETE(request: NextRequest) {
     }
 
     // 9. Finally, delete the user account from Supabase Auth
-    // Note: This requires admin privileges. For now, we'll skip this step since
-    // all user data has been cleaned up and the user will be signed out.
-    // The auth user will remain but without any associated data.
+    console.log('🗑️ Deleting user from Supabase Auth...')
     
-    console.log('⚠️ Skipping auth user deletion (requires service role). User data cleaned up successfully.')
+    const { error: deleteUserError } = await supabaseAdmin.auth.admin.deleteUser(user.id)
     
-    // Optionally, you could implement this with a service role key:
-    // const { error: deleteUserError } = await supabase.auth.admin.deleteUser(user.id)
-    // But for now, we'll consider the account "deleted" since all data is removed
+    if (deleteUserError) {
+      console.error('❌ Failed to delete user from auth:', deleteUserError)
+      return NextResponse.json({ 
+        error: 'Failed to completely delete account, but user data has been removed',
+        details: deleteUserError.message 
+      }, { status: 500 })
+    }
 
-    console.log('✅ Successfully deleted user data for:', user.email)
+    console.log('✅ Successfully deleted user completely (data + auth) for:', user.email)
 
     return NextResponse.json({
       success: true,
