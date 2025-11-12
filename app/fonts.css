@@ -8,9 +8,9 @@
   font-family: 'Inter', Arial, Helvetica, sans-serif !important;
 }
 
-/* Explicit Helvetica Neue utility classes - using Inter as fallback for PDF export */
+/* Explicit Helvetica Neue utility classes */
 .font-helvetica-neue {
-  font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
 }
 
 .font-helvetica {

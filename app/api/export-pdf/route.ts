@@ -75,7 +75,23 @@ export async function POST(request: NextRequest) {
         
         // Wait for fonts to load before capturing
         await page.evaluateHandle('document.fonts.ready');
-        console.log(`📄 Fonts loaded for slide ${i + 1}`);
+        
+        // Debug: Check what fonts are actually loaded
+        const loadedFonts = await page.evaluate(() => {
+          const fonts: string[] = [];
+          document.fonts.forEach((font: any) => {
+            fonts.push(`${font.family} (${font.style})`);
+          });
+          return fonts;
+        });
+        console.log(`📄 Fonts loaded for slide ${i + 1}:`, loadedFonts);
+        
+        // Debug: Check what font is actually being used
+        const actualFont = await page.evaluate(() => {
+          const element = document.querySelector('.slide-content') || document.body;
+          return window.getComputedStyle(element).fontFamily;
+        });
+        console.log(`📄 Actual font being used on slide ${i + 1}:`, actualFont);
         
         // Wait for the slide to be fully rendered
         console.log(`📄 Waiting for .slide-content selector for slide ${i + 1}`);
