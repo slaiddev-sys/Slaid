@@ -1700,13 +1700,16 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
         const inputTokens = response.usage.input_tokens || 0;
         const outputTokens = response.usage.output_tokens || 0;
         
-        // Anthropic pricing (as of 2024): Input: $0.25/1M tokens, Output: $1.25/1M tokens for Claude 3.5 Haiku
-        const inputCostCents = Math.ceil((inputTokens / 1000000) * 25); // $0.25 per 1M tokens = 25 cents
-        const outputCostCents = Math.ceil((outputTokens / 1000000) * 125); // $1.25 per 1M tokens = 125 cents
+        // Anthropic pricing for Claude Sonnet 4.5 (claude-sonnet-4-5-20250929):
+        // Input: $3.00 per 1M tokens = 300 cents per 1M tokens
+        // Output: $15.00 per 1M tokens = 1500 cents per 1M tokens
+        // 1 credit = $0.01 = 1 cent
+        const inputCostCents = (inputTokens / 1000000) * 300;
+        const outputCostCents = (outputTokens / 1000000) * 1500;
         const totalCostCents = inputCostCents + outputCostCents;
         
-        // Ensure minimum 1 credit charge
-        const creditsToDeduct = Math.max(1, totalCostCents);
+        // Round up to nearest cent (credit)
+        const creditsToDeduct = Math.max(1, Math.ceil(totalCostCents));
         
         console.log('💳 Deducting credits:', {
           inputTokens,
