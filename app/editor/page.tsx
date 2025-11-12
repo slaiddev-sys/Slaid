@@ -4150,7 +4150,10 @@ export default function EditorPage() {
                     )}
                   </div>
                   <span className="text-gray-500 text-xs">
-                    {credits?.plan_type === 'pro' ? 'Pro plan' : 'Free plan'}
+                    {credits?.plan_type === 'basic' ? 'Basic plan' : 
+                     credits?.plan_type === 'pro' ? 'Pro plan' : 
+                     credits?.plan_type === 'ultra' ? 'Ultra plan' : 
+                     'Free plan'}
                   </span>
                 </div>
               </div>
