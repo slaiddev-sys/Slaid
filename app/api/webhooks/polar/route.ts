@@ -1,17 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, isAdminConfigured } from '../../../../lib/supabase-admin'
 
-// Product mapping for both credit packs and Pro plans
-const PRODUCT_MAPPING: Record<string, { credits: number; description: string; type: 'credit_pack' | 'pro_plan' }> = {
+// Product mapping for credit packs and subscription plans
+const PRODUCT_MAPPING: Record<string, { credits: number; description: string; type: 'credit_pack' | 'basic_plan' | 'pro_plan' | 'ultra_plan'; planType: string }> = {
   // Credit Pack Product IDs
-  '9acd1a25-9f4b-48fb-861d-6ca663b89fa1': { credits: 200, description: '200 credits purchase ($10)', type: 'credit_pack' },
-  'ffe50868-199d-4476-b948-ab67c3894522': { credits: 400, description: '400 credits purchase ($20)', type: 'credit_pack' },
-  'c098b439-a2c3-493d-b0a6-a7d849c0de4d': { credits: 1000, description: '1000 credits purchase ($50)', type: 'credit_pack' },
-  '92d6ad27-31d8-4a6d-989a-98da344ad7eb': { credits: 2000, description: '2000 credits purchase ($100)', type: 'credit_pack' },
+  '9acd1a25-9f4b-48fb-861d-6ca663b89fa1': { credits: 200, description: '200 credits purchase ($10)', type: 'credit_pack', planType: 'free' },
+  'ffe50868-199d-4476-b948-ab67c3894522': { credits: 400, description: '400 credits purchase ($20)', type: 'credit_pack', planType: 'free' },
+  'c098b439-a2c3-493d-b0a6-a7d849c0de4d': { credits: 1000, description: '1000 credits purchase ($50)', type: 'credit_pack', planType: 'free' },
+  '92d6ad27-31d8-4a6d-989a-98da344ad7eb': { credits: 2000, description: '2000 credits purchase ($100)', type: 'credit_pack', planType: 'free' },
+  
+  // Basic Plan Product IDs
+  '481ff240-aadc-44c9-a58e-2fee7ab26b90': { credits: 700, description: 'Basic Monthly Plan - 700 credits', type: 'basic_plan', planType: 'basic' },
+  '3f8500aa-7847-40dc-bcde-844bbef74742': { credits: 8400, description: 'Basic Annual Plan - 8,400 credits', type: 'basic_plan', planType: 'basic' },
   
   // Pro Plan Product IDs
-  '5a954dc6-891d-428a-a948-05409fe765e2': { credits: 500, description: 'Pro Monthly Plan - 500 credits', type: 'pro_plan' },
-  '8739ccac-36f9-4e28-8437-8b36bb1e7d71': { credits: 500, description: 'Pro Yearly Plan - 500 credits', type: 'pro_plan' },
+  '5a954dc6-891d-428a-a948-05409fe765e2': { credits: 1500, description: 'Pro Monthly Plan - 1,500 credits', type: 'pro_plan', planType: 'pro' },
+  '8739ccac-36f9-4e28-8437-8b36bb1e7d71': { credits: 18000, description: 'Pro Annual Plan - 18,000 credits', type: 'pro_plan', planType: 'pro' },
+  
+  // Ultra Plan Product IDs
+  '71bf9c78-f930-437a-b076-62a0c1946d14': { credits: 3000, description: 'Ultra Monthly Plan - 3,000 credits', type: 'ultra_plan', planType: 'ultra' },
+  'df5e66f6-2e9f-4f32-a347-ed4e46f37b0f': { credits: 36000, description: 'Ultra Annual Plan - 36,000 credits', type: 'ultra_plan', planType: 'ultra' },
 }
 
 export async function POST(request: NextRequest) {
@@ -130,7 +138,7 @@ export async function POST(request: NextRequest) {
 
     // Add credits to user account
     console.log('💳 Adding credits:', { userId, credits: product.credits })
-    const transactionType = product.type === 'pro_plan' ? 'subscription' : 'purchase'
+    const transactionType = (product.type === 'basic_plan' || product.type === 'pro_plan' || product.type === 'ultra_plan') ? 'subscription' : 'purchase'
     
     const { error: addCreditsError } = await supabaseAdmin
       .rpc('add_credits', {
@@ -152,14 +160,15 @@ export async function POST(request: NextRequest) {
       type: product.type
     })
 
-    // If this is a Pro plan purchase, upgrade the user's plan_type
-    if (product.type === 'pro_plan') {
-      console.log('🚀 Upgrading user to Pro plan:', userId)
+    // If this is a subscription plan purchase (Basic, Pro, or Ultra), upgrade the user's plan_type
+    if (product.type === 'basic_plan' || product.type === 'pro_plan' || product.type === 'ultra_plan') {
+      console.log(`🚀 Upgrading user to ${product.planType} plan:`, userId)
       
       const { error: updatePlanError } = await supabaseAdmin
         .from('user_credits')
         .update({ 
-          plan_type: 'pro',
+          plan_type: product.planType,
+          subscription_status: 'active',
           last_renewal_date: new Date().toISOString()
         })
         .eq('user_id', userId)
@@ -168,7 +177,7 @@ export async function POST(request: NextRequest) {
         console.error('❌ Failed to upgrade user plan:', updatePlanError)
         // Don't fail the webhook - credits were added successfully
       } else {
-        console.log('✅ User plan upgraded to Pro:', userId)
+        console.log(`✅ User plan upgraded to ${product.planType}:`, userId)
       }
     }
 
