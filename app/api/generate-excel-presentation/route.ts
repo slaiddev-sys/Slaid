@@ -665,6 +665,10 @@ RULES:
 **DO NOT ask questions. DO NOT provide explanations. IMMEDIATELY generate the JSON.**
 **Your response MUST start with a '{' character and contain ONLY valid JSON.**
 **NO conversational text before or after the JSON.**
+**NO comments inside the JSON (no // or /* */ comments).**
+**Every property must have a comma after it (except the last one before a closing brace).**
+**All strings must use properly escaped quotes.**
+**VALIDATE your JSON before responding - make sure it's syntactically correct.**
 
 Return a JSON object with this EXACT structure:
 {
@@ -1343,14 +1347,34 @@ ${whichInterpretationLayouts}
         console.error('❌ JSON parse error:', parseError.message);
         console.log('📋 Attempting to fix malformed JSON...');
         
-        // Try to find the position of the error and truncate/fix
         let fixedJson = jsonString;
         
-        // Remove any trailing incomplete elements or text after the JSON
+        // Apply multiple fix strategies
+        // Fix 1: Remove trailing commas before closing braces/brackets
+        fixedJson = fixedJson.replace(/,(\s*[}\]])/g, '$1');
+        
+        // Fix 2: Add missing commas between properties
+        fixedJson = fixedJson.replace(/"\s*\n\s*"/g, '",\n"');
+        
+        // Fix 3: Fix unescaped quotes in strings (basic attempt)
+        fixedJson = fixedJson.replace(/: "([^"]*)"([^,}\]]*)/g, (match, p1, p2) => {
+          if (p2.includes('"')) {
+            return `: "${p1}${p2.replace(/"/g, '\\"')}"`;
+          }
+          return match;
+        });
+        
+        // Fix 4: Remove any trailing incomplete elements or text after the JSON
         // Find the last complete closing brace
         const lastBraceIndex = fixedJson.lastIndexOf('}');
         if (lastBraceIndex !== -1) {
           fixedJson = fixedJson.substring(0, lastBraceIndex + 1);
+        }
+        
+        // Fix 5: Remove any text before the first opening brace
+        const firstBraceIndex = fixedJson.indexOf('{');
+        if (firstBraceIndex > 0) {
+          fixedJson = fixedJson.substring(firstBraceIndex);
         }
         
         // Try parsing again
@@ -1359,14 +1383,49 @@ ${whichInterpretationLayouts}
           console.log('✅ Successfully fixed and parsed JSON');
         } catch (secondError: any) {
           console.error('❌ Still cannot parse JSON after fix attempt:', secondError.message);
+          console.log('📋 Parse error details:', {
+            originalError: parseError.message,
+            finalError: secondError.message,
+            responseLength: responseText.length,
+            jsonLength: jsonString.length,
+            fixedLength: fixedJson.length
+          });
           console.log('📋 Raw response (first 500 chars):', responseText.substring(0, 500));
           console.log('📋 Raw response (last 500 chars):', responseText.substring(responseText.length - 500));
-          console.log('📋 Cleaned JSON (first 500 chars):', jsonString.substring(0, 500));
-          console.log('📋 Cleaned JSON (last 500 chars):', jsonString.substring(jsonString.length - 500));
-          return NextResponse.json(
-            { error: `Failed to parse AI response: ${parseError.message}` },
-            { status: 500 }
-          );
+          console.log('📋 Fixed JSON (first 500 chars):', fixedJson.substring(0, 500));
+          console.log('📋 Fixed JSON (last 500 chars):', fixedJson.substring(fixedJson.length - 500));
+          
+          // One final attempt: Try to manually reconstruct a minimal valid response
+          console.log('📋 Attempting emergency fallback response...');
+          try {
+            presentationStructure = {
+              title: "Presentation",
+              slides: [
+                {
+                  id: 1,
+                  title: "Error Recovery",
+                  layout: "ExcelCenteredCover_Responsive",
+                  props: {
+                    title: "Generation Error",
+                    description: "Please try again. If the issue persists, contact support.",
+                    canvasWidth: 881,
+                    canvasHeight: 495
+                  }
+                }
+              ]
+            };
+            console.log('⚠️ Using emergency fallback response');
+          } catch (emergencyError) {
+            // If even the fallback fails, return error to user
+            return NextResponse.json(
+              { 
+                error: `AI generated invalid response. Please try again.`,
+                details: `Parse error: ${parseError.message}`,
+                suggestion: 'Try simplifying your request or regenerating the presentation.'
+              },
+              { status: 500 }
+            );
+          }
         }
       }
     } catch (error: any) {
