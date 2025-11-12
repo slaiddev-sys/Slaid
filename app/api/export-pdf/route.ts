@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-// Dynamic import for puppeteer
 import PDFMerger from 'pdf-merger-js';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,11 +19,12 @@ export async function POST(request: NextRequest) {
     const baseUrl = `${protocol}://${host}`;
     console.log('📄 Using base URL:', baseUrl);
 
-    // Launch Puppeteer (dynamic import)
-    const puppeteer = await import('puppeteer');
-    const browser = await puppeteer.default.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security', '--allow-running-insecure-content']
+    // Launch Puppeteer with Vercel-compatible Chrome
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
