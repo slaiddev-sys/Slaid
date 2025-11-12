@@ -3201,7 +3201,7 @@ export default function EditorPage() {
                       Change Plan
                     </button>
                     <button 
-                      className="bg-red-600 text-white font-medium rounded px-3 py-1 text-sm hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed" 
+                      className="bg-gray-500 text-white font-medium rounded px-3 py-1 text-sm hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed" 
                       onClick={handleCancelSubscription}
                       disabled={isCancelling}
                     >
