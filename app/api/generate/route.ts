@@ -1696,17 +1696,26 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
     
     if (user && response.usage) {
       try {
-        // Calculate actual cost from Anthropic usage
+        // Calculate actual cost from Anthropic usage INCLUDING CACHE COSTS
         const inputTokens = response.usage.input_tokens || 0;
         const outputTokens = response.usage.output_tokens || 0;
         
         // Anthropic pricing for Claude Sonnet 4.5 (claude-sonnet-4-5-20250929):
-        // Input: $3.00 per 1M tokens = 300 cents per 1M tokens
+        // Input (no cache): $3.00 per 1M tokens = 300 cents per 1M tokens
         // Output: $15.00 per 1M tokens = 1500 cents per 1M tokens
+        // Cache writes: $3.75 per 1M tokens = 375 cents per 1M tokens
+        // Cache reads: $0.30 per 1M tokens = 30 cents per 1M tokens
         // 1 credit = $0.01 = 1 cent
+        
+        const cacheCreationTokens = (response.usage as any).cache_creation_input_tokens || 0;
+        const cacheReadTokens = (response.usage as any).cache_read_input_tokens || 0;
+        
         const inputCostCents = (inputTokens / 1000000) * 300;
         const outputCostCents = (outputTokens / 1000000) * 1500;
-        const totalCostCents = inputCostCents + outputCostCents;
+        const cacheWriteCostCents = (cacheCreationTokens / 1000000) * 375;
+        const cacheReadCostCents = (cacheReadTokens / 1000000) * 30;
+        
+        const totalCostCents = inputCostCents + outputCostCents + cacheWriteCostCents + cacheReadCostCents;
         
         // Round up to nearest cent (credit)
         const creditsToDeduct = Math.max(1, Math.ceil(totalCostCents));
@@ -1714,8 +1723,12 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
         console.log('💳 Deducting credits:', {
           inputTokens,
           outputTokens,
+          cacheCreationTokens,
+          cacheReadTokens,
           inputCostCents,
           outputCostCents,
+          cacheWriteCostCents,
+          cacheReadCostCents,
           totalCostCents,
           creditsToDeduct,
           userId: user.id
