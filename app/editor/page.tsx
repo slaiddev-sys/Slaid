@@ -4445,7 +4445,7 @@ export default function EditorPage() {
             </div>
             {/* Fixed bottom section */}
             <div className="px-4 pb-4 border-t border-gray-200 pt-4">
-              <button className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium rounded-lg py-1.5 mb-4 text-sm transition" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
+              <button className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium rounded-lg py-1.5 mb-4 text-sm transition" onClick={() => setShowPricingModal(true)}>Upgrade for more credits</button>
               <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5 mb-4">
                 <span className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                   <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain" />
