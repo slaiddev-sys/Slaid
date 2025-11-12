@@ -3771,8 +3771,11 @@ export default function EditorPage() {
   if (!isMounted || workspacesLoading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-[#1c1c1c] flex items-center justify-center">
-          <LoadingCircle />
+        <div className="flex items-center justify-center h-screen w-screen bg-white">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-[#002903] border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-[#002903] text-lg font-medium">Loading...</p>
+          </div>
         </div>
       </ProtectedRoute>
     );
