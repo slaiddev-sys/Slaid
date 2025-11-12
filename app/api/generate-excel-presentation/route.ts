@@ -1542,7 +1542,7 @@ ${whichInterpretationLayouts}
             .rpc('deduct_credits', {
               p_user_id: user.id,
               p_credits_to_deduct: creditsToDeduct,
-              p_anthropic_cost_cents: totalCostCents,
+              p_anthropic_cost_cents: Math.round(totalCostCents), // Round to integer to avoid float precision issues
               p_presentation_id: null,
               p_workspace: null,
               p_description: `Excel presentation generation (Batch ${batchNumber}/${totalBatches}): ${inputTokens} input + ${outputTokens} output tokens`
