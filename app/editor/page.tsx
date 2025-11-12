@@ -399,15 +399,83 @@ export default function EditorPage() {
   };
 
   const performComprehensiveAnalysis = async (fileData: any) => {
-    // Skip analysis - go directly to step 2
-    setOnboardingStep(2);
+    setIsAnalyzing(true);
+    setUploadError('');
+
+    try {
+      const response = await fetch('/api/test-excel-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileData: fileData,
+          prompt: 'Please analyze this Excel file and tell me exactly what data you can see. List all the values, headers, and structure you can extract from this file.'
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Analysis failed');
+      }
+
+      setAnalysisResult(result.analysis);
+      setComprehensiveAnalysis(result.comprehensiveAnalysis || '');
+      
+      // Update uploadResult with processed data for presentation generation (same as test-excel)
+      if (result.processedData) {
+        setUploadResult((prev: any) => ({
+          ...prev,
+          processedData: result.processedData
+        }));
+      }
+      
+      // Move to step 2 after successful analysis
+      setOnboardingStep(2);
+      
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Analysis failed');
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handlePresentationPromptAnalysis = async () => {
     if (!presentationPrompt.trim() || !uploadResult) return;
 
-    // Skip test analysis endpoint - go directly to generation
-    setOnboardingStep(3);
+    setIsAnalyzingPrompt(true);
+    setUploadError('');
+    setPromptAnalysis('');
+
+    try {
+      const response = await fetch('/api/test-excel-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileData: uploadResult,
+          presentationPrompt: presentationPrompt.trim()
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || 'Prompt analysis failed');
+      }
+
+      setPromptAnalysis(result.promptAnalysis || 'Analysis completed successfully');
+      
+      // Move to step 3 after successful prompt analysis
+      setOnboardingStep(3);
+      
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Prompt analysis failed');
+    } finally {
+      setIsAnalyzingPrompt(false);
+    }
   };
 
   // Helper function to convert HSL to HEX
