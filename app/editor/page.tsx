@@ -4449,7 +4449,7 @@ export default function EditorPage() {
               <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5 mb-4">
                 <span className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                   <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain" />
-                  {creditsLoading ? 'Loading...' : (credits?.remaining_credits?.toLocaleString() || '96')}
+                  {creditsLoading ? 'Loading...' : `${credits?.remaining_credits?.toLocaleString() || '96'} Credits`}
                 </span>
                 <button className="hidden bg-[#002903] text-white text-xs font-medium rounded-md px-3 py-1.5 hover:bg-[#002903]/90 transition" onClick={() => setShowCreditsModal(true)}>Buy more</button>
               </div>
