@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FileDataProcessor } from '@/utils/fileDataProcessor';
 import Anthropic from '@anthropic-ai/sdk';
+import { supabase } from '../../../lib/supabase';
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -795,6 +796,43 @@ Be specific, use bullet points, and structure the response like a professional A
          promptAnalysisResult = response.content[0].type === 'text' ? response.content[0].text : 'Analysis failed';
          console.log('✅ Prompt analysis completed');
          console.log('📄 Analysis result length:', promptAnalysisResult.length);
+         
+         // Deduct credits for this analysis call
+         try {
+           const authHeader = request.headers.get('authorization');
+           if (authHeader && response.usage) {
+             const token = authHeader.replace('Bearer ', '');
+             const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+             
+             if (user && !authError) {
+               const inputTokens = response.usage.input_tokens || 0;
+               const outputTokens = response.usage.output_tokens || 0;
+               const cacheCreationTokens = (response.usage as any).cache_creation_input_tokens || 0;
+               const cacheReadTokens = (response.usage as any).cache_read_input_tokens || 0;
+               
+               const inputCostCents = (inputTokens / 1000000) * 300;
+               const outputCostCents = (outputTokens / 1000000) * 1500;
+               const cacheWriteCostCents = (cacheCreationTokens / 1000000) * 375;
+               const cacheReadCostCents = (cacheReadTokens / 1000000) * 30;
+               
+               const totalCostCents = inputCostCents + outputCostCents + cacheWriteCostCents + cacheReadCostCents;
+               const creditsToDeduct = Math.max(1, Math.ceil(totalCostCents));
+               
+               await supabase.rpc('deduct_credits', {
+                 p_user_id: user.id,
+                 p_credits_to_deduct: creditsToDeduct,
+                 p_anthropic_cost_cents: Math.round(totalCostCents),
+                 p_presentation_id: null,
+                 p_workspace: null,
+                 p_description: `Excel file analysis: ${inputTokens} input + ${outputTokens} output tokens`
+               });
+               
+               console.log('✅ Credits deducted for analysis:', creditsToDeduct);
+             }
+           }
+         } catch (creditError) {
+           console.error('❌ Failed to deduct credits for analysis:', creditError);
+         }
        } catch (error) {
          console.error('❌ Prompt analysis failed:', error);
          console.error('❌ Error details:', error instanceof Error ? error.message : 'Unknown error');

@@ -403,10 +403,12 @@ export default function EditorPage() {
     setUploadError('');
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch('/api/test-excel-analysis', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           fileData: fileData,
@@ -449,10 +451,12 @@ export default function EditorPage() {
     setPromptAnalysis('');
 
     try {
+      const { data: { session } } = await supabase.auth.getSession();
       const response = await fetch('/api/test-excel-analysis', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           fileData: uploadResult,
