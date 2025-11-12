@@ -2734,7 +2734,7 @@ export default function EditorPage() {
         monthly: { price: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "700 credits" },
         annual: { price: "$261", period: "/year", save: "Save $87 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "8,400 credits" },
         desc: ["Perfect for getting started."],
-        icon: "/Basic Plan.png",
+        icon: "/basic-plan.png",
         baseFeatures: [
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
@@ -2746,7 +2746,7 @@ export default function EditorPage() {
         monthly: { price: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "1500 credits" },
         annual: { price: "$441", period: "/year", save: "Save $147 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "18,000 credits" },
         desc: ["Designed for professionals."],
-        icon: "/Pro Plan.png",
+        icon: "/pro-plan.png",
         baseFeatures: [
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
@@ -2758,7 +2758,7 @@ export default function EditorPage() {
         monthly: { price: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "3000 credits" },
         annual: { price: "$801", period: "/year", save: "Save $267 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "36,000 credits" },
         desc: ["For teams and power users."],
-        icon: "/Ultra Red Plan.png",
+        icon: "/ultra-red-plan.png",
         baseFeatures: [
           { text: "Unlimited presentations", included: true },
           { text: "Slide preview before generating", included: true },
