@@ -20,7 +20,7 @@ const plans = [
     desc: ["Perfect for testing the product with no", "commitment."],
     iconBg: "bg-emerald-500",
     features: [
-      { text: "20 credits", included: true },
+      { text: "100 credits", included: true },
       { text: "Unlimited presentations", included: true },
       { text: "Export as PDF", included: true },
       { text: "Slide preview", included: true },
@@ -139,7 +139,7 @@ const faqData = [
   },
   {
     q: "What does the free plan include?",
-    a: "The free plan includes 200 credits, 1 workspace, and unlimited presentations."
+    a: "The free plan includes 100 credits per month, 1 workspace, and unlimited presentations."
   },
   {
     q: "What is a credit?",

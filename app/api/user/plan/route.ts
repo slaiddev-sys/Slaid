@@ -30,8 +30,8 @@ export async function GET(request: NextRequest) {
       // If no record exists, return free plan as default
       return NextResponse.json({
         plan_type: 'free',
-        total_credits: 20,
-        remaining_credits: 20,
+        total_credits: 100,
+        remaining_credits: 100,
         last_renewal_date: new Date().toISOString()
       });
     }
