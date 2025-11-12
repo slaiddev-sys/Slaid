@@ -2843,7 +2843,7 @@ export default function EditorPage() {
           {/* Button */}
           {plan.name === "Basic" && credits?.plan_type === 'free' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
               Current plan
@@ -2856,14 +2856,14 @@ export default function EditorPage() {
             </button>
           ) : plan.name === "Pro" && credits?.plan_type === 'pro' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
               Current plan
             </button>
           ) : plan.name === "Ultra" && credits?.plan_type === 'ultra' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-100 text-gray-600 cursor-not-allowed"
+              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
               Current plan
