@@ -781,20 +781,10 @@ For a comprehensive presentation, I suggest:
 
 Be specific, use bullet points, and structure the response like a professional AI assistant would.`;
 
-         const response = await anthropic.messages.create({
-           model: 'claude-sonnet-4-5-20250929',
-           max_tokens: 2000,
-           messages: [
-             {
-               role: 'user',
-               content: promptAnalysisPrompt,
-             },
-           ],
-         });
-
-         promptAnalysisResult = response.content[0].type === 'text' ? response.content[0].text : 'Analysis failed';
-         console.log('✅ Prompt analysis completed');
-         console.log('📄 Analysis result length:', promptAnalysisResult.length);
+         // DISABLED: This AI analysis costs credits but isn't critical
+         // Users get the actual analysis when they generate the presentation
+         promptAnalysisResult = 'Analysis preview disabled to save credits. Your presentation will be generated based on the data and prompt you provided.';
+         console.log('✅ Prompt analysis skipped (disabled to save credits)');
        } catch (error) {
          console.error('❌ Prompt analysis failed:', error);
          console.error('❌ Error details:', error instanceof Error ? error.message : 'Unknown error');
