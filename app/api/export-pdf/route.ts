@@ -73,6 +73,10 @@ export async function POST(request: NextRequest) {
           timeout: 15000
         });
         
+        // Wait for fonts to load before capturing
+        await page.evaluateHandle('document.fonts.ready');
+        console.log(`📄 Fonts loaded for slide ${i + 1}`);
+        
         // Wait for the slide to be fully rendered
         console.log(`📄 Waiting for .slide-content selector for slide ${i + 1}`);
         
