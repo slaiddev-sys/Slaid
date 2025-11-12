@@ -296,6 +296,7 @@ export default function EditorPage() {
   const [exportProgress, setExportProgress] = useState(0);
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1); // 1: Upload Files, 2: Description, 3: Slide Count & Summary
+  const [isDragOver, setIsDragOver] = useState(false);
   const [selectedSlideCount, setSelectedSlideCount] = useState(''); // No default selection
   
   // Helper function to convert slide count text to number
@@ -6804,7 +6805,33 @@ export default function EditorPage() {
           <section className={`flex-1 flex flex-col items-center ${onboardingStep === 3 && selectedSlideCount ? 'justify-start' : 'justify-center'} bg-[#f9fafb] h-full p-8`}>
             {onboardingStep === 1 && (
               <div className="relative w-full max-w-md">
-                <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border border-gray-100 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative">
+                <div 
+                  className={`bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border ${isDragOver ? 'border-blue-400 border-2 bg-blue-50' : 'border-gray-100'} min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative transition-all duration-200`}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragOver(false);
+                    const files = Array.from(e.dataTransfer.files);
+                    if (files.length > 0) {
+                      handleFileUpload(files[0]);
+                    }
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragOver(true);
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragOver(true);
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragOver(false);
+                  }}
+                >
                   {/* Layered Cards Background */}
                   <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
                     {/* Back card */}
