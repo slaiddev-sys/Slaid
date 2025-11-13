@@ -530,11 +530,17 @@ RULES:
    - Cover description: Summarize the presentation's purpose based on actual Excel data and user request
    - KPI Dashboard description: Explain what these specific KPIs measure in relation to the Excel data
    - BOTH must be in the user's language and context-specific (not generic placeholders)
-15. performanceLabel in chart layouts MUST be translated to user's language:
-   - ExcelTrendChart_Responsive, ExcelFullWidthChart_Responsive, ExcelFullWidthChartWithTable_Responsive, ExcelComparisonLayout_Responsive
-   - English: "Overall Performance" or "Overall performance"
-   - Spanish: "Rendimiento General" or "Rendimiento general"
-   - Match the user's language consistently
+15. **🌍 CRITICAL - LANGUAGE CONSISTENCY ACROSS ALL SLIDES:**
+   - **DETECT USER LANGUAGE**: If Excel data has Spanish headers/values OR user prompt is in Spanish → ENTIRE presentation MUST be in Spanish
+   - **DETECT USER LANGUAGE**: If Excel data has English headers/values OR user prompt is in English → ENTIRE presentation MUST be in English
+   - **ALL TEXT MUST MATCH**: titles, descriptions, chart labels, KPI labels, insights, table headers, performance labels, bullet points
+   - **🚨 BEFORE GENERATING EACH SLIDE**: Check if previous slides were in Spanish or English, then use THE SAME LANGUAGE
+   - **performanceLabel in chart layouts** MUST be translated:
+     * ExcelTrendChart_Responsive, ExcelFullWidthChart_Responsive, ExcelFullWidthChartWithTable_Responsive, ExcelComparisonLayout_Responsive
+     * English: "Overall Performance" or "Overall performance"
+     * Spanish: "Rendimiento General" or "Rendimiento general"
+   - **COMMON MISTAKE**: Mixing "Ingresos" (Spanish) with "Growth" (English) in same presentation - THIS IS FORBIDDEN
+   - **IF UNSURE**: Default to English, but once you choose a language, ALL slides must use it consistently
 16. **CRITICAL - Use the CORRECT layout based on data type:**
    
    **🚨🚨🚨 FOR ALL DATA CATEGORIES - USE ONLY THESE 2 LAYOUTS 🚨🚨🚨**
