@@ -124,3 +124,4 @@ Add this to your Polar webhook configuration:
 - Send email confirmation when Pro plan is activated
 - Display a "Processing..." state after purchase
 
+

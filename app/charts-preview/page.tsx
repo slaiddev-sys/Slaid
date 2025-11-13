@@ -432,7 +432,11 @@ export default function ChartsPreviewPage() {
       data: {
         type: 'pie' as const,
         labels: ['Products', 'Services', 'Subscriptions'],
-        series: [{ id: 'revenue', data: [65, 25, 10] }],
+        series: [
+          { id: 'Products', data: [65], color: '#4A3AFF' },
+          { id: 'Services', data: [25], color: '#C893FD' },
+          { id: 'Subscriptions', data: [10], color: '#1e40af' }
+        ],
         showLegend: true,
         animate: true,
         className: 'w-full h-80 bg-white p-4'
@@ -444,7 +448,12 @@ export default function ChartsPreviewPage() {
       data: {
         type: 'pie' as const,
         labels: ['Products', 'Services', 'Subscriptions', 'Other'],
-        series: [{ id: 'revenue', data: [45, 30, 15, 10] }],
+        series: [
+          { id: 'Products', data: [45], color: '#4A3AFF' },
+          { id: 'Services', data: [30], color: '#C893FD' },
+          { id: 'Subscriptions', data: [15], color: '#1e40af' },
+          { id: 'Other', data: [10], color: '#2563eb' }
+        ],
         showLegend: false,
         animate: true,
         className: 'w-full h-80 bg-white p-4'

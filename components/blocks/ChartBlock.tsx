@@ -655,9 +655,9 @@ const ChartBlock = React.memo(function ChartBlock({
                   
                   return (
                     <linearGradient key={`gradient-${gradientId}`} id={`areaGradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={baseColor} stopOpacity={0.8} />
-                      <stop offset="50%" stopColor={`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`} />
-                      <stop offset="100%" stopColor={`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.1)`} />
+                      <stop offset="0%" stopColor={baseColor} stopOpacity={0.9} />
+                      <stop offset="50%" stopColor={`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`} />
+                      <stop offset="100%" stopColor={`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`} />
                     </linearGradient>
                   );
                 })}

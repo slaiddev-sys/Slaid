@@ -177,3 +177,4 @@ WHERE tc.constraint_type = 'FOREIGN KEY'
 
 You should see CASCADE for all tables that reference `auth.users`.
 
+
