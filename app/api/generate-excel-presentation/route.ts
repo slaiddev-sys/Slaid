@@ -536,25 +536,39 @@ RULES:
    - Spanish: "Rendimiento General" or "Rendimiento general"
    - Match the user's language consistently
 16. **CRITICAL - Use the CORRECT layout based on data type:**
-   - 🥧 For DISTRIBUTION/PERCENTAGE data, use ExcelPieChart_Responsive:
-     * Market share distribution (Competitor A: 35%, Competitor B: 25%, etc.)
-     * Budget allocation (Marketing: 40%, Sales: 30%, Operations: 20%, etc.)
-     * Category breakdown showing parts of a whole
-     * ANY data that shows percentage distribution or composition
-     * **CRITICAL**: Pie charts are ONLY for showing how parts make up a whole (100%)
-     * chartData structure: { type: 'pie', categories: ["Cat A", "Cat B"], series: [{ name: "Distribution", data: [800, 150, 50] }] }
-   - 📊 For CATEGORICAL data (comparisons, NOT distribution), use ExcelFullWidthChartCategorical_Responsive:
+   
+   **🚨🚨🚨 FOR ALL DATA CATEGORIES - USE ONLY THESE 2 LAYOUTS 🚨🚨🚨**
+   
+   - 📊 **ExcelFullWidthChartCategorical_Responsive** - For categorical comparisons:
+     * **MUST ONLY USE BAR CHART** (type: 'bar') - NEVER use line or area
      * Product categories (Product A, Product B, Product C)
      * Expense categories (Alquiler, Electricidad, Combustible, Comida, Otros)
      * Geographic regions (North, South, East, West)
      * Department names (Sales, Marketing, HR)
-     * ANY labels that are NOT time sequences and NOT distribution data
-   - 📈 For TIME-SERIES data, use ExcelFullWidthChart_Responsive:
+     * ANY non-time-series categorical data
+     * chartData: { type: 'bar', labels: ["Cat A", "Cat B"], series: [{id: "Values", data: [800, 150]}] }
+   
+   - 🥧 **ExcelPieChart_Responsive** - For distribution/percentage data:
+     * **MUST ONLY USE PIE CHART** (type: 'pie') - this is the ONLY layout that uses pie
+     * Market share distribution (Competitor A: 35%, Competitor B: 25%)
+     * Budget allocation (Marketing: 40%, Sales: 30%, Operations: 20%)
+     * Category breakdown showing parts of a whole (100%)
+     * chartData: { type: 'pie', categories: ["Cat A", "Cat B"], series: [{name: "Distribution", data: [800, 150]}] }
+   
+   - 📈 **ExcelFullWidthChart_Responsive** - For TIME-SERIES data ONLY:
+     * **MUST USE line OR area** (NEVER bar for time-series - see Rule #21)
      * Months (Jan, Feb, Mar, Apr / Enero, Febrero, Marzo)
      * Quarters (Q1, Q2, Q3, Q4)
      * Years (2022, 2023, 2024)
      * Dates or time periods
-   - Rule: Check the data type FIRST, then choose: Pie (distribution/%), Categorical (comparisons), or Time-series (trends)
+     * chartData: { type: 'area', labels: ["Jan", "Feb"], series: [{id: "Revenue", data: [1000, 1200]}] }
+   
+   **🚨 CRITICAL RULES:**
+   - If data has categorical labels (NOT time) → ExcelFullWidthChartCategorical_Responsive with BAR chart
+   - If data shows distribution/parts of whole → ExcelPieChart_Responsive with PIE chart
+   - If data has time labels (months/quarters/years) → ExcelFullWidthChart_Responsive with AREA or LINE
+   - **DO NOT use any other layout for categorical data**
+   - **DO NOT use bar charts in ExcelFullWidthChart_Responsive**
 16. **CRITICAL - ExcelComparisonLayout_Responsive table synchronization:**
    - If chartData.labels has 12 items → actualData MUST have 13 items (12 data + 1 Total)
    - If chartData.labels has 4 items → actualData MUST have 5 items (4 data + 1 Total)
@@ -658,36 +672,44 @@ RULES:
 21. **🚨🚨🚨 CRITICAL - Chart type variety and MANDATORY distribution 🚨🚨🚨:**
    - **THIS IS A HARD REQUIREMENT - COUNT YOUR CHARTS AND VERIFY THE DISTRIBUTION**
    - **MANDATORY Chart type distribution** (you MUST follow this exact balance):
-     * **50% of ALL charts MUST be "area" type** (smooth, professional, visually appealing)
-     * **30% of ALL charts MUST be "line" type** (for comparisons and trends)
-     * **20% of ALL charts MUST be "bar" type** (for categorical data or discrete comparisons)
+     * **50% of ALL time-series charts MUST be "area" type** (smooth, professional, visually appealing)
+     * **30% of ALL time-series charts MUST be "line" type** (for comparisons and trends)
+     * **20% of charts can be "bar" type** (ONLY for categorical data in ExcelFullWidthChartCategorical_Responsive)
+     * **Pie charts** (ExcelPieChart_Responsive) do NOT count toward this distribution - they're separate
+   
+   - **🚨 CRITICAL CLARIFICATION:**
+     * **BAR charts ONLY in ExcelFullWidthChartCategorical_Responsive** (categorical data)
+     * **AREA/LINE charts ONLY in ExcelFullWidthChart_Responsive** (time-series data)
+     * **PIE charts ONLY in ExcelPieChart_Responsive** (distribution data)
+     * **DO NOT use bar charts for time-series data** - use area or line instead
    
    - **CALCULATION EXAMPLE - YOU MUST DO THIS:**
      * If you have 10 chart layouts in your presentation:
-       - 5 MUST be area charts (50%)
-       - 3 MUST be line charts (30%)
-       - 2 MUST be bar charts (20%)
+       - 5 MUST be area charts (50% - time-series data)
+       - 3 MUST be line charts (30% - time-series data)
+       - 2 CAN be bar charts (20% - categorical data in ExcelFullWidthChartCategorical_Responsive)
      * If you have 8 chart layouts:
        - 4 MUST be area charts (50%)
-       - 2-3 MUST be line charts (30%, round 2.4 to 2)
-       - 1-2 MUST be bar charts (20%, round 1.6 to 2)
+       - 2-3 MUST be line charts (30%)
+       - 1-2 CAN be bar charts (20% - categorical only)
      * If you have 6 chart layouts:
        - 3 MUST be area charts (50%)
-       - 2 MUST be line charts (30%, round 1.8 to 2)
-       - 1 MUST be bar chart (20%, round 1.2 to 1)
+       - 2 MUST be line charts (30%)
+       - 1 CAN be bar chart (20% - categorical only)
    
    - **STRONGLY PREFER AREA CHARTS** for time-series data (months, quarters, years)
-   - **DO NOT default to bar charts** - you are using TOO MANY bar charts currently
+   - **Bar charts are ONLY for categorical data** - use ExcelFullWidthChartCategorical_Responsive
    - **Bar charts should be RARE** - only 20% of your total charts
    
    - **Chart type selection guide:**
-     * Revenue over time → "area" (ALWAYS preferred)
-     * Sales trends → "area" (ALWAYS preferred)
-     * Growth metrics → "area" (ALWAYS preferred)
-     * Cost analysis → "area" (ALWAYS preferred)
-     * Performance over time → "area" (ALWAYS preferred)
-     * Multiple trend comparison → "line" (30% of charts)
-     * Categorical data (products, departments) → "bar" (ONLY 20% of charts)
+     * Revenue over time → "area" in ExcelFullWidthChart_Responsive (ALWAYS preferred)
+     * Sales trends → "area" in ExcelFullWidthChart_Responsive (ALWAYS preferred)
+     * Growth metrics → "area" in ExcelFullWidthChart_Responsive (ALWAYS preferred)
+     * Cost analysis → "area" in ExcelFullWidthChart_Responsive (ALWAYS preferred)
+     * Performance over time → "area" in ExcelFullWidthChart_Responsive (ALWAYS preferred)
+     * Multiple trend comparison → "line" in ExcelFullWidthChart_Responsive (30% of charts)
+     * Categorical data (products, departments, regions) → "bar" in ExcelFullWidthChartCategorical_Responsive (ONLY 20% of charts)
+     * Distribution/percentage data → "pie" in ExcelPieChart_Responsive (separate, doesn't count in 50/30/20 rule)
    
    - **COUNT BEFORE SUBMITTING:**
      * Total chart layouts (ExcelTrendChart, ExcelFullWidthChart, ExcelComparisonLayout, etc.): ___
