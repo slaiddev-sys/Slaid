@@ -227,7 +227,7 @@ export default function Component1920WLight() {
       </div>
       {/* Main Content: left-aligned layout */}
       <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 pt-16 sm:pt-24 lg:pt-32 max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto">
-        {/* Main Content Row - Title and Upload Files */}
+        {/* Main Content Row - Title and Demo Video */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start justify-between w-full max-w-6xl pr-0 lg:pr-4">
           {/* Left Side - Title and Description */}
           <div className="flex-1 max-w-3xl">
@@ -271,39 +271,21 @@ export default function Component1920WLight() {
             </a>
           </div>
           
-          {/* Right Side - Upload Files */}
+          {/* Right Side - Demo Video */}
           <div className="relative w-full max-w-md ml-0 lg:ml-24 mt-8 lg:-mt-20">
-            <a href="/login" className="block">
-              <div className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border border-gray-100 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative cursor-pointer transition-transform hover:scale-[1.02]">
-                {/* Layered Cards Background */}
-                <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
-                  {/* Back card */}
-                  <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform rotate-3 translate-x-2 translate-y-2 transition-transform duration-300 group-hover:translate-x-6"></div>
-                  {/* Middle card */}
-                  <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform -rotate-1 translate-x-1 translate-y-1 transition-transform duration-300 group-hover:-translate-x-4"></div>
-                  {/* Front card */}
-                  <div className="relative w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-start p-3 sm:p-4 transition-transform duration-300">
-                    {/* Document header lines */}
-                    <div className="w-full mb-6">
-                      <div className="h-1.5 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-1.5 bg-gray-200 rounded w-2/3 mb-2"></div>
-                      <div className="h-1.5 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                    
-                    {/* Google Sheets icon in center */}
-                    <div className="flex-1 flex items-center justify-center">
-                      <img src="/google-sheets.png" alt="Google Sheets" className="w-12 h-16 sm:w-14 sm:h-18 lg:w-16 lg:h-20 object-contain" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>Upload Files</h3>
-                  <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>Drag and drop your files here, or <span className="text-blue-500 hover:underline">click to select</span>.</p>
-                  <p className="text-xs text-center" style={{ color: '#002903' }}>Support formats: .xlsx, .xsl, .csv</p>
-                </div>
-              </div>
-            </a>
+            <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-xl border border-gray-100 overflow-hidden">
+              <video 
+                className="w-full h-auto rounded-2xl"
+                controls
+                autoPlay
+                muted
+                loop
+                playsInline
+              >
+                <source src="/Slaid : Demo.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
+            </div>
           </div>
         </div>
         
