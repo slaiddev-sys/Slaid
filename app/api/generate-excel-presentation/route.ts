@@ -547,14 +547,15 @@ RULES:
    
    - 📊 **ExcelFullWidthChartCategorical_Responsive** - For categorical comparisons:
      * **MUST ONLY USE BAR CHART** (type: 'bar') - NEVER use line or area
-     * **MUST INCLUDE COLOR** in series for proper purple/blue display
+     * **🚨 CRITICAL: EVERY series MUST have a color** - without colors, charts display in grey/black
      * Product categories (Product A, Product B, Product C)
      * Expense categories (Alquiler, Electricidad, Combustible, Comida, Otros)
      * Geographic regions (North, South, East, West)
      * Department names (Sales, Marketing, HR)
      * ANY non-time-series categorical data
      * **Single series**: chartData: { type: 'bar', labels: ["Cat A", "Cat B", "Cat C"], series: [{id: "Values", data: [800, 150, 450], color: "#4A3AFF"}] }
-     * **Multi series**: chartData: { type: 'bar', labels: ["Q1", "Q2"], series: [{id: "Revenue", data: [6.5, 11.2], color: "#4A3AFF"}, {id: "GMV", data: [5.8, 10.5], color: "#C893FD"}] }
+     * **Multi series (2 series)**: chartData: { type: 'bar', labels: ["Q1", "Q2"], series: [{id: "Revenue", data: [6.5, 11.2], color: "#4A3AFF"}, {id: "GMV", data: [5.8, 10.5], color: "#C893FD"}] }
+     * **Multi series (3+ series)**: Use colors in order: #4A3AFF, #C893FD, #1e40af, #2563eb, #3b82f6
    
    - 🥧 **ExcelPieChart_Responsive** - For distribution/percentage data:
      * **MUST ONLY USE PIE CHART** (type: 'pie') - this is the ONLY layout that uses pie
@@ -581,13 +582,15 @@ RULES:
    
    - 📈 **ExcelFullWidthChart_Responsive** - For TIME-SERIES data ONLY:
      * **MUST USE line OR area** (NEVER bar for time-series - see Rule #21)
-     * **MUST INCLUDE COLOR** in series for proper purple/blue gradient display
+     * **🚨 CRITICAL: EVERY series MUST have a color** - without colors, charts display in grey/black
      * Months (Jan, Feb, Mar, Apr / Enero, Febrero, Marzo)
      * Quarters (Q1, Q2, Q3, Q4)
      * Years (2022, 2023, 2024)
      * Dates or time periods
      * **Single series**: chartData: { type: 'area', labels: ["Jan", "Feb", "Mar"], series: [{id: "Revenue", data: [1000, 1200, 1500], color: "#4A3AFF"}] }
-     * **Multi series**: chartData: { type: 'area', labels: ["Q1", "Q2", "Q3"], series: [{id: "Sales", data: [2500, 5200, 8100], color: "#4A3AFF"}, {id: "Marketing", data: [1800, 3600, 5800], color: "#C893FD"}] }
+     * **Multi series (2 series)**: chartData: { type: 'area', labels: ["Q1", "Q2", "Q3"], series: [{id: "Sales", data: [2500, 5200, 8100], color: "#4A3AFF"}, {id: "Marketing", data: [1800, 3600, 5800], color: "#C893FD"}] }
+     * **Multi series (3+ series)**: Use colors in order: #4A3AFF, #C893FD, #1e40af, #2563eb, #3b82f6
+     * **Example 3 series**: series: [{id: "A", data: [100, 200], color: "#4A3AFF"}, {id: "B", data: [150, 250], color: "#C893FD"}, {id: "C", data: [80, 180], color: "#1e40af"}]
    
    **🚨 CRITICAL RULES:**
    - If data has categorical labels (NOT time) → ExcelFullWidthChartCategorical_Responsive with BAR chart
