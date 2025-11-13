@@ -550,10 +550,26 @@ RULES:
    
    - 🥧 **ExcelPieChart_Responsive** - For distribution/percentage data:
      * **MUST ONLY USE PIE CHART** (type: 'pie') - this is the ONLY layout that uses pie
+     * **CRITICAL**: This is a TREND-style layout (2/3 chart + 1/3 insights), NOT full-width
      * Market share distribution (Competitor A: 35%, Competitor B: 25%)
      * Budget allocation (Marketing: 40%, Sales: 30%, Operations: 20%)
      * Category breakdown showing parts of a whole (100%)
-     * chartData: { type: 'pie', categories: ["Cat A", "Cat B"], series: [{name: "Distribution", data: [800, 150]}] }
+     * **CRITICAL**: MUST have AT LEAST 3 categories (preferably 5+) - do NOT create pie charts with only 1-2 categories
+     * chartData: { 
+         type: 'pie', 
+         labels: ["Revolut", "Alimentación", "Ocio", "Transporte", "Suscripciones"],
+         series: [
+           { id: "Revolut", data: [39.5], color: "#3b82f6" },
+           { id: "Alimentación", data: [20.9], color: "#8b5cf6" },
+           { id: "Ocio", data: [14.9], color: "#10b981" },
+           { id: "Transporte", data: [8.4], color: "#f59e0b" },
+           { id: "Suscripciones", data: [16.3], color: "#ef4444" }
+         ],
+         showLegend: true,
+         legendPosition: 'bottom'
+       }
+     * **REQUIRED**: insights array with 3-4 bullet points explaining the distribution
+     * **Example**: insights: ["Largest category represents 39.5% of total", "Five categories show balanced distribution", ...]
    
    - 📈 **ExcelFullWidthChart_Responsive** - For TIME-SERIES data ONLY:
      * **MUST USE line OR area** (NEVER bar for time-series - see Rule #21)
