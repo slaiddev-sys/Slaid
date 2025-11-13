@@ -547,12 +547,14 @@ RULES:
    
    - 📊 **ExcelFullWidthChartCategorical_Responsive** - For categorical comparisons:
      * **MUST ONLY USE BAR CHART** (type: 'bar') - NEVER use line or area
+     * **MUST INCLUDE COLOR** in series for proper purple/blue display
      * Product categories (Product A, Product B, Product C)
      * Expense categories (Alquiler, Electricidad, Combustible, Comida, Otros)
      * Geographic regions (North, South, East, West)
      * Department names (Sales, Marketing, HR)
      * ANY non-time-series categorical data
-     * chartData: { type: 'bar', labels: ["Cat A", "Cat B"], series: [{id: "Values", data: [800, 150]}] }
+     * **Single series**: chartData: { type: 'bar', labels: ["Cat A", "Cat B", "Cat C"], series: [{id: "Values", data: [800, 150, 450], color: "#4A3AFF"}] }
+     * **Multi series**: chartData: { type: 'bar', labels: ["Q1", "Q2"], series: [{id: "Revenue", data: [6.5, 11.2], color: "#4A3AFF"}, {id: "GMV", data: [5.8, 10.5], color: "#C893FD"}] }
    
    - 🥧 **ExcelPieChart_Responsive** - For distribution/percentage data:
      * **MUST ONLY USE PIE CHART** (type: 'pie') - this is the ONLY layout that uses pie
@@ -579,11 +581,13 @@ RULES:
    
    - 📈 **ExcelFullWidthChart_Responsive** - For TIME-SERIES data ONLY:
      * **MUST USE line OR area** (NEVER bar for time-series - see Rule #21)
+     * **MUST INCLUDE COLOR** in series for proper purple/blue gradient display
      * Months (Jan, Feb, Mar, Apr / Enero, Febrero, Marzo)
      * Quarters (Q1, Q2, Q3, Q4)
      * Years (2022, 2023, 2024)
      * Dates or time periods
-     * chartData: { type: 'area', labels: ["Jan", "Feb"], series: [{id: "Revenue", data: [1000, 1200]}] }
+     * **Single series**: chartData: { type: 'area', labels: ["Jan", "Feb", "Mar"], series: [{id: "Revenue", data: [1000, 1200, 1500], color: "#4A3AFF"}] }
+     * **Multi series**: chartData: { type: 'area', labels: ["Q1", "Q2", "Q3"], series: [{id: "Sales", data: [2500, 5200, 8100], color: "#4A3AFF"}, {id: "Marketing", data: [1800, 3600, 5800], color: "#C893FD"}] }
    
    **🚨 CRITICAL RULES:**
    - If data has categorical labels (NOT time) → ExcelFullWidthChartCategorical_Responsive with BAR chart
