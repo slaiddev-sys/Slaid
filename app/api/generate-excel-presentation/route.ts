@@ -488,39 +488,16 @@ RULES:
    - ONLY use this layout when you have AT LEAST 8 rows of data to display
    - If you have fewer than 8 rows, DO NOT use it - use a chart layout instead
    - A table with only 2-5 rows looks empty and unprofessional
-7. **🚨🚨🚨 ULTRA CRITICAL - NEVER DUPLICATE TOPICS OR DATA 🚨🚨🚨**
-   
-   **DO NOT create two slides about the same topic or showing the same data:**
-   - ❌ **FORBIDDEN**: Two slides about "Distribution of Categories" or "Category Breakdown"
-   - ❌ **FORBIDDEN**: Two slides showing the same pie chart or bar chart with slightly different titles
-   - ❌ **FORBIDDEN**: Two slides analyzing the same metric or data set
-   - ❌ **FORBIDDEN**: Repeating data in different formats (e.g., pie chart + bar chart of same categories)
-   
-   **Each slide MUST present UNIQUE information:**
-   - ✅ **CORRECT**: "Category Distribution" (slide 3) + "Monthly Trends" (slide 4) + "Top Performers" (slide 5)
-   - ✅ **CORRECT**: Each slide analyzes a DIFFERENT aspect of the data
-   - ✅ **CORRECT**: Each slide uses DIFFERENT data points or metrics
-   
-   **BEFORE SUBMITTING - MANDATORY CHECK:**
-   1. Read through ALL slide titles you created
-   2. Check if any two titles are about the same topic (synonyms, similar concepts)
-   3. Check if any two slides use the same data columns/categories
-   4. If you find duplicates: DELETE one and create a NEW slide with completely different data/topic
-   
-   **WHY THIS MATTERS:**
-   Duplicate slides reduce value for the user and make the presentation repetitive.
-   Every slide must add NEW information and insights.
-   
-8. Use varied layouts based on content type
-9. **CRITICAL: Extract REAL data from the Excel for ALL charts, tables, and metrics**
+7. Use varied layouts based on content type
+8. **CRITICAL: Extract REAL data from the Excel for ALL charts, tables, and metrics**
    - DO NOT use placeholder values (156, 168, 162, 165, 170, etc.)
    - DO NOT use example data from the layout specifications
    - ALWAYS read and use the actual values from the Excel data summary above
    - Chart labels MUST match Excel columns/rows
    - Chart values MUST match Excel cell values
    - Table rows MUST match Excel data rows
-10. Generate meaningful insights
-11. **🚨 CRITICAL - ExcelKPIDashboard_Responsive chart requirements:**
+9. Generate meaningful insights
+10. **🚨 CRITICAL - ExcelKPIDashboard_Responsive chart requirements:**
    - Charts MUST use ONLY "area", "line", or "bar" type - NEVER "pie"
    - **MINIMUM DATA POINTS REQUIREMENT:**
      * Each chart in kpiCards MUST have AT LEAST 5 data points
@@ -532,12 +509,12 @@ RULES:
      * If a KPI card only has a single total value, just show the metric without a chart
      * Better to have 2-3 well-populated KPI cards than 3-4 cards with poor/empty charts
    - **VERIFY before submitting:** Does each chart have AT LEAST 5 meaningful data points?
-12. Chart layouts with "overallPerformance" MUST calculate it from chart data:
+11. Chart layouts with "overallPerformance" MUST calculate it from chart data:
    - Formula: ((lastValue - firstValue) / firstValue) × 100
    - For Comparison: ((actualTotal - targetTotal) / targetTotal) × 100
    - Use + for growth, - for decline
    - NEVER use random numbers like "+24.8%" without calculation
-13. **🚨 ExcelHowItWorks_Responsive - ULTRA STRICT RULES 🚨:**
+12. **🚨 ExcelHowItWorks_Responsive - ULTRA STRICT RULES 🚨:**
    - **USE EXACTLY 1 TIME PER PRESENTATION - NEVER 2 OR MORE**
    - This layout MUST have EXACTLY 4 features (2x2 grid) - see Rule #6
    - If you have 1-3 items, use ExcelExperienceFullText_Responsive instead
@@ -545,20 +522,20 @@ RULES:
    - Use this layout only when you have exactly 4 distinct strategic points or key steps to present
    - **MANDATORY CHECKPOINT**: Before submitting JSON, search for "ExcelHowItWorks_Responsive" - count MUST be exactly 1 (or 0 if not using it)
    - **IF YOU FIND 2 OR MORE**: DELETE all but one, replace with ExcelExperienceFullText_Responsive or chart layouts
-14. ExcelComparisonLayout_Responsive table headers MUST be adaptive:
+13. ExcelComparisonLayout_Responsive table headers MUST be adaptive:
    - actualTableTitle, targetTableTitle, metricColumnHeader, actualColumnHeader, targetColumnHeader
    - ALL must be in the user's language (Spanish if prompt is Spanish, English if English)
    - ALL must match the data context (e.g., "Ingresos Reales" not "Actual Performance" for Spanish financial data)
-15. Description texts in ExcelCenteredCover_Responsive and ExcelKPIDashboard_Responsive MUST be adaptive:
+14. Description texts in ExcelCenteredCover_Responsive and ExcelKPIDashboard_Responsive MUST be adaptive:
    - Cover description: Summarize the presentation's purpose based on actual Excel data and user request
    - KPI Dashboard description: Explain what these specific KPIs measure in relation to the Excel data
    - BOTH must be in the user's language and context-specific (not generic placeholders)
-16. performanceLabel in chart layouts MUST be translated to user's language:
+15. performanceLabel in chart layouts MUST be translated to user's language:
    - ExcelTrendChart_Responsive, ExcelFullWidthChart_Responsive, ExcelFullWidthChartWithTable_Responsive, ExcelComparisonLayout_Responsive
    - English: "Overall Performance" or "Overall performance"
    - Spanish: "Rendimiento General" or "Rendimiento general"
    - Match the user's language consistently
-17. **CRITICAL - Use the CORRECT layout based on data type:**
+16. **CRITICAL - Use the CORRECT layout based on data type:**
    
    **🚨🚨🚨 FOR ALL DATA CATEGORIES - USE ONLY THESE 2 LAYOUTS 🚨🚨🚨**
    
@@ -582,11 +559,11 @@ RULES:
          type: 'pie', 
          labels: ["Revolut", "Alimentación", "Ocio", "Transporte", "Suscripciones"],
          series: [
-           { id: "Revolut", data: [39.5], color: "#3b82f6" },
-           { id: "Alimentación", data: [20.9], color: "#8b5cf6" },
-           { id: "Ocio", data: [14.9], color: "#10b981" },
-           { id: "Transporte", data: [8.4], color: "#f59e0b" },
-           { id: "Suscripciones", data: [16.3], color: "#ef4444" }
+           { id: "Revolut", data: [39.5], color: "#4A3AFF" },
+           { id: "Alimentación", data: [20.9], color: "#C893FD" },
+           { id: "Ocio", data: [14.9], color: "#1e40af" },
+           { id: "Transporte", data: [8.4], color: "#2563eb" },
+           { id: "Suscripciones", data: [16.3], color: "#3b82f6" }
          ],
          showLegend: true,
          legendPosition: 'bottom'
@@ -617,13 +594,13 @@ RULES:
    - Example: Chart with ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"]
      → actualData needs 13 rows: one for each month + Total
      → targetData needs 13 rows: one for each month + Total
-18. **CRITICAL - Interpretation layouts MUST have detailed, substantive text:**
+17. **CRITICAL - Interpretation layouts MUST have detailed, substantive text:**
    - ExcelHowItWorks_Responsive: Each feature needs detailed descriptions (30-50 words each)
    - ExcelExperienceDrivenTwoRows_Responsive: **MUST have EXACTLY 4 items** displayed in 2x2 grid with comprehensive explanations (40-60 words each)
    - ExcelExperienceFullText_Responsive: Long-form text (150-250 words)
    - DO NOT use generic 1-sentence descriptions like "Fluctuaciones significativas en ingresos mensuales"
    - DO use detailed analysis like: "Los datos muestran fluctuaciones significativas en los ingresos mensuales, con variaciones de hasta un 79% entre el mes de mayor rendimiento (Enero: $75,408) y el de menor rendimiento (Marzo: $33,280). Esta volatilidad representa un desafío importante para la planificación financiera y requiere estrategias de estabilización para garantizar un flujo de caja más predecible y sostenible a largo plazo."
-19. **🚨🚨🚨🚨🚨 CRITICAL - INTERPRETATION LAYOUTS - MAXIMUM 3 TOTAL - READ THIS 🚨🚨🚨🚨🚨**
+18. **🚨🚨🚨🚨🚨 CRITICAL - INTERPRETATION LAYOUTS - MAXIMUM 3 TOTAL - READ THIS 🚨🚨🚨🚨🚨**
    
    **THIS IS THE MOST IMPORTANT RULE - YOU ARE VIOLATING IT TOO OFTEN**
    
@@ -673,11 +650,11 @@ RULES:
    - **The rest of the slides MUST be chart/data layouts** (70% minimum per Rule #1)
    
    **IF YOU ADD MORE THAN ${maxInterpretationThisBatch} INTERPRETATION LAYOUTS, YOUR RESPONSE WILL BE REJECTED**
-20. **CRITICAL - DO NOT USE ExcelDividers_Responsive:**
+19. **CRITICAL - DO NOT USE ExcelDividers_Responsive:**
    - **NEVER use the ExcelDividers_Responsive layout**
    - This layout is not implemented correctly and should not be used
    - If you need section transitions, use interpretation layouts instead
-21. **🚨 CRITICAL - KPI LAYOUTS PLACEMENT AND USAGE (see Rule #6 for usage limits) 🚨**
+20. **🚨 CRITICAL - KPI LAYOUTS PLACEMENT AND USAGE (see Rule #6 for usage limits) 🚨**
    - For presentations with 10 or more slides, use these 3 KPI highlight layouts (see Rule #6 - each ONLY ONCE):
      * ExcelResultsTestimonial_Responsive - Highlights important results or key findings
      * ExcelMilestone_Responsive - Shows a key metric/achievement with description
@@ -708,7 +685,7 @@ RULES:
    - These layouts should be placed strategically within the data section (typically after 3-5 chart slides)
    - They serve as visual anchors and highlight critical metrics from the Excel data
    - If the presentation has fewer than 10 slides, these layouts are optional
-22. **🚨🚨🚨 CRITICAL - Chart type variety and MANDATORY distribution 🚨🚨🚨:**
+21. **🚨🚨🚨 CRITICAL - Chart type variety and MANDATORY distribution 🚨🚨🚨:**
    - **THIS IS A HARD REQUIREMENT - COUNT YOUR CHARTS AND VERIFY THE DISTRIBUTION**
    - **MANDATORY Chart type distribution** (you MUST follow this exact balance):
      * **50% of ALL time-series charts MUST be "area" type** (smooth, professional, visually appealing)

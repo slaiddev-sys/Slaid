@@ -155,16 +155,28 @@ export interface ChartBlockProps {
   showDots?: boolean;
 }
 
-// Predefined color palette - dark blue and purple tones
+// Predefined color palette - matching charts preview page exactly
 const DEFAULT_COLORS = [
-  '#1e3a8a', // blue-900 (very dark blue)
-  '#1e40af', // blue-800 (dark blue)
+  '#4A3AFF', // custom purple-blue - primary (matches charts preview)
+  '#C893FD', // custom light purple - secondary (matches charts preview)
+  '#1e40af', // blue-800 (medium dark blue)
   '#2563eb', // blue-600 (medium blue)
-  '#6366f1', // indigo-500 (blue-purple)
-  '#7c3aed', // violet-600 (purple)
-  '#8b5cf6', // violet-500 (medium purple)
-  '#a78bfa', // violet-400 (light purple)
-  '#c4b5fd', // violet-300 (lighter purple)
+  '#3b82f6', // blue-500 (standard blue)
+  '#60a5fa', // blue-400 (lighter blue)
+  '#93c5fd', // blue-300 (light blue)
+  '#dbeafe', // blue-100 (very light blue)
+];
+
+// Pie chart color palette - consistent with other charts
+const PIE_CHART_COLORS = [
+  '#4A3AFF', // primary purple-blue (consistent with line/bar/area charts)
+  '#C893FD', // light purple (consistent with line/bar/area charts)
+  '#1e40af', // medium dark blue (consistent with line/bar/area charts)
+  '#2563eb', // medium blue (consistent with line/bar/area charts)
+  '#3b82f6', // standard blue (consistent with line/bar/area charts)
+  '#60a5fa', // lighter blue (consistent with line/bar/area charts)
+  '#93c5fd', // light blue (consistent with line/bar/area charts)
+  '#dbeafe', // very light blue (consistent with line/bar/area charts)
 ];
 
 // Custom cursor component for bar charts with rounded corners and bar-height matching
@@ -247,7 +259,7 @@ const ChartBlock = React.memo(function ChartBlock({
       return series.map((item, index) => ({
         name: item.id,
         value: Array.isArray(item.data) ? item.data[0] : item.data,
-        color: item.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length]
+        color: item.color || PIE_CHART_COLORS[index % PIE_CHART_COLORS.length]
       }));
     }
     
@@ -440,7 +452,7 @@ const ChartBlock = React.memo(function ChartBlock({
       return seriesWithColors.map((series, index) => ({
         name: series.id,
         value: series.data?.[0] || 0, // Each series should have one value for pie charts
-        fill: series.color || DEFAULT_COLORS[index % DEFAULT_COLORS.length],
+        fill: series.color || PIE_CHART_COLORS[index % PIE_CHART_COLORS.length],
       }));
     } else {
       // For other charts, combine labels with all series data
