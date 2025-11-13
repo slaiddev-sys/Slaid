@@ -155,16 +155,16 @@ export interface ChartBlockProps {
   showDots?: boolean;
 }
 
-// Predefined color palette - matching charts preview page exactly
+// Predefined color palette - dark blue and purple tones
 const DEFAULT_COLORS = [
-  '#4A3AFF', // custom purple-blue - primary (matches charts preview)
-  '#C893FD', // custom light purple - secondary (matches charts preview)
-  '#1e40af', // blue-800 (medium dark blue)
+  '#1e3a8a', // blue-900 (very dark blue)
+  '#1e40af', // blue-800 (dark blue)
   '#2563eb', // blue-600 (medium blue)
-  '#3b82f6', // blue-500 (standard blue)
-  '#60a5fa', // blue-400 (lighter blue)
-  '#93c5fd', // blue-300 (light blue)
-  '#dbeafe', // blue-100 (very light blue)
+  '#6366f1', // indigo-500 (blue-purple)
+  '#7c3aed', // violet-600 (purple)
+  '#8b5cf6', // violet-500 (medium purple)
+  '#a78bfa', // violet-400 (light purple)
+  '#c4b5fd', // violet-300 (lighter purple)
 ];
 
 // Custom cursor component for bar charts with rounded corners and bar-height matching
