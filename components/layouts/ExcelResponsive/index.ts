@@ -15,6 +15,7 @@ export { default as ExcelTableOfContents_Responsive } from './ExcelTableOfConten
 // Phase 3 - Data Visualization Layouts
 export { default as ExcelFullWidthChart_Responsive } from './ExcelFullWidthChart_Responsive';
 export { default as ExcelFullWidthChartCategorical_Responsive } from './ExcelFullWidthChartCategorical_Responsive';
+export { default as ExcelPieChart_Responsive } from './ExcelPieChart_Responsive';
 export { default as ExcelFullWidthChartWithTable_Responsive } from './ExcelFullWidthChartWithTable_Responsive';
 export { default as ExcelComparisonLayout_Responsive } from './ExcelComparisonLayout_Responsive';
 

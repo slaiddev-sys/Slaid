@@ -38,6 +38,7 @@ import {
   ExcelTableOfContents_Responsive,
   ExcelFullWidthChart_Responsive,
   ExcelFullWidthChartCategorical_Responsive,
+  ExcelPieChart_Responsive,
   ExcelFullWidthChartWithTable_Responsive,
   ExcelComparisonLayout_Responsive,
   ExcelExperienceDrivenTwoRows_Responsive,
@@ -1826,6 +1827,7 @@ export default function EditorPage() {
     // Responsive Excel Layouts - Phase 3
     ExcelFullWidthChart_Responsive,
     ExcelFullWidthChartCategorical_Responsive,
+    ExcelPieChart_Responsive,
     ExcelFullWidthChartWithTable_Responsive,
     ExcelComparisonLayout_Responsive,
     // Responsive Excel Layouts - Phase 4

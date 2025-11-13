@@ -289,11 +289,13 @@ AVAILABLE EXCEL LAYOUTS (use these exact names):
 4. ExcelTrendChart_Responsive - Trend chart with insights
 5. ExcelDataTable_Responsive - Data table display
 6. ExcelFullWidthChart_Responsive - Full-width chart
-7. ExcelFullWidthChartWithTable_Responsive - Chart with data table
-8. ExcelComparisonLayout_Responsive - Comparison charts
-9. ExcelExperienceFullText_Responsive - Text interpretation
-10. ExcelHowItWorks_Responsive - Process/features grid
-11. ExcelBackCover_Responsive - Back cover with contact info
+7. ExcelFullWidthChartCategorical_Responsive - Categorical chart for non-time data
+8. ExcelPieChart_Responsive - Pie chart for distribution/percentage data
+9. ExcelFullWidthChartWithTable_Responsive - Chart with data table
+10. ExcelComparisonLayout_Responsive - Comparison charts
+11. ExcelExperienceFullText_Responsive - Text interpretation
+12. ExcelHowItWorks_Responsive - Process/features grid
+13. ExcelBackCover_Responsive - Back cover with contact info
 
 RULES:
 
@@ -534,18 +536,25 @@ RULES:
    - Spanish: "Rendimiento General" or "Rendimiento general"
    - Match the user's language consistently
 16. **CRITICAL - Use the CORRECT layout based on data type:**
-   - ❌ For CATEGORICAL data, use ExcelFullWidthChartCategorical_Responsive:
+   - 🥧 For DISTRIBUTION/PERCENTAGE data, use ExcelPieChart_Responsive:
+     * Market share distribution (Competitor A: 35%, Competitor B: 25%, etc.)
+     * Budget allocation (Marketing: 40%, Sales: 30%, Operations: 20%, etc.)
+     * Category breakdown showing parts of a whole
+     * ANY data that shows percentage distribution or composition
+     * **CRITICAL**: Pie charts are ONLY for showing how parts make up a whole (100%)
+     * chartData structure: { type: 'pie', categories: ["Cat A", "Cat B"], series: [{ name: "Distribution", data: [800, 150, 50] }] }
+   - 📊 For CATEGORICAL data (comparisons, NOT distribution), use ExcelFullWidthChartCategorical_Responsive:
      * Product categories (Product A, Product B, Product C)
      * Expense categories (Alquiler, Electricidad, Combustible, Comida, Otros)
      * Geographic regions (North, South, East, West)
      * Department names (Sales, Marketing, HR)
-     * ANY labels that are NOT time sequences
-   - ✅ For TIME-SERIES data, use ExcelFullWidthChart_Responsive:
+     * ANY labels that are NOT time sequences and NOT distribution data
+   - 📈 For TIME-SERIES data, use ExcelFullWidthChart_Responsive:
      * Months (Jan, Feb, Mar, Apr / Enero, Febrero, Marzo)
      * Quarters (Q1, Q2, Q3, Q4)
      * Years (2022, 2023, 2024)
      * Dates or time periods
-   - Rule: Check the chart labels FIRST, then choose the appropriate layout
+   - Rule: Check the data type FIRST, then choose: Pie (distribution/%), Categorical (comparisons), or Time-series (trends)
 16. **CRITICAL - ExcelComparisonLayout_Responsive table synchronization:**
    - If chartData.labels has 12 items → actualData MUST have 13 items (12 data + 1 Total)
    - If chartData.labels has 4 items → actualData MUST have 5 items (4 data + 1 Total)
