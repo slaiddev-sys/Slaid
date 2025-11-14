@@ -27,6 +27,11 @@ export async function POST(request: NextRequest) {
     pptx.defineLayout({ name: 'SLAID_LAYOUT', width: 10, height: 5.625 });
     pptx.layout = 'SLAID_LAYOUT';
 
+    // Get baseUrl for chart capture
+    const host = request.headers.get('host') || 'localhost:3000';
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    const baseUrl = `${protocol}://${host}`;
+    
     // Only launch browser if we need to capture charts
     let browser = null;
     let page = null;
@@ -35,23 +40,24 @@ export async function POST(request: NextRequest) {
     if (needsChartCapture) {
       console.log('📊 Charts detected, launching Puppeteer for chart capture...');
       
-      const host = request.headers.get('host') || 'localhost:3000';
-      const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
-      const baseUrl = `${protocol}://${host}`;
-      
-      browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
-      });
+      try {
+        browser = await puppeteer.launch({
+          args: chromium.args,
+          defaultViewport: chromium.defaultViewport,
+          executablePath: await chromium.executablePath(),
+          headless: chromium.headless,
+        });
 
-      page = await browser.newPage();
-      await page.setViewport({ 
-        width: 1920, 
-        height: 1080,
-        deviceScaleFactor: 2
-      });
+        page = await browser.newPage();
+        await page.setViewport({ 
+          width: 1920, 
+          height: 1080,
+          deviceScaleFactor: 2
+        });
+      } catch (error) {
+        console.error('❌ Failed to launch Puppeteer:', error);
+        // Continue without chart images
+      }
     }
 
     // Process each slide
@@ -59,16 +65,25 @@ export async function POST(request: NextRequest) {
       const slideData = slides[i];
       console.log(`📊 Processing slide ${i + 1}/${slides.length}`);
       
-      const slide = pptx.addSlide();
-      
-      // Add content to slide
-      if (slideData.blocks && slideData.blocks.length > 0) {
-        await addBlocksToSlide(slide, slideData.blocks, page, baseUrl, presentationId, workspace, i);
+      try {
+        const slide = pptx.addSlide();
+        
+        // Add content to slide
+        if (slideData.blocks && slideData.blocks.length > 0) {
+          await addBlocksToSlide(slide, slideData.blocks, page, baseUrl, presentationId, workspace, i);
+        }
+      } catch (slideError) {
+        console.error(`❌ Error processing slide ${i + 1}:`, slideError);
+        // Continue with next slide
       }
     }
 
     if (browser) {
-      await browser.close();
+      try {
+        await browser.close();
+      } catch (error) {
+        console.error('❌ Error closing browser:', error);
+      }
     }
 
     // Generate the PPTX file
@@ -118,7 +133,12 @@ async function addBlocksToSlide(
   slideIndex: number
 ) {
   for (const block of blocks) {
-    await addBlockToSlide(slide, block, page, baseUrl, presentationId, workspace, slideIndex);
+    try {
+      await addBlockToSlide(slide, block, page, baseUrl, presentationId, workspace, slideIndex);
+    } catch (blockError) {
+      console.error(`Error adding block ${block.type}:`, blockError);
+      // Continue with next block
+    }
   }
 }
 
