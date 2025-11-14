@@ -307,6 +307,7 @@ export default function EditorPage() {
   const [workspaceDisplayName, setWorkspaceDisplayName] = useState<string>('');
   const [showTitleMenu, setShowTitleMenu] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showEditInModal, setShowEditInModal] = useState(false);
   const [showFullscreenPreview, setShowFullscreenPreview] = useState(false);
   const [isDataLoaded, setIsDataLoaded] = useState(false); // Track if database data has been loaded
   const [isExporting, setIsExporting] = useState(false);
@@ -7300,10 +7301,9 @@ export default function EditorPage() {
           {/* Top bar */}
           <div className="bg-[#F9FAFB] border-b border-gray-200 px-8 py-4 flex justify-end">
             <div className="flex gap-3">
-              {/* Edit in... button - Hidden for now, will be implemented in future */}
-              <button className="hidden flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition border border-gray-200" onClick={() => {
-                // TODO: Implement edit in external apps functionality
-                console.log('Edit in external apps clicked');
+              {/* Edit in... button */}
+              <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition border border-gray-200" onClick={() => {
+                setShowEditInModal(true);
               }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-600">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -7670,6 +7670,98 @@ export default function EditorPage() {
               100% { opacity: 1; transform: scale(1); }
             }
           `}</style>
+        </div>
+      )}
+      {/* Edit In Modal */}
+      {showEditInModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn modal-overlay">
+          <div className="absolute inset-0 bg-black/60" onClick={() => setShowEditInModal(false)} />
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 animate-scaleIn modal-content z-10">
+            <h2 className="text-[#002903] text-xl font-semibold mb-2">Edit in</h2>
+            <p className="text-gray-600 text-sm mb-6">
+              Choose where you want to edit your presentation
+            </p>
+            
+            <div className="flex flex-col gap-3">
+              {/* Google Slides Button */}
+              <button 
+                className="w-full flex items-center justify-between bg-white hover:bg-gray-50 text-gray-900 font-medium py-4 px-5 rounded-lg transition border-2 border-gray-200 hover:border-gray-300"
+                onClick={() => {
+                  // TODO: Implement Google Slides export/edit
+                  console.log('Edit in Google Slides clicked');
+                  setShowEditInModal(false);
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <img src="/google-slide.png" alt="Google Slides" className="w-8 h-8 object-contain" />
+                  <span className="text-base">Google Slides</span>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-400">
+                  <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              
+              {/* PowerPoint Button */}
+              <button 
+                className="w-full flex items-center justify-between bg-white hover:bg-gray-50 text-gray-900 font-medium py-4 px-5 rounded-lg transition border-2 border-gray-200 hover:border-gray-300"
+                onClick={async () => {
+                  try {
+                    console.log('Exporting to PowerPoint...');
+                    setShowEditInModal(false);
+                    
+                    // Show loading state (you can add a loading indicator if needed)
+                    const response = await fetch('/api/export-pptx', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                        presentationId: currentPresentationId,
+                        workspace: currentWorkspace,
+                        slides: slides,
+                        title: currentPresentation?.title || 'Presentation'
+                      })
+                    });
+
+                    if (!response.ok) {
+                      throw new Error('Failed to export PowerPoint');
+                    }
+
+                    // Download the file
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${currentPresentation?.title || 'presentation'}.pptx`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    console.log('PowerPoint export completed!');
+                  } catch (error) {
+                    console.error('PowerPoint export failed:', error);
+                    alert('Failed to export PowerPoint presentation. Please try again.');
+                  }
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <img src="/power-point.png" alt="PowerPoint" className="w-8 h-8 object-contain" />
+                  <span className="text-base">PowerPoint</span>
+                </div>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-400">
+                  <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+            
+            <button 
+              className="w-full mt-4 text-gray-500 hover:text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm"
+              onClick={() => setShowEditInModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
         </div>
       )}
       {/* Fullscreen Preview */}
