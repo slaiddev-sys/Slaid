@@ -237,16 +237,19 @@ export async function POST(request: NextRequest) {
               display: none !important; 
             }
             
-            /* Hide ALL text elements so only charts are captured */
-            h1, h2, h3, h4, h5, h6, p, span:not(svg *), div:not([data-chart-container]):not(.recharts-wrapper):not(.recharts-surface):not(.recharts-layer) {
-              color: transparent !important;
-              opacity: 0 !important;
+            /* Hide text content but keep charts visible */
+            h1, h2, h3, h4, h5, h6, p {
+              visibility: hidden !important;
             }
             
-            /* Ensure chart text (axes, labels, legends) remains visible */
-            svg text, .recharts-text, .recharts-label, .recharts-cartesian-axis-tick-value {
-              color: inherit !important;
-              opacity: 1 !important;
+            /* Keep everything inside chart containers visible */
+            [data-chart-container], [data-chart-container] * {
+              visibility: visible !important;
+            }
+            
+            /* Keep Recharts components visible */
+            .recharts-wrapper, .recharts-surface, .recharts-layer, svg {
+              visibility: visible !important;
             }
             
             body { 
