@@ -243,14 +243,8 @@ const ChartBlock = React.memo(function ChartBlock({
   // State for tracking hovered bar index
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
   
-  // State for client-side rendering to avoid SSR issues with Recharts
-  const [isClient, setIsClient] = React.useState(false);
-  
-  React.useEffect(() => {
-    setIsClient(true);
-  }, []);
-  
-  // Alternative client-side check
+  // Client-side check for avoiding SSR issues with Recharts
+  // Use immediate check instead of useEffect for faster rendering (important for PDF export)
   const isClientSide = typeof window !== 'undefined';
   
   // Memoize expensive calculations to prevent unnecessary re-renders
@@ -1101,7 +1095,8 @@ const ChartBlock = React.memo(function ChartBlock({
   };
 
   // Prevent hydration mismatch by only rendering charts on client
-  if (!isClient) {
+  // Use isClientSide for immediate check (important for PDF export)
+  if (!isClientSide) {
     return (
       <div className={cn('w-full h-full flex flex-col', className)}>
         {title && (
