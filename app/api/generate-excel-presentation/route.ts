@@ -263,6 +263,62 @@ ${whichInterpretationLayouts}
 
 USER REQUEST: "${presentationPrompt}"
 
+🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+🚨🚨🚨 ABSOLUTE CRITICAL RULE - NO DUPLICATE CONTENT - READ THIS FIRST 🚨🚨🚨
+🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+
+**THIS IS THE #1 RULE - DUPLICATING CONTENT IS ABSOLUTELY FORBIDDEN**
+
+WHAT COUNTS AS DUPLICATE CONTENT:
+1. Using the same Excel row/metric in multiple charts
+2. Showing the same data series twice (even with different chart types)
+3. Creating multiple slides about the same Excel section/topic
+4. Repeating the same series.id in different slides
+
+EXAMPLES OF FORBIDDEN DUPLICATES:
+❌ Slide 3: Chart with series "Revenue 2023" 
+❌ Slide 7: Chart with series "Revenue 2023" again ← DUPLICATE! FORBIDDEN!
+
+❌ Slide 4: "Sales Analysis" with Product A, Product B data
+❌ Slide 8: "Product Performance" with Product A, Product B data ← DUPLICATE! FORBIDDEN!
+
+❌ Slide 5: "Monthly Expenses" showing Alquiler, Electricidad
+❌ Slide 9: "Cost Breakdown" showing Alquiler, Electricidad ← DUPLICATE! FORBIDDEN!
+
+MANDATORY VERIFICATION BEFORE GENERATING JSON:
+**STEP 1**: List ALL series.id values you will use across ALL your slides
+**STEP 2**: Check if ANY series.id appears MORE THAN ONCE
+**STEP 3**: If YES → IMMEDIATELY REMOVE the duplicate slides
+**STEP 4**: Verify each Excel row/metric is used ONLY ONCE in the entire presentation
+
+TRACKING YOUR DATA USAGE:
+- Create a mental list: "I have used these Excel rows: [list them]"
+- Before adding a new chart, check: "Have I already used any of these rows?"
+- If YES → DO NOT CREATE THAT CHART - choose different Excel rows instead
+- Each Excel row can appear in ONLY ONE slide in the entire presentation
+
+THE SOLUTION - GROUP RELATED DATA INTO SINGLE COMPREHENSIVE CHARTS:
+✅ Instead of 3 separate slides for Revenue, Costs, Profit
+   → Create ONE slide "Financial Overview" with all 3 as different series
+
+✅ Instead of 5 separate slides for 5 products
+   → Create ONE slide "Product Portfolio Analysis" with all 5 products as different series
+
+✅ Instead of 4 separate slides for 4 expense categories
+   → Create ONE slide "Complete Expense Structure" with all 4 categories as different series
+
+CHECKPOINT BEFORE SUBMITTING YOUR JSON:
+□ I have listed ALL series.id values across all my slides
+□ NO series.id appears more than once
+□ NO Excel row/metric is shown in multiple charts
+□ Each data point from Excel is used MAXIMUM 1 time
+□ If I see any duplicate → I have removed entire duplicate slides
+
+**IF YOU SUBMIT JSON WITH DUPLICATE CONTENT, THE ENTIRE RESPONSE WILL BE REJECTED**
+**THIS RULE OVERRIDES ALL OTHER RULES - BETTER TO HAVE FEWER SLIDES THAN DUPLICATES**
+
+🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
+
 🌍 CRITICAL LANGUAGE REQUIREMENT - READ THIS FIRST:
 1. **DETECT THE LANGUAGE** of the user's request: "${presentationPrompt}"
 2. **USE ONLY THAT LANGUAGE** for 100% of the presentation content
@@ -405,22 +461,63 @@ RULES:
   - Example: If Excel has 8 sections, batch 1 shows sections 1-4, batch 2 shows sections 5-8
   - **NEVER show the same section/group in multiple batches**` : '- Use different logical sections for each chart/table layout'}
 
-- **EXAMPLES OF VIOLATIONS (DO NOT DO THIS):**
-  ❌ Slide 3: "RECURRING FORECAST USD" line chart (Jan-Dec 2023)
-  ❌ Slide 5: "RECURRING NEW BUSINESS" bar chart (Jan-Dec 2023)
-  ❌ Slide 7: "RECURRING FORECAST USD" area chart (Jan-Dec 2023) ← DUPLICATE DATA!
-  ❌ Slide 9: "RECURRING NEW BUSINESS" line chart (Jan-Dec 2023) ← DUPLICATE DATA!
+- **🚨 CRITICAL EXAMPLES OF VIOLATIONS - THESE WILL GET YOUR RESPONSE REJECTED 🚨:**
   
-  ✅ Slide 3: "Previsión de Ventas Completa" (shows ENTIRE "PREVISIÓN VENTAS SEGÚN RECURRING 2023" section with all related metrics)
-  ✅ Slide 5: "Evolución Mensual de Ingresos" (shows ENTIRE "Evolución mensual" section with all metrics)
-  ✅ Slide 7: "Comparativa YTD" (shows ENTIRE "YTD Recurring vs Presupuesto" comparison)
-  ✅ Slide 9: "Análisis de Facturación" (shows ENTIRE "Comparativas de facturación" section)
+  **FORBIDDEN PATTERN - DUPLICATING DATA ACROSS SLIDES:**
+  ❌ Slide 3: Chart with series.id "RECURRING FORECAST USD" 
+  ❌ Slide 7: Chart with series.id "RECURRING FORECAST USD" again ← DUPLICATE! REJECTED!
+  
+  ❌ Slide 5: Chart with series.id "RECURRING NEW BUSINESS"
+  ❌ Slide 9: Chart with series.id "RECURRING NEW BUSINESS" again ← DUPLICATE! REJECTED!
+  
+  ❌ Slide 4: "Product Sales" showing Product A, Product B, Product C
+  ❌ Slide 8: "Sales Performance" showing Product A, Product B, Product C ← DUPLICATE! REJECTED!
+  
+  **WHY THIS IS WRONG:** You are showing the SAME Excel data multiple times in different slides.
+  **THE FIX:** Combine all related data into ONE comprehensive slide with multiple series.
+  
+  **✅ CORRECT PATTERN - UNIQUE DATA PER SLIDE:**
+  
+  ✅ Slide 3: "Previsión de Ventas Completa" 
+     → Shows series: "RECURRING FORECAST USD", "RECURRING NEW BUSINESS", "NEW BUSINESS", "Vendido SGA", "Vendido One Off"
+     → ALL revenue streams in ONE chart
+  
+  ✅ Slide 4: "Estructura de Costos Operativos"
+     → Shows series: "Alquiler", "Electricidad", "Combustible", "Comida", "Otros"
+     → ALL expense categories in ONE chart (DIFFERENT data from Slide 3)
+  
+  ✅ Slide 5: "Análisis de Productos"
+     → Shows series: "Product A", "Product B", "Product C", "Product D", "Product E"
+     → ALL products in ONE chart (DIFFERENT data from Slides 3 and 4)
+  
+  ✅ Slide 6: "Comparativa Regional"
+     → Shows series: "North Region", "South Region", "East Region", "West Region"
+     → ALL regions in ONE chart (DIFFERENT data from Slides 3, 4, and 5)
+  
+  **NOTICE:** Each slide uses COMPLETELY DIFFERENT Excel rows. NO series.id is repeated.
 
-- **BEFORE ADDING ANY DATA LAYOUT, ASK YOURSELF:**
-  - Which logical section of the Excel does this slide represent?
-  - Have I already shown this section in a previous slide?
-  - Am I showing ALL relevant data from this section, not just 1-2 rows?
-  - If you're repeating the same row labels, STOP - you're duplicating content
+- **🚨🚨🚨 MANDATORY - TRACK EVERY EXCEL ROW YOU USE 🚨🚨🚨:**
+  * **BEFORE CREATING EACH SLIDE, MAINTAIN A MENTAL LIST OF USED DATA:**
+    - "Used Excel rows so far: [list all series.id values from previous slides]"
+    - "Excel rows still available: [remaining unused rows]"
+  
+  * **BEFORE ADDING ANY DATA LAYOUT, ASK YOURSELF:**
+    - Which Excel rows/metrics will this slide use?
+    - Have I already used ANY of these rows in a previous slide?
+    - Am I showing ALL relevant data from this Excel section together?
+    - If repeating ANY row label → STOP - choose different data instead
+  
+  * **VERIFICATION FOR EACH SLIDE:**
+    - ✅ Every series.id in this slide = NEW (not used in previous slides)
+    - ✅ This slide shows a DIFFERENT logical section from previous slides
+    - ✅ NO overlap with data already shown
+    - ❌ If ANY series.id was used before → DELETE this slide, choose different data
+  
+  * **EXAMPLE OF PROPER TRACKING:**
+    - Slide 3: Used rows "Revenue Stream A", "Revenue Stream B", "Revenue Stream C"
+    - Slide 4: Must use DIFFERENT rows → Use "Cost Category 1", "Cost Category 2", "Cost Category 3"
+    - Slide 5: Must use DIFFERENT rows again → Use "Product Line X", "Product Line Y", "Product Line Z"
+    - ❌ NEVER: Slide 6 using "Revenue Stream A" again (already used in Slide 3)
 
 1. **CRITICAL - Chart layouts MUST be AT LEAST 70% of the presentation content:**
    - Chart layouts include: ExcelTrendChart_Responsive, ExcelFullWidthChart_Responsive, ExcelFullWidthChartCategorical_Responsive, ExcelFullWidthChartWithTable_Responsive, ExcelComparisonLayout_Responsive, ExcelKPIDashboard_Responsive
@@ -703,12 +800,14 @@ RULES:
    - **MANDATORY Chart type distribution** (you MUST follow this exact balance):
      * **50% of ALL time-series charts MUST be "area" type** (smooth, professional, visually appealing)
      * **30% of ALL time-series charts MUST be "line" type** (for comparisons and trends)
+       - **🚨 CRITICAL: Line charts MUST NOT have dots (showDots: false)**
      * **20% of charts can be "bar" type** (ONLY for categorical data in ExcelFullWidthChartCategorical_Responsive)
      * **Pie charts** (ExcelPieChart_Responsive) do NOT count toward this distribution - they're separate
    
    - **🚨 CRITICAL CLARIFICATION:**
      * **BAR charts ONLY in ExcelFullWidthChartCategorical_Responsive** (categorical data)
-     * **AREA/LINE charts ONLY in ExcelFullWidthChart_Responsive** (time-series data)
+     * **AREA charts ONLY in ExcelFullWidthChart_Responsive** (time-series data)
+     * **LINE charts ONLY in ExcelFullWidthChart_Responsive** (time-series data)
      * **PIE charts ONLY in ExcelPieChart_Responsive** (distribution data)
      * **DO NOT use bar charts for time-series data** - use area or line instead
    
@@ -718,12 +817,12 @@ RULES:
        - 3 MUST be line charts (30% - time-series data)
        - 2 CAN be bar charts (20% - categorical data in ExcelFullWidthChartCategorical_Responsive)
      * If you have 8 chart layouts:
-       - 4 MUST be area charts (50%)
-       - 2-3 MUST be line charts (30%)
+       - 4 MUST be area charts (50% - time-series data)
+       - 2-3 MUST be line charts (30% - time-series data)
        - 1-2 CAN be bar charts (20% - categorical only)
      * If you have 6 chart layouts:
-       - 3 MUST be area charts (50%)
-       - 2 MUST be line charts (30%)
+       - 3 MUST be area charts (50% - time-series data)
+       - 2 MUST be line charts (30% - time-series data)
        - 1 CAN be bar chart (20% - categorical only)
    
    - **STRONGLY PREFER AREA CHARTS** for time-series data (months, quarters, years)
@@ -754,6 +853,36 @@ RULES:
 - **NO English text if the request is in Spanish**
 - **NO Spanish text if the request is in English**
 - Double-check: Are ALL your text fields in the correct language?
+
+🚨🚨🚨 FINAL MANDATORY CHECKPOINT - VERIFY NO DUPLICATE CONTENT 🚨🚨🚨
+
+BEFORE GENERATING JSON, YOU MUST COMPLETE THIS VERIFICATION:
+
+1. **LIST ALL SERIES.ID VALUES** from every chart slide you plan to create:
+   - Write them down mentally: [series 1, series 2, series 3, ...]
+   
+2. **CHECK FOR DUPLICATES**:
+   - Does ANY series.id appear MORE THAN ONCE?
+   - Does ANY Excel row appear in MULTIPLE slides?
+   
+3. **IF YOU FIND DUPLICATES**:
+   - STOP immediately
+   - DELETE the entire duplicate slide(s)
+   - Choose DIFFERENT Excel rows/sections for remaining slides
+   
+4. **VERIFY UNIQUENESS**:
+   - Each Excel row = used MAXIMUM 1 time
+   - Each series.id = appears ONLY ONCE across all slides
+   - Each chart = shows DIFFERENT data from other charts
+
+5. **CONFIRM**:
+   - ✅ NO duplicate series.id values
+   - ✅ NO duplicate Excel rows/metrics
+   - ✅ Each slide shows unique, non-overlapping data
+   - ✅ If ANY doubt → slide is REMOVED
+
+**REMEMBER**: It is BETTER to generate FEWER slides with unique data than MORE slides with duplicates.
+**DUPLICATES = IMMEDIATE REJECTION OF ENTIRE PRESENTATION**
 
 🚨🚨🚨 CRITICAL INSTRUCTION - GENERATE JSON NOW 🚨🚨🚨
 **DO NOT ask questions. DO NOT provide explanations. IMMEDIATELY generate the JSON.**
