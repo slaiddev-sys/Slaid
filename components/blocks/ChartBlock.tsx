@@ -243,8 +243,14 @@ const ChartBlock = React.memo(function ChartBlock({
   // State for tracking hovered bar index
   const [hoveredIndex, setHoveredIndex] = React.useState<number | null>(null);
   
-  // Client-side check for avoiding SSR issues with Recharts
-  // Use immediate check instead of useEffect for faster rendering (important for PDF export)
+  // State for client-side rendering to avoid SSR issues with Recharts
+  const [isClient, setIsClient] = React.useState(false);
+  
+  React.useEffect(() => {
+    setIsClient(true);
+  }, []);
+  
+  // Alternative client-side check
   const isClientSide = typeof window !== 'undefined';
   
   // Memoize expensive calculations to prevent unnecessary re-renders
@@ -657,10 +663,12 @@ const ChartBlock = React.memo(function ChartBlock({
                     } : { r: 74, g: 58, b: 255 }; // fallback to primary color
                   };
                   const rgb = hexToRgb(baseColor);
-                  const gradientId = s.id || `series-${index}`;
+                  // Create stable, unique gradient ID by sanitizing series ID and adding index
+                  const sanitizedId = (s.id || `series${index}`).replace(/[^a-zA-Z0-9]/g, '');
+                  const gradientId = `areaGradient-${sanitizedId}-${index}`;
                   
                   return (
-                    <linearGradient key={`gradient-${gradientId}`} id={`areaGradient-${gradientId}`} x1="0" y1="0" x2="0" y2="1">
+                    <linearGradient key={gradientId} id={gradientId} x1="0" y1="0" x2="0" y2="1">
                       <stop offset="0%" stopColor={baseColor} stopOpacity={0.9} />
                       <stop offset="50%" stopColor={`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.7)`} />
                       <stop offset="100%" stopColor={`rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.5)`} />
@@ -710,14 +718,16 @@ const ChartBlock = React.memo(function ChartBlock({
 
               {seriesWithColors.map((s, index) => {
                 const isSingleSeries = series.length === 1;
-                const gradientId = s.id || `series-${index}`;
+                // Use the same sanitized ID pattern as in the gradient defs
+                const sanitizedId = (s.id || `series${index}`).replace(/[^a-zA-Z0-9]/g, '');
+                const gradientId = `areaGradient-${sanitizedId}-${index}`;
                 return (
                   <Area
-                    key={`area-${gradientId}-${index}`}
+                    key={`area-${sanitizedId}-${index}`}
                     type={curved ? "monotone" : "linear"}
-                    dataKey={s.id || gradientId}
+                    dataKey={s.id}
                     stroke={s.color}
-                    fill={`url(#areaGradient-${gradientId})`}
+                    fill={`url(#${gradientId})`}
                     strokeWidth={2}
                     dot={false}
                     activeDot={{ r: 6, stroke: 'white', strokeWidth: 2, fill: s.color }}
@@ -1095,8 +1105,7 @@ const ChartBlock = React.memo(function ChartBlock({
   };
 
   // Prevent hydration mismatch by only rendering charts on client
-  // Use isClientSide for immediate check (important for PDF export)
-  if (!isClientSide) {
+  if (!isClient) {
     return (
       <div className={cn('w-full h-full flex flex-col', className)}>
         {title && (
