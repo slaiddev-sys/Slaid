@@ -360,15 +360,23 @@ async function addBlockToSlide(
         console.log(`📊 Attempting to capture chart for slide ${slideIndex + 1}`);
         const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
         if (chartImage) {
-          console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`);
-          slide.addImage({
-            data: chartImage,
-            x: 0.6,
-            y: 1.2,
-            w: 8.8,
-            h: 3.8,
-            sizing: { type: 'contain', w: 8.8, h: 3.8 }
+          console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`, {
+            imageLength: chartImage.length,
+            imagePrefix: chartImage.substring(0, 50)
           });
+          try {
+            slide.addImage({
+              data: chartImage,
+              x: 0.6,
+              y: 1.2,
+              w: 8.8,
+              h: 3.8
+            });
+            console.log(`✅ Image added to slide successfully`);
+          } catch (imageError) {
+            console.error(`❌ Error adding image to slide:`, imageError);
+            console.error(`❌ Image error details:`, JSON.stringify(imageError, null, 2));
+          }
         } else {
           console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
         }
@@ -399,14 +407,18 @@ async function addBlockToSlide(
         const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
         if (chartImage) {
           console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`);
-          slide.addImage({
-            data: chartImage,
-            x: 0.6,
-            y: 1.2,
-            w: 5.5,
-            h: 3.5,
-            sizing: { type: 'contain', w: 5.5, h: 3.5 }
-          });
+          try {
+            slide.addImage({
+              data: chartImage,
+              x: 0.6,
+              y: 1.2,
+              w: 5.5,
+              h: 3.5
+            });
+            console.log(`✅ Image added to slide successfully`);
+          } catch (imageError) {
+            console.error(`❌ Error adding image to slide:`, imageError);
+          }
         } else {
           console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
         }
@@ -516,14 +528,18 @@ async function addBlockToSlide(
         const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
         if (chartImage) {
           console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`);
-          slide.addImage({
-            data: chartImage,
-            x: 0.6,
-            y: 1.1,
-            w: 8.8,
-            h: 4,
-            sizing: { type: 'contain', w: 8.8, h: 4 }
-          });
+          try {
+            slide.addImage({
+              data: chartImage,
+              x: 0.6,
+              y: 1.1,
+              w: 8.8,
+              h: 4
+            });
+            console.log(`✅ Image added to slide successfully`);
+          } catch (imageError) {
+            console.error(`❌ Error adding image to slide:`, imageError);
+          }
         } else {
           console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
         }
