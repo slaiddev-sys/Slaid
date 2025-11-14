@@ -32,38 +32,27 @@ export async function POST(request: NextRequest) {
     const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
     const baseUrl = `${protocol}://${host}`;
     
-    // Only launch browser if we need to capture charts
-    let browser = null;
-    let page = null;
-    const needsChartCapture = slides.some((slide: any) => hasCharts(slide));
+    // Launch browser for slide rendering (for chart slides)
+    console.log('📊 Launching Puppeteer for slide rendering...');
     
-    if (needsChartCapture) {
-      console.log('📊 Charts detected, launching Puppeteer for chart capture...');
-      
-      try {
-      browser = await puppeteer.launch({
-        args: chromium.args,
-        defaultViewport: chromium.defaultViewport,
-        executablePath: await chromium.executablePath(),
-        headless: chromium.headless,
-      });
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
+    });
 
-      page = await browser.newPage();
-      
-      // Set high-resolution viewport for crisp chart rendering
-      await page.setViewport({ 
-        width: 1920, 
-        height: 1080,
-        deviceScaleFactor: 2 // 2x for high DPI/retina displays
-      });
-      
-      // Set user agent to ensure consistent rendering
-      await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
-      } catch (error) {
-        console.error('❌ Failed to launch Puppeteer:', error);
-        // Continue without chart images
-      }
-    }
+    const page = await browser.newPage();
+    
+    // Set high-resolution viewport for crisp rendering
+    await page.setViewport({ 
+      width: 1920, 
+      height: 1080,
+      deviceScaleFactor: 2 // 2x for high DPI/retina displays
+    });
+    
+    // Set user agent to ensure consistent rendering
+    await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
 
     // Process each slide
     for (let i = 0; i < slides.length; i++) {
@@ -74,9 +63,30 @@ export async function POST(request: NextRequest) {
       try {
         const slide = pptx.addSlide();
         
-        // Add content to slide
+        // Check if this slide has charts
+        const slideHasCharts = hasCharts(slideData);
+        
+        if (slideHasCharts) {
+          // For chart slides: capture entire slide as background image
+          console.log(`📊 Chart slide detected - capturing as image`);
+          const slideImage = await captureSlideAsImage(page, baseUrl, presentationId, workspace, i);
+          
+          if (slideImage) {
+            // Add full slide as background image
+            slide.addImage({
+              data: slideImage,
+              x: 0,
+              y: 0,
+              w: '100%',
+              h: '100%'
+            });
+            console.log(`✅ Slide image added as background`);
+          }
+        }
+        
+        // Add text content (editable) on top for ALL slides
         if (slideData.blocks && slideData.blocks.length > 0) {
-          await addBlocksToSlide(slide, slideData.blocks, page, baseUrl, presentationId, workspace, i);
+          await addBlocksToSlide(slide, slideData.blocks, page, baseUrl, presentationId, workspace, i, slideHasCharts);
         }
       } catch (slideError) {
         console.error(`❌ Error processing slide ${i + 1}:`, slideError);
@@ -84,13 +94,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    if (browser) {
-      try {
-        await browser.close();
-      } catch (error) {
-        console.error('❌ Error closing browser:', error);
-      }
-    }
+    await browser.close();
 
     // Generate the PPTX file
     console.log('📊 Generating PPTX file...');
@@ -149,11 +153,12 @@ async function addBlocksToSlide(
   baseUrl: string,
   presentationId: string,
   workspace: string,
-  slideIndex: number
+  slideIndex: number,
+  isChartSlide: boolean = false
 ) {
   for (const block of blocks) {
     try {
-      await addBlockToSlide(slide, block, page, baseUrl, presentationId, workspace, slideIndex);
+      await addBlockToSlide(slide, block, page, baseUrl, presentationId, workspace, slideIndex, isChartSlide);
     } catch (blockError) {
       console.error(`Error adding block ${block.type}:`, blockError);
       // Continue with next block
@@ -169,17 +174,27 @@ async function addBlockToSlide(
   baseUrl: string,
   presentationId: string,
   workspace: string,
-  slideIndex: number
+  slideIndex: number,
+  isChartSlide: boolean = false
 ) {
   const blockType = block.type;
   const props = block.props || {};
 
   console.log(`  Adding block: ${blockType}`);
 
+  // For chart slides, skip adding chart-related blocks (already captured as image)
+  // Only add text content
+  const isChartBlock = blockType?.includes('Chart') || blockType?.includes('KPI') || blockType?.includes('Dashboard');
+  
+  if (isChartSlide && isChartBlock) {
+    console.log(`  Skipping ${blockType} - already captured in slide image`);
+    return;
+  }
+
   switch (blockType) {
     case 'BackgroundBlock':
-      // Set background color
-      if (props.color) {
+      // Skip background if we have a slide image
+      if (!isChartSlide && props.color) {
         const color = convertTailwindColorToHex(props.color);
         slide.background = { color };
       }
@@ -322,230 +337,25 @@ async function addBlockToSlide(
       }
       break;
 
-    // Chart layouts - Add text separately, capture charts as images
+    // Chart layouts - These are already captured as slide images
+    // Only add text if NOT a chart slide (for non-chart content slides)
     case 'ExcelFullWidthChart_Responsive':
     case 'ExcelFullWidthChartCategorical_Responsive':
     case 'ExcelFullWidthChartWithTable_Responsive':
     case 'Metrics_FullWidthChart':
-      // Title
-      if (props.title) {
-        slide.addText(props.title, {
-          x: 0.6,
-          y: 0.6,
-          w: 4.5,
-          h: 0.4,
-          fontSize: 20,
-          bold: false,
-          color: '1a1a1a',
-          fontFace: 'Helvetica',
-        });
-      }
-      
-      // Description/subtitle
-      if (props.description || props.subtitle) {
-        slide.addText(props.description || props.subtitle, {
-          x: 5.2,
-          y: 0.6,
-          w: 4,
-          h: 0.5,
-          fontSize: 9,
-          color: '666666',
-          fontFace: 'Helvetica',
-          valign: 'top',
-        });
-      }
-      
-      // Chart as image
-      if (page && baseUrl) {
-        console.log(`📊 Attempting to capture chart for slide ${slideIndex + 1}`);
-        const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
-        if (chartImage) {
-          console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`, {
-            imageLength: chartImage.length,
-            imagePrefix: chartImage.substring(0, 50)
-          });
-          try {
-            slide.addImage({
-              data: chartImage,
-              x: 0.6,
-              y: 1.2,
-              w: 8.8,
-              h: 3.8
-            });
-            console.log(`✅ Image added to slide successfully`);
-          } catch (imageError) {
-            console.error(`❌ Error adding image to slide:`, imageError);
-            console.error(`❌ Image error details:`, JSON.stringify(imageError, null, 2));
-          }
-        } else {
-          console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
-        }
-      } else {
-        console.log(`❌ Cannot capture chart: page=${!!page}, baseUrl=${!!baseUrl}`);
-      }
+      // This is handled by the full slide capture now
+      // No need to add anything here
       break;
 
     case 'ExcelTrendChart_Responsive':
     case 'ExcelPieChart_Responsive':
-      // Title
-      if (props.title) {
-        slide.addText(props.title, {
-          x: 0.6,
-          y: 0.6,
-          w: 5.5,
-          h: 0.4,
-          fontSize: 20,
-          bold: false,
-          color: '1a1a1a',
-          fontFace: 'Helvetica',
-        });
-      }
-      
-      // Chart (left side) and insights (right side)
-      if (page && baseUrl) {
-        console.log(`📊 Attempting to capture chart for slide ${slideIndex + 1} (Trend/Pie)`);
-        const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
-        if (chartImage) {
-          console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`);
-          try {
-            slide.addImage({
-              data: chartImage,
-              x: 0.6,
-              y: 1.2,
-              w: 5.5,
-              h: 3.5
-            });
-            console.log(`✅ Image added to slide successfully`);
-          } catch (imageError) {
-            console.error(`❌ Error adding image to slide:`, imageError);
-          }
-        } else {
-          console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
-        }
-      } else {
-        console.log(`❌ Cannot capture chart: page=${!!page}, baseUrl=${!!baseUrl}`);
-      }
-      
-      // Insights as text
-      if (props.insights && Array.isArray(props.insights)) {
-        const insightsText = props.insights.map((insight: string, i: number) => 
-          `• ${insight}`
-        ).join('\n\n');
-        
-        slide.addText(insightsText, {
-          x: 6.3,
-          y: 1.5,
-          w: 3.1,
-          h: 3,
-          fontSize: 9,
-          color: '333333',
-          fontFace: 'Helvetica',
-          valign: 'top',
-        });
-      }
-      break;
-
     case 'ExcelKPIDashboard_Responsive':
     case 'Impact_KPIOverview':
-      // Title and description
-      if (props.title) {
-        slide.addText(props.title, {
-          x: 0.6,
-          y: 0.4,
-          w: 9,
-          h: 0.4,
-          fontSize: 24,
-          bold: false,
-          color: '1a1a1a',
-          fontFace: 'Helvetica',
-        });
-      }
-      
-      if (props.description) {
-        slide.addText(props.description, {
-          x: 0.6,
-          y: 0.9,
-          w: 6,
-          h: 0.3,
-          fontSize: 11,
-          color: '666666',
-          fontFace: 'Helvetica',
-        });
-      }
-      
-      // KPI cards as text
-      if (props.kpiCards && Array.isArray(props.kpiCards)) {
-        props.kpiCards.forEach((kpi: any, index: number) => {
-          const col = index % 3;
-          const row = Math.floor(index / 3);
-          
-          // KPI value
-          slide.addText(kpi.value || '', {
-            x: 0.6 + col * 3.1,
-            y: 1.5 + row * 1.5,
-            w: 2.8,
-            h: 0.4,
-            fontSize: 28,
-            bold: true,
-            color: '1a1a1a',
-            fontFace: 'Helvetica',
-          });
-          
-          // KPI label
-          slide.addText(kpi.label || '', {
-            x: 0.6 + col * 3.1,
-            y: 2 + row * 1.5,
-            w: 2.8,
-            h: 0.25,
-            fontSize: 11,
-            color: '666666',
-            fontFace: 'Helvetica',
-          });
-        });
-      }
-      break;
-
     case 'ExcelComparisonLayout_Responsive':
     case 'Metrics_FinancialsSplit':
     case 'Market_SizeAnalysis':
-      // Title
-      if (props.title) {
-        slide.addText(props.title, {
-          x: 0.6,
-          y: 0.5,
-          w: 9,
-          h: 0.4,
-          fontSize: 22,
-          bold: false,
-          color: '1a1a1a',
-          fontFace: 'Helvetica',
-        });
-      }
-      
-      // Chart as image
-      if (page && baseUrl) {
-        console.log(`📊 Attempting to capture chart for slide ${slideIndex + 1} (Comparison/Financials/Market)`);
-        const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
-        if (chartImage) {
-          console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`);
-          try {
-            slide.addImage({
-              data: chartImage,
-              x: 0.6,
-              y: 1.1,
-              w: 8.8,
-              h: 4
-            });
-            console.log(`✅ Image added to slide successfully`);
-          } catch (imageError) {
-            console.error(`❌ Error adding image to slide:`, imageError);
-          }
-        } else {
-          console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
-        }
-      } else {
-        console.log(`❌ Cannot capture chart: page=${!!page}, baseUrl=${!!baseUrl}`);
-      }
+      // All chart layouts are handled by full slide capture
+      // No need to add anything here
       break;
       
     case 'ExcelExperienceFullText_Responsive':
@@ -610,6 +420,117 @@ async function addBlockToSlide(
 
     default:
       console.log(`  Unsupported block type: ${blockType}`);
+  }
+}
+
+// Capture entire slide as image (for chart slides)
+async function captureSlideAsImage(
+  page: any,
+  baseUrl: string,
+  presentationId: string,
+  workspace: string,
+  slideIndex: number
+): Promise<string | null> {
+  try {
+    console.log(`📸 Capturing full slide ${slideIndex + 1} as image`);
+    const editorUrl = `${baseUrl}/editor?presentationId=${presentationId}&workspace=${encodeURIComponent(workspace)}&slideIndex=${slideIndex}&export=true`;
+    
+    await page.goto(editorUrl, { 
+      waitUntil: 'networkidle0',
+      timeout: 15000
+    });
+    
+    // Wait for fonts to load
+    await page.evaluateHandle('document.fonts.ready');
+    
+    // Wait for charts to be fully rendered
+    await page.waitForFunction(() => {
+      const svgElements = document.querySelectorAll('svg.recharts-surface');
+      if (svgElements.length === 0) return true; // No charts, ready
+      
+      let allChartsReady = true;
+      svgElements.forEach((svg) => {
+        const bbox = (svg as SVGElement).getBBox();
+        const children = svg.children;
+        if (children.length === 0 || bbox.width === 0 || bbox.height === 0) {
+          allChartsReady = false;
+        }
+      });
+      
+      return allChartsReady;
+    }, { timeout: 15000 }).catch(() => null);
+    
+    // Wait for ResponsiveContainer
+    await page.waitForFunction(() => {
+      const responsiveContainers = document.querySelectorAll('.recharts-responsive-container');
+      if (responsiveContainers.length === 0) return true;
+      
+      let allHaveDimensions = true;
+      responsiveContainers.forEach((container) => {
+        const width = (container as HTMLElement).offsetWidth;
+        const height = (container as HTMLElement).offsetHeight;
+        if (width === 0 || height === 0) {
+          allHaveDimensions = false;
+        }
+      });
+      
+      return allHaveDimensions;
+    }, { timeout: 8000 }).catch(() => null);
+    
+    // Wait additional time for complex charts
+    const chartCount = await page.evaluate(() => document.querySelectorAll('svg.recharts-surface').length);
+    const waitTime = chartCount > 1 ? 3500 : 2000;
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+    
+    // Hide UI elements
+    await page.addStyleTag({
+      content: `
+        .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, 
+        .resize-handle, .text-popup, .slide-nav, nav, header, footer,
+        button, .edit-button { 
+          display: none !important; 
+        }
+        body { 
+          overflow: hidden !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 1920px !important;
+          height: 1080px !important;
+        }
+        .slide-content, [data-chart-container] {
+          width: 1920px !important;
+          height: 1080px !important;
+          transform: scale(2.18) !important;
+          transform-origin: top left !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+        }
+        svg {
+          shape-rendering: geometricPrecision !important;
+          text-rendering: geometricPrecision !important;
+        }
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      `
+    });
+    
+    // Take screenshot
+    const screenshot = await page.screenshot({
+      type: 'png',
+      fullPage: false,
+      omitBackground: false,
+      encoding: 'base64'
+    });
+    
+    console.log(`✅ Slide ${slideIndex + 1} captured successfully`);
+    
+    return `data:image/png;base64,${screenshot}`;
+  } catch (error) {
+    console.error(`❌ Failed to capture slide ${slideIndex + 1}:`, error);
+    return null;
   }
 }
 
