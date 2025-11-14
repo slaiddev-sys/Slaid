@@ -140,13 +140,19 @@ export async function POST(request: NextRequest) {
         console.log(`📸 Waiting ${waitTime}ms for final rendering on slide ${i + 1}`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
 
-        // Hide UI elements and scale properly
+        // Hide UI elements and ensure full-size rendering
         await page.addStyleTag({
           content: `
-            .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, .resize-handle, .text-popup, .slide-nav {
+            /* Hide all UI elements */
+            .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, 
+            .resize-handle, .text-popup, .slide-nav, nav, header, footer,
+            button, .edit-button {
               display: none !important; 
+              visibility: hidden !important;
             }
-            body { 
+            
+            /* Full viewport size */
+            html, body { 
               overflow: hidden !important;
               margin: 0 !important;
               padding: 0 !important;
@@ -154,7 +160,9 @@ export async function POST(request: NextRequest) {
               height: 1080px !important;
               background: white !important;
             }
-            .slide-content, [data-chart-container] {
+            
+            /* Scale slide content to fill viewport */
+            .slide-content {
               width: 1920px !important;
               height: 1080px !important;
               transform: scale(2.18) !important;
@@ -164,13 +172,38 @@ export async function POST(request: NextRequest) {
               left: 0 !important;
               overflow: visible !important;
             }
+            
+            /* Excel layouts (charts) need special handling - scale up from their native 881x495 */
+            [data-chart-container] {
+              width: 881px !important;
+              height: 495px !important;
+              transform: scale(2.18) !important;
+              transform-origin: top left !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              overflow: visible !important;
+            }
+            
+            /* Ensure charts fill their containers */
+            .recharts-responsive-container {
+              position: relative !important;
+              width: 100% !important;
+              height: 100% !important;
+              min-height: 400px !important;
+            }
+            
+            /* Chart quality */
             svg {
               shape-rendering: geometricPrecision !important;
               text-rendering: geometricPrecision !important;
             }
+            
+            /* Color accuracy */
             * {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
+              -webkit-font-smoothing: antialiased !important;
             }
           `
         });
