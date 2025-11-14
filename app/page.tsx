@@ -230,33 +230,14 @@ export default function Component1920WLight() {
         {/* Main Content Row - Title and Demo Video */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start justify-between w-full max-w-6xl pr-0 lg:pr-4">
           {/* Left Side - Title and Description */}
-          <div className="flex-1 max-w-3xl">
+          <div className="flex-1 max-w-4xl">
             {/* Heading */}
-            <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.5rem] md:text-[3rem] lg:text-[3.5rem] xl:text-[52.5px] 2xl:text-[4rem] font-normal leading-none mb-2 text-left tracking-tighter" style={{ color: '#002903' }}>
-                <div>
-                  Convert Data{" "}
-                  <span className="inline-flex items-center mx-1 sm:mx-2">
-                    <img src="/google-sheets.png" alt="Google Sheets" className="w-6 h-6 sm:w-8 sm:h-8 lg:w-10 lg:h-10 2xl:w-12 2xl:h-12" />
-                  </span>
-                  to
-                </div>
-                <div>
-                  professional{" "}
-                  <span className="inline-flex items-center mx-1 sm:mx-2">
-                    <img src="/google-slide.png" alt="Google Slides" className="h-6 sm:h-8 lg:h-10 2xl:h-12 w-auto" />
-                  </span>
-                </div>
-                <div>
-                  Reports{" "}
-                  <span className="inline-flex items-center mx-1 sm:mx-2">
-                    <img src="/power-point.png" alt="PowerPoint" className="h-6 sm:h-8 lg:h-10 2xl:h-12 w-auto" />
-                  </span>
-                </div>
+            <h1 className="font-helvetica-neue text-[1.35rem] sm:text-[1.85rem] md:text-[2.35rem] lg:text-[2.85rem] xl:text-[46px] 2xl:text-[3.65rem] font-normal leading-tight mb-2 text-left tracking-tighter" style={{ color: '#002903' }}>
+              Cover data to professional<br />reports
             </h1>
             {/* Subheading */}
-            <p className="max-w-[588px] text-left text-sm sm:text-base lg:text-[16.3px] 2xl:text-lg font-sans mb-6 sm:mb-8" style={{ color: '#002903' }}>
-              Unlock the potential of your Excel data with our AI-powered<br className="hidden sm:block" />
-              <span className="sm:hidden"> </span>storytelling and presentation generator.
+            <p className="max-w-[588px] text-left text-[15px] sm:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-6 sm:mb-8" style={{ color: '#002903' }}>
+              Unlock the potential of your Excel data<br />with our AI-powered storytelling and presentation generator.
             </p>
             
             {/* Get Started Button */}
@@ -272,20 +253,18 @@ export default function Component1920WLight() {
           </div>
           
           {/* Right Side - Demo Video */}
-          <div className="relative w-full max-w-md ml-0 lg:ml-24 mt-8 lg:-mt-20">
-            <div className="bg-white rounded-3xl p-4 sm:p-6 shadow-xl border border-gray-100 overflow-hidden">
-              <video 
-                className="w-full h-auto rounded-2xl"
-                controls
-                autoPlay
-                muted
-                loop
-                playsInline
-              >
-                <source src="/Slaid : Demo.mp4" type="video/mp4" />
-                Your browser does not support the video tag.
-              </video>
-            </div>
+          <div className="relative w-full max-w-2xl ml-0 lg:ml-32 mt-8 lg:mt-8">
+            <video 
+              className="w-full h-auto rounded-3xl shadow-2xl lg:ml-24"
+              controls
+              autoPlay
+              muted
+              loop
+              playsInline
+            >
+              <source src="/Slaid : Demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
           </div>
         </div>
         
