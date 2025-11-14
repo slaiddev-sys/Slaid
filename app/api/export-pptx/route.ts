@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
         console.log(`📸 Waiting ${waitTime}ms for final rendering on slide ${i + 1}`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
 
-        // Hide UI elements and scale properly
+        // Hide UI elements and scale properly (EXACT same CSS as PDF export)
         await page.addStyleTag({
           content: `
             .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, .resize-handle, .text-popup, .slide-nav {
@@ -153,8 +153,9 @@ export async function POST(request: NextRequest) {
               width: 1920px !important;
               height: 1080px !important;
               background: white !important;
+              zoom: 1 !important;
             }
-            .slide-content, [data-chart-container] {
+            .slide-content {
               width: 1920px !important;
               height: 1080px !important;
               transform: scale(2.18) !important;
@@ -162,15 +163,44 @@ export async function POST(request: NextRequest) {
               position: absolute !important;
               top: 0 !important;
               left: 0 !important;
+              background: white !important;
               overflow: visible !important;
             }
+            /* Excel layouts with data-chart-container need special handling */
+            [data-chart-container] {
+              width: 1920px !important;
+              height: 1080px !important;
+              transform: scale(2.18) !important;
+              transform-origin: top left !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              background: white !important;
+              overflow: visible !important;
+            }
+            /* Scale the inner content properly */
+            .slide-content > div {
+              width: 881px !important;
+              height: 495px !important;
+              position: relative !important;
+              transform: none !important;
+            }
+            /* Excel layouts maintain their native dimensions */
+            [data-chart-container] > div {
+              position: relative !important;
+              transform: none !important;
+            }
+            /* Chart quality */
             svg {
               shape-rendering: geometricPrecision !important;
               text-rendering: geometricPrecision !important;
             }
+            /* Color accuracy and font rendering */
             * {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
+              -webkit-font-smoothing: antialiased !important;
+              -moz-osx-font-smoothing: grayscale !important;
             }
           `
         });
