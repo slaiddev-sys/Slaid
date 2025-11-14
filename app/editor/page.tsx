@@ -7704,12 +7704,25 @@ export default function EditorPage() {
               {/* PowerPoint Button */}
               <button 
                 className="w-full flex items-center justify-between bg-white hover:bg-gray-50 text-gray-900 font-medium py-4 px-5 rounded-lg transition border-2 border-gray-200 hover:border-gray-300"
-                onClick={async () => {
+                onClick={async (e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  
                   try {
-                    console.log('Exporting to PowerPoint...');
+                    console.log('🚀 PowerPoint Export: Starting...');
+                    console.log('📊 Current Presentation:', currentPresentationId);
+                    console.log('📁 Workspace:', currentWorkspace);
+                    console.log('📄 Slides count:', slides?.length);
+                    
                     setShowEditInModal(false);
                     
-                    // Show loading state (you can add a loading indicator if needed)
+                    // Check if we have data
+                    if (!slides || slides.length === 0) {
+                      alert('No slides to export. Please create a presentation first.');
+                      return;
+                    }
+                    
+                    console.log('📤 Sending request to /api/export-pptx...');
                     const response = await fetch('/api/export-pptx', {
                       method: 'POST',
                       headers: {
@@ -7723,12 +7736,20 @@ export default function EditorPage() {
                       })
                     });
 
+                    console.log('📥 Response status:', response.status);
+                    console.log('📥 Response ok:', response.ok);
+
                     if (!response.ok) {
-                      throw new Error('Failed to export PowerPoint');
+                      const errorData = await response.text();
+                      console.error('❌ Export failed:', errorData);
+                      throw new Error(`Failed to export PowerPoint: ${response.status}`);
                     }
 
+                    console.log('💾 Downloading file...');
                     // Download the file
                     const blob = await response.blob();
+                    console.log('📦 Blob size:', blob.size);
+                    
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
@@ -7738,10 +7759,10 @@ export default function EditorPage() {
                     window.URL.revokeObjectURL(url);
                     document.body.removeChild(a);
                     
-                    console.log('PowerPoint export completed!');
+                    console.log('✅ PowerPoint export completed!');
                   } catch (error) {
-                    console.error('PowerPoint export failed:', error);
-                    alert('Failed to export PowerPoint presentation. Please try again.');
+                    console.error('❌ PowerPoint export failed:', error);
+                    alert(`Failed to export PowerPoint presentation: ${(error as Error).message}`);
                   }
                 }}
               >
