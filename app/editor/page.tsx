@@ -6549,6 +6549,11 @@ export default function EditorPage() {
                       }, 100);
                       
                   } else {
+                    // 🔧 CRITICAL: Reset loading state to prevent blank page
+                    setIsLoading(false);
+                    setLoadingStep(1);
+                    setBatchProgress({ current: 0, total: 0, slideRange: '' });
+                    
                     // 🔧 RESTORE ERROR MESSAGES: Show HTTP error in chat
                     const errorMessage = data?.error || data?.message || `HTTP ${response.status}: ${response.statusText}`;
                     // Replace loading message with error - REMOVE AND ADD NEW
@@ -6581,6 +6586,11 @@ export default function EditorPage() {
                   } else if (typeof error === 'string') {
                     errorMessage = error;
                   }
+                  
+                  // 🔧 CRITICAL: Reset loading state to prevent blank page
+                  setIsLoading(false);
+                  setLoadingStep(1);
+                  setBatchProgress({ current: 0, total: 0, slideRange: '' });
                   
                   // Check if it's an API overload error (529)
                   const isOverloadError = errorMessage.includes('529') || 
