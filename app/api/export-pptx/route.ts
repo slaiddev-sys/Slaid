@@ -140,19 +140,13 @@ export async function POST(request: NextRequest) {
         console.log(`📸 Waiting ${waitTime}ms for final rendering on slide ${i + 1}`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
 
-        // Hide UI elements and ensure full-size rendering
+        // Hide UI elements and scale properly
         await page.addStyleTag({
           content: `
-            /* Hide all UI elements */
-            .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, 
-            .resize-handle, .text-popup, .slide-nav, nav, header, footer,
-            button, .edit-button {
+            .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, .resize-handle, .text-popup, .slide-nav {
               display: none !important; 
-              visibility: hidden !important;
             }
-            
-            /* Full viewport size */
-            html, body { 
+            body { 
               overflow: hidden !important;
               margin: 0 !important;
               padding: 0 !important;
@@ -160,9 +154,7 @@ export async function POST(request: NextRequest) {
               height: 1080px !important;
               background: white !important;
             }
-            
-            /* Scale slide content to fill viewport */
-            .slide-content {
+            .slide-content, [data-chart-container] {
               width: 1920px !important;
               height: 1080px !important;
               transform: scale(2.18) !important;
@@ -172,46 +164,13 @@ export async function POST(request: NextRequest) {
               left: 0 !important;
               overflow: visible !important;
             }
-            
-            /* Excel layouts (charts) need to fill the full viewport */
-            [data-chart-container] {
-              width: 1920px !important;
-              height: 1080px !important;
-              transform: none !important;
-              position: fixed !important;
-              top: 0 !important;
-              left: 0 !important;
-              overflow: visible !important;
-              display: flex !important;
-              flex-direction: column !important;
-            }
-            
-            /* Inner content of Excel layouts */
-            [data-chart-container] > * {
-              width: 100% !important;
-              height: 100% !important;
-              flex: 1 !important;
-            }
-            
-            /* Ensure charts fill their containers */
-            .recharts-responsive-container {
-              position: relative !important;
-              width: 100% !important;
-              height: 100% !important;
-              min-height: 400px !important;
-            }
-            
-            /* Chart quality */
             svg {
               shape-rendering: geometricPrecision !important;
               text-rendering: geometricPrecision !important;
             }
-            
-            /* Color accuracy */
             * {
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
-              -webkit-font-smoothing: antialiased !important;
             }
           `
         });
@@ -254,13 +213,13 @@ export async function POST(request: NextRequest) {
       const slide = pptx.addSlide();
       
       if (slideImages[i]) {
-        // Add the full slide image
+        // Add the full slide image (10 x 5.625 inches = SLAID_LAYOUT dimensions)
         slide.addImage({
           data: slideImages[i],
           x: 0,
           y: 0,
-          w: '100%',
-          h: '100%'
+          w: 10,
+          h: 5.625
         });
       } else {
         // Fallback: add slide title if image capture failed
