@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import FileUpload from "../components/ui/FileUpload";
 
 // TypewriterWord component
 function TypewriterWord() {
@@ -198,12 +197,6 @@ function Component1({ variant = "1" }: Component1Props) {
 export default function Component1920WLight() {
   const router = useRouter();
 
-  const handleDataExtracted = (data: any, fileName: string, fileType: string) => {
-    console.log('File uploaded:', { fileName, fileType });
-    // Redirect to editor after successful upload
-    router.push('/editor');
-  };
-
   return (
     <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden" style={{ backgroundImage: 'url(/sheet-background.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       {/* White overlay to reduce background opacity */}
@@ -250,12 +243,28 @@ export default function Component1920WLight() {
               Unlock the potential of your Excel data<br className="hidden sm:inline" /> with our AI-powered storytelling and presentation generator.
             </p>
             
-            {/* File Upload */}
-            <div className="w-full max-w-sm [&>div>div]:!p-5 [&>div>div]:!py-4">
-              <FileUpload 
-                onDataExtracted={handleDataExtracted}
-                className=""
-              />
+            {/* File Upload - Redirects to Login */}
+            <div 
+              className="w-full max-w-sm cursor-pointer"
+              onClick={() => router.push('/login')}
+            >
+              <div className="border-2 border-dashed rounded-lg p-5 py-4 text-center transition-all duration-200 bg-gray-50 hover:opacity-90" style={{ borderColor: '#002903' }}>
+                <div className="flex items-center justify-center gap-4">
+                  <img 
+                    src="/xls-icon.png" 
+                    alt="Upload folder" 
+                    className="h-12 w-12 object-contain flex-shrink-0"
+                  />
+                  <div className="text-left">
+                    <p className="text-sm font-semibold mb-1" style={{ color: '#002903' }}>
+                      Upload files
+                    </p>
+                    <p className="text-xs" style={{ color: '#002903' }}>
+                      Drag and drop or click to select files
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
           
