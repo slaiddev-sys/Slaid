@@ -167,23 +167,7 @@ async function addBlockToSlide(
       break;
 
     case 'TextBlock':
-      // Add editable text
-      const text = props.children || '';
-      const fontSize = getFontSize(props.variant);
-      
-      slide.addText(text, {
-        x: 0.5,
-        y: 1,
-        w: 9,
-        h: 'auto',
-        fontSize: fontSize,
-        color: convertTailwindColorToHex(props.color || 'text-gray-900'),
-        align: props.align || 'left',
-        fontFace: getFontFamily(props.fontFamily),
-        bold: props.variant === 'title' || props.variant === 'heading',
-        breakLine: true,
-        wrap: true,
-      });
+      // Skip TextBlock - it's usually handled by layout components
       break;
 
     case 'Cover_TextCenter':
@@ -221,110 +205,337 @@ async function addBlockToSlide(
       break;
 
     case 'Lists_LeftTextRightImage':
-    case 'Lists_CardsLayout':
-    case 'Lists_CardsLayoutRight':
-      // Add title
+      // Title at top
       if (props.title) {
         slide.addText(props.title, {
-          x: 0.5,
-          y: 0.5,
-          w: 9,
-          h: 0.7,
-          fontSize: 32,
-          bold: true,
+          x: 0.4,
+          y: 0.4,
+          w: 5,
+          h: 0.5,
+          fontSize: 24,
+          bold: false,
           color: '1a1a1a',
           fontFace: 'Helvetica',
         });
       }
       
-      // Add bullet points or cards
+      // Bullet points on left
       if (props.items && Array.isArray(props.items)) {
         const bulletText = props.items.map((item: any) => {
-          if (typeof item === 'string') return { text: item, options: { bullet: true } };
-          return { text: item.title || item.text || item, options: { bullet: true } };
+          if (typeof item === 'string') return { text: item, options: { bullet: true, bulletSize: 90 } };
+          return { text: item.title || item.text || item, options: { bullet: true, bulletSize: 90 } };
         });
         
         slide.addText(bulletText, {
-          x: 0.5,
-          y: 1.5,
-          w: 4.5,
+          x: 0.4,
+          y: 1.2,
+          w: 4.8,
           h: 3.5,
-          fontSize: 16,
+          fontSize: 14,
           color: '333333',
+          fontFace: 'Helvetica',
+          valign: 'top',
+        });
+      }
+      break;
+
+    case 'Lists_CardsLayout':
+    case 'Lists_CardsLayoutRight':
+      // Title
+      if (props.title) {
+        slide.addText(props.title, {
+          x: 0.4,
+          y: 0.4,
+          w: 9,
+          h: 0.5,
+          fontSize: 24,
+          bold: false,
+          color: '1a1a1a',
           fontFace: 'Helvetica',
         });
       }
       
-      // Add cards as text boxes
+      // Description/subtitle
+      if (props.description) {
+        slide.addText(props.description, {
+          x: 0.4,
+          y: 0.95,
+          w: 5,
+          h: 0.4,
+          fontSize: 12,
+          color: '666666',
+          fontFace: 'Helvetica',
+        });
+      }
+      
+      // Cards as text boxes
       if (props.cards && Array.isArray(props.cards)) {
         props.cards.forEach((card: any, index: number) => {
           const row = Math.floor(index / 2);
           const col = index % 2;
           
+          // Card title
           slide.addText(card.title || '', {
-            x: 0.5 + col * 4.75,
-            y: 1.5 + row * 1.5,
-            w: 4,
-            h: 0.4,
-            fontSize: 18,
+            x: 0.4 + col * 4.8,
+            y: 1.5 + row * 1.8,
+            w: 4.4,
+            h: 0.35,
+            fontSize: 16,
             bold: true,
             color: '1a1a1a',
             fontFace: 'Helvetica',
           });
           
+          // Card description
           if (card.description) {
             slide.addText(card.description, {
-              x: 0.5 + col * 4.75,
-              y: 2 + row * 1.5,
-              w: 4,
+              x: 0.4 + col * 4.8,
+              y: 1.9 + row * 1.8,
+              w: 4.4,
               h: 0.8,
-              fontSize: 12,
+              fontSize: 11,
               color: '666666',
               fontFace: 'Helvetica',
+              valign: 'top',
             });
           }
         });
       }
       break;
 
-    // Chart layouts - capture as images
+    // Chart layouts - Add text separately, capture charts as images
     case 'ExcelFullWidthChart_Responsive':
-    case 'ExcelTrendChart_Responsive':
-    case 'ExcelKPIDashboard_Responsive':
     case 'ExcelFullWidthChartCategorical_Responsive':
     case 'ExcelFullWidthChartWithTable_Responsive':
-    case 'ExcelPieChart_Responsive':
-    case 'ExcelComparisonLayout_Responsive':
-    case 'Metrics_FinancialsSplit':
     case 'Metrics_FullWidthChart':
-    case 'Market_SizeAnalysis':
-      if (page) {
-        // Add title as editable text
-        if (props.title) {
-          slide.addText(props.title, {
-            x: 0.5,
-            y: 0.5,
-            w: 9,
-            h: 0.6,
+      // Title
+      if (props.title) {
+        slide.addText(props.title, {
+          x: 0.6,
+          y: 0.6,
+          w: 4.5,
+          h: 0.4,
+          fontSize: 20,
+          bold: false,
+          color: '1a1a1a',
+          fontFace: 'Helvetica',
+        });
+      }
+      
+      // Description/subtitle
+      if (props.description || props.subtitle) {
+        slide.addText(props.description || props.subtitle, {
+          x: 5.2,
+          y: 0.6,
+          w: 4,
+          h: 0.5,
+          fontSize: 9,
+          color: '666666',
+          fontFace: 'Helvetica',
+          valign: 'top',
+        });
+      }
+      
+      // Chart as image
+      if (page && baseUrl) {
+        const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
+        if (chartImage) {
+          slide.addImage({
+            data: chartImage,
+            x: 0.6,
+            y: 1.2,
+            w: 8.8,
+            h: 3.8,
+            sizing: { type: 'contain', w: 8.8, h: 3.8 }
+          });
+        }
+      }
+      break;
+
+    case 'ExcelTrendChart_Responsive':
+    case 'ExcelPieChart_Responsive':
+      // Title
+      if (props.title) {
+        slide.addText(props.title, {
+          x: 0.6,
+          y: 0.6,
+          w: 5.5,
+          h: 0.4,
+          fontSize: 20,
+          bold: false,
+          color: '1a1a1a',
+          fontFace: 'Helvetica',
+        });
+      }
+      
+      // Chart (left side) and insights (right side)
+      if (page && baseUrl) {
+        const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
+        if (chartImage) {
+          slide.addImage({
+            data: chartImage,
+            x: 0.6,
+            y: 1.2,
+            w: 5.5,
+            h: 3.5,
+            sizing: { type: 'contain', w: 5.5, h: 3.5 }
+          });
+        }
+      }
+      
+      // Insights as text
+      if (props.insights && Array.isArray(props.insights)) {
+        const insightsText = props.insights.map((insight: string, i: number) => 
+          `• ${insight}`
+        ).join('\n\n');
+        
+        slide.addText(insightsText, {
+          x: 6.3,
+          y: 1.5,
+          w: 3.1,
+          h: 3,
+          fontSize: 9,
+          color: '333333',
+          fontFace: 'Helvetica',
+          valign: 'top',
+        });
+      }
+      break;
+
+    case 'ExcelKPIDashboard_Responsive':
+    case 'Impact_KPIOverview':
+      // Title and description
+      if (props.title) {
+        slide.addText(props.title, {
+          x: 0.6,
+          y: 0.4,
+          w: 9,
+          h: 0.4,
+          fontSize: 24,
+          bold: false,
+          color: '1a1a1a',
+          fontFace: 'Helvetica',
+        });
+      }
+      
+      if (props.description) {
+        slide.addText(props.description, {
+          x: 0.6,
+          y: 0.9,
+          w: 6,
+          h: 0.3,
+          fontSize: 11,
+          color: '666666',
+          fontFace: 'Helvetica',
+        });
+      }
+      
+      // KPI cards as text
+      if (props.kpiCards && Array.isArray(props.kpiCards)) {
+        props.kpiCards.forEach((kpi: any, index: number) => {
+          const col = index % 3;
+          const row = Math.floor(index / 3);
+          
+          // KPI value
+          slide.addText(kpi.value || '', {
+            x: 0.6 + col * 3.1,
+            y: 1.5 + row * 1.5,
+            w: 2.8,
+            h: 0.4,
             fontSize: 28,
             bold: true,
             color: '1a1a1a',
             fontFace: 'Helvetica',
           });
-        }
-        
-        // Capture chart as image
+          
+          // KPI label
+          slide.addText(kpi.label || '', {
+            x: 0.6 + col * 3.1,
+            y: 2 + row * 1.5,
+            w: 2.8,
+            h: 0.25,
+            fontSize: 11,
+            color: '666666',
+            fontFace: 'Helvetica',
+          });
+        });
+      }
+      break;
+
+    case 'ExcelComparisonLayout_Responsive':
+    case 'Metrics_FinancialsSplit':
+    case 'Market_SizeAnalysis':
+      // Title
+      if (props.title) {
+        slide.addText(props.title, {
+          x: 0.6,
+          y: 0.5,
+          w: 9,
+          h: 0.4,
+          fontSize: 22,
+          bold: false,
+          color: '1a1a1a',
+          fontFace: 'Helvetica',
+        });
+      }
+      
+      // Chart as image
+      if (page && baseUrl) {
         const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
         if (chartImage) {
           slide.addImage({
             data: chartImage,
-            x: 0.5,
-            y: 1.2,
-            w: 9,
+            x: 0.6,
+            y: 1.1,
+            w: 8.8,
             h: 4,
-            sizing: { type: 'contain', w: 9, h: 4 }
+            sizing: { type: 'contain', w: 8.8, h: 4 }
           });
         }
+      }
+      break;
+      
+    case 'ExcelExperienceFullText_Responsive':
+      // Title
+      if (props.title) {
+        slide.addText(props.title, {
+          x: 0.6,
+          y: 0.6,
+          w: 9,
+          h: 0.5,
+          fontSize: 24,
+          bold: false,
+          color: '1a1a1a',
+          fontFace: 'Helvetica',
+        });
+      }
+      
+      // Left text
+      if (props.leftText) {
+        slide.addText(props.leftText, {
+          x: 0.6,
+          y: 1.3,
+          w: 4.3,
+          h: 3.5,
+          fontSize: 11,
+          color: '333333',
+          fontFace: 'Helvetica',
+          valign: 'top',
+        });
+      }
+      
+      // Right text
+      if (props.rightText) {
+        slide.addText(props.rightText, {
+          x: 5.1,
+          y: 1.3,
+          w: 4.3,
+          h: 3.5,
+          fontSize: 11,
+          color: '333333',
+          fontFace: 'Helvetica',
+          valign: 'top',
+        });
       }
       break;
 
