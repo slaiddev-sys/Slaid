@@ -3,162 +3,91 @@ import PptxGenJS from 'pptxgenjs';
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
 
-// Check if slide has charts
-function hasCharts(slideData: any): boolean {
-  if (!slideData.blocks) return false;
-  return slideData.blocks.some((block: any) => {
-    const type = block.type;
-    return type?.includes('Chart') || type?.includes('KPI') || type?.includes('Dashboard');
-  });
-}
-
-// Helper function to add all content as editable (text) or images (charts only)
-function addSlideContent(slide: any, slideData: any, chartImage: string | null) {
+// Helper function to add editable text overlays to slide
+function addEditableTextToSlide(slide: any, slideData: any) {
   if (!slideData.blocks) return;
   
-  // Process each block
+  // Process each block to extract text
   slideData.blocks.forEach((block: any) => {
     const blockType = block.type;
     const props = block.props || {};
     
-    // Check if this is a chart block
-    const isChartBlock = blockType?.includes('Chart') || blockType?.includes('KPI') || blockType?.includes('Dashboard');
-    
-    if (isChartBlock && chartImage) {
-      // Add chart as image
-      slide.addImage({
-        data: chartImage,
-        x: 0.6,
-        y: 1.2,
-        w: 8.8,
-        h: 3.8
-      });
-      
-      // Add title as editable text
-      if (props.title) {
-        slide.addText(props.title, {
-          x: 0.6,
-          y: 0.5,
-          w: 5,
-          h: 0.5,
-          fontSize: 20,
-          bold: false,
-          color: '1a1a1a',
-          align: 'left',
-          fontFace: 'Helvetica'
-        });
-      }
-      
-      // Add description as editable text
-      if (props.description || props.subtitle) {
-        slide.addText(props.description || props.subtitle, {
-          x: 5.2,
-          y: 0.5,
-          w: 4,
-          h: 0.6,
-          fontSize: 9,
-          color: '666666',
-          align: 'left',
-          fontFace: 'Helvetica'
-        });
-      }
-    } else {
-      // Non-chart blocks - add as editable text
-      switch (blockType) {
-        case 'BackgroundBlock':
-          // Set background color
-          if (props.color) {
-            const colorMap: any = {
-              'bg-white': 'FFFFFF',
-              'bg-gray-50': 'F9FAFB',
-              'bg-gray-100': 'F3F4F6'
-            };
-            slide.background = { color: colorMap[props.color] || 'FFFFFF' };
-          }
-          break;
-          
-        case 'Cover_TextCenter':
-        case 'Cover_ProductLayout':
-        case 'Cover_LeftImageTextRight':
-        case 'ExcelCenteredCover_Responsive':
-          // Cover slides - title centered
-          if (props.title) {
-            slide.addText(props.title, {
-              x: 0.5,
-              y: 2.3,
-              w: 9,
-              h: 1,
-              fontSize: 40,
-              bold: true,
-              color: '1a1a1a',
-              align: 'center',
-              fontFace: 'Helvetica'
-            });
-          }
-          if (props.paragraph || props.description) {
-            slide.addText(props.paragraph || props.description, {
-              x: 1,
-              y: 3.3,
-              w: 8,
-              h: 0.8,
-              fontSize: 14,
-              color: '666666',
-              align: 'center',
-              fontFace: 'Helvetica'
-            });
-          }
-          break;
-          
-        case 'Lists_LeftTextRightImage':
-        case 'Lists_CardsLayout':
-          // List slides - title at top
-          if (props.title) {
-            slide.addText(props.title, {
-              x: 0.4,
-              y: 0.4,
-              w: 9,
-              h: 0.5,
-              fontSize: 24,
-              bold: false,
-              color: '1a1a1a',
-              align: 'left',
-              fontFace: 'Helvetica'
-            });
-          }
-          // Add list items
-          if (props.items && Array.isArray(props.items)) {
-            const bulletText = props.items.map((item: any) => {
-              return typeof item === 'string' ? item : (item.title || item.text || item);
-            }).join('\n');
-            
-            slide.addText(bulletText, {
-              x: 0.4,
-              y: 1.2,
-              w: 4.8,
-              h: 3.5,
-              fontSize: 14,
-              color: '333333',
-              fontFace: 'Helvetica',
-              bullet: true
-            });
-          }
-          break;
-          
-        case 'BackCover_ThankYouWithImage':
-        case 'ExcelBackCover_Responsive':
-          slide.addText('Thank You', {
+    // Extract text based on block type
+    switch (blockType) {
+      case 'Cover_TextCenter':
+      case 'Cover_ProductLayout':
+      case 'Cover_LeftImageTextRight':
+      case 'ExcelCenteredCover_Responsive':
+        // Cover slides - title centered
+        if (props.title) {
+          slide.addText(props.title, {
             x: 0.5,
-            y: 2.5,
+            y: 2.3,
             w: 9,
             h: 1,
-            fontSize: 48,
+            fontSize: 40,
             bold: true,
             color: '1a1a1a',
             align: 'center',
-            fontFace: 'Helvetica'
+            fontFace: 'Helvetica',
+            transparency: 0 // Fully opaque
           });
-          break;
-      }
+        }
+        break;
+        
+      case 'ExcelFullWidthChart_Responsive':
+      case 'ExcelTrendChart_Responsive':
+      case 'ExcelFullWidthChartCategorical_Responsive':
+      case 'ExcelKPIDashboard_Responsive':
+        // Chart slides - title at top
+        if (props.title) {
+          slide.addText(props.title, {
+            x: 0.6,
+            y: 0.5,
+            w: 5,
+            h: 0.5,
+            fontSize: 20,
+            bold: false,
+            color: '1a1a1a',
+            align: 'left',
+            fontFace: 'Helvetica',
+            transparency: 0
+          });
+        }
+        // Description/subtitle
+        if (props.description || props.subtitle) {
+          slide.addText(props.description || props.subtitle, {
+            x: 5.2,
+            y: 0.5,
+            w: 4,
+            h: 0.6,
+            fontSize: 9,
+            color: '666666',
+            align: 'left',
+            fontFace: 'Helvetica',
+            transparency: 0
+          });
+        }
+        break;
+        
+      case 'Lists_LeftTextRightImage':
+      case 'Lists_CardsLayout':
+        // List slides - title at top
+        if (props.title) {
+          slide.addText(props.title, {
+            x: 0.4,
+            y: 0.4,
+            w: 9,
+            h: 0.5,
+            fontSize: 24,
+            bold: false,
+            color: '1a1a1a',
+            align: 'left',
+            fontFace: 'Helvetica',
+            transparency: 0
+          });
+        }
+        break;
     }
   });
 }
@@ -199,18 +128,10 @@ export async function POST(request: NextRequest) {
     // Array to store slide images
     const slideImages: string[] = [];
 
-    // Render each slide - only capture chart images for chart slides
+    // Render each slide (using same logic as PDF export)
     for (let i = 0; i < slides.length; i++) {
-      const slideData = slides[i];
-      const slideHasCharts = hasCharts(slideData);
-      
-      console.log(`📸 Processing slide ${i + 1}/${slides.length}: ${slideData.id} (hasCharts: ${slideHasCharts})`);
-      
-      // Only capture image if slide has charts
-      if (!slideHasCharts) {
-        slideImages.push(''); // No image for non-chart slides
-        continue;
-      }
+      const slide = slides[i];
+      console.log(`📸 Capturing slide ${i + 1}/${slides.length}: ${slide.id}`);
       
       try {
         // Navigate to editor with export mode
@@ -308,12 +229,26 @@ export async function POST(request: NextRequest) {
         console.log(`📸 Waiting ${waitTime}ms for final rendering on slide ${i + 1}`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
 
-        // Hide UI elements and scale properly (EXACT same CSS as PDF export)
+        // Hide UI elements, text elements, and scale properly for PowerPoint export
         await page.addStyleTag({
           content: `
+            /* Hide UI elements */
             .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, .resize-handle, .text-popup, .slide-nav {
               display: none !important; 
             }
+            
+            /* Hide ALL text elements so only charts are captured */
+            h1, h2, h3, h4, h5, h6, p, span:not(svg *), div:not([data-chart-container]):not(.recharts-wrapper):not(.recharts-surface):not(.recharts-layer) {
+              color: transparent !important;
+              opacity: 0 !important;
+            }
+            
+            /* Ensure chart text (axes, labels, legends) remains visible */
+            svg text, .recharts-text, .recharts-label, .recharts-cartesian-axis-tick-value {
+              color: inherit !important;
+              opacity: 1 !important;
+            }
+            
             body { 
               overflow: hidden !important;
               margin: 0 !important;
@@ -406,14 +341,35 @@ export async function POST(request: NextRequest) {
     pptx.defineLayout({ name: 'SLAID_LAYOUT', width: 10, height: 5.625 });
     pptx.layout = 'SLAID_LAYOUT';
 
-    // Build PowerPoint slides with editable text + chart images
-    for (let i = 0; i < slides.length; i++) {
+    // Add each captured slide as an image + editable text overlay
+    for (let i = 0; i < slideImages.length; i++) {
       const slide = pptx.addSlide();
       const slideData = slides[i];
-      const chartImage = slideImages[i] || null;
       
-      // Add all content (text as editable, charts as images)
-      addSlideContent(slide, slideData, chartImage);
+      if (slideImages[i]) {
+        // Add the full slide image as background (10 x 5.625 inches = SLAID_LAYOUT dimensions)
+        slide.addImage({
+          data: slideImages[i],
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 5.625
+        });
+        
+        // Add editable text overlays on top
+        addEditableTextToSlide(slide, slideData);
+      } else {
+        // Fallback: add slide title if image capture failed
+        slide.addText('Slide ' + (i + 1) + (slideData.title ? ': ' + slideData.title : ''), {
+          x: 0.5,
+          y: 2.5,
+          w: 9,
+          h: 1,
+          fontSize: 24,
+          color: '333333',
+          align: 'center',
+        });
+      }
     }
 
     // Generate the PPTX file
