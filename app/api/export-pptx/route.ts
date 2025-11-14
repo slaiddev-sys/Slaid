@@ -39,25 +39,108 @@ export async function POST(request: NextRequest) {
     // Array to store slide images
     const slideImages: string[] = [];
 
-    // Capture each slide as an image
+    // Render each slide (using same logic as PDF export)
     for (let i = 0; i < slides.length; i++) {
-      console.log(`📸 Capturing slide ${i + 1}/${slides.length}`);
-      
-      const slideUrl = `${baseUrl}/editor?mode=export&presentationId=${presentationId}&workspace=${encodeURIComponent(workspace)}&slideIndex=${i}`;
+      const slide = slides[i];
+      console.log(`📸 Capturing slide ${i + 1}/${slides.length}: ${slide.id}`);
       
       try {
-        await page.goto(slideUrl, { 
-          waitUntil: 'networkidle0',
-          timeout: 30000 
-        });
-
-        // Wait for slide content to render
-        await page.waitForSelector('.slide-content', { timeout: 10000 });
+        // Navigate to editor with export mode
+        const editorUrl = `${baseUrl}/editor?presentationId=${presentationId}&workspace=${encodeURIComponent(workspace)}&slideIndex=${i}&export=true`;
         
-        // Additional wait for charts and images to load
-        await page.waitForTimeout(2000);
+        console.log(`📸 Navigating to: ${editorUrl}`);
+        await page.goto(editorUrl, { 
+          waitUntil: 'domcontentloaded',
+          timeout: 15000
+        });
+        
+        // Inject slide data directly
+        await page.evaluateOnNewDocument((slideData) => {
+          (window as any).__EXPORT_SLIDE_DATA__ = slideData;
+        }, slide);
+        
+        // Reload to apply injected data
+        await page.reload({ 
+          waitUntil: 'networkidle0',
+          timeout: 15000
+        });
+        
+        // Wait for fonts
+        await page.evaluateHandle('document.fonts.ready');
+        
+        // Wait for slide content or Excel layout
+        const hasSlideContent = await page.waitForSelector('.slide-content', { timeout: 5000 }).then(() => true).catch(() => false);
+        const hasExcelLayout = await page.waitForSelector('[data-chart-container]', { timeout: 5000 }).then(() => true).catch(() => false);
+        
+        console.log(`📸 Slide ${i + 1} - hasSlideContent: ${hasSlideContent}, hasExcelLayout: ${hasExcelLayout}`);
+        
+        // Wait for content to be loaded
+        await page.waitForFunction(() => {
+          const slideContent = document.querySelector('.slide-content');
+          const excelLayout = document.querySelector('[data-chart-container]');
+          
+          if (slideContent && slideContent.children.length > 0) return true;
+          if (excelLayout && excelLayout.children.length > 0) return true;
+          
+          return false;
+        }, { timeout: 10000 }).catch(() => {
+          console.warn(`⚠️ Timeout waiting for slide content on slide ${i + 1}`);
+        });
+        
+        // Wait for charts to render
+        await page.waitForFunction(() => {
+          const svgElements = document.querySelectorAll('svg.recharts-surface');
+          if (svgElements.length === 0) {
+            const allSvgs = document.querySelectorAll('svg');
+            return allSvgs.length === 0;
+          }
+          
+          let allChartsReady = true;
+          svgElements.forEach((svg) => {
+            const children = svg.children;
+            const width = (svg as SVGElement).getBBox().width;
+            const height = (svg as SVGElement).getBBox().height;
+            
+            if (children.length === 0 || width === 0 || height === 0) {
+              allChartsReady = false;
+            }
+          });
+          
+          return allChartsReady;
+        }, { timeout: 15000 }).catch(() => {
+          console.log(`⚠️ Timeout waiting for charts on slide ${i + 1}, proceeding anyway`);
+        });
+        
+        // Wait for ResponsiveContainer dimensions
+        await page.waitForFunction(() => {
+          const responsiveContainers = document.querySelectorAll('.recharts-responsive-container');
+          if (responsiveContainers.length === 0) return true;
+          
+          let allHaveDimensions = true;
+          responsiveContainers.forEach((container) => {
+            const width = (container as HTMLElement).offsetWidth;
+            const height = (container as HTMLElement).offsetHeight;
+            if (width === 0 || height === 0) {
+              allHaveDimensions = false;
+            }
+          });
+          
+          return allHaveDimensions;
+        }, { timeout: 8000 }).catch(() => {
+          console.log(`⚠️ Timeout waiting for ResponsiveContainer on slide ${i + 1}`);
+        });
+        
+        // Additional wait for complex layouts
+        const layoutInfo = await page.evaluate(() => {
+          const chartCount = document.querySelectorAll('svg.recharts-surface').length;
+          return { chartCount, isComplexLayout: chartCount > 1 };
+        });
+        
+        const waitTime = layoutInfo.isComplexLayout ? 3500 : 2000;
+        console.log(`📸 Waiting ${waitTime}ms for final rendering on slide ${i + 1}`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
 
-        // Inject CSS to ensure clean export
+        // Hide UI elements and scale properly
         await page.addStyleTag({
           content: `
             .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, .resize-handle, .text-popup, .slide-nav { 
@@ -67,17 +150,56 @@ export async function POST(request: NextRequest) {
               overflow: hidden !important;
               margin: 0 !important;
               padding: 0 !important;
+              width: 1920px !important;
+              height: 1080px !important;
               background: white !important;
+              zoom: 1 !important;
             }
-            * {
+            .slide-content {
+              width: 1920px !important;
+              height: 1080px !important;
+              transform: scale(2.18) !important;
+              transform-origin: top left !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              background: white !important;
+              overflow: visible !important;
+            }
+            [data-chart-container] {
+              width: 1920px !important;
+              height: 1080px !important;
+              transform: scale(2.18) !important;
+              transform-origin: top left !important;
+              position: absolute !important;
+              top: 0 !important;
+              left: 0 !important;
+              background: white !important;
+              overflow: visible !important;
+            }
+            .slide-content *, [data-chart-container] * {
               -webkit-print-color-adjust: exact !important;
               color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
+            * {
+              -webkit-font-smoothing: antialiased !important;
+              -moz-osx-font-smoothing: grayscale !important;
+            }
+            table {
+              border-collapse: collapse !important;
+            }
+            svg {
+              overflow: visible !important;
+              display: block !important;
+            }
+            .recharts-wrapper, .recharts-surface {
+              overflow: visible !important;
+            }
           `
         });
 
-        // Take screenshot
+        // Take high-quality screenshot
         const screenshot = await page.screenshot({
           type: 'png',
           fullPage: false,
@@ -90,7 +212,7 @@ export async function POST(request: NextRequest) {
         
         console.log(`✅ Captured slide ${i + 1}`);
       } catch (error) {
-        console.error(`Error capturing slide ${i + 1}:`, error);
+        console.error(`❌ Error capturing slide ${i + 1}:`, error);
         // Add a blank slide on error
         slideImages.push('');
       }
