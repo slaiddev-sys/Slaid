@@ -173,16 +173,24 @@ export async function POST(request: NextRequest) {
               overflow: visible !important;
             }
             
-            /* Excel layouts (charts) need special handling - scale up from their native 881x495 */
+            /* Excel layouts (charts) need to fill the full viewport */
             [data-chart-container] {
-              width: 881px !important;
-              height: 495px !important;
-              transform: scale(2.18) !important;
-              transform-origin: top left !important;
-              position: absolute !important;
+              width: 1920px !important;
+              height: 1080px !important;
+              transform: none !important;
+              position: fixed !important;
               top: 0 !important;
               left: 0 !important;
               overflow: visible !important;
+              display: flex !important;
+              flex-direction: column !important;
+            }
+            
+            /* Inner content of Excel layouts */
+            [data-chart-container] > * {
+              width: 100% !important;
+              height: 100% !important;
+              flex: 1 !important;
             }
             
             /* Ensure charts fill their containers */
