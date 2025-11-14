@@ -69,6 +69,7 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < slides.length; i++) {
       const slideData = slides[i];
       console.log(`📊 Processing slide ${i + 1}/${slides.length}`);
+      console.log(`📊 Slide ${i + 1} blocks:`, slideData.blocks?.map((b: any) => b.type));
       
       try {
         const slide = pptx.addSlide();
@@ -121,10 +122,23 @@ export async function POST(request: NextRequest) {
 function hasCharts(slide: any): boolean {
   if (!slide.blocks) return false;
   
-  return slide.blocks.some((block: any) => {
+  const chartTypes = [
+    'Chart', 'KPI', 'Comparison', 'Dashboard', 
+    'ExcelFullWidthChart', 'ExcelTrendChart', 'ExcelPieChart',
+    'Metrics_FullWidthChart', 'Metrics_FinancialsSplit',
+    'Market_SizeAnalysis', 'Impact_KPIOverview'
+  ];
+  
+  const hasChart = slide.blocks.some((block: any) => {
     const type = block.type;
-    return type?.includes('Chart') || type?.includes('KPI') || type?.includes('Comparison');
+    return chartTypes.some(chartType => type?.includes(chartType));
   });
+  
+  if (hasChart) {
+    console.log(`📊 Charts detected in slide - will launch Puppeteer`);
+  }
+  
+  return hasChart;
 }
 
 // Add blocks to PowerPoint slide
@@ -343,8 +357,10 @@ async function addBlockToSlide(
       
       // Chart as image
       if (page && baseUrl) {
+        console.log(`📊 Attempting to capture chart for slide ${slideIndex + 1}`);
         const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
         if (chartImage) {
+          console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`);
           slide.addImage({
             data: chartImage,
             x: 0.6,
@@ -353,7 +369,11 @@ async function addBlockToSlide(
             h: 3.8,
             sizing: { type: 'contain', w: 8.8, h: 3.8 }
           });
+        } else {
+          console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
         }
+      } else {
+        console.log(`❌ Cannot capture chart: page=${!!page}, baseUrl=${!!baseUrl}`);
       }
       break;
 
@@ -375,8 +395,10 @@ async function addBlockToSlide(
       
       // Chart (left side) and insights (right side)
       if (page && baseUrl) {
+        console.log(`📊 Attempting to capture chart for slide ${slideIndex + 1} (Trend/Pie)`);
         const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
         if (chartImage) {
+          console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`);
           slide.addImage({
             data: chartImage,
             x: 0.6,
@@ -385,7 +407,11 @@ async function addBlockToSlide(
             h: 3.5,
             sizing: { type: 'contain', w: 5.5, h: 3.5 }
           });
+        } else {
+          console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
         }
+      } else {
+        console.log(`❌ Cannot capture chart: page=${!!page}, baseUrl=${!!baseUrl}`);
       }
       
       // Insights as text
@@ -486,8 +512,10 @@ async function addBlockToSlide(
       
       // Chart as image
       if (page && baseUrl) {
+        console.log(`📊 Attempting to capture chart for slide ${slideIndex + 1} (Comparison/Financials/Market)`);
         const chartImage = await captureChartImage(page, baseUrl, presentationId, workspace, slideIndex);
         if (chartImage) {
+          console.log(`✅ Chart image captured, adding to slide ${slideIndex + 1}`);
           slide.addImage({
             data: chartImage,
             x: 0.6,
@@ -496,7 +524,11 @@ async function addBlockToSlide(
             h: 4,
             sizing: { type: 'contain', w: 8.8, h: 4 }
           });
+        } else {
+          console.log(`❌ No chart image returned for slide ${slideIndex + 1}`);
         }
+      } else {
+        console.log(`❌ Cannot capture chart: page=${!!page}, baseUrl=${!!baseUrl}`);
       }
       break;
       
