@@ -3,76 +3,85 @@ import PptxGenJS from 'pptxgenjs';
 import chromium from '@sparticuz/chromium';
 import puppeteer from 'puppeteer-core';
 
-// Helper function to add editable text overlays to slide
-function addEditableTextToSlide(slide: any, slideData: any) {
+// Add editable text overlays to PowerPoint slides
+function addTextOverlays(slide: any, slideData: any) {
   if (!slideData.blocks) return;
   
-  // Process each block to extract text
   slideData.blocks.forEach((block: any) => {
-    const blockType = block.type;
+    const type = block.type;
     const props = block.props || {};
     
-    // Extract text based on block type
-    switch (blockType) {
+    switch (type) {
+      // Cover slides
       case 'Cover_TextCenter':
       case 'Cover_ProductLayout':
       case 'Cover_LeftImageTextRight':
       case 'ExcelCenteredCover_Responsive':
-        // Cover slides - title centered
         if (props.title) {
           slide.addText(props.title, {
-            x: 0.5,
-            y: 2.3,
-            w: 9,
-            h: 1,
-            fontSize: 40,
+            x: 1,
+            y: 2.5,
+            w: 8,
+            h: 0.8,
+            fontSize: 36,
             bold: true,
             color: '1a1a1a',
             align: 'center',
-            fontFace: 'Helvetica',
-            transparency: 0 // Fully opaque
+            fontFace: 'Helvetica'
+          });
+        }
+        if (props.paragraph || props.description) {
+          slide.addText(props.paragraph || props.description, {
+            x: 1.5,
+            y: 3.5,
+            w: 7,
+            h: 0.5,
+            fontSize: 14,
+            color: '666666',
+            align: 'center',
+            fontFace: 'Helvetica'
           });
         }
         break;
         
+      // Chart slides
       case 'ExcelFullWidthChart_Responsive':
-      case 'ExcelTrendChart_Responsive':
       case 'ExcelFullWidthChartCategorical_Responsive':
+      case 'ExcelFullWidthChartWithTable_Responsive':
+      case 'ExcelTrendChart_Responsive':
+      case 'ExcelPieChart_Responsive':
       case 'ExcelKPIDashboard_Responsive':
-        // Chart slides - title at top
+      case 'ExcelComparisonLayout_Responsive':
         if (props.title) {
           slide.addText(props.title, {
             x: 0.6,
             y: 0.5,
             w: 5,
-            h: 0.5,
+            h: 0.4,
             fontSize: 20,
             bold: false,
             color: '1a1a1a',
-            align: 'left',
-            fontFace: 'Helvetica',
-            transparency: 0
+            fontFace: 'Helvetica'
           });
         }
-        // Description/subtitle
         if (props.description || props.subtitle) {
           slide.addText(props.description || props.subtitle, {
-            x: 5.2,
+            x: 5.8,
             y: 0.5,
-            w: 4,
-            h: 0.6,
+            w: 3.6,
+            h: 0.4,
             fontSize: 9,
             color: '666666',
-            align: 'left',
             fontFace: 'Helvetica',
-            transparency: 0
+            valign: 'top'
           });
         }
         break;
         
+      // List slides
       case 'Lists_LeftTextRightImage':
       case 'Lists_CardsLayout':
-        // List slides - title at top
+      case 'Lists_CardsLayoutRight':
         if (props.title) {
           slide.addText(props.title, {
             x: 0.4,
@@ -82,9 +91,7 @@ function addEditableTextToSlide(slide: any, slideData: any) {
             fontSize: 24,
             bold: false,
             color: '1a1a1a',
-            align: 'left',
-            fontFace: 'Helvetica',
-            transparency: 0
+            fontFace: 'Helvetica'
           });
         }
         break;
@@ -229,27 +236,21 @@ export async function POST(request: NextRequest) {
         console.log(`📸 Waiting ${waitTime}ms for final rendering on slide ${i + 1}`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
 
-        // Hide UI elements, text elements, and scale properly for PowerPoint export
+        // Hide UI elements, ALL TEXT, and scale properly - only capture charts
         await page.addStyleTag({
           content: `
-            /* Hide UI elements */
             .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, .resize-handle, .text-popup, .slide-nav {
               display: none !important; 
             }
             
-            /* Hide text content but keep charts visible */
-            h1, h2, h3, h4, h5, h6, p {
-              visibility: hidden !important;
+            /* Hide ALL text elements - only show charts */
+            h1, h2, h3, h4, h5, h6, p, span, div:not([data-chart-container]):not(.recharts-wrapper):not(.recharts-surface):not(.recharts-layer) {
+              color: transparent !important;
             }
             
-            /* Keep everything inside chart containers visible */
-            [data-chart-container], [data-chart-container] * {
-              visibility: visible !important;
-            }
-            
-            /* Keep Recharts components visible */
-            .recharts-wrapper, .recharts-surface, .recharts-layer, svg {
-              visibility: visible !important;
+            /* Make chart text visible */
+            [data-chart-container] *, .recharts-wrapper *, .recharts-surface *, svg text {
+              color: initial !important;
             }
             
             body { 
@@ -344,13 +345,13 @@ export async function POST(request: NextRequest) {
     pptx.defineLayout({ name: 'SLAID_LAYOUT', width: 10, height: 5.625 });
     pptx.layout = 'SLAID_LAYOUT';
 
-    // Add each captured slide as an image + editable text overlay
+    // Add each captured slide as an image + editable text overlays
     for (let i = 0; i < slideImages.length; i++) {
       const slide = pptx.addSlide();
       const slideData = slides[i];
       
       if (slideImages[i]) {
-        // Add the full slide image as background (10 x 5.625 inches = SLAID_LAYOUT dimensions)
+        // Add the full slide image (charts only, no text)
         slide.addImage({
           data: slideImages[i],
           x: 0,
@@ -360,7 +361,7 @@ export async function POST(request: NextRequest) {
         });
         
         // Add editable text overlays on top
-        addEditableTextToSlide(slide, slideData);
+        addTextOverlays(slide, slideData);
       } else {
         // Fallback: add slide title if image capture failed
         slide.addText('Slide ' + (i + 1) + (slideData.title ? ': ' + slideData.title : ''), {
