@@ -7,6 +7,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      screens: {
+        'xs': '475px',
+      },
       fontFamily: {
         // Essential Google Fonts loaded via CSS
         'instrument-serif': ['"Instrument Serif"', 'serif'],

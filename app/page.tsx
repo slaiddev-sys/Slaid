@@ -1,6 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
+import FileUpload from "../components/ui/FileUpload";
 
 // TypewriterWord component
 function TypewriterWord() {
@@ -194,20 +196,28 @@ function Component1({ variant = "1" }: Component1Props) {
 }
 
 export default function Component1920WLight() {
+  const router = useRouter();
+
+  const handleDataExtracted = (data: any, fileName: string, fileType: string) => {
+    console.log('File uploaded:', { fileName, fileType });
+    // Redirect to editor after successful upload
+    router.push('/editor');
+  };
+
   return (
     <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden" style={{ backgroundImage: 'url(/sheet-background.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       {/* White overlay to reduce background opacity */}
       <div className="absolute inset-0 bg-white opacity-70 z-0"></div>
       
       {/* Navigation Bar - Logo and Auth Buttons */}
-      <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto px-4 sm:px-6 py-4 sm:py-8 w-full">
-        <div className="bg-center bg-contain bg-no-repeat h-[28px] sm:h-[36px] shrink-0 w-[90px] sm:w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
+      <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4 sm:py-6 lg:py-8 w-full">
+        <div className="bg-center bg-contain bg-no-repeat h-[24px] xs:h-[28px] sm:h-[32px] md:h-[36px] shrink-0 w-[75px] xs:w-[90px] sm:w-[105px] md:w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
         
         {/* Auth Buttons */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 xs:gap-3 sm:gap-4">
           <a
             href="/login"
-            className="text-sm sm:text-base font-medium px-4 sm:px-6 py-2 rounded-full transition-colors"
+            className="text-xs xs:text-sm sm:text-base font-medium px-3 xs:px-4 sm:px-6 py-1.5 xs:py-2 rounded-full transition-colors whitespace-nowrap"
             style={{ color: '#002903' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -216,7 +226,7 @@ export default function Component1920WLight() {
           </a>
           <a
             href="/signup"
-            className="text-sm sm:text-base font-medium text-white px-4 sm:px-6 py-2 rounded-full transition-colors"
+            className="text-xs xs:text-sm sm:text-base font-medium text-white px-3 xs:px-4 sm:px-6 py-1.5 xs:py-2 rounded-full transition-colors whitespace-nowrap"
             style={{ backgroundColor: '#002903' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
@@ -226,36 +236,33 @@ export default function Component1920WLight() {
         </div>
       </div>
       {/* Main Content: left-aligned layout */}
-      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 pt-16 sm:pt-24 lg:pt-32 max-w-6xl 2xl:max-w-7xl mx-auto 2xl:ml-24 2xl:mr-auto">
+      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-3 xs:px-4 sm:px-6 lg:px-8 pt-8 xs:pt-12 sm:pt-16 md:pt-20 lg:pt-28 xl:pt-32 pb-8 xs:pb-12 sm:pb-16 max-w-6xl 2xl:max-w-7xl mx-auto">
         {/* Main Content Row - Title and Demo Video */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start justify-between w-full max-w-6xl pr-0 lg:pr-4">
+        <div className="flex flex-col lg:flex-row gap-6 xs:gap-8 sm:gap-10 md:gap-12 lg:gap-5 xl:gap-6 items-start justify-between w-full">
           {/* Left Side - Title and Description */}
-          <div className="flex-1 max-w-4xl">
+          <div className="flex-shrink-0 w-full lg:w-[28%] xl:w-[30%]">
             {/* Heading */}
-            <h1 className="font-helvetica-neue text-[1.35rem] sm:text-[1.85rem] md:text-[2.35rem] lg:text-[2.85rem] xl:text-[46px] 2xl:text-[3.65rem] font-normal leading-tight mb-2 text-left tracking-tighter" style={{ color: '#002903' }}>
-              Cover data to professional<br />reports
+            <h1 className="font-helvetica-neue text-[1.5rem] xs:text-[1.75rem] sm:text-[2rem] md:text-[2.5rem] lg:text-[2.75rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] xs:leading-[1.2] sm:leading-tight mb-3 xs:mb-4 md:mb-5 text-left tracking-tighter" style={{ color: '#002903' }}>
+              Convert data to professional<br className="hidden xs:inline" /><span className="xs:hidden"> </span>reports
             </h1>
             {/* Subheading */}
-            <p className="max-w-[588px] text-left text-[15px] sm:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-6 sm:mb-8" style={{ color: '#002903' }}>
-              Unlock the potential of your Excel data<br />with our AI-powered storytelling and presentation generator.
+            <p className="max-w-full text-left text-[13px] xs:text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-3 xs:mb-4 md:mb-5 leading-relaxed" style={{ color: '#002903' }}>
+              Unlock the potential of your Excel data<br className="hidden sm:inline" /> with our AI-powered storytelling and presentation generator.
             </p>
             
-            {/* Get Started Button */}
-            <a
-              href="/signup"
-              className="inline-block text-sm sm:text-base font-medium text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-full transition-colors"
-              style={{ backgroundColor: '#002903' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
-            >
-              Get Started
-            </a>
+            {/* File Upload */}
+            <div className="w-full max-w-sm [&>div>div]:!p-5 [&>div>div]:!py-4">
+              <FileUpload 
+                onDataExtracted={handleDataExtracted}
+                className=""
+              />
+            </div>
           </div>
           
-          {/* Right Side - Demo Video */}
-          <div className="relative w-full max-w-2xl ml-0 lg:ml-32 mt-8 lg:mt-8">
+          {/* Right Side - Demo Video (Sticky on large screens) */}
+          <div className="relative w-full lg:w-[68%] xl:w-[66%] mt-2 xs:mt-4 sm:mt-6 md:mt-8 lg:mt-0 lg:sticky lg:top-8">
             <video 
-              className="w-full h-auto rounded-3xl shadow-2xl lg:ml-24"
+              className="w-full h-auto rounded-xl xs:rounded-2xl md:rounded-3xl shadow-lg xs:shadow-xl lg:shadow-2xl"
               controls
               autoPlay
               muted
