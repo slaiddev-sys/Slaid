@@ -41,19 +41,24 @@ export async function POST(request: NextRequest) {
       console.log('📊 Charts detected, launching Puppeteer for chart capture...');
       
       try {
-        browser = await puppeteer.launch({
-          args: chromium.args,
-          defaultViewport: chromium.defaultViewport,
-          executablePath: await chromium.executablePath(),
-          headless: chromium.headless,
-        });
+      browser = await puppeteer.launch({
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless,
+      });
 
-        page = await browser.newPage();
-        await page.setViewport({ 
-          width: 1920, 
-          height: 1080,
-          deviceScaleFactor: 2
-        });
+      page = await browser.newPage();
+      
+      // Set high-resolution viewport for crisp chart rendering
+      await page.setViewport({ 
+        width: 1920, 
+        height: 1080,
+        deviceScaleFactor: 2 // 2x for high DPI/retina displays
+      });
+      
+      // Set user agent to ensure consistent rendering
+      await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36');
       } catch (error) {
         console.error('❌ Failed to launch Puppeteer:', error);
         // Continue without chart images
@@ -560,7 +565,7 @@ async function addBlockToSlide(
   }
 }
 
-// Capture chart as image
+// Capture chart as image - mimics PDF export for high quality
 async function captureChartImage(
   page: any,
   baseUrl: string,
@@ -569,6 +574,7 @@ async function captureChartImage(
   slideIndex: number
 ): Promise<string | null> {
   try {
+    console.log(`📊 Capturing chart for slide ${slideIndex + 1}`);
     const editorUrl = `${baseUrl}/editor?presentationId=${presentationId}&workspace=${encodeURIComponent(workspace)}&slideIndex=${slideIndex}&export=true`;
     
     await page.goto(editorUrl, { 
@@ -576,24 +582,140 @@ async function captureChartImage(
       timeout: 15000
     });
     
-    // Wait for charts
+    console.log(`📊 Page loaded, waiting for content...`);
+    
+    // Wait for fonts to load
+    await page.evaluateHandle('document.fonts.ready');
+    
+    // Wait for charts to be fully rendered with dimensions
     await page.waitForFunction(() => {
       const svgElements = document.querySelectorAll('svg.recharts-surface');
-      return svgElements.length > 0;
-    }, { timeout: 10000 }).catch(() => null);
+      if (svgElements.length === 0) return false;
+      
+      let allChartsReady = true;
+      svgElements.forEach((svg) => {
+        const bbox = (svg as SVGElement).getBBox();
+        const children = svg.children;
+        if (children.length === 0 || bbox.width === 0 || bbox.height === 0) {
+          allChartsReady = false;
+        }
+      });
+      
+      return allChartsReady;
+    }, { timeout: 15000 }).catch(() => {
+      console.log(`⚠️ Timeout waiting for charts on slide ${slideIndex + 1}`);
+      return null;
+    });
     
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for ResponsiveContainer to calculate dimensions
+    await page.waitForFunction(() => {
+      const responsiveContainers = document.querySelectorAll('.recharts-responsive-container');
+      if (responsiveContainers.length === 0) return true;
+      
+      let allHaveDimensions = true;
+      responsiveContainers.forEach((container) => {
+        const width = (container as HTMLElement).offsetWidth;
+        const height = (container as HTMLElement).offsetHeight;
+        if (width === 0 || height === 0) {
+          allHaveDimensions = false;
+        }
+      });
+      
+      return allHaveDimensions;
+    }, { timeout: 8000 }).catch(() => {
+      console.log(`⚠️ Timeout waiting for ResponsiveContainer on slide ${slideIndex + 1}`);
+    });
     
-    // Take screenshot
+    // Check layout complexity
+    const layoutInfo = await page.evaluate(() => {
+      const excelLayout = document.querySelector('[data-chart-container]');
+      const chartCount = document.querySelectorAll('svg.recharts-surface').length;
+      const isKPIDashboard = excelLayout?.getAttribute('data-chart-container') === 'kpi-dashboard';
+      const isComparisonLayout = excelLayout?.getAttribute('data-chart-container') === 'comparison-chart';
+      
+      return {
+        isExcelLayout: !!excelLayout,
+        chartCount,
+        isComplexLayout: isKPIDashboard || isComparisonLayout || chartCount > 1
+      };
+    });
+    
+    // Wait additional time based on complexity
+    const waitTime = layoutInfo.isComplexLayout ? 3500 : 2000;
+    console.log(`📊 Waiting ${waitTime}ms for final rendering (${layoutInfo.chartCount} charts)`);
+    await new Promise(resolve => setTimeout(resolve, waitTime));
+    
+    // Hide UI elements and apply proper styling for export
+    await page.addStyleTag({
+      content: `
+        /* Hide all UI elements */
+        .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, 
+        .resize-handle, .text-popup, .slide-nav, nav, header, footer,
+        button, .edit-button { 
+          display: none !important; 
+          visibility: hidden !important;
+        }
+        
+        /* Set proper body dimensions */
+        body { 
+          overflow: hidden !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 1920px !important;
+          height: 1080px !important;
+          background: white !important;
+        }
+        
+        /* Scale content properly */
+        .slide-content, [data-chart-container] {
+          width: 1920px !important;
+          height: 1080px !important;
+          transform: scale(2.18) !important;
+          transform-origin: top left !important;
+          position: absolute !important;
+          top: 0 !important;
+          left: 0 !important;
+          overflow: visible !important;
+        }
+        
+        /* Ensure chart quality */
+        svg {
+          shape-rendering: geometricPrecision !important;
+          text-rendering: geometricPrecision !important;
+        }
+        
+        /* Color accuracy */
+        * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+          -webkit-font-smoothing: antialiased !important;
+          -moz-osx-font-smoothing: grayscale !important;
+        }
+        
+        /* Ensure responsive containers work */
+        .recharts-responsive-container {
+          position: relative !important;
+          width: 100% !important;
+          height: 100% !important;
+        }
+      `
+    });
+    
+    console.log(`📊 Taking high-resolution screenshot...`);
+    
+    // Take high-resolution screenshot of the entire slide
     const screenshot = await page.screenshot({
       type: 'png',
       fullPage: false,
       omitBackground: false,
+      encoding: 'base64'
     });
     
-    return `data:image/png;base64,${screenshot.toString('base64')}`;
+    console.log(`✅ Chart captured successfully (${screenshot.length} bytes)`);
+    
+    return `data:image/png;base64,${screenshot}`;
   } catch (error) {
-    console.error('Failed to capture chart:', error);
+    console.error(`❌ Failed to capture chart for slide ${slideIndex + 1}:`, error);
     return null;
   }
 }
