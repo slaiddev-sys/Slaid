@@ -461,8 +461,13 @@ export async function POST(request: NextRequest) {
         // Hide UI elements, ALL TEXT, and scale properly - only capture charts
         await page.addStyleTag({
           content: `
-            .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, .resize-handle, .text-popup, .slide-nav {
+            .sidebar, .toolbar, .controls, .ui-overlay, .figma-selection-box, .resize-handle, .text-popup, .slide-nav, button, .edit-button {
               display: none !important; 
+            }
+            
+            /* Hide icons and decorative elements */
+            .icon, [class*="icon"], [class*="Icon"] {
+              display: none !important;
             }
             
             /* Hide text elements outside charts */
