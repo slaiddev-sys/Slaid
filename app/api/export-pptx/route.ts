@@ -569,9 +569,6 @@ export async function POST(request: NextRequest) {
               overflow: visible !important;
               padding: 0 !important;
               margin: 0 !important;
-              display: flex !important;
-              align-items: center !important;
-              justify-content: center !important;
             }
             
             /* Remove all padding from chart elements */
@@ -616,13 +613,28 @@ export async function POST(request: NextRequest) {
           `
         });
 
-        // Take screenshot
-        const screenshot = await page.screenshot({
-          type: 'png',
-          fullPage: false,
-          omitBackground: false,
-          encoding: 'base64'
-        });
+        // Take screenshot of the CHART CONTAINER ONLY (not the entire slide)
+        const chartContainer = await page.$('[data-chart-container]');
+        
+        let screenshot;
+        if (chartContainer) {
+          // If there's a chart, capture ONLY the chart container element
+          console.log(`📸 Capturing chart container element for slide ${i + 1}`);
+          screenshot = await chartContainer.screenshot({
+            type: 'png',
+            omitBackground: false,
+            encoding: 'base64'
+          });
+        } else {
+          // If no chart, capture the full slide
+          console.log(`📸 Capturing full slide ${i + 1} (no chart found)`);
+          screenshot = await page.screenshot({
+            type: 'png',
+            fullPage: false,
+            omitBackground: false,
+            encoding: 'base64'
+          });
+        }
 
         slideImages.push(`data:image/png;base64,${screenshot}`);
         console.log(`✅ Captured slide ${i + 1}`);
