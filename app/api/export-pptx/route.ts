@@ -652,13 +652,13 @@ export async function POST(request: NextRequest) {
       const slideData = slides[i];
       
       if (slideImages[i]) {
-        // Add the full slide image (charts only, no text) at the bottom - maintain aspect ratio
+        // Add the full slide image (charts only, no text) - no scaling or repositioning
         slide.addImage({
           data: slideImages[i],
           x: 0,
-          y: 1.5, // Start lower but maintain original chart size
+          y: 0,
           w: 10,
-          h: 5.625 // Full height to avoid compressing the chart
+          h: 5.625
         });
         
         // Add editable text overlays on top
