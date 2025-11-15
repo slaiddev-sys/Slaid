@@ -52,23 +52,24 @@ function addTextOverlays(slide: any, slideData: any) {
       case 'ExcelComparisonLayout_Responsive':
         if (props.title) {
           slide.addText(props.title, {
-            x: 0.6,
-            y: 0.5,
-            w: 5,
-            h: 0.4,
-            fontSize: 20,
+            x: 0.5,
+            y: 0.45,
+            w: 4.5,
+            h: 0.35,
+            fontSize: 18,
             bold: false,
             color: '1a1a1a',
-            fontFace: 'Helvetica'
+            fontFace: 'Helvetica',
+            valign: 'top'
           });
         }
         if (props.description || props.subtitle) {
           slide.addText(props.description || props.subtitle, {
-            x: 5.8,
-            y: 0.5,
-            w: 3.6,
-            h: 0.4,
-            fontSize: 9,
+            x: 5.5,
+            y: 0.45,
+            w: 4,
+            h: 0.5,
+            fontSize: 8,
             color: '666666',
             fontFace: 'Helvetica',
             valign: 'top'
@@ -81,29 +82,30 @@ function addTextOverlays(slide: any, slideData: any) {
       case 'ExcelPieChart_Responsive':
         if (props.title) {
           slide.addText(props.title, {
-            x: 0.6,
-            y: 0.5,
+            x: 0.5,
+            y: 0.45,
             w: 5.5,
-            h: 0.4,
-            fontSize: 20,
+            h: 0.35,
+            fontSize: 18,
             bold: false,
             color: '1a1a1a',
-            fontFace: 'Helvetica'
+            fontFace: 'Helvetica',
+            valign: 'top'
           });
         }
         // Add insights as bullet points on the right
         if (props.insights && Array.isArray(props.insights)) {
           const insightsText = props.insights.map((insight: string) => ({
             text: insight,
-            options: { bullet: true }
+            options: { bullet: true, bulletSize: 85 }
           }));
           
           slide.addText(insightsText, {
-            x: 6.3,
-            y: 1.5,
-            w: 3.1,
-            h: 3,
-            fontSize: 9,
+            x: 6.5,
+            y: 1.3,
+            w: 3,
+            h: 3.5,
+            fontSize: 8,
             color: '333333',
             fontFace: 'Helvetica',
             valign: 'top'
