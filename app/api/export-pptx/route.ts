@@ -111,42 +111,46 @@ function addTextOverlays(slide: any, slideData: any) {
         }
         break;
         
-      // How It Works layout
+      // How It Works layout (left: title/subtitle, right: 2x2 features grid)
       case 'ExcelHowItWorks_Responsive':
+        // Title on LEFT side
         if (props.title) {
           slide.addText(props.title, {
             x: 0.6,
-            y: 0.5,
-            w: 9,
-            h: 0.4,
-            fontSize: 24,
+            y: 2,
+            w: 3,
+            h: 0.6,
+            fontSize: 28,
             bold: false,
             color: '1a1a1a',
-            fontFace: 'Helvetica'
+            fontFace: 'Helvetica',
+            valign: 'middle'
           });
         }
+        // Subtitle below title on LEFT side
         if (props.subtitle) {
           slide.addText(props.subtitle, {
             x: 0.6,
-            y: 1,
-            w: 9,
-            h: 0.3,
-            fontSize: 11,
+            y: 2.7,
+            w: 3,
+            h: 0.8,
+            fontSize: 10,
             color: '666666',
-            fontFace: 'Helvetica'
+            fontFace: 'Helvetica',
+            valign: 'top'
           });
         }
-        // Add features
+        // Features in 2x2 grid on RIGHT side
         if (props.features && Array.isArray(props.features)) {
           props.features.forEach((feature: any, index: number) => {
-            const row = Math.floor(index / 3);
-            const col = index % 3;
+            const row = Math.floor(index / 2);
+            const col = index % 2;
             
             // Feature title
             if (feature.title) {
               slide.addText(feature.title, {
-                x: 0.6 + col * 3.1,
-                y: 1.8 + row * 1.3,
+                x: 4 + col * 3,
+                y: 1.2 + row * 2,
                 w: 2.8,
                 h: 0.3,
                 fontSize: 14,
@@ -159,11 +163,11 @@ function addTextOverlays(slide: any, slideData: any) {
             // Feature description
             if (feature.description) {
               slide.addText(feature.description, {
-                x: 0.6 + col * 3.1,
-                y: 2.15 + row * 1.3,
+                x: 4 + col * 3,
+                y: 1.55 + row * 2,
                 w: 2.8,
-                h: 0.8,
-                fontSize: 9,
+                h: 1,
+                fontSize: 10,
                 color: '666666',
                 fontFace: 'Helvetica',
                 valign: 'top'
