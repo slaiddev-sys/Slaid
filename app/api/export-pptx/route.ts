@@ -485,9 +485,20 @@ export async function POST(request: NextRequest) {
             
             /* Hide elements that might be the black dot */
             [data-chart-container] > div:not(.recharts-responsive-container):first-child,
-            [data-chart-container] svg:not(.recharts-surface):first-child {
+            [data-chart-container] svg:not(.recharts-surface):first-child,
+            [data-chart-container] [style*="position: absolute"],
+            [data-chart-container] .absolute {
               opacity: 0 !important;
               visibility: hidden !important;
+              display: none !important;
+            }
+            
+            /* Hide any dark colored elements */
+            [data-chart-container] [class*="bg-gray-"],
+            [data-chart-container] [class*="bg-black"],
+            [data-chart-container] [class*="bg-slate"] {
+              opacity: 0 !important;
+              display: none !important;
             }
             
             /* Hide text elements outside charts */
