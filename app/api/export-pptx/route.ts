@@ -470,21 +470,24 @@ export async function POST(request: NextRequest) {
               display: none !important;
             }
             
-            /* NUCLEAR OPTION: Hide EVERYTHING in chart container except recharts */
-            [data-chart-container] > * {
-              display: none !important;
+            /* Cover decorative elements with white background */
+            [data-chart-container] {
+              background: white !important;
+              position: relative !important;
             }
             
-            /* Show ONLY the recharts responsive container */
-            [data-chart-container] > .recharts-responsive-container {
-              display: block !important;
+            /* Push chart to front */
+            .recharts-responsive-container {
+              position: relative !important;
+              z-index: 9999 !important;
+              background: white !important;
             }
             
-            /* Hide ALL pseudo elements */
-            [data-chart-container] *::before,
-            [data-chart-container] *::after {
-              display: none !important;
-              content: none !important;
+            /* Hide elements that might be the black dot */
+            [data-chart-container] > div:not(.recharts-responsive-container):first-child,
+            [data-chart-container] svg:not(.recharts-surface):first-child {
+              opacity: 0 !important;
+              visibility: hidden !important;
             }
             
             /* Hide text elements outside charts */
