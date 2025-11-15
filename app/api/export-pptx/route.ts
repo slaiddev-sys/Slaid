@@ -569,6 +569,9 @@ export async function POST(request: NextRequest) {
               overflow: visible !important;
               padding: 0 !important;
               margin: 0 !important;
+              display: flex !important;
+              align-items: center !important;
+              justify-content: center !important;
             }
             
             /* Remove all padding from chart elements */
