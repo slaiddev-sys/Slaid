@@ -48,7 +48,6 @@ function addTextOverlays(slide: any, slideData: any) {
       case 'ExcelFullWidthChart_Responsive':
       case 'ExcelFullWidthChartCategorical_Responsive':
       case 'ExcelFullWidthChartWithTable_Responsive':
-      case 'ExcelPieChart_Responsive':
       case 'ExcelKPIDashboard_Responsive':
       case 'ExcelComparisonLayout_Responsive':
         if (props.title) {
@@ -77,8 +76,9 @@ function addTextOverlays(slide: any, slideData: any) {
         }
         break;
         
-      // Trend Chart with insights
+      // Trend Chart and Pie Chart with insights on the right
       case 'ExcelTrendChart_Responsive':
+      case 'ExcelPieChart_Responsive':
         if (props.title) {
           slide.addText(props.title, {
             x: 0.6,
