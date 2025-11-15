@@ -470,29 +470,21 @@ export async function POST(request: NextRequest) {
               display: none !important;
             }
             
-            /* Hide ALL decorative elements */
-            .bullet, .dot, [class*="bullet"], [class*="dot"],
-            ::before, ::after {
-              display: none !important;
-              visibility: hidden !important;
-            }
-            
-            /* Hide ALL non-chart visual elements */
-            [data-chart-container] > div:first-child:not([class*="recharts"]) {
+            /* NUCLEAR OPTION: Hide EVERYTHING in chart container except recharts */
+            [data-chart-container] > * {
               display: none !important;
             }
             
-            /* Hide standalone SVGs that aren't charts */
-            [data-chart-container] > svg:not(.recharts-surface) {
-              display: none !important;
+            /* Show ONLY the recharts responsive container */
+            [data-chart-container] > .recharts-responsive-container {
+              display: block !important;
             }
             
-            /* Hide any decorative shapes */
-            rect:not(svg.recharts-surface rect),
-            circle:not(svg.recharts-surface circle),
-            ellipse:not(svg.recharts-surface ellipse),
-            path:not(svg.recharts-surface path) {
+            /* Hide ALL pseudo elements */
+            [data-chart-container] *::before,
+            [data-chart-container] *::after {
               display: none !important;
+              content: none !important;
             }
             
             /* Hide text elements outside charts */
