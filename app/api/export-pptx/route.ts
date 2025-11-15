@@ -460,6 +460,28 @@ export async function POST(request: NextRequest) {
         console.log(`📸 Waiting ${waitTime}ms for final rendering on slide ${i + 1}`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
 
+        // Get chart position BEFORE applying CSS transforms
+        const chartContainer = await page.$('[data-chart-container]');
+        let chartPosition = null;
+        
+        if (chartContainer) {
+          // Get the position using the natural layout (before our export CSS)
+          chartPosition = await page.evaluate((el) => {
+            const rect = el!.getBoundingClientRect();
+            
+            // The chart container is within a scaled slide-content
+            // We need the position relative to the 1920x1080 viewport
+            return {
+              x: rect.x,
+              y: rect.y,
+              width: rect.width,
+              height: rect.height
+            };
+          }, chartContainer);
+          
+          console.log(`📸 Chart position for slide ${i + 1} (natural layout):`, chartPosition);
+        }
+
         // Hide UI elements, ALL TEXT, and scale properly - only capture charts
         await page.addStyleTag({
           content: `
@@ -614,25 +636,9 @@ export async function POST(request: NextRequest) {
         });
 
         // Take screenshot of the CHART CONTAINER ONLY (not the entire slide)
-        const chartContainer = await page.$('[data-chart-container]');
-        
         let screenshot;
-        let chartPosition = null;
         
         if (chartContainer) {
-          // Get the position and dimensions of the chart container
-          chartPosition = await page.evaluate((el) => {
-            const rect = el!.getBoundingClientRect();
-            return {
-              x: rect.x,
-              y: rect.y,
-              width: rect.width,
-              height: rect.height
-            };
-          }, chartContainer);
-          
-          console.log(`📸 Chart position for slide ${i + 1}:`, chartPosition);
-          
           // Capture ONLY the chart container element
           screenshot = await chartContainer.screenshot({
             type: 'png',
