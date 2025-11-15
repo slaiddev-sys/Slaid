@@ -470,15 +470,28 @@ export async function POST(request: NextRequest) {
               display: none !important;
             }
             
-            /* Hide bullets, dots, and decorative circles */
+            /* Hide ALL decorative elements */
             .bullet, .dot, [class*="bullet"], [class*="dot"],
             ::before, ::after {
               display: none !important;
               visibility: hidden !important;
             }
             
-            /* Hide decorative circles but keep chart circles */
-            circle:not(svg circle) {
+            /* Hide ALL non-chart visual elements */
+            [data-chart-container] > div:first-child:not([class*="recharts"]) {
+              display: none !important;
+            }
+            
+            /* Hide standalone SVGs that aren't charts */
+            [data-chart-container] > svg:not(.recharts-surface) {
+              display: none !important;
+            }
+            
+            /* Hide any decorative shapes */
+            rect:not(svg.recharts-surface rect),
+            circle:not(svg.recharts-surface circle),
+            ellipse:not(svg.recharts-surface ellipse),
+            path:not(svg.recharts-surface path) {
               display: none !important;
             }
             
