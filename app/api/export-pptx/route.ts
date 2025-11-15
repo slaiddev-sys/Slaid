@@ -44,11 +44,10 @@ function addTextOverlays(slide: any, slideData: any) {
         }
         break;
         
-      // Chart slides
+      // Chart slides with title and description
       case 'ExcelFullWidthChart_Responsive':
       case 'ExcelFullWidthChartCategorical_Responsive':
       case 'ExcelFullWidthChartWithTable_Responsive':
-      case 'ExcelTrendChart_Responsive':
       case 'ExcelPieChart_Responsive':
       case 'ExcelKPIDashboard_Responsive':
       case 'ExcelComparisonLayout_Responsive':
@@ -74,6 +73,102 @@ function addTextOverlays(slide: any, slideData: any) {
             color: '666666',
             fontFace: 'Helvetica',
             valign: 'top'
+          });
+        }
+        break;
+        
+      // Trend Chart with insights
+      case 'ExcelTrendChart_Responsive':
+        if (props.title) {
+          slide.addText(props.title, {
+            x: 0.6,
+            y: 0.5,
+            w: 5.5,
+            h: 0.4,
+            fontSize: 20,
+            bold: false,
+            color: '1a1a1a',
+            fontFace: 'Helvetica'
+          });
+        }
+        // Add insights as bullet points on the right
+        if (props.insights && Array.isArray(props.insights)) {
+          const insightsText = props.insights.map((insight: string) => ({
+            text: insight,
+            options: { bullet: true }
+          }));
+          
+          slide.addText(insightsText, {
+            x: 6.3,
+            y: 1.5,
+            w: 3.1,
+            h: 3,
+            fontSize: 9,
+            color: '333333',
+            fontFace: 'Helvetica',
+            valign: 'top'
+          });
+        }
+        break;
+        
+      // How It Works layout
+      case 'ExcelHowItWorks_Responsive':
+        if (props.title) {
+          slide.addText(props.title, {
+            x: 0.6,
+            y: 0.5,
+            w: 9,
+            h: 0.4,
+            fontSize: 24,
+            bold: false,
+            color: '1a1a1a',
+            fontFace: 'Helvetica'
+          });
+        }
+        if (props.subtitle) {
+          slide.addText(props.subtitle, {
+            x: 0.6,
+            y: 1,
+            w: 9,
+            h: 0.3,
+            fontSize: 11,
+            color: '666666',
+            fontFace: 'Helvetica'
+          });
+        }
+        // Add features
+        if (props.features && Array.isArray(props.features)) {
+          props.features.forEach((feature: any, index: number) => {
+            const row = Math.floor(index / 3);
+            const col = index % 3;
+            
+            // Feature title
+            if (feature.title) {
+              slide.addText(feature.title, {
+                x: 0.6 + col * 3.1,
+                y: 1.8 + row * 1.3,
+                w: 2.8,
+                h: 0.3,
+                fontSize: 14,
+                bold: true,
+                color: '1a1a1a',
+                fontFace: 'Helvetica'
+              });
+            }
+            
+            // Feature description
+            if (feature.description) {
+              slide.addText(feature.description, {
+                x: 0.6 + col * 3.1,
+                y: 2.15 + row * 1.3,
+                w: 2.8,
+                h: 0.8,
+                fontSize: 9,
+                color: '666666',
+                fontFace: 'Helvetica',
+                valign: 'top'
+              });
+            }
           });
         }
         break;
