@@ -465,21 +465,15 @@ export async function POST(request: NextRequest) {
               display: none !important; 
             }
             
-            /* Hide text elements - but keep structure */
-            h1, h2, h3, h4, h5, h6, p, a, li, ul, ol {
+            /* Hide ALL text elements */
+            h1, h2, h3, h4, h5, h6, p, span, a, li, ul, ol, div {
               visibility: hidden !important;
               opacity: 0 !important;
             }
             
-            /* Hide span elements that are NOT part of charts */
-            span:not([data-chart-container] *):not(.recharts-wrapper *):not(.recharts-surface *):not(.recharts-legend-wrapper *) {
-              visibility: hidden !important;
-              opacity: 0 !important;
-            }
-            
-            /* Keep ALL chart-related elements visible (including legends) */
-            [data-chart-container], [data-chart-container] *,
-            .recharts-responsive-container, .recharts-responsive-container *,
+            /* Keep chart containers and all chart elements visible */
+            [data-chart-container], [data-chart-container] > div,
+            .recharts-responsive-container,
             .recharts-wrapper, .recharts-wrapper *,
             .recharts-surface, .recharts-surface *,
             .recharts-legend-wrapper, .recharts-legend-wrapper *,
