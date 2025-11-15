@@ -78,8 +78,40 @@ function addTextOverlays(slide: any, slideData: any) {
         }
         break;
         
-      // List slides
+      // List slides with items
       case 'Lists_LeftTextRightImage':
+        if (props.title) {
+          slide.addText(props.title, {
+            x: 0.4,
+            y: 0.4,
+            w: 5,
+            h: 0.5,
+            fontSize: 24,
+            bold: false,
+            color: '1a1a1a',
+            fontFace: 'Helvetica'
+          });
+        }
+        // Add list items as bullet points
+        if (props.items && Array.isArray(props.items)) {
+          const bulletText = props.items.map((item: any) => ({
+            text: typeof item === 'string' ? item : (item.title || item.text || ''),
+            options: { bullet: true }
+          }));
+          
+          slide.addText(bulletText, {
+            x: 0.4,
+            y: 1.2,
+            w: 4.8,
+            h: 3.5,
+            fontSize: 14,
+            color: '333333',
+            fontFace: 'Helvetica',
+            valign: 'top'
+          });
+        }
+        break;
+        
       case 'Lists_CardsLayout':
       case 'Lists_CardsLayoutRight':
         if (props.title) {
@@ -94,6 +126,97 @@ function addTextOverlays(slide: any, slideData: any) {
             fontFace: 'Helvetica'
           });
         }
+        // Add cards
+        if (props.cards && Array.isArray(props.cards)) {
+          props.cards.forEach((card: any, index: number) => {
+            const row = Math.floor(index / 2);
+            const col = index % 2;
+            
+            // Card title
+            if (card.title) {
+              slide.addText(card.title, {
+                x: 0.4 + col * 4.8,
+                y: 1.5 + row * 1.8,
+                w: 4.4,
+                h: 0.35,
+                fontSize: 16,
+                bold: true,
+                color: '1a1a1a',
+                fontFace: 'Helvetica'
+              });
+            }
+            
+            // Card description
+            if (card.description) {
+              slide.addText(card.description, {
+                x: 0.4 + col * 4.8,
+                y: 1.9 + row * 1.8,
+                w: 4.4,
+                h: 0.8,
+                fontSize: 11,
+                color: '666666',
+                fontFace: 'Helvetica',
+                valign: 'top'
+              });
+            }
+          });
+        }
+        break;
+        
+      // Text-heavy slides
+      case 'ExcelExperienceFullText_Responsive':
+        if (props.title) {
+          slide.addText(props.title, {
+            x: 0.6,
+            y: 0.6,
+            w: 9,
+            h: 0.5,
+            fontSize: 24,
+            bold: false,
+            color: '1a1a1a',
+            fontFace: 'Helvetica'
+          });
+        }
+        if (props.leftText) {
+          slide.addText(props.leftText, {
+            x: 0.6,
+            y: 1.3,
+            w: 4.3,
+            h: 3.5,
+            fontSize: 11,
+            color: '333333',
+            fontFace: 'Helvetica',
+            valign: 'top'
+          });
+        }
+        if (props.rightText) {
+          slide.addText(props.rightText, {
+            x: 5.1,
+            y: 1.3,
+            w: 4.3,
+            h: 3.5,
+            fontSize: 11,
+            color: '333333',
+            fontFace: 'Helvetica',
+            valign: 'top'
+          });
+        }
+        break;
+        
+      // Back cover
+      case 'BackCover_ThankYouWithImage':
+      case 'ExcelBackCover_Responsive':
+        slide.addText('Thank You', {
+          x: 1,
+          y: 2.5,
+          w: 8,
+          h: 1,
+          fontSize: 48,
+          bold: true,
+          color: '1a1a1a',
+          align: 'center',
+          fontFace: 'Helvetica'
+        });
         break;
     }
   });
