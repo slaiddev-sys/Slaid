@@ -567,6 +567,24 @@ export async function POST(request: NextRequest) {
               left: 0 !important;
               background: white !important;
               overflow: visible !important;
+              padding: 0 !important;
+              margin: 0 !important;
+            }
+            
+            /* Remove all padding from chart elements */
+            [data-chart-container],
+            [data-chart-container] > div,
+            [data-chart-container] * {
+              margin: 0 !important;
+              padding: 0 !important;
+            }
+            
+            /* Ensure recharts container fills space */
+            .recharts-responsive-container {
+              width: 100% !important;
+              height: 100% !important;
+              padding: 0 !important;
+              margin: 0 !important;
             }
             /* Scale the inner content properly */
             .slide-content > div {
