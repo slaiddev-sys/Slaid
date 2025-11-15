@@ -471,11 +471,22 @@ export async function POST(request: NextRequest) {
             }
             
             /* Hide bullets, dots, and decorative circles */
-            circle:not(.recharts-surface *):not(svg.recharts-surface *),
+            circle:not(.recharts-surface circle):not(svg.recharts-surface circle),
             .bullet, .dot, [class*="bullet"], [class*="dot"],
             ::before, ::after {
               display: none !important;
               visibility: hidden !important;
+            }
+            
+            /* Hide absolutely positioned dots/decorative elements */
+            [data-chart-container] > div:not(.recharts-responsive-container),
+            [data-chart-container] > *:not(.recharts-responsive-container):not([class*="recharts"]) {
+              display: none !important;
+            }
+            
+            /* Hide any SVG circles outside recharts */
+            svg:not(.recharts-surface) circle {
+              display: none !important;
             }
             
             /* Hide text elements outside charts */
