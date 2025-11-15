@@ -465,13 +465,25 @@ export async function POST(request: NextRequest) {
               display: none !important; 
             }
             
-            /* Hide ALL content by default */
-            * {
+            /* Hide text elements outside charts */
+            h1, h2, h3, h4, h5, h6, p, a, li, ul, ol {
               visibility: hidden !important;
               opacity: 0 !important;
             }
             
-            /* Show ONLY chart elements and legends */
+            /* Hide divs that are NOT chart-related */
+            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h1,
+            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h2,
+            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h3,
+            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > p,
+            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > span {
+              visibility: hidden !important;
+              opacity: 0 !important;
+            }
+            
+            /* Keep chart containers visible */
+            [data-chart-container],
+            [data-chart-container] > div,
             .recharts-responsive-container,
             .recharts-responsive-container *,
             .recharts-wrapper,
@@ -484,11 +496,6 @@ export async function POST(request: NextRequest) {
             svg * {
               visibility: visible !important;
               opacity: 1 !important;
-            }
-            
-            /* Ensure chart container is visible but not its direct children text */
-            [data-chart-container] {
-              visibility: visible !important;
             }
             
             body { 
