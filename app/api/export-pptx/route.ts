@@ -243,23 +243,20 @@ export async function POST(request: NextRequest) {
               display: none !important; 
             }
             
-            /* Hide ALL text elements - only show charts */
-            h1, h2, h3, h4, h5, h6, p, span, div, a, li, ul, ol {
+            /* Hide text elements - but keep structure */
+            h1, h2, h3, h4, h5, h6, p, span:not(.recharts-wrapper *):not(.recharts-surface *), a, li, ul, ol {
               visibility: hidden !important;
               opacity: 0 !important;
             }
             
-            /* Make ONLY chart elements visible */
-            .recharts-wrapper, .recharts-wrapper *, 
+            /* Keep chart containers and wrappers visible */
+            [data-chart-container], [data-chart-container] > div,
+            .recharts-responsive-container,
+            .recharts-wrapper, .recharts-wrapper *,
             .recharts-surface, .recharts-surface *,
             svg, svg * {
               visibility: visible !important;
               opacity: 1 !important;
-            }
-            
-            /* Ensure chart container is visible */
-            [data-chart-container] {
-              visibility: visible !important;
             }
             
             body { 
