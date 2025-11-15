@@ -470,6 +470,14 @@ export async function POST(request: NextRequest) {
               display: none !important;
             }
             
+            /* Hide bullets, dots, and decorative circles */
+            circle:not(.recharts-surface *):not(svg.recharts-surface *),
+            .bullet, .dot, [class*="bullet"], [class*="dot"],
+            ::before, ::after {
+              display: none !important;
+              visibility: hidden !important;
+            }
+            
             /* Hide text elements outside charts */
             h1, h2, h3, h4, h5, h6, p, a, li, ul, ol {
               visibility: hidden !important;
