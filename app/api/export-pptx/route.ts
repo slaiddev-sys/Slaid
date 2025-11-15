@@ -356,8 +356,8 @@ export async function POST(request: NextRequest) {
       deviceScaleFactor: 2
     });
 
-    // Array to store slide images
-    const slideImages: string[] = [];
+    // Array to store slide images with their positions
+    const slideImages: Array<{ image: string; position: { x: number; y: number; width: number; height: number } | null } | string> = [];
 
     // Render each slide (using same logic as PDF export)
     for (let i = 0; i < slides.length; i++) {
@@ -617,9 +617,23 @@ export async function POST(request: NextRequest) {
         const chartContainer = await page.$('[data-chart-container]');
         
         let screenshot;
+        let chartPosition = null;
+        
         if (chartContainer) {
-          // If there's a chart, capture ONLY the chart container element
-          console.log(`📸 Capturing chart container element for slide ${i + 1}`);
+          // Get the position and dimensions of the chart container
+          chartPosition = await page.evaluate((el) => {
+            const rect = el!.getBoundingClientRect();
+            return {
+              x: rect.x,
+              y: rect.y,
+              width: rect.width,
+              height: rect.height
+            };
+          }, chartContainer);
+          
+          console.log(`📸 Chart position for slide ${i + 1}:`, chartPosition);
+          
+          // Capture ONLY the chart container element
           screenshot = await chartContainer.screenshot({
             type: 'png',
             omitBackground: false,
@@ -636,12 +650,15 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        slideImages.push(`data:image/png;base64,${screenshot}`);
+        slideImages.push({
+          image: `data:image/png;base64,${screenshot}`,
+          position: chartPosition
+        });
         console.log(`✅ Captured slide ${i + 1}`);
       } catch (error) {
         console.error(`❌ Error capturing slide ${i + 1}:`, error);
         // Add a blank slide on error
-        slideImages.push('');
+        slideImages.push({ image: '', position: null });
       }
     }
 
@@ -665,15 +682,30 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < slideImages.length; i++) {
       const slide = pptx.addSlide();
       const slideData = slides[i];
+      const slideImageData = slideImages[i];
       
-      if (slideImages[i]) {
-        // Add the full slide image (charts only, no text)
+      if (slideImageData && typeof slideImageData === 'object' && slideImageData.image) {
+        // Convert pixel positions to inches (PowerPoint uses inches)
+        // Viewport is 1920x1080, PowerPoint slide is 10x5.625 inches
+        const xInches = slideImageData.position ? (slideImageData.position.x / 1920) * 10 : 0;
+        const yInches = slideImageData.position ? (slideImageData.position.y / 1080) * 5.625 : 0;
+        const wInches = slideImageData.position ? (slideImageData.position.width / 1920) * 10 : 10;
+        const hInches = slideImageData.position ? (slideImageData.position.height / 1080) * 5.625 : 5.625;
+        
+        console.log(`📊 Adding chart image for slide ${i + 1} at position:`, {
+          x: xInches,
+          y: yInches,
+          w: wInches,
+          h: hInches
+        });
+        
+        // Add the chart image at its actual position
         slide.addImage({
-          data: slideImages[i],
-          x: 0,
-          y: 0,
-          w: 10,
-          h: 5.625
+          data: slideImageData.image,
+          x: xInches,
+          y: yInches,
+          w: wInches,
+          h: hInches
         });
         
         // Add editable text overlays on top
