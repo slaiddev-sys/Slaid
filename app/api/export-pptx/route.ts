@@ -12,7 +12,7 @@ function addTextOverlays(slide: any, slideData: any) {
     const props = block.props || {};
     
     switch (type) {
-      // Cover slides
+      // Cover slides - Centered layout
       case 'Cover_TextCenter':
       case 'Cover_ProductLayout':
       case 'Cover_LeftImageTextRight':
@@ -20,26 +20,28 @@ function addTextOverlays(slide: any, slideData: any) {
         if (props.title) {
           slide.addText(props.title, {
             x: 1,
-            y: 2.5,
+            y: 2.2,
             w: 8,
-            h: 0.8,
-            fontSize: 36,
-            bold: true,
+            h: 0.6,
+            fontSize: 48,
+            bold: false,
             color: '1a1a1a',
             align: 'center',
-            fontFace: 'Helvetica'
+            fontFace: 'Helvetica',
+            valign: 'middle'
           });
         }
         if (props.paragraph || props.description) {
           slide.addText(props.paragraph || props.description, {
             x: 1.5,
-            y: 3.5,
+            y: 3,
             w: 7,
             h: 0.5,
             fontSize: 14,
             color: '666666',
             align: 'center',
-            fontFace: 'Helvetica'
+            fontFace: 'Helvetica',
+            valign: 'top'
           });
         }
         break;
@@ -304,101 +306,104 @@ function addTextOverlays(slide: any, slideData: any) {
         }
         break;
         
-      // Back cover - Match actual back cover design (left-aligned, larger font)
+      // Back cover - Centered layout matching cover design
       case 'BackCover_ThankYouWithImage':
       case 'ExcelBackCover_Responsive':
       case 'BackCover_ThankYou':
         if (props.title) {
           slide.addText(props.title, {
-            x: 0.5,
-            y: 1.2,
-            w: 4.5,
-            h: 0.8,
-            fontSize: 60,
+            x: 1,
+            y: 1.8,
+            w: 8,
+            h: 0.6,
+            fontSize: 48,
             bold: false,
-            color: '1a1a1a',
-            align: 'left',
+            color: '000000',
+            align: 'center',
+            fontFace: 'Helvetica',
+            valign: 'middle'
+          });
+        }
+        if (props.description) {
+          slide.addText(props.description, {
+            x: 1.5,
+            y: 2.5,
+            w: 7,
+            h: 0.4,
+            fontSize: 16,
+            color: '666666',
+            align: 'center',
             fontFace: 'Helvetica',
             valign: 'top'
           });
         }
-        // Add contact info if available
-        if (props.contact) {
-          let yPos = 2.5;
-          const contactSize = 12;
-          const lineHeight = 0.25;
+        // Add contact info centered below
+        if (props.contactEmail || props.contactPhone || props.address || props.website) {
+          let yPos = 3.2;
+          const contactSize = 14;
+          const lineHeight = 0.3;
           
-          if (props.contact.email) {
-            slide.addText(props.contact.email, {
-              x: 0.5,
+          if (props.contactEmail && props.contactPhone) {
+            slide.addText(`${props.contactEmail}     ${props.contactPhone}`, {
+              x: 1.5,
               y: yPos,
-              w: 4,
+              w: 7,
               h: lineHeight,
               fontSize: contactSize,
               color: '333333',
+              align: 'center',
+              fontFace: 'Helvetica'
+            });
+            yPos += lineHeight;
+          } else if (props.contactEmail) {
+            slide.addText(props.contactEmail, {
+              x: 1.5,
+              y: yPos,
+              w: 7,
+              h: lineHeight,
+              fontSize: contactSize,
+              color: '333333',
+              align: 'center',
+              fontFace: 'Helvetica'
+            });
+            yPos += lineHeight;
+          } else if (props.contactPhone) {
+            slide.addText(props.contactPhone, {
+              x: 1.5,
+              y: yPos,
+              w: 7,
+              h: lineHeight,
+              fontSize: contactSize,
+              color: '333333',
+              align: 'center',
               fontFace: 'Helvetica'
             });
             yPos += lineHeight;
           }
-          if (props.contact.social) {
-            slide.addText(props.contact.social, {
-              x: 0.5,
+          
+          if (props.address) {
+            slide.addText(props.address, {
+              x: 1.5,
               y: yPos,
-              w: 4,
+              w: 7,
               h: lineHeight,
               fontSize: contactSize,
               color: '333333',
+              align: 'center',
               fontFace: 'Helvetica'
             });
             yPos += lineHeight;
           }
-          if (props.contact.phone) {
-            slide.addText(props.contact.phone, {
-              x: 0.5,
+          
+          if (props.website) {
+            slide.addText(props.website, {
+              x: 1.5,
               y: yPos,
-              w: 4,
+              w: 7,
               h: lineHeight,
               fontSize: contactSize,
               color: '333333',
-              fontFace: 'Helvetica'
-            });
-            yPos += lineHeight;
-          }
-          if (props.contact.phone2) {
-            slide.addText(props.contact.phone2, {
-              x: 0.5,
-              y: yPos,
-              w: 4,
-              h: lineHeight,
-              fontSize: contactSize,
-              color: '333333',
-              fontFace: 'Helvetica'
-            });
-            yPos += lineHeight;
-          }
-          if (props.contact.location) {
-            const location = `${props.contact.location.city || ''}, ${props.contact.location.country || ''}`.replace(/^,\s*/, '').replace(/,\s*$/, '');
-            if (location) {
-              slide.addText(location, {
-                x: 0.5,
-                y: yPos,
-                w: 4,
-                h: lineHeight,
-                fontSize: contactSize,
-                color: '333333',
-                fontFace: 'Helvetica'
-              });
-              yPos += lineHeight;
-            }
-          }
-          if (props.contact.website) {
-            slide.addText(props.contact.website, {
-              x: 0.5,
-              y: yPos,
-              w: 4,
-              h: lineHeight,
-              fontSize: contactSize,
-              color: '333333',
+              align: 'center',
               fontFace: 'Helvetica'
             });
           }
