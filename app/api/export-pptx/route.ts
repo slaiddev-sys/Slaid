@@ -556,35 +556,9 @@ export async function POST(request: NextRequest) {
               background: white !important;
               overflow: visible !important;
             }
-            /* Excel layouts with data-chart-container need special handling */
+            /* Excel layouts - DON'T override position, let them stay where they are */
             [data-chart-container] {
-              width: 1920px !important;
-              height: 1080px !important;
-              transform: scale(2.18) !important;
-              transform-origin: top left !important;
-              position: absolute !important;
-              top: 0 !important;
-              left: 0 !important;
               background: white !important;
-              overflow: visible !important;
-              padding: 0 !important;
-              margin: 0 !important;
-            }
-            
-            /* Remove all padding from chart elements */
-            [data-chart-container],
-            [data-chart-container] > div,
-            [data-chart-container] * {
-              margin: 0 !important;
-              padding: 0 !important;
-            }
-            
-            /* Ensure recharts container fills space */
-            .recharts-responsive-container {
-              width: 100% !important;
-              height: 100% !important;
-              padding: 0 !important;
-              margin: 0 !important;
             }
             /* Scale the inner content properly */
             .slide-content > div {
