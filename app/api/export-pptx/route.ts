@@ -304,20 +304,105 @@ function addTextOverlays(slide: any, slideData: any) {
         }
         break;
         
-      // Back cover
+      // Back cover - Match actual back cover design (left-aligned, larger font)
       case 'BackCover_ThankYouWithImage':
       case 'ExcelBackCover_Responsive':
-        slide.addText('Thank You', {
-          x: 1,
-          y: 2.5,
-          w: 8,
-          h: 1,
-          fontSize: 48,
-          bold: true,
-          color: '1a1a1a',
-          align: 'center',
-          fontFace: 'Helvetica'
-        });
+      case 'BackCover_ThankYou':
+        if (props.title) {
+          slide.addText(props.title, {
+            x: 0.5,
+            y: 1.2,
+            w: 4.5,
+            h: 0.8,
+            fontSize: 60,
+            bold: false,
+            color: '1a1a1a',
+            align: 'left',
+            fontFace: 'Helvetica',
+            valign: 'top'
+          });
+        }
+        // Add contact info if available
+        if (props.contact) {
+          let yPos = 2.5;
+          const contactSize = 12;
+          const lineHeight = 0.25;
+          
+          if (props.contact.email) {
+            slide.addText(props.contact.email, {
+              x: 0.5,
+              y: yPos,
+              w: 4,
+              h: lineHeight,
+              fontSize: contactSize,
+              color: '333333',
+              fontFace: 'Helvetica'
+            });
+            yPos += lineHeight;
+          }
+          if (props.contact.social) {
+            slide.addText(props.contact.social, {
+              x: 0.5,
+              y: yPos,
+              w: 4,
+              h: lineHeight,
+              fontSize: contactSize,
+              color: '333333',
+              fontFace: 'Helvetica'
+            });
+            yPos += lineHeight;
+          }
+          if (props.contact.phone) {
+            slide.addText(props.contact.phone, {
+              x: 0.5,
+              y: yPos,
+              w: 4,
+              h: lineHeight,
+              fontSize: contactSize,
+              color: '333333',
+              fontFace: 'Helvetica'
+            });
+            yPos += lineHeight;
+          }
+          if (props.contact.phone2) {
+            slide.addText(props.contact.phone2, {
+              x: 0.5,
+              y: yPos,
+              w: 4,
+              h: lineHeight,
+              fontSize: contactSize,
+              color: '333333',
+              fontFace: 'Helvetica'
+            });
+            yPos += lineHeight;
+          }
+          if (props.contact.location) {
+            const location = `${props.contact.location.city || ''}, ${props.contact.location.country || ''}`.replace(/^,\s*/, '').replace(/,\s*$/, '');
+            if (location) {
+              slide.addText(location, {
+                x: 0.5,
+                y: yPos,
+                w: 4,
+                h: lineHeight,
+                fontSize: contactSize,
+                color: '333333',
+                fontFace: 'Helvetica'
+              });
+              yPos += lineHeight;
+            }
+          }
+          if (props.contact.website) {
+            slide.addText(props.contact.website, {
+              x: 0.5,
+              y: yPos,
+              w: 4,
+              h: lineHeight,
+              fontSize: contactSize,
+              color: '333333',
+              fontFace: 'Helvetica'
+            });
+          }
+        }
         break;
     }
   });
