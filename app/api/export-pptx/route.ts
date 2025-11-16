@@ -446,8 +446,8 @@ export async function POST(request: NextRequest) {
       deviceScaleFactor: 2
     });
 
-    // Array to store slide images with their chart positions
-    const slideImages: Array<{ image: string; chartPosition: { x: number; y: number; width: number; height: number } | null }> = [];
+    // Array to store slide images
+    const slideImages: string[] = [];
 
     // Render each slide (using same logic as PDF export)
     for (let i = 0; i < slides.length; i++) {
@@ -550,22 +550,6 @@ export async function POST(request: NextRequest) {
         console.log(`📸 Waiting ${waitTime}ms for final rendering on slide ${i + 1}`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
 
-        // Get chart container position BEFORE hiding elements
-        const chartPosition = await page.evaluate(() => {
-          const chartContainer = document.querySelector('[data-chart-container]');
-          if (!chartContainer) return null;
-          
-          const rect = chartContainer.getBoundingClientRect();
-          return {
-            x: rect.x,
-            y: rect.y,
-            width: rect.width,
-            height: rect.height
-          };
-        });
-        
-        console.log(`📊 Chart position for slide ${i + 1}:`, chartPosition);
-
         // Hide UI elements, ALL TEXT, and scale properly - only capture charts
         await page.addStyleTag({
           content: `
@@ -654,29 +638,16 @@ export async function POST(request: NextRequest) {
             .slide-content {
               width: 1920px !important;
               height: 1080px !important;
-              transform: scale(2.18) !important;
-              transform-origin: top left !important;
-              position: absolute !important;
+              transform: none !important;
+              position: relative !important;
               top: 0 !important;
               left: 0 !important;
               background: white !important;
               overflow: visible !important;
             }
-            /* Excel layouts - DON'T override position, let them stay where they are */
+            /* DON'T override chart container position - let it stay where it naturally is */
             [data-chart-container] {
               background: white !important;
-            }
-            /* Scale the inner content properly */
-            .slide-content > div {
-              width: 881px !important;
-              height: 495px !important;
-              position: relative !important;
-              transform: none !important;
-            }
-            /* Excel layouts maintain their native dimensions */
-            [data-chart-container] > div {
-              position: relative !important;
-              transform: none !important;
             }
             /* Chart quality */
             svg {
@@ -693,38 +664,20 @@ export async function POST(request: NextRequest) {
           `
         });
 
-        // Capture ONLY the chart container element if it exists
-        let screenshot;
-        const chartContainer = await page.$('[data-chart-container]');
-        
-        if (chartContainer && chartPosition) {
-          // Capture only the chart element
-          console.log(`📸 Capturing chart element for slide ${i + 1}`);
-          screenshot = await chartContainer.screenshot({
-            type: 'png',
-            omitBackground: false,
-            encoding: 'base64'
-          });
-        } else {
-          // No chart, capture full slide (for cover/back cover/text slides)
-          console.log(`📸 Capturing full slide ${i + 1} (no chart)`);
-          screenshot = await page.screenshot({
-            type: 'png',
-            fullPage: false,
-            omitBackground: false,
-            encoding: 'base64'
-          });
-        }
-
-        slideImages.push({
-          image: `data:image/png;base64,${screenshot}`,
-          chartPosition: chartPosition
+        // Take screenshot of full slide (charts positioned correctly)
+        const screenshot = await page.screenshot({
+          type: 'png',
+          fullPage: false,
+          omitBackground: false,
+          encoding: 'base64'
         });
+
+        slideImages.push(`data:image/png;base64,${screenshot}`);
         console.log(`✅ Captured slide ${i + 1}`);
       } catch (error) {
         console.error(`❌ Error capturing slide ${i + 1}:`, error);
         // Add a blank slide on error
-        slideImages.push({ image: '', chartPosition: null });
+        slideImages.push('');
       }
     }
 
@@ -748,41 +701,16 @@ export async function POST(request: NextRequest) {
     for (let i = 0; i < slideImages.length; i++) {
       const slide = pptx.addSlide();
       const slideData = slides[i];
-      const slideImageData = slideImages[i];
       
-      if (slideImageData && slideImageData.image) {
-        if (slideImageData.chartPosition) {
-          // Chart slide - position the chart image at its actual location
-          // Convert pixels to inches (1920x1080 viewport = 10x5.625 inches)
-          const xInches = (slideImageData.chartPosition.x / 1920) * 10;
-          const yInches = (slideImageData.chartPosition.y / 1080) * 5.625;
-          const wInches = (slideImageData.chartPosition.width / 1920) * 10;
-          const hInches = (slideImageData.chartPosition.height / 1080) * 5.625;
-          
-          console.log(`📊 Placing chart for slide ${i + 1} at:`, {
-            x: xInches,
-            y: yInches,
-            w: wInches,
-            h: hInches
-          });
-          
-          slide.addImage({
-            data: slideImageData.image,
-            x: xInches,
-            y: yInches,
-            w: wInches,
-            h: hInches
-          });
-        } else {
-          // Non-chart slide - full slide image
-          slide.addImage({
-            data: slideImageData.image,
-            x: 0,
-            y: 0,
-            w: 10,
-            h: 5.625
-          });
-        }
+      if (slideImages[i]) {
+        // Add the full slide image (charts only, no text) - no scaling or repositioning
+        slide.addImage({
+          data: slideImages[i],
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 5.625
+        });
         
         // Add editable text overlays on top
         addTextOverlays(slide, slideData);
