@@ -4047,7 +4047,7 @@ export default function EditorPage() {
         </div>
       )}
       {/* Sidebar */}
-      <aside className={`flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarCollapsed ? "w-14" : "w-[300px]"}`}>
+      <aside className={`flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarCollapsed ? "w-14" : "w-[300px]"} hidden md:flex`}>
         {sidebarCollapsed ? (
           <>
             {/* Top: sidebar toggle icon (points left) */}
@@ -4527,7 +4527,7 @@ export default function EditorPage() {
         )}
       </aside>
       {/* Main content: chat + slide preview */}
-      <main className="flex-1 flex flex-row h-screen">
+      <main className="flex-1 flex flex-col md:flex-row h-screen w-full overflow-hidden">
         {/* Chat/editor column - Hide during onboarding */}
         {!showOnboarding && (
           <section className="hidden w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
@@ -7298,27 +7298,28 @@ export default function EditorPage() {
           </section>
         ) : (
           /* Normal Slide preview column */
-          <section className="flex-1 flex flex-col h-full bg-white">
+          <section className="flex-1 flex flex-col h-full bg-white overflow-hidden">
           {/* Top bar */}
-          <div className="bg-[#F9FAFB] border-b border-gray-200 px-8 py-4 flex justify-end">
-            <div className="flex gap-3">
+          <div className="bg-[#F9FAFB] border-b border-gray-200 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 flex justify-end items-center">
+            <div className="flex gap-2 sm:gap-3 flex-wrap">
               {/* Edit in... button */}
-              <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition border border-gray-200" onClick={() => {
+              <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 setShowEditInModal(true);
               }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-600">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-gray-600 sm:w-4 sm:h-4">
                   <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>Edit in...</span>
-                <div className="flex items-center gap-1 ml-1">
+                <span className="hidden sm:inline">Edit in...</span>
+                <span className="sm:hidden">Edit</span>
+                <div className="hidden sm:flex items-center gap-1 ml-1">
                   {/* Google Slides icon */}
                   <img src="/google-slide.png" alt="Google Slides" className="w-5 h-5 object-contain" />
                   {/* PowerPoint icon */}
                   <img src="/power-point.png" alt="PowerPoint" className="w-5 h-5 object-contain" />
                 </div>
               </button>
-              <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition border border-gray-200" onClick={() => {
+              <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // Check if user has Pro plan for Preview feature
                 if (credits?.plan_type === 'free') {
                   setShowPricingModal(true);
@@ -7326,13 +7327,14 @@ export default function EditorPage() {
                   setShowFullscreenPreview(true);
                 }
               }}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-black">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-black sm:w-4 sm:h-4">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>Preview</span>
+                <span className="hidden sm:inline">Preview</span>
+                <span className="sm:hidden">View</span>
               </button>
-              <button className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium text-sm transition border border-gray-200" onClick={() => {
+              <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // Check if user has Pro plan for Export feature
                 if (credits?.plan_type === 'free') {
                   setShowPricingModal(true);
@@ -7340,35 +7342,56 @@ export default function EditorPage() {
                   setShowExportModal(true);
                 }
               }}>
-                <img src="/export-icon.png" alt="Export" className="w-4 h-4 object-contain" />
+                <img src="/export-icon.png" alt="Export" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
                 <span>Export</span>
               </button>
             </div>
           </div>
           {/* Slide content area */}
-          <div className="flex-1 flex flex-col px-4 md:px-8 py-6 bg-[#f9fafb] overflow-y-auto">
-            <div className="flex flex-col items-center gap-6 bg-[#f9fafb]">
+          <div className="flex-1 flex flex-col px-2 sm:px-3 md:px-4 lg:px-8 py-4 md:py-6 bg-[#f9fafb] overflow-y-auto">
+            <div className="flex flex-col items-center gap-4 md:gap-6 bg-[#f9fafb] w-full">
               {slides.map((slide: any, slideIndex: number) => (
                               <div
                   key={`slide-${slideIndex}`}
-                  className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200"
+                  className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full max-w-full"
           style={{
-                    width: sidebarCollapsed ? '1200px' : '1000px',
-                    height: sidebarCollapsed ? '675px' : '563px',
-            transition: 'width 300ms ease-in-out, height 300ms ease-in-out'
+                    width: 'min(100%, ' + (sidebarCollapsed ? '1200px' : '1000px') + ')',
+                    aspectRatio: '16 / 9',
+            transition: 'width 300ms ease-in-out'
           }}
         >
           <div 
-            className="slide-content"
+            className="slide-content w-full h-full"
             style={{
-                      transform: sidebarCollapsed ? 'scale(1.36)' : 'scale(1.135)',
-              transformOrigin: 'center center',
-              width: '881px',
-              height: '495px',
-              transition: 'transform 300ms ease-in-out'
+                      transformOrigin: 'center center',
+              position: 'absolute',
+              inset: 0
                     }}
                   >
-                    {renderSlideContent(slideIndex)}
+                    <div 
+                      style={{
+                        width: '881px',
+                        height: '495px',
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%) scale(var(--slide-scale, 1))',
+                        transformOrigin: 'center center'
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          const container = el.parentElement;
+                          if (container) {
+                            const scaleX = container.clientWidth / 881;
+                            const scaleY = container.clientHeight / 495;
+                            const scale = Math.min(scaleX, scaleY, sidebarCollapsed ? 1.36 : 1.135);
+                            el.style.setProperty('--slide-scale', scale.toString());
+                          }
+                        }
+                      }}
+                    >
+                      {renderSlideContent(slideIndex)}
+                    </div>
                         </div>
                       </div>
               ))}
