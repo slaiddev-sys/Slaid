@@ -203,14 +203,14 @@ export default function Component1920WLight() {
       <div className="absolute inset-0 bg-white opacity-70 z-0"></div>
       
       {/* Navigation Bar - Logo and Auth Buttons */}
-      <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-3 xs:py-4 sm:py-6 lg:py-8 w-full">
-        <div className="bg-center bg-contain bg-no-repeat h-[24px] xs:h-[28px] sm:h-[32px] md:h-[36px] shrink-0 w-[75px] xs:w-[90px] sm:w-[105px] md:w-[120px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
+      <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 w-full">
+        <div className="bg-center bg-contain bg-no-repeat h-[32px] sm:h-[36px] md:h-[40px] shrink-0 w-[100px] sm:w-[115px] md:w-[130px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
         
         {/* Auth Buttons */}
-        <div className="flex items-center gap-2 xs:gap-3 sm:gap-4">
+        <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
           <a
             href="/login"
-            className="text-xs xs:text-sm sm:text-base font-medium px-3 xs:px-4 sm:px-6 py-1.5 xs:py-2 rounded-full transition-colors whitespace-nowrap"
+            className="text-sm sm:text-base font-medium px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full transition-colors whitespace-nowrap active:bg-gray-100 touch-manipulation"
             style={{ color: '#002903' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
@@ -219,7 +219,7 @@ export default function Component1920WLight() {
           </a>
           <a
             href="/signup"
-            className="text-xs xs:text-sm sm:text-base font-medium text-white px-3 xs:px-4 sm:px-6 py-1.5 xs:py-2 rounded-full transition-colors whitespace-nowrap"
+            className="text-sm sm:text-base font-medium text-white px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full transition-colors whitespace-nowrap active:opacity-90 touch-manipulation"
             style={{ backgroundColor: '#002903' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
@@ -229,37 +229,37 @@ export default function Component1920WLight() {
         </div>
       </div>
       {/* Main Content: left-aligned layout */}
-      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-3 xs:px-4 sm:px-6 lg:px-8 pt-8 xs:pt-12 sm:pt-16 md:pt-20 lg:pt-28 xl:pt-32 pb-8 xs:pb-12 sm:pb-16 max-w-6xl 2xl:max-w-7xl mx-auto">
+      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-12 md:pt-16 lg:pt-24 xl:pt-32 pb-8 sm:pb-12 md:pb-16 max-w-6xl 2xl:max-w-7xl mx-auto">
         {/* Main Content Row - Title and Demo Video */}
-        <div className="flex flex-col lg:flex-row gap-6 xs:gap-8 sm:gap-10 md:gap-12 lg:gap-5 xl:gap-6 items-start justify-between w-full">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-10 lg:gap-5 xl:gap-6 items-start justify-between w-full">
           {/* Left Side - Title and Description */}
           <div className="flex-shrink-0 w-full lg:w-[28%] xl:w-[30%]">
             {/* Heading */}
-            <h1 className="font-helvetica-neue text-[1.5rem] xs:text-[1.75rem] sm:text-[2rem] md:text-[2.5rem] lg:text-[2.75rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] xs:leading-[1.2] sm:leading-tight mb-3 xs:mb-4 md:mb-5 text-left tracking-tighter" style={{ color: '#002903' }}>
-              Convert data to professional<br className="hidden xs:inline" /><span className="xs:hidden"> </span>reports
+            <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-4 md:mb-5 text-left tracking-tighter" style={{ color: '#002903' }}>
+              Convert data to professional<br className="hidden sm:inline" /><span className="sm:hidden"> </span>reports
             </h1>
             {/* Subheading */}
-            <p className="max-w-full text-left text-[13px] xs:text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-3 xs:mb-4 md:mb-5 leading-relaxed" style={{ color: '#002903' }}>
-              Unlock the potential of your Excel data<br className="hidden sm:inline" /> with our AI-powered storytelling and presentation generator.
+            <p className="max-w-full text-left text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-5 md:mb-6 leading-relaxed" style={{ color: '#002903' }}>
+              Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.
             </p>
             
             {/* File Upload - Redirects to Login */}
             <div 
-              className="w-full max-w-sm cursor-pointer"
+              className="w-full max-w-sm cursor-pointer touch-manipulation"
               onClick={() => router.push('/login')}
             >
-              <div className="border-2 border-dashed rounded-lg p-5 py-4 text-center transition-all duration-200 bg-gray-50 hover:opacity-90" style={{ borderColor: '#002903' }}>
-                <div className="flex items-center justify-center gap-4">
+              <div className="border-2 border-dashed rounded-lg p-4 sm:p-5 text-center transition-all duration-200 bg-gray-50 hover:opacity-90 active:opacity-80" style={{ borderColor: '#002903' }}>
+                <div className="flex items-center justify-center gap-3 sm:gap-4">
                   <img 
                     src="/xls-icon.png" 
                     alt="Upload folder" 
-                    className="h-12 w-12 object-contain flex-shrink-0"
+                    className="h-10 sm:h-12 w-10 sm:w-12 object-contain flex-shrink-0"
                   />
                   <div className="text-left">
-                    <p className="text-sm font-semibold mb-1" style={{ color: '#002903' }}>
+                    <p className="text-sm sm:text-base font-semibold mb-0.5 sm:mb-1" style={{ color: '#002903' }}>
                       Upload files
                     </p>
-                    <p className="text-xs" style={{ color: '#002903' }}>
+                    <p className="text-xs sm:text-sm" style={{ color: '#002903' }}>
                       Drag and drop or click to select files
                     </p>
                   </div>
@@ -269,9 +269,9 @@ export default function Component1920WLight() {
           </div>
           
           {/* Right Side - Demo Video (Sticky on large screens) */}
-          <div className="relative w-full lg:w-[68%] xl:w-[66%] mt-2 xs:mt-4 sm:mt-6 md:mt-8 lg:mt-0 lg:sticky lg:top-8">
+          <div className="relative w-full lg:w-[68%] xl:w-[66%] mt-6 sm:mt-8 lg:mt-0 lg:sticky lg:top-8">
             <video 
-              className="w-full h-auto rounded-xl xs:rounded-2xl md:rounded-3xl shadow-lg xs:shadow-xl lg:shadow-2xl"
+              className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl"
               controls
               autoPlay
               muted
