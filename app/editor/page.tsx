@@ -418,7 +418,13 @@ export default function EditorPage() {
       
     } catch (err) {
       console.error('Upload error:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Upload failed';
+      let errorMessage = err instanceof Error ? err.message : 'Upload failed';
+      
+      // If it's a JSON parsing error, it's likely because the file is too large
+      if (errorMessage.includes('JSON') || errorMessage.includes('Unexpected token') || errorMessage.includes('is not valid')) {
+        errorMessage = 'File too big. Please reduce the number of rows or columns and try again.';
+      }
+      
       setUploadError(errorMessage);
     } finally {
       setIsUploading(false);
@@ -464,7 +470,14 @@ export default function EditorPage() {
       setOnboardingStep(2);
       
     } catch (err) {
-      setUploadError(err instanceof Error ? err.message : 'Analysis failed');
+      let errorMessage = err instanceof Error ? err.message : 'Analysis failed';
+      
+      // If it's a JSON parsing error, it's likely because the file is too large
+      if (errorMessage.includes('JSON') || errorMessage.includes('Unexpected token') || errorMessage.includes('is not valid')) {
+        errorMessage = 'File too big. Please reduce the number of rows or columns and try again.';
+      }
+      
+      setUploadError(errorMessage);
     } finally {
       setIsAnalyzing(false);
     }
