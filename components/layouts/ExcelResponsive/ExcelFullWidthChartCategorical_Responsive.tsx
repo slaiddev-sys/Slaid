@@ -48,7 +48,7 @@ const ExcelFullWidthChartCategorical_Responsive: React.FC<ExcelFullWidthChartCat
   const padding = `${24 * scaleFactor}px`;
   const paddingTop = `${48 * scaleFactor}px`;
   const titleFontSize = `${24 * scaleFactor}px`;
-  const descriptionFontSize = `${12 * scaleFactor}px`;
+  const descriptionFontSize = `${16 * scaleFactor}px`;
   const marginBottom = `${24 * scaleFactor}px`;
   const marginLeft = `${24 * scaleFactor}px`;
   const maxDescriptionWidth = `${448 * scaleFactor}px`;
