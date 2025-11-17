@@ -157,14 +157,6 @@ export default function EditorPage() {
     };
   }, [refreshCredits]);
 
-  // Handle credit errors - show pricing modal when credits fail to load or are insufficient
-  useEffect(() => {
-    if (creditsError && !creditsLoading) {
-      console.error('💳 Credits error detected:', creditsError);
-      setShowPricingModal(true);
-    }
-  }, [creditsError, creditsLoading]);
-
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
@@ -7024,13 +7016,35 @@ export default function EditorPage() {
                 {/* Title */}
                 <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">¿How many slides do you want?</h2>
 
+                {/* Current Credits Display */}
+                <div className="text-center mb-6">
+                  <p className="text-sm text-gray-600">
+                    You have <span className="font-semibold text-[#002903]">{credits?.credits || 0} credits</span> available
+                  </p>
+                </div>
+
                 {/* Slide Count Selection Buttons */}
-                <div className="flex flex-wrap justify-center gap-4">
-                  {['Less than 5', '6-10', '11-15', '16-20', 'More than 20'].map((option) => (
+                <div className="flex flex-wrap justify-center gap-4 mb-6">
+                  {['Less than 5', '6-10', '11-15', '16-20', 'More than 20'].map((option) => {
+                    // Estimate credits needed (rough estimate: ~2-3 credits per slide)
+                    const slideCount = getSlideCountNumber(option);
+                    const estimatedCredits = Math.ceil(slideCount * 2.5);
+                    const canAfford = (credits?.credits || 0) >= estimatedCredits;
+                    
+                    return (
                     <button 
                       key={option}
-                      className="px-6 py-3 bg-white border-2 border-gray-200 rounded-full text-gray-700 hover:border-[#002903] hover:text-[#002903] font-medium transition"
+                      className={`px-6 py-3 border-2 rounded-full font-medium transition flex flex-col items-center ${
+                        canAfford 
+                          ? 'bg-white border-gray-200 text-gray-700 hover:border-[#002903] hover:text-[#002903]' 
+                          : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
+                      }`}
+                      disabled={!canAfford}
                       onClick={async () => {
+                        if (!canAfford) {
+                          setShowPricingModal(true);
+                          return;
+                        }
                         // Validate all required fields FIRST
                         if (!uploadResult || !presentationPrompt.trim()) {
                           console.error('❌ Missing required fields:', {
@@ -7197,10 +7211,27 @@ export default function EditorPage() {
                         }
                       }}
                     >
-                      {option}
+                      <span>{option}</span>
+                      <span className={`text-xs mt-1 ${canAfford ? 'text-gray-500' : 'text-gray-400'}`}>
+                        ~{estimatedCredits} credits
+                      </span>
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
+                
+                {/* Upgrade Button if user can't afford any option */}
+                {(credits?.credits || 0) < 13 && (
+                  <div className="text-center mt-6">
+                    <p className="text-sm text-gray-600 mb-3">Need more credits?</p>
+                    <button
+                      onClick={() => setShowPricingModal(true)}
+                      className="px-6 py-3 bg-[#002903] hover:bg-[#001a02] text-white rounded-full font-medium transition"
+                    >
+                      Upgrade Plan
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 
