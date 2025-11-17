@@ -7018,7 +7018,7 @@ export default function EditorPage() {
                 <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">¿How many slides do you want?</h2>
 
                 {/* Slide Count Selection Buttons */}
-                <div className="flex flex-wrap justify-center gap-4 mb-6">
+                <div className="flex justify-center gap-3 mb-6">
                   {['Less than 5', '6-10', '11-15', '16-20', 'More than 20'].map((option) => {
                     // Estimate credits needed (backend only - not shown to user)
                     const slideCount = getSlideCountNumber(option);
@@ -7028,7 +7028,7 @@ export default function EditorPage() {
                     return (
                     <button 
                       key={option}
-                      className={`px-6 py-3 border-2 rounded-full font-medium transition flex flex-col items-center gap-0.5 ${
+                      className={`px-4 py-3 border-2 rounded-full font-medium transition flex flex-col items-center gap-0.5 whitespace-nowrap ${
                         canAfford 
                           ? 'bg-white border-gray-200 text-gray-700 hover:border-[#002903] hover:text-[#002903]' 
                           : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
