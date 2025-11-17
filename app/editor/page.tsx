@@ -2033,10 +2033,14 @@ export default function EditorPage() {
 
     const propsToPass = block.props || {};
     
-    // Add fixed dimensions for consistent canvas sizing
+    // Add adaptive dimensions based on sidebar state
+    // When sidebar is collapsed, use larger canvas for better visibility
+    const baseWidth = sidebarCollapsed ? 1280 : 881;
+    const baseHeight = sidebarCollapsed ? 720 : 495;
+    
     propsToPass.useFixedDimensions = true;
-    propsToPass.canvasWidth = 881;
-    propsToPass.canvasHeight = 495;
+    propsToPass.canvasWidth = baseWidth;
+    propsToPass.canvasHeight = baseHeight;
     
     // 🔧 DISABLE ANIMATIONS IN EXPORT MODE FOR PROPER PDF RENDERING
     if (isExportMode) {
