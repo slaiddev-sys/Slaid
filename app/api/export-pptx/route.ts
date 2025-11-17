@@ -697,26 +697,25 @@ export async function POST(request: NextRequest) {
               display: none !important;
             }
             
-            /* Make text transparent but keep layout - text still takes up space */
-            h1, h2, h3, h4, h5, h6, p, a, li, ul, ol {
+            /* Make ALL text transparent but keep layout - text still takes up space */
+            h1, h2, h3, h4, h5, h6, p, a, li, ul, ol, span, div {
               color: transparent !important;
-              opacity: 0 !important;
             }
             
-            /* Make text in non-chart divs transparent */
-            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h1,
-            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h2,
-            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h3,
-            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h4,
-            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h5,
-            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h6,
-            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > p,
-            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > span {
+            /* Make text inside chart containers transparent too (but not chart elements) */
+            [data-chart-container] h1,
+            [data-chart-container] h2,
+            [data-chart-container] h3,
+            [data-chart-container] h4,
+            [data-chart-container] h5,
+            [data-chart-container] h6,
+            [data-chart-container] p,
+            [data-chart-container] span:not(.recharts-legend-wrapper span):not(svg span),
+            [data-chart-container] div:not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) {
               color: transparent !important;
-              opacity: 0 !important;
             }
             
-            /* Keep chart containers visible */
+            /* Keep chart containers and elements visible with proper colors */
             [data-chart-container],
             [data-chart-container] > div,
             .recharts-responsive-container,
@@ -731,6 +730,14 @@ export async function POST(request: NextRequest) {
             svg * {
               visibility: visible !important;
               opacity: 1 !important;
+            }
+            
+            /* Restore color for chart legend text */
+            .recharts-legend-wrapper span,
+            .recharts-legend-wrapper text,
+            svg text {
+              color: inherit !important;
+              fill: inherit !important;
             }
             
             body { 
