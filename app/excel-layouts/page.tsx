@@ -1190,90 +1190,6 @@ const ExcelComparisonLayout: React.FC<ExcelComparisonLayoutProps> = ({ title = "
 };
 
 
-// Foundation AI Models Layout - Based on attached image design
-interface ExcelFoundationAIProps {
-  title?: string;
-}
-
-const ExcelFoundationAI: React.FC<ExcelFoundationAIProps> = ({ title = "Foundation AI Models" }) => {
-  return (
-    <div className="w-full h-full bg-white border-2 border-gray-200 rounded-lg p-8" style={{ aspectRatio: '16/9', fontFamily: 'Helvetica, Arial, sans-serif' }}>
-      <div className="flex h-full gap-8">
-        {/* Left Side - Title and Description */}
-        <div className="w-1/3 flex flex-col justify-between">
-          {/* Title at top */}
-          <div>
-            <h1 className="text-2xl font-medium text-black leading-tight">{title}</h1>
-      </div>
-      
-          {/* Description at bottom */}
-          <div>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              Most of the world's top artificial intelligence has been trained on foundation models that can be adapted to a wide range of downstream tasks. During 2023, Most of the content in the industry focused on large language models and generative AI applications, but foundation models encompass much more than just text generation.
-            </p>
-          </div>
-      </div>
-      
-        {/* Middle - Two Metrics at Top and Bottom */}
-        <div className="w-1/4 flex flex-col justify-between h-full">
-          {/* 42% Stat - Top */}
-          <div className="text-left">
-            <div className="text-9xl font-light text-black mb-2">42<span className="text-5xl">%</span></div>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              of organizations say they have deployed and are using one or more AI models.
-            </p>
-          </div>
-          
-          {/* 86% Stat - Bottom */}
-          <div className="text-left">
-            <div className="text-9xl font-light text-black mb-2">86<span className="text-5xl">%</span></div>
-            <p className="text-xs text-gray-600 leading-relaxed">
-              of the organizations that have deployed AI models report that they are seeing a positive ROI.
-            </p>
-          </div>
-        </div>
-        
-        {/* Right Side - Multi-series Bar Chart at Bottom */}
-        <div className="w-2/5 flex flex-col justify-end">
-          {/* ChartBlock Multi-Series Bar Chart */}
-          <div className="h-80">
-            <ChartBlock
-              type="bar"
-              labels={['Daily', 'Weekly', 'Monthly', 'Quarterly', 'Annually']}
-              series={[
-                { id: 'Operations', data: [85, 65, 45, 25, 15] },
-                { id: 'Analytics', data: [75, 55, 35, 20, 10] },
-                { id: 'Automation', data: [65, 45, 25, 15, 8] }
-              ]}
-              showLegend={false}
-              showGrid={true}
-              stacked={false}
-              animate={true}
-              className="w-full h-full bg-white"
-            />
-          </div>
-          
-          {/* Custom Tiny Legend Below Chart */}
-          <div className="flex justify-center gap-2 mt-1">
-            <div className="flex items-center gap-0.5">
-              <div className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: '#4A3AFF' }}></div>
-              <span className="text-xs text-gray-500">Ops</span>
-            </div>
-            <div className="flex items-center gap-0.5">
-              <div className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: '#C893FD' }}></div>
-              <span className="text-xs text-gray-500">Analytics</span>
-            </div>
-            <div className="flex items-center gap-0.5">
-              <div className="w-1.5 h-1.5 rounded-sm" style={{ backgroundColor: '#1e40af' }}></div>
-              <span className="text-xs text-gray-500">Auto</span>
-            </div>
-          </div>
-      </div>
-    </div>
-  </div>
-);
-};
-
 // Export buttons component
 interface ExportButtonsProps {
   layoutName: string;
@@ -1460,22 +1376,6 @@ const ExportButtons: React.FC<ExportButtonsProps> = ({ layoutName }) => {
           title: 'Executive summary',
           sectionNumber: '01',
           content: 'Latest feature releases and roadmap Latest feature releases and roadmap Latest feature releases and roadmap Latest feature releases and roadmap Latest feature releases and roadmap'
-        };
-      case 'Foundation AI Models':
-        return {
-          title: 'Foundation AI Models',
-          stats: [
-            { percentage: '42%', description: 'of organizations say they have deployed and are using one or more AI models.' },
-            { percentage: '86%', description: 'of the organizations that have deployed AI models report that they are seeing a positive ROI.' }
-          ],
-          content: 'Most of the world\'s top artificial intelligence has been trained on foundation models that can be adapted to a wide range of downstream tasks. During 2023, Most of the content in the industry focused on large language models and generative AI applications, but foundation models encompass much more than just text generation.',
-          chartData: [
-            { label: 'Daily', series1: 85, series2: 75, series3: 65 },
-            { label: 'Weekly', series1: 65, series2: 55, series3: 45 },
-            { label: 'Monthly', series1: 45, series2: 35, series3: 25 },
-            { label: 'Quarterly', series1: 25, series2: 20, series3: 15 },
-            { label: 'Annually', series1: 15, series2: 10, series3: 8 }
-          ]
         };
       default:
         return { title: layoutName };
@@ -1970,7 +1870,6 @@ const ExcelLayoutsPage: React.FC = () => {
       { id: 'fullwidth', name: 'Full Width Chart', component: ExcelFullWidthChart },
       { id: 'fullwidth-table', name: 'Chart with Data Table', component: ExcelFullWidthChartWithTable },
       { id: 'comparison', name: 'Comparison View', component: ExcelComparisonLayout },
-      { id: 'foundation-ai', name: 'Foundation AI Models', component: ExcelFoundationAI },
       { id: 'testimonial', name: 'Results Testimonial', component: ExcelTestimonial },
       { id: 'milestone', name: 'Milestone Achievement', component: ExcelMilestone }
     ],
