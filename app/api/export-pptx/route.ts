@@ -53,11 +53,92 @@ function addTextOverlays(slide: any, slideData: any) {
         }
         break;
         
-      // Chart slides with title and description
+      // KPI Dashboard with multiple cards
+      case 'ExcelKPIDashboard_Responsive':
+        if (props.title) {
+          slide.addText(props.title, {
+            x: 0.5,
+            y: 0.6,
+            w: 3,
+            h: 0.35,
+            fontSize: 18,
+            bold: false,
+            color: '1a1a1a',
+            fontFace: 'Helvetica',
+            valign: 'top'
+          });
+        }
+        if (props.description) {
+          slide.addText(props.description, {
+            x: 5,
+            y: 0.6,
+            w: 4.5,
+            h: 0.5,
+            fontSize: 10,
+            color: '666666',
+            fontFace: 'Helvetica',
+            valign: 'top'
+          });
+        }
+        // Add KPI cards (3 cards in a row)
+        if (props.kpiCards && Array.isArray(props.kpiCards)) {
+          const cardWidth = 3;
+          const cardStartX = 0.6;
+          const cardY = 1.5;
+          
+          props.kpiCards.forEach((card: any, index: number) => {
+            const xPos = cardStartX + (index * cardWidth);
+            
+            // Value
+            if (card.value) {
+              slide.addText(card.value, {
+                x: xPos,
+                y: cardY,
+                w: 2.5,
+                h: 0.4,
+                fontSize: 20,
+                bold: false,
+                color: '1a1a1a',
+                fontFace: 'Helvetica',
+                valign: 'top'
+              });
+            }
+            
+            // Label
+            if (card.label) {
+              slide.addText(card.label, {
+                x: xPos,
+                y: cardY + 0.45,
+                w: 2.5,
+                h: 0.3,
+                fontSize: 12,
+                color: '333333',
+                fontFace: 'Helvetica',
+                valign: 'top'
+              });
+            }
+            
+            // Subtitle
+            if (card.subtitle) {
+              slide.addText(card.subtitle, {
+                x: xPos,
+                y: cardY + 0.8,
+                w: 2.5,
+                h: 0.25,
+                fontSize: 10,
+                color: '16a34a',
+                fontFace: 'Helvetica',
+                valign: 'top'
+              });
+            }
+          });
+        }
+        break;
+        
+      // Other chart slides with title and description
       case 'ExcelFullWidthChart_Responsive':
       case 'ExcelFullWidthChartCategorical_Responsive':
       case 'ExcelFullWidthChartWithTable_Responsive':
-      case 'ExcelKPIDashboard_Responsive':
       case 'ExcelComparisonLayout_Responsive':
         if (props.title) {
           slide.addText(props.title, {
@@ -446,11 +527,11 @@ export async function POST(request: NextRequest) {
 
     const page = await browser.newPage();
     
-    // Set viewport to match slide dimensions (16:9 ratio)
+    // Set viewport to match slide dimensions (16:9 ratio, high resolution)
     await page.setViewport({ 
       width: 1920, 
       height: 1080,
-      deviceScaleFactor: 1
+      deviceScaleFactor: 2
     });
 
     // Array to store slide images with chart positions
@@ -677,17 +758,10 @@ export async function POST(request: NextRequest) {
               width: 881px !important;
               height: 495px !important;
               position: relative !important;
-              overflow: visible !important;
             }
-            /* Chart container maintains its position and shows all content including legends */
+            /* Chart container maintains its position */
             [data-chart-container] {
               background: white !important;
-              overflow: visible !important;
-              min-height: 100% !important;
-            }
-            /* Ensure legend wrapper is fully visible */
-            .recharts-legend-wrapper {
-              overflow: visible !important;
             }
             /* Chart quality */
             svg {
