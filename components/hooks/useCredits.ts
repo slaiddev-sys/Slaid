@@ -62,9 +62,9 @@ export function useCredits(): UseCreditsReturn {
         if (errorData.error?.includes('get_user_credits') || errorData.error?.includes('function') || response.status === 500 || response.status === 401) {
           console.warn('⚠️ Credit system not fully configured, using fallback credits. Status:', response.status, 'Error:', errorData.error)
           setCredits({
-            total_credits: 10,
+            total_credits: 100,
             used_credits: 0,
-            remaining_credits: 10,
+            remaining_credits: 100,
             plan_type: 'free',
             last_renewal_date: new Date().toISOString()
           })
@@ -95,9 +95,9 @@ export function useCredits(): UseCreditsReturn {
       // Use fallback credits on any error (including connection errors)
       console.warn('⚠️ Using fallback credits due to error')
       setCredits({
-        total_credits: 10,
+        total_credits: 100,
         used_credits: 0,
-        remaining_credits: 10,
+        remaining_credits: 100,
         plan_type: 'free',
         last_renewal_date: new Date().toISOString()
       })
