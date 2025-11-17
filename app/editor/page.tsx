@@ -7334,7 +7334,7 @@ export default function EditorPage() {
                 }
               }}>
                 <img src="/export-icon.png" alt="Export" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
-                <span>Export</span>
+                <span>Export to PDF</span>
               </button>
             </div>
           </div>
