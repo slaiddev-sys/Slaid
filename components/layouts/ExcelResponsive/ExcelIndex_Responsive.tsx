@@ -21,11 +21,32 @@ const ExcelIndex_Responsive: React.FC<ExcelIndexResponsiveProps> = ({
     { number: "05", title: "Customer Insights", description: "Voice of customer feedback and analysis" },
     { number: "06", title: "Next Steps", description: "Action items and follow-up tasks" }
   ],
-  canvasWidth = 1280,
-  canvasHeight = 720
+  canvasWidth,
+  canvasHeight
 }) => {
+  // Use container size if not provided, otherwise use provided dimensions
+  const [containerWidth, setContainerWidth] = React.useState(canvasWidth || 1280);
+  const [containerHeight, setContainerHeight] = React.useState(canvasHeight || 720);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!canvasWidth || !canvasHeight) {
+      const updateSize = () => {
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          setContainerWidth(rect.width);
+          setContainerHeight(rect.height);
+        }
+      };
+
+      updateSize();
+      window.addEventListener('resize', updateSize);
+      return () => window.removeEventListener('resize', updateSize);
+    }
+  }, [canvasWidth, canvasHeight]);
+
   // Calculate responsive scale factor
-  const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
+  const scaleFactor = Math.min(containerWidth / 1280, containerHeight / 720);
   
   // Responsive measurements
   const padding = `${32 * scaleFactor}px`;
@@ -43,13 +64,13 @@ const ExcelIndex_Responsive: React.FC<ExcelIndexResponsiveProps> = ({
 
   return (
     <div 
+      ref={containerRef}
       className="w-full h-full bg-white" 
       style={{ 
         aspectRatio: '16/9', 
         fontFamily: 'Helvetica, Arial, sans-serif',
         padding: padding,
-        width: `${canvasWidth}px`,
-        height: `${canvasHeight}px`
+        
       }}
     >
       {/* Title */}
