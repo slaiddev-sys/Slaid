@@ -6979,16 +6979,17 @@ export default function EditorPage() {
                   {/* Send Button */}
                   <button 
                     className="absolute bottom-4 right-4 w-8 h-8 bg-[#002903] hover:bg-[#002903]/90 rounded-full flex items-center justify-center transition disabled:opacity-50"
-                    onClick={handlePresentationPromptAnalysis}
-                    disabled={!presentationPrompt.trim() || isAnalyzingPrompt}
+                    onClick={() => {
+                      // Just move to step 3 - NO AI analysis yet (saves credits)
+                      if (presentationPrompt.trim()) {
+                        setOnboardingStep(3);
+                      }
+                    }}
+                    disabled={!presentationPrompt.trim()}
                   >
-                    {isAnalyzingPrompt ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    ) : (
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
                       <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
-                    )}
                   </button>
                 </div>
                 
