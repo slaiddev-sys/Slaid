@@ -6980,7 +6980,7 @@ export default function EditorPage() {
                 <div className="mb-8 relative">
                   <textarea
                     className="w-full h-40 p-4 pr-16 bg-[#f3f4f6] border-none rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#002903] focus:border-transparent placeholder-[#717182] text-[#002903]"
-                    placeholder="Briefly explain what your data is about and what you'd like to achieve"
+                    placeholder="Describe your dataset's origin and context — including its source, contents, and structure — and indicate what you aim to extract or visualize from it..."
                     style={{ fontSize: '16px' }}
                     value={presentationPrompt}
                     onChange={(e) => setPresentationPrompt(e.target.value)}
