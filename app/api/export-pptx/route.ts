@@ -446,11 +446,11 @@ export async function POST(request: NextRequest) {
 
     const page = await browser.newPage();
     
-    // Set viewport to match slide dimensions (16:9 ratio, high resolution)
+    // Set viewport to match slide dimensions (16:9 ratio)
     await page.setViewport({ 
       width: 1920, 
       height: 1080,
-      deviceScaleFactor: 2
+      deviceScaleFactor: 1
     });
 
     // Array to store slide images with chart positions
