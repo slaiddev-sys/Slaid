@@ -8,11 +8,12 @@ export const metadata: Metadata = {
   description: "Transform Data to Professional Reports",
   icons: {
     icon: [
-      { url: "/basic-plan.png?v=2", sizes: "any" },
-      { url: "/basic-plan.png?v=2", sizes: "32x32", type: "image/png" },
-      { url: "/basic-plan.png?v=2", sizes: "16x16", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/basic-plan.png", sizes: "32x32", type: "image/png" },
+      { url: "/basic-plan.png", sizes: "16x16", type: "image/png" },
     ],
-    apple: "/basic-plan.png?v=2",
+    shortcut: "/favicon.ico",
+    apple: "/basic-plan.png",
   },
 };
 
@@ -24,9 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Favicon with cache busting */}
-        <link rel="icon" type="image/png" href="/basic-plan.png?v=2" />
-        <link rel="shortcut icon" type="image/png" href="/basic-plan.png?v=2" />
+        {/* Favicon - using .ico for better browser compatibility */}
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/basic-plan.png" />
         {/* Direct Google Fonts import for better reliability */}
         <link
           href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600&family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Source+Serif+Pro:wght@400;600;700&family=Oswald:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=Lato:wght@300;400;700&family=Noto+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=Raleway:wght@300;400;500;600;700&family=DM+Serif+Display:wght@400&family=Cabin:wght@400;500;600;700&display=swap"
