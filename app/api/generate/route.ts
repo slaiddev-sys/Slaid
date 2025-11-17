@@ -493,9 +493,6 @@ AVAILABLE EXCEL LAYOUTS:
   
 - **ExcelResultsTestimonial_Responsive**: Results with testimonial
   Props: { title, results: [{metric, value}], testimonial: {quote, author} }
-  
-- **ExcelFoundationAI_Responsive**: Foundation/framework layout
-  Props: { title, pillars: [{title, description}] }
 
 📑 **SPECIAL LAYOUTS** (covers, endings, index):
 - **ExcelCenteredCover_Responsive**: Centered cover slide
@@ -683,7 +680,6 @@ const allowedLayouts = [
   'ExcelIndex_Responsive', 'ExcelTableOfContents_Responsive',
   'ExcelExperienceDrivenTwoRows_Responsive', 'ExcelExperienceFullText_Responsive',
   'ExcelHowItWorks_Responsive',
-  'ExcelFoundationAI_Responsive',
   'ExcelMilestone_Responsive',
   'ExcelResultsTestimonial_Responsive',
   'SectionSpace'

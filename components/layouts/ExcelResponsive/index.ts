@@ -23,7 +23,6 @@ export { default as ExcelComparisonLayout_Responsive } from './ExcelComparisonLa
 export { default as ExcelExperienceDrivenTwoRows_Responsive } from './ExcelExperienceDrivenTwoRows_Responsive';
 export { default as ExcelExperienceFullText_Responsive } from './ExcelExperienceFullText_Responsive';
 export { default as ExcelHowItWorks_Responsive } from './ExcelHowItWorks_Responsive';
-export { default as ExcelFoundationAI_Responsive } from './ExcelFoundationAI_Responsive';
 
 // Phase 5 - Milestone & Final Layouts
 export { default as ExcelMilestone_Responsive } from './ExcelMilestone_Responsive';

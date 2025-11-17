@@ -568,7 +568,6 @@ RULES:
    - **ExcelDataTable_Responsive** → Use ONLY ONCE (and ONLY if you have 8+ rows)
    - **ExcelMilestone_Responsive** → Use ONLY ONCE (10+ slide presentations only)
    - **ExcelResultsTestimonial_Responsive** → Use ONLY ONCE (10+ slide presentations only)
-   - **ExcelFoundationAI_Responsive** → Use ONLY ONCE (10+ slide presentations only)
    
    **COUNT BEFORE SUBMITTING - THIS IS MANDATORY:**
    Before you finalize the JSON, COUNT how many times you used each of these layouts.
@@ -765,10 +764,9 @@ RULES:
    - This layout is not implemented correctly and should not be used
    - If you need section transitions, use interpretation layouts instead
 20. **🚨 CRITICAL - KPI LAYOUTS PLACEMENT AND USAGE (see Rule #6 for usage limits) 🚨**
-   - For presentations with 10 or more slides, use these 3 KPI highlight layouts (see Rule #6 - each ONLY ONCE):
+   - For presentations with 10 or more slides, use these 2 KPI highlight layouts (see Rule #6 - each ONLY ONCE):
      * ExcelResultsTestimonial_Responsive - Highlights important results or key findings
      * ExcelMilestone_Responsive - Shows a key metric/achievement with description
-     * ExcelFoundationAI_Responsive - Displays AI/technology metrics and insights
    
    - **CRITICAL - PLACEMENT - KEEP THEM SEPARATED:**
      * ExcelMilestone_Responsive and ExcelResultsTestimonial_Responsive MUST be placed FAR APART
@@ -776,14 +774,12 @@ RULES:
      * **Recommended placement for 15+ slide presentations:**
        - ExcelMilestone_Responsive: Around the MIDDLE of the presentation (e.g., slide 7-9 of 15)
        - ExcelResultsTestimonial_Responsive: Near the END, but BEFORE ExcelExperienceFullText_Responsive (e.g., slide 12-13 of 15, with conclusions at 14)
-       - ExcelFoundationAI_Responsive: Can be placed flexibly, but not adjacent to the other two
      * **Example for 18 slides**: Milestone (slide 8-9), Results (slide 15-16), with Conclusions at slide 17
      * This creates better flow and prevents "KPI clustering"
    
    - **CRITICAL - Numeric values WITH appropriate suffixes:**
      * For ExcelMilestone_Responsive: milestoneValue should be NUMBER + SUFFIX (e.g., "484K", "2.5M", "1200")
      * For ExcelResultsTestimonial_Responsive: metrics value should be NUMBER + SUFFIX (e.g., "80%", "50K", "95")
-     * For ExcelFoundationAI_Responsive: metric values should be NUMBER + SUFFIX (e.g., "95%", "87K", "92M")
      * **ALWAYS include the appropriate suffix**: K (thousands), M (millions), % (percentage), or no suffix for absolute numbers
      * The layout will render the suffix in smaller font automatically
      * **Example formats:**
@@ -1447,7 +1443,6 @@ ${whichInterpretationLayouts}
   - ExcelDataTable_Responsive (only if 8+ rows)
   - ExcelMilestone_Responsive (10+ slides only)
   - ExcelResultsTestimonial_Responsive (10+ slides only)
-  - ExcelFoundationAI_Responsive (10+ slides only)
   
   ${totalBatches === 2 ? `
   🎯 BATCH-SPECIFIC ASSIGNMENT FOR 2-BATCH SYSTEM:
@@ -1461,12 +1456,10 @@ ${whichInterpretationLayouts}
   ❌ RESERVED FOR BATCH 2 (DO NOT USE):
   ❌ ExcelMilestone_Responsive (batch 2 will use this)
   ❌ ExcelResultsTestimonial_Responsive (batch 2 will use this)
-  ❌ ExcelFoundationAI_Responsive (batch 2 will use this)
   ❌ ExcelExperienceFullText_Responsive (batch 2 will use for conclusions)
   ` : `**YOUR BATCH (BATCH 2) - YOU CAN USE:**
   ✅ ExcelMilestone_Responsive (use around slide ${Math.floor((slideStart + slideEnd) / 2) - 2})
   ✅ ExcelResultsTestimonial_Responsive (use near end, around slide ${slideEnd - 3})
-  ✅ ExcelFoundationAI_Responsive (use flexibly in middle)
   ✅ ONE interpretation layout: ExcelHowItWorks OR ExcelExperienceDrivenTwoRows (whichever batch 1 DIDN'T use)
   ✅ ExcelExperienceFullText_Responsive (MANDATORY at slide ${slideEnd - 1} for conclusions)
   
@@ -1480,7 +1473,7 @@ ${whichInterpretationLayouts}
   - Distribute these 8 "use only once" layouts across all ${totalBatches} batches
   - Each batch should use approximately ${Math.floor(8 / totalBatches)}-${Math.ceil(8 / totalBatches)} of these layouts
   - ${batchNumber === 1 ? 'Use ExcelKPIDashboard and ExcelComparisonLayout in this batch' : ''}
-  - ${batchNumber === totalBatches ? 'Use ExcelMilestone, ExcelResultsTestimonial, ExcelFoundationAI in this batch' : ''}
+  - ${batchNumber === totalBatches ? 'Use ExcelMilestone, ExcelResultsTestimonial in this batch' : ''}
   - Assume other batches will use the remaining layouts
   `}
   
@@ -1493,7 +1486,7 @@ ${whichInterpretationLayouts}
     * ExcelComparisonLayout_Responsive, ExcelKPIDashboard_Responsive
     * ExcelHowItWorks_Responsive, ExcelExperienceDrivenTwoRows_Responsive
     * ExcelDataTable_Responsive, ExcelMilestone_Responsive
-    * ExcelResultsTestimonial_Responsive, ExcelFoundationAI_Responsive
+    * ExcelResultsTestimonial_Responsive
   `}
 
 🚨🚨🚨 FINAL REMINDER - NO DUPLICATE CONTENT 🚨🚨🚨

@@ -44,7 +44,6 @@ import {
   ExcelExperienceDrivenTwoRows_Responsive,
   ExcelExperienceFullText_Responsive,
   ExcelHowItWorks_Responsive,
-  ExcelFoundationAI_Responsive,
   ExcelMilestone_Responsive,
   ExcelResultsTestimonial_Responsive,
   ExcelBackCoverLeft_Responsive
@@ -1836,7 +1835,6 @@ export default function EditorPage() {
     ExcelExperienceDrivenTwoRows_Responsive,
     ExcelExperienceFullText_Responsive,
     ExcelHowItWorks_Responsive,
-    ExcelFoundationAI_Responsive,
     // Responsive Excel Layouts - Phase 5
     ExcelMilestone_Responsive,
     ExcelResultsTestimonial_Responsive,
