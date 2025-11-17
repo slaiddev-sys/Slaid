@@ -16,8 +16,8 @@ const ExcelMilestone_Responsive: React.FC<ExcelMilestoneResponsiveProps> = ({
   growth = "+32.85% vs last year",
   leftDescription = "Through strategic marketing initiatives and innovative product development, Quantum achieved remarkable growth by welcoming over 500 new clients, validating our position as a leading provider of quantum solutions.",
   rightDescription = "Our comprehensive approach to client acquisition and retention has resulted in sustained revenue growth and market expansion. The implementation of advanced analytics and customer feedback systems has optimized our service delivery.",
-  canvasWidth,
-  canvasHeight
+  canvasWidth = 1280,
+  canvasHeight = 720
 }) => {
   const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
   const isPositive = growth?.startsWith?.('+') || false;

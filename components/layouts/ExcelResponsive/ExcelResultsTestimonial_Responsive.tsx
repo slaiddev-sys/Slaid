@@ -21,8 +21,8 @@ const ExcelResultsTestimonial_Responsive: React.FC<ExcelResultsTestimonialRespon
     { value: "95%", growth: "+8% increase from last survey", description: "User satisfaction rate with the new platform." },
     { value: "3.2x", growth: "+45% boost since implementation", description: "Increase in team productivity and efficiency." }
   ],
-  canvasWidth,
-  canvasHeight
+  canvasWidth = 1280,
+  canvasHeight = 720
 }) => {
   const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
   

@@ -18,8 +18,8 @@ const ExcelBackCoverLeft_Responsive: React.FC<ExcelBackCoverLeftResponsiveProps>
   phone = "+1 (555) 123-4567",
   address = "123 Business Street, City, State 12345",
   website = "www.company.com",
-  canvasWidth,
-  canvasHeight
+  canvasWidth = 1280,
+  canvasHeight = 720
 }) => {
   const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
   

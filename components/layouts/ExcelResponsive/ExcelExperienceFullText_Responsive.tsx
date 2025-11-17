@@ -12,32 +12,11 @@ const ExcelExperienceFullText_Responsive: React.FC<ExcelExperienceFullTextRespon
   title = "Performance Overview",
   leftText = "At Twindo, we obsess every day over perfecting our software solution, taking the operational complexity out of renewable energy management. Many companies have tried and failed to build their own software—it's a challenging endeavor that requires deep technical expertise and significant resources. Our dedicated team continuously refines and optimizes every aspect of our platform for maximum efficiency, ensuring that complex technical requirements don't become barriers to success.\n\nTwindo provides smart, user-friendly software specifically developed to streamline renewable energy operations. Our intuitive interface and automated workflows reduce complexity while maintaining powerful functionality. Managing renewable energy operations is complex, but it shouldn't be a burden. We simplify operational challenges through intelligent automation and comprehensive monitoring tools, allowing organizations to focus on what matters most—sustainable energy production and growth.",
   rightText = "The renewable energy sector demands precision, reliability, and scalability in every operational aspect. Traditional approaches often fall short when dealing with the dynamic nature of renewable resources and the complexity of modern energy systems. Our comprehensive platform addresses these challenges by providing real-time monitoring, predictive analytics, and automated decision-making capabilities that adapt to changing conditions and optimize performance continuously.\n\nThrough years of industry experience and close collaboration with energy professionals, we've developed solutions that not only meet current operational needs but also anticipate future challenges. Our commitment to innovation ensures that clients benefit from cutting-edge technology while maintaining the stability and reliability essential for critical energy infrastructure. This approach has enabled organizations worldwide to achieve unprecedented levels of operational efficiency and sustainable growth.",
-  canvasWidth,
-  canvasHeight
+  canvasWidth = 1280,
+  canvasHeight = 720
 }) => {
-  // Use container size if not provided, otherwise use provided dimensions
-  const [containerWidth, setContainerWidth] = React.useState(canvasWidth || 1280);
-  const [containerHeight, setContainerHeight] = React.useState(canvasHeight || 720);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (!canvasWidth || !canvasHeight) {
-      const updateSize = () => {
-        if (containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          setContainerWidth(rect.width);
-          setContainerHeight(rect.height);
-        }
-      };
-
-      updateSize();
-      window.addEventListener('resize', updateSize);
-      return () => window.removeEventListener('resize', updateSize);
-    }
-  }, [canvasWidth, canvasHeight]);
-
   // Calculate responsive scale factor
-  const scaleFactor = Math.min(containerWidth / 1280, containerHeight / 720);
+  const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
   
   // Responsive measurements
   const padding = `${24 * scaleFactor}px`;
@@ -54,14 +33,14 @@ const ExcelExperienceFullText_Responsive: React.FC<ExcelExperienceFullTextRespon
 
   return (
     <div 
-      ref={containerRef}
       className="w-full h-full bg-white" 
       style={{ 
         aspectRatio: '16/9', 
         fontFamily: 'Helvetica, Arial, sans-serif',
         padding: padding,
         paddingTop: paddingTop,
-        
+        width: `${canvasWidth}px`,
+        height: `${canvasHeight}px`
       }}
     >
       {/* Title Section */}

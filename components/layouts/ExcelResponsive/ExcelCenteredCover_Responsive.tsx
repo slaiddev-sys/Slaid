@@ -12,8 +12,8 @@ const ExcelCenteredCover_Responsive: React.FC<ExcelCenteredCoverResponsiveProps>
   title = "Our solution", 
   description = "Transforming ideas into results with strategy, craft, and measurable impact.",
   logoUrl = "/logo-placeholder.png",
-  canvasWidth,
-  canvasHeight
+  canvasWidth = 1280,
+  canvasHeight = 720
 }) => {
   // Calculate responsive scale factor based on canvas size
   const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
@@ -28,13 +28,13 @@ const ExcelCenteredCover_Responsive: React.FC<ExcelCenteredCoverResponsiveProps>
 
   return (
     <div 
-      ref={containerRef}
       className="w-full h-full bg-white  flex flex-col items-center justify-center" 
       style={{ 
         aspectRatio: '16/9', 
         fontFamily: 'Helvetica, Arial, sans-serif',
         padding: padding,
-        
+        width: `${canvasWidth}px`,
+        height: `${canvasHeight}px`
       }}
     >
       {/* Main Title - Bigger size and centered, positioned higher */}

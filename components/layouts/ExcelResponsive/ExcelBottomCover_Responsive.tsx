@@ -10,32 +10,11 @@ interface ExcelBottomCoverResponsiveProps {
 const ExcelBottomCover_Responsive: React.FC<ExcelBottomCoverResponsiveProps> = ({ 
   title = "Our solution", 
   description = "Transforming ideas into results with strategy, craft, and measurable impact.",
-  canvasWidth,
-  canvasHeight
+  canvasWidth = 1280,
+  canvasHeight = 720
 }) => {
-  // Use container size if not provided, otherwise use provided dimensions
-  const [containerWidth, setContainerWidth] = React.useState(canvasWidth || 1280);
-  const [containerHeight, setContainerHeight] = React.useState(canvasHeight || 720);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (!canvasWidth || !canvasHeight) {
-      const updateSize = () => {
-        if (containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          setContainerWidth(rect.width);
-          setContainerHeight(rect.height);
-        }
-      };
-
-      updateSize();
-      window.addEventListener('resize', updateSize);
-      return () => window.removeEventListener('resize', updateSize);
-    }
-  }, [canvasWidth, canvasHeight]);
-
   // Calculate responsive scale factor
-  const scaleFactor = Math.min(containerWidth / 1280, containerHeight / 720);
+  const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
   
   // Responsive measurements
   const padding = `${48 * scaleFactor}px`;
@@ -46,13 +25,13 @@ const ExcelBottomCover_Responsive: React.FC<ExcelBottomCoverResponsiveProps> = (
 
   return (
     <div 
-      ref={containerRef}
       className="w-full h-full bg-white  flex flex-col justify-end" 
       style={{ 
         aspectRatio: '16/9', 
         fontFamily: 'Helvetica, Arial, sans-serif',
         padding: padding,
-        
+        width: `${canvasWidth}px`,
+        height: `${canvasHeight}px`
       }}
     >
       {/* Bottom section with title left and description right */}

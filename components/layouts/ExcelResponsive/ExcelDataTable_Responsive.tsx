@@ -20,32 +20,11 @@ const ExcelDataTable_Responsive: React.FC<ExcelDataTableResponsiveProps> = ({
     { "Metric": "Units Sold", "Value": "16,200", "Change": "+15.3%" },
     { "Metric": "Target Achievement", "Value": "94.2%", "Change": "-5.8%" }
   ],
-  canvasWidth,
-  canvasHeight
+  canvasWidth = 1280,
+  canvasHeight = 720
 }) => {
-  // Use container size if not provided, otherwise use provided dimensions
-  const [containerWidth, setContainerWidth] = React.useState(canvasWidth || 1280);
-  const [containerHeight, setContainerHeight] = React.useState(canvasHeight || 720);
-  const containerRef = React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    if (!canvasWidth || !canvasHeight) {
-      const updateSize = () => {
-        if (containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          setContainerWidth(rect.width);
-          setContainerHeight(rect.height);
-        }
-      };
-
-      updateSize();
-      window.addEventListener('resize', updateSize);
-      return () => window.removeEventListener('resize', updateSize);
-    }
-  }, [canvasWidth, canvasHeight]);
-
   // Calculate responsive scale factor
-  const scaleFactor = Math.min(containerWidth / 1280, containerHeight / 720);
+  const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
   
   // Derive headers from data if not provided
   const actualHeaders = headers && headers.length > 0 
@@ -66,14 +45,14 @@ const ExcelDataTable_Responsive: React.FC<ExcelDataTableResponsiveProps> = ({
 
   return (
     <div 
-      ref={containerRef}
       className="w-full h-full bg-white" 
       style={{ 
         aspectRatio: '16/9', 
         fontFamily: 'Helvetica, Arial, sans-serif',
         padding: padding,
         paddingTop: paddingTop,
-        
+        width: `${canvasWidth}px`,
+        height: `${canvasHeight}px`
       }}
     >
       {/* Title Section */}
