@@ -91,6 +91,16 @@ export function useCredits(): UseCreditsReturn {
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch credits'
       setError(errorMessage)
       console.error('❌ Error fetching credits:', err)
+      
+      // Use fallback credits on any error (including connection errors)
+      console.warn('⚠️ Using fallback credits due to error')
+      setCredits({
+        total_credits: 10,
+        used_credits: 0,
+        remaining_credits: 10,
+        plan_type: 'free',
+        last_renewal_date: new Date().toISOString()
+      })
     } finally {
       setLoading(false)
     }
