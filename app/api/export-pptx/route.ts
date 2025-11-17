@@ -677,10 +677,17 @@ export async function POST(request: NextRequest) {
               width: 881px !important;
               height: 495px !important;
               position: relative !important;
+              overflow: visible !important;
             }
-            /* Chart container maintains its position */
+            /* Chart container maintains its position and shows all content including legends */
             [data-chart-container] {
               background: white !important;
+              overflow: visible !important;
+              min-height: 100% !important;
+            }
+            /* Ensure legend wrapper is fully visible */
+            .recharts-legend-wrapper {
+              overflow: visible !important;
             }
             /* Chart quality */
             svg {
