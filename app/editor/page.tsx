@@ -7028,7 +7028,7 @@ export default function EditorPage() {
                     return (
                     <button 
                       key={option}
-                      className={`px-6 py-3 border-2 rounded-full font-medium transition ${
+                      className={`px-6 py-3 border-2 rounded-full font-medium transition flex flex-col items-center gap-0.5 ${
                         canAfford 
                           ? 'bg-white border-gray-200 text-gray-700 hover:border-[#002903] hover:text-[#002903]' 
                           : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
@@ -7205,7 +7205,8 @@ export default function EditorPage() {
                         }
                       }}
                     >
-                      {option}
+                      <span>{option}</span>
+                      <span className="text-[10px] opacity-60">~{estimatedCredits} credits</span>
                     </button>
                     );
                   })}
