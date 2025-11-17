@@ -616,19 +616,22 @@ export async function POST(request: NextRequest) {
               display: none !important;
             }
             
-            /* Hide text elements outside charts */
+            /* Make text transparent but keep layout - text still takes up space */
             h1, h2, h3, h4, h5, h6, p, a, li, ul, ol {
-              visibility: hidden !important;
+              color: transparent !important;
               opacity: 0 !important;
             }
             
-            /* Hide divs that are NOT chart-related */
+            /* Make text in non-chart divs transparent */
             div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h1,
             div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h2,
             div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h3,
+            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h4,
+            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h5,
+            div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > h6,
             div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > p,
             div:not([data-chart-container]):not(.recharts-responsive-container):not(.recharts-wrapper):not(.recharts-legend-wrapper) > span {
-              visibility: hidden !important;
+              color: transparent !important;
               opacity: 0 !important;
             }
             
@@ -694,28 +697,14 @@ export async function POST(request: NextRequest) {
           `
         });
 
-        // Capture ONLY the chart element (cropped), or full slide if no chart
-        let screenshot;
-        const chartContainer = await page.$('[data-chart-container]');
-        
-        if (chartContainer && chartPosition) {
-          // Capture only the chart element (cropped to chart)
-          console.log(`📸 Capturing cropped chart for slide ${i + 1}`);
-          screenshot = await chartContainer.screenshot({
-            type: 'png',
-            omitBackground: false,
-            encoding: 'base64'
-          });
-        } else {
-          // No chart - capture full slide
-          console.log(`📸 Capturing full slide ${i + 1} (no chart)`);
-          screenshot = await page.screenshot({
-            type: 'png',
-            fullPage: false,
-            omitBackground: false,
-            encoding: 'base64'
-          });
-        }
+        // Always capture full slide - charts positioned correctly with text hidden
+        console.log(`📸 Capturing full slide ${i + 1}`);
+        const screenshot = await page.screenshot({
+          type: 'png',
+          fullPage: false,
+          omitBackground: false,
+          encoding: 'base64'
+        });
 
         slideImages.push({
           image: `data:image/png;base64,${screenshot}`,
@@ -752,38 +741,14 @@ export async function POST(request: NextRequest) {
       const slideImageData = slideImages[i];
       
       if (slideImageData && slideImageData.image) {
-        if (slideImageData.chartPosition) {
-          // Chart slide - position the cropped chart at its original location
-          // Convert pixels to inches (1920x1080 viewport = 10x5.625 inches)
-          const xInches = (slideImageData.chartPosition.x / 1920) * 10;
-          const yInches = (slideImageData.chartPosition.y / 1080) * 5.625;
-          const wInches = (slideImageData.chartPosition.width / 1920) * 10;
-          const hInches = (slideImageData.chartPosition.height / 1080) * 5.625;
-          
-          console.log(`📊 Placing cropped chart for slide ${i + 1} at:`, {
-            x: xInches,
-            y: yInches,
-            w: wInches,
-            h: hInches
-          });
-          
-          slide.addImage({
-            data: slideImageData.image,
-            x: xInches,
-            y: yInches,
-            w: wInches,
-            h: hInches
-          });
-        } else {
-          // Non-chart slide - full slide image
-          slide.addImage({
-            data: slideImageData.image,
-            x: 0,
-            y: 0,
-            w: 10,
-            h: 5.625
-          });
-        }
+        // Always use full slide image (charts maintain their position, text is hidden)
+        slide.addImage({
+          data: slideImageData.image,
+          x: 0,
+          y: 0,
+          w: 10,
+          h: 5.625
+        });
         
         // Add editable text overlays on top
         console.log(`📝 Adding text overlays for slide ${i + 1}:`, { 
