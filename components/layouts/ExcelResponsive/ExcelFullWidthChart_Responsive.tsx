@@ -42,11 +42,32 @@ const ExcelFullWidthChart_Responsive: React.FC<ExcelFullWidthChartResponsiveProp
   overallPerformance = "+24.8%",
   performanceLabel = "Overall performance",
   description = "Comprehensive metrics and key performance indicators showing quarterly growth trends and revenue optimization.",
-  canvasWidth = 1280,
-  canvasHeight = 720
+  canvasWidth,
+  canvasHeight
 }) => {
+  // Use container size if not provided, otherwise use provided dimensions
+  const [containerWidth, setContainerWidth] = React.useState(canvasWidth || 1280);
+  const [containerHeight, setContainerHeight] = React.useState(canvasHeight || 720);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!canvasWidth || !canvasHeight) {
+      const updateSize = () => {
+        if (containerRef.current) {
+          const rect = containerRef.current.getBoundingClientRect();
+          setContainerWidth(rect.width);
+          setContainerHeight(rect.height);
+        }
+      };
+
+      updateSize();
+      window.addEventListener('resize', updateSize);
+      return () => window.removeEventListener('resize', updateSize);
+    }
+  }, [canvasWidth, canvasHeight]);
+
   // Calculate responsive scale factor
-  const scaleFactor = Math.min(canvasWidth / 1280, canvasHeight / 720);
+  const scaleFactor = Math.min(containerWidth / 1280, containerHeight / 720);
   
   // Responsive measurements
   const padding = `${24 * scaleFactor}px`;
@@ -75,14 +96,13 @@ const ExcelFullWidthChart_Responsive: React.FC<ExcelFullWidthChartResponsiveProp
 
   return (
     <div 
+      ref={containerRef}
       className="w-full h-full bg-white" 
       style={{ 
         aspectRatio: '16/9', 
         fontFamily: 'Helvetica, Arial, sans-serif',
         padding: padding,
-        paddingTop: paddingTop,
-        width: `${canvasWidth}px`,
-        height: `${canvasHeight}px`
+        paddingTop: paddingTop
       }}
       data-chart-container="fullwidth-chart"
     >
