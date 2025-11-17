@@ -5,11 +5,18 @@ import puppeteer from 'puppeteer-core';
 
 // Add editable text overlays to PowerPoint slides
 function addTextOverlays(slide: any, slideData: any) {
+  console.log('🔍 addTextOverlays called with:', { 
+    hasBlocks: !!slideData.blocks, 
+    blocks: slideData.blocks?.map((b: any) => ({ type: b.type, hasProps: !!b.props }))
+  });
+  
   if (!slideData.blocks) return;
   
   slideData.blocks.forEach((block: any) => {
     const type = block.type;
     const props = block.props || {};
+    
+    console.log(`📝 Processing block type: ${type}`, { hasTitle: !!props.title, hasDescription: !!props.description });
     
     switch (type) {
       // Cover slides - Centered layout
@@ -779,6 +786,10 @@ export async function POST(request: NextRequest) {
         }
         
         // Add editable text overlays on top
+        console.log(`📝 Adding text overlays for slide ${i + 1}:`, { 
+          hasBlocks: !!slideData.blocks, 
+          blockCount: slideData.blocks?.length 
+        });
         addTextOverlays(slide, slideData);
       } else {
         // Fallback: add slide title if image capture failed
