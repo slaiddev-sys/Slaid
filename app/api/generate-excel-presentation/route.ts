@@ -263,11 +263,19 @@ ${whichInterpretationLayouts}
 
 USER REQUEST: "${presentationPrompt}"
 
+🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑
+🛑 STOP! READ THIS BEFORE GENERATING A SINGLE SLIDE! 🛑
+🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑🛑
+
+⛔⛔⛔ RULE #1 (OVERRIDES ALL OTHER RULES) - ZERO TOLERANCE FOR DUPLICATE CONTENT ⛔⛔⛔
+
 🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 🚨🚨🚨 ABSOLUTE CRITICAL RULE - NO DUPLICATE CONTENT - READ THIS FIRST 🚨🚨🚨
 🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 
 **THIS IS THE #1 RULE - DUPLICATING CONTENT IS ABSOLUTELY FORBIDDEN**
+**IF YOU SHOW THE SAME DATA TWICE, THE ENTIRE PRESENTATION WILL BE REJECTED**
+**EACH PIE CHART SLICE, EACH LINE IN A CHART, EACH BAR - CAN ONLY APPEAR ONCE**
 
 WHAT COUNTS AS DUPLICATE CONTENT:
 1. Using the same Excel row/metric in multiple charts
@@ -284,6 +292,16 @@ EXAMPLES OF FORBIDDEN DUPLICATES:
 
 ❌ Slide 5: "Monthly Expenses" showing Alquiler, Electricidad
 ❌ Slide 9: "Cost Breakdown" showing Alquiler, Electricidad ← DUPLICATE! FORBIDDEN!
+
+❌❌❌ PIE CHART SPECIFIC - EXTREMELY COMMON MISTAKE ❌❌❌:
+❌ Slide 3: Pie chart "Distribución de Gastos" showing: Transferencias Revolut, Alimentación, Ocio, Transporte, Suscripciones
+❌ Slide 7: Pie chart "Gastos por Categoría" showing: Transferencias Revolut, Alimentación, Ocio, Transporte, Suscripciones
+← THIS IS A DUPLICATE! SAME DATA, DIFFERENT TITLE! ABSOLUTELY FORBIDDEN!
+
+**PIE CHART RULE**: If you've already shown expense categories in ONE pie chart, you CANNOT create another pie chart with the same categories. PERIOD. NO EXCEPTIONS.
+
+❌ Creating 2+ pie charts with expense categories (Revolut, Food, Leisure, etc.) ← FORBIDDEN!
+✅ Create ONLY ONE pie chart for expense distribution - that's it!
 
 MANDATORY VERIFICATION BEFORE GENERATING JSON:
 **STEP 1**: List ALL series.id values you will use across ALL your slides
@@ -1553,7 +1571,37 @@ Your mission in this mode is to help users optimize their finances today and bui
   - **VIOLATION EXAMPLE**: Two slides both showing "Monthly Revenue 2023" ← NEVER DO THIS
   - **CORRECT EXAMPLE**: Slide A shows "Monthly Revenue", Slide B shows "Expense Breakdown" ← GOOD!` : '- Each slide must show unique, non-repetitive data'}
 ` : `Generate EXACTLY ${slideCount} slides with proper structure. DO NOT generate more or fewer slides.
-**INTERPRETATION LAYOUTS: Use AT MOST ${maxInterpretationThisBatch} interpretation layouts for this presentation.**`}`;
+**INTERPRETATION LAYOUTS: Use AT MOST ${maxInterpretationThisBatch} interpretation layouts for this presentation.**`}
+
+🛑🛑🛑 STOP! BEFORE GENERATING JSON - MANDATORY DUPLICATE CHECK 🛑🛑🛑
+
+BEFORE you write a SINGLE LINE of JSON, you MUST:
+
+1. **LIST ALL CHARTS** you plan to create with their data:
+   Example:
+   - Slide 2: Pie chart with [Transferencias Revolut, Alimentación, Ocio, Transporte, Suscripciones]
+   - Slide 4: Line chart with [Monthly Income, Monthly Expenses]
+   - Slide 6: Bar chart with [Product A Sales, Product B Sales, Product C Sales]
+
+2. **CHECK FOR DUPLICATES**:
+   - Do ANY of these data series appear in MORE THAN ONE slide?
+   - Do you have 2+ pie charts with the same categories? ← FORBIDDEN!
+   - Do you have 2+ charts showing the same metric? ← FORBIDDEN!
+
+3. **IF YOU FIND DUPLICATES**:
+   - REMOVE the duplicate slides IMMEDIATELY
+   - Combine related data into ONE comprehensive chart instead
+   - It's better to have ${slideCount - 3} slides with NO duplicates than ${slideCount} slides with duplicates
+
+4. **VERIFY**:
+   □ No pie chart categories are repeated
+   □ No line chart series appear twice
+   □ No bar chart data is duplicated
+   □ Each Excel row/metric is used ONLY ONCE
+
+**IF YOU SUBMIT DUPLICATE CONTENT, THE ENTIRE PRESENTATION WILL BE REJECTED AND YOU WILL HAVE TO START OVER**
+
+`;
 
     console.log('🤖 Sending request to Claude...');
 
