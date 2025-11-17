@@ -381,6 +381,15 @@ export default function EditorPage() {
   // File upload and analysis handlers (from test-excel logic)
   const handleFileUpload = async (selectedFile: File) => {
     console.log('handleFileUpload called with:', selectedFile.name);
+    
+    // Validate file size (15MB limit for reasonable processing)
+    const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB in bytes
+    if (selectedFile.size > MAX_FILE_SIZE) {
+      const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
+      setUploadError(`File is too large (${sizeMB}MB). Maximum file size is 15MB. Please reduce the number of rows or columns in your file and try again.`);
+      return;
+    }
+    
     setIsUploading(true);
     setUploadError('');
     setUploadResult(null);
