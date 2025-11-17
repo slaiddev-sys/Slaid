@@ -7302,7 +7302,12 @@ export default function EditorPage() {
             <div className="flex gap-2 sm:gap-3 flex-wrap">
               {/* PowerPoint Export button */}
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
-                setShowEditInModal(true);
+                // Check if user has Basic, Pro, or Ultra plan for PowerPoint export
+                if (credits?.plan_type === 'free') {
+                  setShowPricingModal(true);
+                } else {
+                  setShowEditInModal(true);
+                }
               }}>
                 <img src="/power-point.png" alt="PowerPoint" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
                 <span className="hidden sm:inline">Edit in PowerPoint</span>
