@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   title: "Slaid - AI Presentation Generator",
   description: "Transform Data to Professional Reports",
   icons: {
-    icon: "/slaid-favicon-verde.png",
+    icon: "/basic-plan.png",
   },
 };
 
