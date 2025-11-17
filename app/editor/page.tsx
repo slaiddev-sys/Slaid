@@ -157,6 +157,14 @@ export default function EditorPage() {
     };
   }, [refreshCredits]);
 
+  // Handle credit errors - show pricing modal when credits fail to load or are insufficient
+  useEffect(() => {
+    if (creditsError && !creditsLoading) {
+      console.error('💳 Credits error detected:', creditsError);
+      setShowPricingModal(true);
+    }
+  }, [creditsError, creditsLoading]);
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
