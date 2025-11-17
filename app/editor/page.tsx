@@ -7307,8 +7307,8 @@ export default function EditorPage() {
                 setShowEditInModal(true);
               }}>
                 <img src="/power-point.png" alt="PowerPoint" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
-                <span className="hidden sm:inline">PowerPoint</span>
-                <span className="sm:hidden">PPTX</span>
+                <span className="hidden sm:inline">Edit in PowerPoint</span>
+                <span className="sm:hidden">Edit</span>
               </button>
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // Check if user has Pro plan for Preview feature
