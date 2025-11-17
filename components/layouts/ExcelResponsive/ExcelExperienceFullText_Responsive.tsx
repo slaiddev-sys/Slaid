@@ -22,7 +22,7 @@ const ExcelExperienceFullText_Responsive: React.FC<ExcelExperienceFullTextRespon
   const padding = `${24 * scaleFactor}px`;
   const paddingTop = `${48 * scaleFactor}px`;
   const titleFontSize = `${24 * scaleFactor}px`;
-  const textFontSize = `${16 * scaleFactor}px`;
+  const textFontSize = `${12 * scaleFactor}px`;
   const marginBottom = `${24 * scaleFactor}px`;
   const marginLeft = `${24 * scaleFactor}px`;
   const gap = `${32 * scaleFactor}px`;
