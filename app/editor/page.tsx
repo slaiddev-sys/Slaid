@@ -7023,7 +7023,7 @@ export default function EditorPage() {
                     // Estimate credits needed (backend only - not shown to user)
                     const slideCount = getSlideCountNumber(option);
                     const estimatedCredits = Math.ceil(slideCount * 2.5);
-                    const canAfford = (credits?.credits || 0) >= estimatedCredits;
+                    const canAfford = (credits?.remaining_credits || 0) >= estimatedCredits;
                     
                     return (
                     <button 
@@ -7214,12 +7214,12 @@ export default function EditorPage() {
                 {/* Current Credits Display */}
                 <div className="text-center mb-4">
                   <p className="text-sm text-gray-600">
-                    You have <span className="font-semibold text-[#002903]">{credits?.credits || 0} credits</span> available
+                    You have <span className="font-semibold text-[#002903]">{credits?.remaining_credits || 0} credits</span> available
                   </p>
                 </div>
                 
                 {/* Upgrade Button if user can't afford any option */}
-                {(credits?.credits || 0) < 13 && (
+                {(credits?.remaining_credits || 0) < 13 && (
                   <div className="text-center mt-2">
                     <p className="text-sm text-gray-600 mb-3">¿Need more credits?</p>
                     <button
