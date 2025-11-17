@@ -7302,22 +7302,13 @@ export default function EditorPage() {
           {/* Top bar */}
           <div className="bg-[#F9FAFB] border-b border-gray-200 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 flex justify-end items-center">
             <div className="flex gap-2 sm:gap-3 flex-wrap">
-              {/* Edit in... button */}
+              {/* PowerPoint Export button */}
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 setShowEditInModal(true);
               }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-gray-600 sm:w-4 sm:h-4">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span className="hidden sm:inline">Edit in...</span>
-                <span className="sm:hidden">Edit</span>
-                <div className="hidden sm:flex items-center gap-1 ml-1">
-                  {/* Google Slides icon */}
-                  <img src="/google-slide.png" alt="Google Slides" className="w-5 h-5 object-contain" />
-                  {/* PowerPoint icon */}
-                  <img src="/power-point.png" alt="PowerPoint" className="w-5 h-5 object-contain" />
-                </div>
+                <img src="/power-point.png" alt="PowerPoint" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
+                <span className="hidden sm:inline">PowerPoint</span>
+                <span className="sm:hidden">PPTX</span>
               </button>
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // Check if user has Pro plan for Preview feature
@@ -7701,30 +7692,12 @@ export default function EditorPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn modal-overlay">
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowEditInModal(false)} />
           <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 animate-scaleIn modal-content z-10">
-            <h2 className="text-[#002903] text-xl font-semibold mb-2">Edit in</h2>
+            <h2 className="text-[#002903] text-xl font-semibold mb-2">Export to PowerPoint</h2>
             <p className="text-gray-600 text-sm mb-6">
-              Choose where you want to edit your presentation
+              Download your presentation as a PowerPoint file
             </p>
             
             <div className="flex flex-col gap-3">
-              {/* Google Slides Button */}
-              <button 
-                className="w-full flex items-center justify-between bg-white hover:bg-gray-50 text-gray-900 font-medium py-4 px-5 rounded-lg transition border-2 border-gray-200 hover:border-gray-300"
-                onClick={() => {
-                  // TODO: Implement Google Slides export/edit
-                  console.log('Edit in Google Slides clicked');
-                  setShowEditInModal(false);
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <img src="/google-slide.png" alt="Google Slides" className="w-8 h-8 object-contain" />
-                  <span className="text-base">Google Slides</span>
-                </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-400">
-                  <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-              
               {/* PowerPoint Button */}
               <button 
                 className="w-full flex items-center justify-between bg-white hover:bg-gray-50 text-gray-900 font-medium py-4 px-5 rounded-lg transition border-2 border-gray-200 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
