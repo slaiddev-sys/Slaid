@@ -7073,6 +7073,10 @@ export default function EditorPage() {
                         let allMessages: any[] = [];
 
                         try {
+                          // Step 1: Analyzing content (only once at the beginning)
+                          setLoadingStep(1);
+                          await new Promise(resolve => setTimeout(resolve, 500));
+
                           for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
                             const startSlide = batchIndex * SLIDES_PER_BATCH + 1;
                             const endSlide = Math.min((batchIndex + 1) * SLIDES_PER_BATCH, slideCountNum);
@@ -7086,9 +7090,6 @@ export default function EditorPage() {
                               total: totalBatches,
                               slideRange: `${startSlide}-${endSlide}`
                             });
-
-                            // Step 1: Start analyzing content
-                            setLoadingStep(1);
 
                             let batchMessages: any[] = [];
                             if (batchIndex === 0) {
