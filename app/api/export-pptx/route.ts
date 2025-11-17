@@ -638,14 +638,21 @@ export async function POST(request: NextRequest) {
             .slide-content {
               width: 1920px !important;
               height: 1080px !important;
-              transform: none !important;
-              position: relative !important;
+              transform: scale(2.18) !important;
+              transform-origin: top left !important;
+              position: absolute !important;
               top: 0 !important;
               left: 0 !important;
               background: white !important;
               overflow: visible !important;
             }
-            /* DON'T override chart container position - let it stay where it naturally is */
+            /* Scale inner content to native chart dimensions */
+            .slide-content > div {
+              width: 881px !important;
+              height: 495px !important;
+              position: relative !important;
+            }
+            /* Chart container maintains its position */
             [data-chart-container] {
               background: white !important;
             }
