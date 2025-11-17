@@ -54,8 +54,8 @@ const ExcelFullWidthChart_Responsive: React.FC<ExcelFullWidthChartResponsiveProp
   const titleFontSize = `${24 * scaleFactor}px`;
   const metricFontSize = `${14 * scaleFactor}px`;
   const performanceFontSize = `${14 * scaleFactor}px`;
-  const descriptionFontSize = `${14 * scaleFactor}px`;
-  const marginBottom = `${16 * scaleFactor}px`;
+  const descriptionFontSize = `${10 * scaleFactor}px`;
+  const marginBottom = `${24 * scaleFactor}px`;
   const marginLeft = `${24 * scaleFactor}px`;
   const performanceMarginBottom = `${8 * scaleFactor}px`;
   const performanceMarginRight = `${8 * scaleFactor}px`;
