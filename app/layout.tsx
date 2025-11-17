@@ -4,10 +4,10 @@ import "./fonts.css";
 import { AuthProvider } from "../components/AuthProvider";
 
 export const metadata: Metadata = {
-  title: "Create Next App",
+  title: "Slaid - AI Presentation Generator",
   description: "Transform Data to Professional Reports",
   icons: {
-    icon: "/basic-plan.png",
+    icon: "/slaid-favicon-verde.png",
   },
 };
 
