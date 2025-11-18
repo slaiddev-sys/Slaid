@@ -314,6 +314,93 @@ export default function Component1920WLight() {
             Your browser does not support the video tag.
           </video>
         </div>
+
+        {/* Bento Card Section */}
+        <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+            
+            {/* Card 1 - Smart Excel Analysis (Large - spans 2 columns on lg) */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 shadow-lg border border-gray-200 lg:col-span-2">
+              {/* Placeholder for image */}
+              <div className="w-full h-48 sm:h-56 md:h-64 bg-gray-100 rounded-xl mb-6"></div>
+              
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3 sm:mb-4" style={{ color: '#002903' }}>
+                Smart Excel Analysis
+              </h3>
+              <p className="text-base sm:text-lg md:text-xl font-medium mb-3 sm:mb-4" style={{ color: '#002903' }}>
+                Let AI do the number crunching.
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Upload any spreadsheet and Slaid will automatically analyze your data — no formulas, no pivot tables. From trends to anomalies, it detects what matters most and gets to work instantly.
+              </p>
+            </div>
+
+            {/* Card 2 - Professional Interpretation */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border border-gray-200">
+              {/* Placeholder for image */}
+              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
+              
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
+                Professional Interpretation
+              </h3>
+              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
+                Insights tailored to your context.
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Slaid doesn't just describe the data — it understands what you're trying to communicate. Whether it's for a financial update, marketing report, or business decision, it generates a summary that feels written by a human — and knows what to highlight.
+              </p>
+            </div>
+
+            {/* Card 3 - Slide-Ready Reports */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border border-gray-200">
+              {/* Placeholder for image */}
+              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
+              
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
+                Slide-Ready Reports
+              </h3>
+              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
+                From raw data to polished storytelling.
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Turn your analysis into a structured presentation with titles, charts, summaries and key takeaways. No design skills needed — everything is laid out for clarity and impact.
+              </p>
+            </div>
+
+            {/* Card 4 - Interactive Charts (Large - spans 2 columns on md) */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 shadow-lg border border-gray-200 md:col-span-2">
+              {/* Placeholder for image */}
+              <div className="w-full h-48 sm:h-56 md:h-64 bg-gray-100 rounded-xl mb-6"></div>
+              
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3 sm:mb-4" style={{ color: '#002903' }}>
+                Interactive Charts
+              </h3>
+              <p className="text-base sm:text-lg md:text-xl font-medium mb-3 sm:mb-4" style={{ color: '#002903' }}>
+                Explore, filter, and highlight what matters.
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Charts in Slaid aren't static images. You can click, explore, and dig deeper into the numbers — making it easier to find insights and adapt visuals before exporting.
+              </p>
+            </div>
+
+            {/* Card 5 - Edit in PowerPoint */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-lg border border-gray-200">
+              {/* Placeholder for image */}
+              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
+              
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
+                Edit in PowerPoint
+              </h3>
+              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
+                Make it yours — with your tools.
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                Export your report to PowerPoint or your favorite editor. You're free to tweak every slide or drop it straight into your workflow, fully editable.
+              </p>
+            </div>
+
+          </div>
+        </div>
         
       </main>
     </div>
