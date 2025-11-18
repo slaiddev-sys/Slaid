@@ -395,8 +395,21 @@ export default function Component1920WLight() {
 
             {/* Row 2, Card 4 - Edit in PowerPoint (1 col) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[4px]" style={{ borderColor: '#f6f7f8' }}>
-              {/* Placeholder for image */}
-              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
+              {/* PowerPoint Button Container */}
+              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6 flex items-center justify-center p-4">
+                <button 
+                  className="flex items-center justify-between bg-white hover:bg-gray-50 text-gray-900 font-medium py-3 px-5 rounded-lg transition border-2 border-gray-200 hover:border-gray-300 cursor-pointer w-full max-w-xs"
+                  onClick={() => router.push('/signup')}
+                >
+                  <div className="flex items-center gap-3">
+                    <img src="/power-point.png" alt="PowerPoint" className="w-7 h-7 object-contain" />
+                    <span className="text-sm sm:text-base">Edit in PowerPoint</span>
+                  </div>
+                  <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
               
               <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
                 Edit in PowerPoint
