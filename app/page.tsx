@@ -304,7 +304,7 @@ export default function Component1920WLight() {
         {/* Demo Video - Full Width Below */}
         <div className="w-full mt-8 sm:mt-12 md:mt-16">
           <video 
-            className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl"
+            className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl border border-gray-200"
             controls
             autoPlay
             muted
