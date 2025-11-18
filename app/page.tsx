@@ -279,13 +279,15 @@ export default function Component1920WLight() {
           </div>
           
           {/* Right Side - Upload Container (from Editor) - Moved Further Right */}
-          <div className="relative w-full lg:w-[60%] xl:w-[58%] mt-6 sm:mt-8 lg:mt-0 flex flex-col items-start">
+          <div className="relative w-full lg:w-[60%] xl:w-[58%] mt-6 sm:mt-8 lg:mt-0 flex flex-col items-end">
             {/* Free Credits Badge */}
-            <div className="flex items-center gap-3 mb-4 px-6 py-3 rounded-full border-2 border-green-800 bg-transparent">
-              <svg className="w-6 h-6 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="text-base font-medium text-green-800">Get 50 free credits by signing up</span>
+            <div className="w-full max-w-md mb-4">
+              <div className="flex items-center gap-3 px-6 py-3 rounded-full border-2 border-green-800 bg-transparent">
+                <svg className="w-6 h-6 text-green-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span className="text-base font-medium text-green-800">Get 50 free credits by signing up</span>
+              </div>
             </div>
             
             <div 
