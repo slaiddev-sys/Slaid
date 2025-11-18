@@ -473,6 +473,103 @@ export default function Component1920WLight() {
           </div>
           </div>
 
+        {/* FAQ Section */}
+        <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
+          {/* Section Title */}
+          <h2 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-8 sm:mb-10 md:mb-12 text-center tracking-tighter" style={{ color: '#002903' }}>
+            Frequently Asked Questions
+          </h2>
+
+          <div className="max-w-3xl mx-auto space-y-4">
+            
+            {/* FAQ Item 1 */}
+            <details className="group bg-white border-[4px] border-gray-200 rounded-2xl p-6">
+              <summary className="flex justify-between items-center cursor-pointer list-none">
+                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                  How does Slaid analyze my Excel data?
+                </h3>
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                    <path d="M6 9l6 6 6-6"></path>
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-4 text-gray-600 leading-relaxed">
+                Slaid uses advanced AI to automatically detect patterns, trends, and insights in your spreadsheet. Simply upload your Excel file, and our AI will analyze the data structure, identify key metrics, and generate meaningful visualizations without requiring any manual setup.
+              </p>
+            </details>
+
+            {/* FAQ Item 2 */}
+            <details className="group bg-white border-[4px] border-gray-200 rounded-2xl p-6">
+              <summary className="flex justify-between items-center cursor-pointer list-none">
+                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                  Can I edit the presentation after it's generated?
+                </h3>
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                    <path d="M6 9l6 6 6-6"></path>
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-4 text-gray-600 leading-relaxed">
+                Yes! You can edit presentations directly in Slaid's editor or export them to PowerPoint for full editing capabilities. All text remains editable, and charts are preserved as high-quality images that can be easily updated.
+              </p>
+            </details>
+
+            {/* FAQ Item 3 */}
+            <details className="group bg-white border-[4px] border-gray-200 rounded-2xl p-6">
+              <summary className="flex justify-between items-center cursor-pointer list-none">
+                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                  What file formats does Slaid support?
+                </h3>
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                    <path d="M6 9l6 6 6-6"></path>
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-4 text-gray-600 leading-relaxed">
+                Slaid currently supports .xlsx, .xls, and .csv file formats. You can upload spreadsheets from Excel, Google Sheets (exported as .xlsx), or any other application that exports to these standard formats.
+              </p>
+            </details>
+
+            {/* FAQ Item 4 */}
+            <details className="group bg-white border-[4px] border-gray-200 rounded-2xl p-6">
+              <summary className="flex justify-between items-center cursor-pointer list-none">
+                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                  How many credits do I need to create a presentation?
+                </h3>
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                    <path d="M6 9l6 6 6-6"></path>
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-4 text-gray-600 leading-relaxed">
+                Credit usage depends on the number of slides you generate. Smaller presentations (5 slides) use fewer credits, while larger presentations (15+ slides) require more. New users get 50 free credits to get started, and you can always upgrade your plan for more credits.
+              </p>
+            </details>
+
+            {/* FAQ Item 5 */}
+            <details className="group bg-white border-[4px] border-gray-200 rounded-2xl p-6">
+              <summary className="flex justify-between items-center cursor-pointer list-none">
+                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                  Is my data secure?
+                </h3>
+                <span className="transition group-open:rotate-180">
+                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                    <path d="M6 9l6 6 6-6"></path>
+                  </svg>
+                </span>
+              </summary>
+              <p className="mt-4 text-gray-600 leading-relaxed">
+                Absolutely. Your data is encrypted in transit and at rest. We never share your data with third parties, and you maintain full ownership of all uploaded files and generated presentations. You can delete your data at any time from your account settings.
+              </p>
+            </details>
+
+          </div>
+        </div>
+
         </main>
 
         {/* Footer */}
