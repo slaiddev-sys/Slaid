@@ -233,6 +233,30 @@ export default function Component1920WLight() {
         <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-10 lg:gap-8 xl:gap-10 items-start justify-between w-full mb-12">
           {/* Left Side - Title and Description */}
           <div className="flex-shrink-0 w-full lg:w-[35%] xl:w-[38%]">
+            {/* Customer Avatars */}
+            <div className="flex items-center gap-3 mb-4 md:mb-5">
+              <div className="flex -space-x-2">
+                <img 
+                  src="/Ellipse.png" 
+                  alt="Customer" 
+                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
+                />
+                <img 
+                  src="/Ellipse (1).png" 
+                  alt="Customer" 
+                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
+                />
+                <img 
+                  src="/Ellipse (2).png" 
+                  alt="Customer" 
+                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
+                />
+              </div>
+              <p className="text-sm sm:text-base text-gray-600">
+                Used by <span className="font-semibold text-gray-900">1353</span> happy customers
+              </p>
+            </div>
+            
             {/* Heading */}
             <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-4 md:mb-5 text-left tracking-tighter" style={{ color: '#002903' }}>
               Transform your Excel into a professional data presentation
