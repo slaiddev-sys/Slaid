@@ -517,7 +517,7 @@ export default function Component1920WLight() {
                 </span>
               </summary>
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Yes! You can edit presentations directly in Slaid's editor or export them to PowerPoint for full editing capabilities. All text remains editable, and charts are preserved as high-quality images that can be easily updated.
+                Yes! You can export your presentation to PowerPoint for full editing capabilities. All text remains editable, and charts are preserved as high-quality images. This allows you to customize every detail using the tools you already know.
               </p>
             </details>
 
