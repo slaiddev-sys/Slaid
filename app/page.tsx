@@ -297,7 +297,7 @@ export default function Component1920WLight() {
               onClick={() => router.push('/signup')}
             >
               <div 
-                className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border border-gray-100 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative transition-all duration-200 hover:shadow-2xl hover:scale-[1.02]"
+                className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border-4 border-gray-200 min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative transition-all duration-200 hover:shadow-2xl hover:scale-[1.02]"
               >
                 {/* Layered Cards Background */}
                 <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
