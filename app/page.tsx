@@ -228,7 +228,7 @@ export default function Component1920WLight() {
         </div>
       </div>
       {/* Main Content: left-aligned layout */}
-      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-12 md:pt-16 lg:pt-24 xl:pt-32 pb-8 sm:pb-12 md:pb-16 max-w-6xl 2xl:max-w-7xl mx-auto">
+      <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 md:pt-12 lg:pt-16 xl:pt-20 pb-8 sm:pb-12 md:pb-16 max-w-6xl 2xl:max-w-7xl mx-auto">
         {/* Main Content Row - Title and Upload Container */}
         <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-10 lg:gap-8 xl:gap-10 items-start justify-between w-full mb-12">
           {/* Left Side - Title and Description */}
@@ -337,7 +337,7 @@ export default function Component1920WLight() {
         </div>
         
         {/* Demo Video - Full Width Below */}
-        <div className="w-full mt-8 sm:mt-12 md:mt-16">
+        <div className="w-full mt-6 sm:mt-8 md:mt-10">
           <video 
             key="demo-video"
             className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl border-4 border-gray-200"
@@ -356,7 +356,7 @@ export default function Component1920WLight() {
         </div>
 
         {/* Bento Card Section */}
-        <div className="w-full mt-20 sm:mt-24 md:mt-32 lg:mt-40">
+        <div className="w-full mt-12 sm:mt-16 md:mt-20 lg:mt-24">
           {/* Section Title */}
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-8 sm:mb-10 md:mb-12" style={{ color: '#002903' }}>
             Unlock the power of your data
