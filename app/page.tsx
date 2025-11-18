@@ -425,8 +425,8 @@ export default function Component1920WLight() {
                   type="area"
                   labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
                   series={[
-                    { id: 'Revenue', data: [6.5, 11.2, 9.8, 15.1, 18.2, 24.5], color: '#10b981' },
-                    { id: 'GMV', data: [5.8, 10.5, 9.2, 13.8, 17.1, 21.8], color: '#059669' }
+                    { id: 'Revenue', data: [6.5, 11.2, 9.8, 15.1, 18.2, 24.5], color: '#4A3AFF' },
+                    { id: 'GMV', data: [5.8, 10.5, 9.2, 13.8, 17.1, 21.8], color: '#C893FD' }
                   ]}
                   showLegend={true}
                   showGrid={true}
