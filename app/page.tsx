@@ -282,13 +282,13 @@ export default function Component1920WLight() {
           <div className="relative w-full lg:w-[60%] xl:w-[58%] mt-6 sm:mt-8 lg:mt-0 flex flex-col items-end">
             {/* Free Credits Badge */}
             <div className="w-full max-w-md mb-4">
-              <div className="flex items-center gap-3 px-6 py-3 rounded-full border-2 border-green-800 bg-transparent">
+              <div className="flex items-center gap-3 px-6 py-3">
                 <img 
                   src="/ai credit-icon.png" 
                   alt="Credits" 
                   className="w-6 h-6 object-contain"
                 />
-                <span className="text-base font-medium text-green-800">Get 50 free credits by signing up</span>
+                <span className="text-base font-medium" style={{ color: '#002903' }}>Get 50 free credits by signing up</span>
               </div>
             </div>
             
