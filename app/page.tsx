@@ -359,7 +359,7 @@ export default function Component1920WLight() {
                 <img 
                   src="/excel-analysis.png" 
                   alt="Excel Analysis" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-contain"
                 />
               </div>
               
