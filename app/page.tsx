@@ -362,8 +362,18 @@ export default function Component1920WLight() {
 
             {/* Row 2, Card 3 - Interactive Charts (2 cols - wider) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[4px] md:col-span-2" style={{ borderColor: '#f6f7f8' }}>
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
+                Interactive Charts
+              </h3>
+              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
+                Explore, filter, and highlight what matters.
+              </p>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6">
+                Charts in Slaid aren't static images. You can click, explore, and dig deeper into the numbers — making it easier to find insights and adapt visuals before exporting.
+              </p>
+              
               {/* Area Chart */}
-              <div className="w-full h-56 sm:h-64 md:h-72 mb-6 -ml-4">
+              <div className="w-full h-56 sm:h-64 md:h-72 -ml-4">
                 <ChartBlock
                   id="interactive-area-chart"
                   type="area"
@@ -381,16 +391,6 @@ export default function Component1920WLight() {
                   className="w-full h-full"
                 />
               </div>
-              
-              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
-                Interactive Charts
-              </h3>
-              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
-                Explore, filter, and highlight what matters.
-              </p>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Charts in Slaid aren't static images. You can click, explore, and dig deeper into the numbers — making it easier to find insights and adapt visuals before exporting.
-              </p>
             </div>
 
             {/* Row 2, Card 4 - Edit in PowerPoint (1 col) */}
