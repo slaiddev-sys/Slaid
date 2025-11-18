@@ -319,7 +319,7 @@ export default function Component1920WLight() {
         <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5 md:gap-6">
             
-            {/* Card 1 - Smart Excel Analysis */}
+            {/* Row 1, Card 1 - Smart Excel Analysis */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300">
               {/* Placeholder for image */}
               <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
@@ -335,15 +335,15 @@ export default function Component1920WLight() {
               </p>
             </div>
 
-            {/* Card 2 - Slide-Ready Reports (Big card - spans 2 columns) */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 border-2 border-gray-300 md:col-span-2">
+            {/* Row 1, Card 2 - Slide-Ready Reports */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300">
               {/* Placeholder for image */}
-              <div className="w-full h-48 sm:h-56 md:h-64 bg-gray-100 rounded-xl mb-6"></div>
+              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
               
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3 sm:mb-4" style={{ color: '#002903' }}>
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
                 Slide-Ready Reports
               </h3>
-              <p className="text-base sm:text-lg md:text-xl font-medium mb-3 sm:mb-4" style={{ color: '#002903' }}>
+              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
                 From raw data to polished storytelling.
               </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
@@ -351,15 +351,15 @@ export default function Component1920WLight() {
               </p>
             </div>
 
-            {/* Card 3 - Interactive Charts (Big card - spans 2 columns) */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-10 border-2 border-gray-300 md:col-span-2">
+            {/* Row 2, Card 3 - Interactive Charts */}
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300">
               {/* Placeholder for image */}
-              <div className="w-full h-48 sm:h-56 md:h-64 bg-gray-100 rounded-xl mb-6"></div>
+              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
               
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-semibold mb-3 sm:mb-4" style={{ color: '#002903' }}>
+              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
                 Interactive Charts
               </h3>
-              <p className="text-base sm:text-lg md:text-xl font-medium mb-3 sm:mb-4" style={{ color: '#002903' }}>
+              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
                 Explore, filter, and highlight what matters.
               </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
@@ -367,7 +367,7 @@ export default function Component1920WLight() {
               </p>
             </div>
 
-            {/* Card 4 - Edit in PowerPoint */}
+            {/* Row 2, Card 4 - Edit in PowerPoint */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300">
               {/* Placeholder for image */}
               <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
