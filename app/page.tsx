@@ -320,6 +320,11 @@ export default function Component1920WLight() {
 
         {/* Bento Card Section */}
         <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
+          {/* Section Title */}
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold text-center mb-8 sm:mb-10 md:mb-12" style={{ color: '#002903' }}>
+            Unlock the power of your data
+          </h2>
+          
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
             
             {/* Row 1, Card 1 - Smart Excel Analysis (1 col) */}
