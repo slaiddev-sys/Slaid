@@ -336,7 +336,7 @@ export default function Component1920WLight() {
             </div>
 
             {/* Row 1, Card 2 - Slide-Ready Reports */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300">
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300 md:col-span-2">
               {/* Placeholder for image */}
               <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
               
@@ -352,7 +352,7 @@ export default function Component1920WLight() {
             </div>
 
             {/* Row 2, Card 3 - Interactive Charts */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300">
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300 md:col-span-2">
               {/* Placeholder for image */}
               <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
               
