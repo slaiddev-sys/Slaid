@@ -6,15 +6,7 @@ import { AuthProvider } from "../components/AuthProvider";
 export const metadata: Metadata = {
   title: "Slaid - AI Presentation Generator",
   description: "Transform Data to Professional Reports",
-  icons: {
-    icon: [
-      { url: "/slaid-icon.png", sizes: "any", type: "image/png" },
-      { url: "/slaid-icon.png", sizes: "32x32", type: "image/png" },
-      { url: "/slaid-icon.png", sizes: "16x16", type: "image/png" },
-    ],
-    shortcut: "/slaid-icon.png",
-    apple: "/slaid-icon.png",
-  },
+  // Next.js will automatically use /app/icon.png as favicon
 };
 
 export default function RootLayout({
@@ -25,10 +17,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Favicon - using completely new filename to bypass cache */}
-        <link rel="icon" type="image/png" href="/slaid-icon.png" />
-        <link rel="shortcut icon" type="image/png" href="/slaid-icon.png" />
-        <link rel="apple-touch-icon" href="/slaid-icon.png" />
+        {/* Next.js will automatically generate favicon from /app/icon.png */}
         {/* Direct Google Fonts import for better reliability */}
         <link
           href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600&family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Source+Serif+Pro:wght@400;600;700&family=Oswald:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=Lato:wght@300;400;700&family=Noto+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=Raleway:wght@300;400;500;600;700&family=DM+Serif+Display:wght@400&family=Cabin:wght@400;500;600;700&display=swap"
