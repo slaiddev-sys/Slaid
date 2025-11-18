@@ -363,14 +363,14 @@ export default function Component1920WLight() {
             {/* Row 2, Card 3 - Interactive Charts (2 cols - wider) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[4px] md:col-span-2" style={{ borderColor: '#f6f7f8' }}>
               {/* Area Chart */}
-              <div className="w-full h-56 sm:h-64 md:h-72 mb-6">
+              <div className="w-full h-56 sm:h-64 md:h-72 mb-6 -ml-4">
                 <ChartBlock
                   id="interactive-area-chart"
                   type="area"
                   labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
                   series={[
-                    { id: 'Revenue', data: [6.5, 11.2, 9.8, 15.1, 18.2, 24.5] },
-                    { id: 'GMV', data: [5.8, 10.5, 9.2, 13.8, 17.1, 21.8] }
+                    { id: 'Revenue', data: [6.5, 11.2, 9.8, 15.1, 18.2, 24.5], color: '#10b981' },
+                    { id: 'GMV', data: [5.8, 10.5, 9.2, 13.8, 17.1, 21.8], color: '#059669' }
                   ]}
                   showLegend={true}
                   showGrid={true}
