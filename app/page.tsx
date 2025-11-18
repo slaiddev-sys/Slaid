@@ -236,7 +236,7 @@ export default function Component1920WLight() {
           <div className="flex-shrink-0 w-full lg:w-[35%] xl:w-[38%]">
             {/* Heading */}
             <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-4 md:mb-5 text-left tracking-tighter" style={{ color: '#002903' }}>
-              Convert data to professional<br className="hidden sm:inline" /><span className="sm:hidden"> </span>reports
+              Transform your Excel into a professional data presentation
             </h1>
             {/* Subheading */}
             <p className="max-w-full text-left text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-5 md:mb-6 leading-relaxed" style={{ color: '#002903' }}>
