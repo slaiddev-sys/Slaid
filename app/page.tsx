@@ -231,9 +231,9 @@ export default function Component1920WLight() {
       {/* Main Content: left-aligned layout */}
       <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-12 md:pt-16 lg:pt-24 xl:pt-32 pb-8 sm:pb-12 md:pb-16 max-w-6xl 2xl:max-w-7xl mx-auto">
         {/* Main Content Row - Title and Upload Container */}
-        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-10 lg:gap-5 xl:gap-6 items-start justify-between w-full mb-12">
+        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-10 lg:gap-8 xl:gap-10 items-start justify-between w-full mb-12">
           {/* Left Side - Title and Description */}
-          <div className="flex-shrink-0 w-full lg:w-[28%] xl:w-[30%]">
+          <div className="flex-shrink-0 w-full lg:w-[35%] xl:w-[38%]">
             {/* Heading */}
             <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-4 md:mb-5 text-left tracking-tighter" style={{ color: '#002903' }}>
               Convert data to professional<br className="hidden sm:inline" /><span className="sm:hidden"> </span>reports
@@ -242,10 +242,21 @@ export default function Component1920WLight() {
             <p className="max-w-full text-left text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-5 md:mb-6 leading-relaxed" style={{ color: '#002903' }}>
               Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.
             </p>
+            
+            {/* Get Started Button */}
+            <button
+              onClick={() => router.push('/signup')}
+              className="text-sm sm:text-base font-medium text-white px-6 sm:px-7 md:px-8 py-3 sm:py-3.5 rounded-full transition-all duration-200 whitespace-nowrap active:opacity-90 touch-manipulation shadow-lg hover:shadow-xl hover:scale-[1.02]"
+              style={{ backgroundColor: '#002903' }}
+              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
+              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
+            >
+              Get Started
+            </button>
           </div>
           
-          {/* Right Side - Upload Container (from Editor) */}
-          <div className="relative w-full lg:w-[68%] xl:w-[66%] mt-6 sm:mt-8 lg:mt-0 flex justify-center">
+          {/* Right Side - Upload Container (from Editor) - Moved Further Right */}
+          <div className="relative w-full lg:w-[60%] xl:w-[58%] mt-6 sm:mt-8 lg:mt-0 flex justify-end">
             <div 
               className="relative w-full max-w-md cursor-pointer"
               onClick={() => router.push('/signup')}
