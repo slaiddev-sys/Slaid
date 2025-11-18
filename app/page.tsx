@@ -281,8 +281,8 @@ export default function Component1920WLight() {
           {/* Right Side - Upload Container (from Editor) - Moved Further Right */}
           <div className="relative w-full lg:w-[60%] xl:w-[58%] mt-6 sm:mt-8 lg:mt-0 flex flex-col items-end">
             {/* Free Credits Badge */}
-            <div className="w-full max-w-md mb-4">
-              <div className="flex items-center gap-3 px-6 py-3 rounded-full border-2" style={{ borderColor: '#002903' }}>
+            <div className="w-full max-w-md mb-4 flex justify-start">
+              <div className="flex items-center gap-3">
                 <img 
                   src="/ai credit-icon.png" 
                   alt="Credits" 
