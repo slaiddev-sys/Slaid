@@ -358,7 +358,7 @@ export default function Component1920WLight() {
         {/* Bento Card Section */}
         <div className="w-full mt-12 sm:mt-16 md:mt-20 lg:mt-24">
           {/* Section Title */}
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-medium text-center mb-8 sm:mb-10 md:mb-12" style={{ color: '#002903' }}>
+          <h2 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-8 sm:mb-10 md:mb-12 text-center tracking-tighter" style={{ color: '#002903' }}>
             Unlock the power of your data
           </h2>
           
