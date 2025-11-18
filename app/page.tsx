@@ -394,11 +394,11 @@ export default function Component1920WLight() {
             {/* Row 1, Card 2 - Slide-Ready Reports (2 cols - wider) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[4px] border-gray-200 md:col-span-2">
               {/* Slide-Ready Image */}
-              <div className="w-full h-56 sm:h-64 md:h-72 bg-gray-100 rounded-xl mb-6 overflow-hidden flex items-center justify-center">
+              <div className="w-full h-56 sm:h-64 md:h-72 bg-gray-100 rounded-xl mb-6 overflow-hidden flex items-center justify-start">
                 <img 
                   src="/Slide-Ready.png" 
                   alt="Slide-Ready Reports" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-left"
                 />
               </div>
               
