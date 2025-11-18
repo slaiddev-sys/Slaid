@@ -350,15 +350,15 @@ export default function Component1920WLight() {
 
             {/* Row 1, Card 2 - Slide-Ready Reports (2 cols - wider) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[4px] md:col-span-2" style={{ borderColor: '#f6f7f8' }}>
-              {/* Layout Previews Grid */}
-              <div className="w-full h-56 sm:h-64 md:h-72 bg-gray-100 rounded-xl mb-6 p-4 overflow-hidden">
-                <div className="grid grid-cols-2 gap-3 h-full">
-                  {/* Top Left - Full Width Chart */}
-                  <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                    <div className="transform scale-[0.15] origin-top-left w-[666.67%] h-[666.67%]">
+              {/* Layout Previews Grid - 8 slides (4x2) */}
+              <div className="w-full h-56 sm:h-64 md:h-72 bg-gray-100 rounded-xl mb-6 overflow-hidden">
+                <div className="flex flex-col gap-2 p-2">
+                  {/* Top Row - 4 slides */}
+                  <div className="flex gap-2">
+                    <div className="w-1/4 bg-white rounded shadow-sm overflow-hidden">
                       <ExcelFullWidthChart_Responsive
                         title="Revenue Growth"
-                        description="Quarterly performance metrics showing steady growth"
+                        description="Q1-Q4 performance"
                         chart={{
                           type: 'line',
                           labels: ['Q1', 'Q2', 'Q3', 'Q4'],
@@ -370,17 +370,14 @@ export default function Component1920WLight() {
                         canvasHeight={495}
                       />
                     </div>
-                  </div>
-                  
-                  {/* Top Right - KPI Dashboard */}
-                  <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                    <div className="transform scale-[0.15] origin-top-left w-[666.67%] h-[666.67%]">
+                    
+                    <div className="w-1/4 bg-white rounded shadow-sm overflow-hidden">
                       <ExcelKPIDashboard_Responsive
                         title="Key Metrics"
-                        description="Essential business indicators"
+                        description="Business indicators"
                         kpiCards={[
-                          { value: '2.5M', label: 'Users', subtitle: '+12% MoM' },
-                          { value: '94%', label: 'Satisfaction', subtitle: 'NPS Score' }
+                          { value: '2.5M', label: 'Users', subtitle: '+12%' },
+                          { value: '94%', label: 'NPS', subtitle: 'High' }
                         ]}
                         chart={{
                           type: 'bar',
@@ -392,14 +389,11 @@ export default function Component1920WLight() {
                         canvasHeight={495}
                       />
                     </div>
-                  </div>
-                  
-                  {/* Bottom Left - Trend Chart */}
-                  <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                    <div className="transform scale-[0.15] origin-top-left w-[666.67%] h-[666.67%]">
+                    
+                    <div className="w-1/4 bg-white rounded shadow-sm overflow-hidden">
                       <ExcelTrendChart_Responsive
                         title="Market Trends"
-                        insights={['Strong upward trajectory', 'Peak season in Q4']}
+                        insights={['Strong growth', 'Peak Q4']}
                         chart={{
                           type: 'area',
                           labels: ['Jan', 'Feb', 'Mar', 'Apr'],
@@ -411,11 +405,8 @@ export default function Component1920WLight() {
                         canvasHeight={495}
                       />
                     </div>
-                  </div>
-                  
-                  {/* Bottom Right - Pie Chart */}
-                  <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                    <div className="transform scale-[0.15] origin-top-left w-[666.67%] h-[666.67%]">
+                    
+                    <div className="w-1/4 bg-white rounded shadow-sm overflow-hidden">
                       <ExcelPieChart_Responsive
                         title="Distribution"
                         insights={['Product A: 45%', 'Product B: 35%']}
@@ -423,6 +414,75 @@ export default function Component1920WLight() {
                           type: 'pie',
                           labels: ['A', 'B', 'C'],
                           series: [{ id: 'Share', data: [45, 35, 20] }],
+                          showLegend: true
+                        }}
+                        canvasWidth={881}
+                        canvasHeight={495}
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Bottom Row - 4 slides */}
+                  <div className="flex gap-2">
+                    <div className="w-1/4 bg-white rounded shadow-sm overflow-hidden">
+                      <ExcelFullWidthChart_Responsive
+                        title="Sales Performance"
+                        description="Monthly metrics"
+                        chart={{
+                          type: 'bar',
+                          labels: ['Jan', 'Feb', 'Mar', 'Apr'],
+                          series: [{ id: 'Sales', data: [65, 72, 68, 85] }],
+                          showLegend: false,
+                          showGrid: true
+                        }}
+                        canvasWidth={881}
+                        canvasHeight={495}
+                      />
+                    </div>
+                    
+                    <div className="w-1/4 bg-white rounded shadow-sm overflow-hidden">
+                      <ExcelTrendChart_Responsive
+                        title="User Engagement"
+                        insights={['DAU increasing', 'Retention high']}
+                        chart={{
+                          type: 'line',
+                          labels: ['W1', 'W2', 'W3', 'W4'],
+                          series: [{ id: 'DAU', data: [1200, 1450, 1580, 1720] }],
+                          showLegend: false,
+                          curved: true
+                        }}
+                        canvasWidth={881}
+                        canvasHeight={495}
+                      />
+                    </div>
+                    
+                    <div className="w-1/4 bg-white rounded shadow-sm overflow-hidden">
+                      <ExcelKPIDashboard_Responsive
+                        title="Performance"
+                        description="Q4 Results"
+                        kpiCards={[
+                          { value: '$5.2M', label: 'Revenue', subtitle: '+15%' },
+                          { value: '89%', label: 'Target', subtitle: 'Met' }
+                        ]}
+                        chart={{
+                          type: 'area',
+                          labels: ['Oct', 'Nov', 'Dec'],
+                          series: [{ id: 'Rev', data: [1.5, 1.8, 1.9] }],
+                          showLegend: false
+                        }}
+                        canvasWidth={881}
+                        canvasHeight={495}
+                      />
+                    </div>
+                    
+                    <div className="w-1/4 bg-white rounded shadow-sm overflow-hidden">
+                      <ExcelPieChart_Responsive
+                        title="Market Share"
+                        insights={['Leader: 42%', 'Growing fast']}
+                        chart={{
+                          type: 'pie',
+                          labels: ['Us', 'Comp A', 'Comp B'],
+                          series: [{ id: 'Share', data: [42, 35, 23] }],
                           showLegend: true
                         }}
                         canvasWidth={881}
