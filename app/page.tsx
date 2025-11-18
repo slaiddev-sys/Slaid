@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import ChartBlock from "../components/blocks/ChartBlock";
 
 // TypewriterWord component
 function TypewriterWord() {
@@ -361,8 +362,25 @@ export default function Component1920WLight() {
 
             {/* Row 2, Card 3 - Interactive Charts (2 cols - wider) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[4px] md:col-span-2" style={{ borderColor: '#f6f7f8' }}>
-              {/* Placeholder for image */}
-              <div className="w-full h-56 sm:h-64 md:h-72 bg-gray-100 rounded-xl mb-6"></div>
+              {/* Area Chart */}
+              <div className="w-full h-56 sm:h-64 md:h-72 mb-6">
+                <ChartBlock
+                  id="interactive-area-chart"
+                  type="area"
+                  labels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+                  series={[
+                    { id: 'Revenue', data: [6.5, 11.2, 9.8, 15.1, 18.2, 24.5] },
+                    { id: 'GMV', data: [5.8, 10.5, 9.2, 13.8, 17.1, 21.8] }
+                  ]}
+                  showLegend={true}
+                  showGrid={true}
+                  stacked={false}
+                  curved={true}
+                  animate={true}
+                  showDots={false}
+                  className="w-full h-full"
+                />
+              </div>
               
               <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
                 Interactive Charts
