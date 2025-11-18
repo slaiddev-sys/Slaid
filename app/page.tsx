@@ -198,9 +198,7 @@ export default function Component1920WLight() {
   const router = useRouter();
 
   return (
-    <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden" style={{ backgroundImage: 'url(/sheet-background.png)', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
-      {/* White overlay to reduce background opacity */}
-      <div className="absolute inset-0 bg-white opacity-70 z-0"></div>
+    <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden">
       
       {/* Navigation Bar - Logo and Auth Buttons */}
       <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 w-full">
