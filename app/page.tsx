@@ -318,7 +318,7 @@ export default function Component1920WLight() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
             
             {/* Row 1, Card 1 - Smart Excel Analysis (1 col) */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300">
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px]" style={{ borderColor: '#f6f7f8' }}>
               {/* Placeholder for image */}
               <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
               
@@ -334,7 +334,7 @@ export default function Component1920WLight() {
             </div>
 
             {/* Row 1, Card 2 - Slide-Ready Reports (2 cols - wider) */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300 md:col-span-2">
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] md:col-span-2" style={{ borderColor: '#f6f7f8' }}>
               {/* Placeholder for image */}
               <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
               
@@ -350,7 +350,7 @@ export default function Component1920WLight() {
             </div>
 
             {/* Row 2, Card 3 - Interactive Charts (2 cols - wider) */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300 md:col-span-2">
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px] md:col-span-2" style={{ borderColor: '#f6f7f8' }}>
               {/* Placeholder for image */}
               <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
               
@@ -366,7 +366,7 @@ export default function Component1920WLight() {
             </div>
 
             {/* Row 2, Card 4 - Edit in PowerPoint (1 col) */}
-            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-300">
+            <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[3px]" style={{ borderColor: '#f6f7f8' }}>
               {/* Placeholder for image */}
               <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6"></div>
               
