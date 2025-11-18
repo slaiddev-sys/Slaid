@@ -380,12 +380,9 @@ export default function Component1920WLight() {
                 />
               </div>
               
-              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
-                Smart Excel Analysis
+              <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: '#002903' }}>
+                Smart Excel Analysis — Let AI do the number crunching.
               </h3>
-              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
-                Let AI do the number crunching.
-              </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 Upload any spreadsheet and Slaid will automatically analyze your data — no formulas, no pivot tables. From trends to anomalies, it detects what matters most and gets to work instantly.
               </p>
@@ -402,12 +399,9 @@ export default function Component1920WLight() {
                 />
               </div>
               
-              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
-                Slide-Ready Reports
+              <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: '#002903' }}>
+                Slide-Ready Reports — From raw data to polished storytelling.
               </h3>
-              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
-                From raw data to polished storytelling.
-              </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 Turn your analysis into a structured presentation with titles, charts, summaries and key takeaways. No design skills needed — everything is laid out for clarity and impact.
               </p>
@@ -415,12 +409,9 @@ export default function Component1920WLight() {
 
             {/* Row 2, Card 3 - Interactive Charts (2 cols - wider) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[4px] border-gray-200 md:col-span-2">
-              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
-                Interactive Charts
+              <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: '#002903' }}>
+                Interactive Charts — Explore, filter, and highlight what matters.
               </h3>
-              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
-                Explore, filter, and highlight what matters.
-              </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6">
                 Charts in Slaid aren't static images. You can click, explore, and dig deeper into the numbers — making it easier to find insights and adapt visuals before exporting.
               </p>
@@ -464,12 +455,9 @@ export default function Component1920WLight() {
                 </button>
               </div>
               
-              <h3 className="text-xl sm:text-2xl font-semibold mb-3" style={{ color: '#002903' }}>
-                Edit in PowerPoint
+              <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: '#002903' }}>
+                Edit in PowerPoint — Make it yours with your tools.
               </h3>
-              <p className="text-base sm:text-lg font-medium mb-3" style={{ color: '#002903' }}>
-                Make it yours — with your tools.
-              </p>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
                 Export your report to PowerPoint or your favorite editor. You're free to tweak every slide or drop it straight into your workflow, fully editable.
               </p>
