@@ -471,9 +471,94 @@ export default function Component1920WLight() {
             </div>
 
           </div>
-        </div>
-        
-      </main>
-    </div>
-  );
-}
+          </div>
+
+        </main>
+
+        {/* Footer */}
+        <footer className="w-full border-t border-gray-200 bg-white mt-16 sm:mt-20 md:mt-24">
+          <div className="max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+              
+              {/* Logo and Slogan */}
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2 mb-3">
+                  <img 
+                    src="/basic-plan.png" 
+                    alt="Slaid Logo" 
+                    className="w-8 h-8 object-contain"
+                  />
+                  <span className="text-xl font-semibold" style={{ color: '#002903' }}>Slaid</span>
+                </div>
+                <p className="text-sm text-gray-600">
+                  Transform your Excel into professional data presentations with AI-powered insights.
+                </p>
+              </div>
+
+              {/* Menu Section */}
+              <div>
+                <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>Menu</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <a href="/" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Home
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/editor" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Editor
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Pricing
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/login" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Login
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/signup" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Sign Up
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Policies Section */}
+              <div>
+                <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>Policies</h3>
+                <ul className="space-y-2">
+                  <li>
+                    <a href="/privacy" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Privacy Policy
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/terms" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Terms of Service
+                    </a>
+                  </li>
+                  <li>
+                    <a href="/cookies" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Cookie Policy
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+            </div>
+
+            {/* Copyright */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <p className="text-sm text-gray-500 text-center">
+                © {new Date().getFullYear()} Slaid. All rights reserved.
+              </p>
+            </div>
+          </div>
+        </footer>
+      </div>
+    );
+  }
