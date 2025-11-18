@@ -372,11 +372,11 @@ export default function Component1920WLight() {
             {/* Row 1, Card 1 - Smart Excel Analysis (1 col) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-[4px] border-gray-200">
               {/* Excel Analysis Image */}
-              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6 overflow-hidden flex items-center justify-center">
+              <div className="w-full h-48 sm:h-56 bg-gray-100 rounded-xl mb-6 overflow-hidden flex items-center justify-end">
                 <img 
                   src="/excel-analysis.png" 
                   alt="Excel Analysis" 
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-right"
                 />
               </div>
               
