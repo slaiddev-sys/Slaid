@@ -302,11 +302,16 @@ export default function Component1920WLight() {
         {/* Demo Video - Full Width Below */}
         <div className="w-full mt-8 sm:mt-12 md:mt-16">
           <video 
+            key="demo-video"
             className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl border border-gray-200"
             autoPlay
             muted
             loop
             playsInline
+            onLoadedData={(e) => {
+              e.currentTarget.currentTime = 0;
+              e.currentTarget.play();
+            }}
           >
             <source src="/Slaid : Demo.mp4" type="video/mp4" />
             Your browser does not support the video tag.
