@@ -336,7 +336,7 @@ export default function Component1920WLight() {
         <div className="w-full mt-8 sm:mt-12 md:mt-16">
           <video 
             key="demo-video"
-            className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl border border-gray-200"
+            className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl border-4 border-gray-200"
             autoPlay
             muted
             loop
