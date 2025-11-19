@@ -1,0 +1,75 @@
+{
+  "nav": {
+    "login": "Iniciar sesión",
+    "signup": "Registrarse"
+  },
+  "hero": {
+    "customersCount": "Usado por {count} clientes satisfechos",
+    "title": "Transforma tu Excel en una presentación de datos profesional",
+    "subtitle": "Desbloquea el potencial de tus datos de Excel con nuestro generador de presentaciones impulsado por IA.",
+    "getStarted": "Comenzar",
+    "freeCredits": "Obtén 50 créditos gratis al registrarte",
+    "uploadFiles": "Subir archivos",
+    "dragAndDrop": "Arrastra y suelta tus archivos aquí, o",
+    "clickToSelect": "haz clic para seleccionar",
+    "supportFormats": "Formatos compatibles: .xlsx, .xsl, .csv"
+  },
+  "bento": {
+    "title": "Desbloquea el poder de tus datos",
+    "description": "Slaid no solo convierte hojas de cálculo en informes visuales: actúa como un analista, interpretando tus datos, detectando patrones y sugiriendo información clara y procesable.",
+    "smartExcel": {
+      "title": "Análisis inteligente de Excel — Deja que la IA haga los cálculos.",
+      "description": "Sube cualquier hoja de cálculo y Slaid analizará automáticamente tus datos: sin fórmulas, sin tablas dinámicas. Desde tendencias hasta anomalías, detecta lo que más importa y se pone a trabajar al instante."
+    },
+    "slideReady": {
+      "title": "Informes listos para presentar — De datos en bruto a una narrativa pulida.",
+      "description": "Convierte tu análisis en una presentación estructurada con títulos, gráficos, resúmenes y conclusiones clave. No se necesitan habilidades de diseño: todo está diseñado para claridad e impacto."
+    },
+    "interactive": {
+      "title": "Gráficos interactivos — Explora, filtra y resalta lo que importa.",
+      "description": "Los gráficos en Slaid no son imágenes estáticas. Puedes hacer clic, explorar y profundizar en los números, lo que facilita encontrar información y adaptar las visualizaciones antes de exportar."
+    },
+    "powerpoint": {
+      "title": "Editar en PowerPoint — Hazlo tuyo con tus herramientas.",
+      "description": "Exporta tu informe a PowerPoint o tu editor favorito. Eres libre de modificar cada diapositiva o integrarlo directamente en tu flujo de trabajo, totalmente editable.",
+      "button": "Editar en PowerPoint"
+    }
+  },
+  "faq": {
+    "title": "Preguntas frecuentes",
+    "q1": {
+      "question": "¿Cómo analiza Slaid mis datos de Excel?",
+      "answer": "Slaid utiliza IA avanzada para detectar automáticamente patrones, tendencias e información en tu hoja de cálculo. Simplemente sube tu archivo de Excel y nuestra IA analizará la estructura de datos, identificará métricas clave y generará visualizaciones significativas sin requerir configuración manual."
+    },
+    "q2": {
+      "question": "¿Puedo editar la presentación después de generarla?",
+      "answer": "¡Sí! Puedes exportar tu presentación a PowerPoint para obtener capacidades de edición completas. Todo el texto permanece editable y los gráficos se conservan como imágenes de alta calidad. Esto te permite personalizar cada detalle usando las herramientas que ya conoces."
+    },
+    "q3": {
+      "question": "¿Qué formatos de archivo admite Slaid?",
+      "answer": "Slaid actualmente admite formatos de archivo .xlsx, .xls y .csv. Puedes cargar hojas de cálculo desde Excel, Google Sheets (exportadas como .xlsx) o cualquier otra aplicación que exporte a estos formatos estándar."
+    },
+    "q4": {
+      "question": "¿Cuántos créditos necesito para crear una presentación?",
+      "answer": "El uso de créditos depende del número de diapositivas que generes. Las presentaciones más pequeñas (5 diapositivas) usan menos créditos, mientras que las presentaciones más grandes (15+ diapositivas) requieren más. Los nuevos usuarios obtienen 50 créditos gratis para comenzar, y siempre puedes actualizar tu plan para obtener más créditos."
+    },
+    "q5": {
+      "question": "¿Están seguros mis datos?",
+      "answer": "Absolutamente. Tus datos están cifrados en tránsito y en reposo. Nunca compartimos tus datos con terceros y mantienes la propiedad total de todos los archivos cargados y presentaciones generadas. Puedes eliminar tus datos en cualquier momento desde la configuración de tu cuenta."
+    }
+  },
+  "footer": {
+    "slogan": "Transforma tu Excel en presentaciones de datos profesionales con información impulsada por IA.",
+    "menu": "Menú",
+    "policies": "Políticas",
+    "home": "Inicio",
+    "pricing": "Precios",
+    "login": "Iniciar sesión",
+    "signup": "Registrarse",
+    "privacy": "Política de privacidad",
+    "terms": "Términos de servicio",
+    "cookies": "Política de cookies",
+    "copyright": "© {year} Slaid. Todos los derechos reservados."
+  }
+}
+
