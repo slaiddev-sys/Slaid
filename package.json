@@ -31,7 +31,6 @@
     "lucide-react": "^0.533.0",
     "mammoth": "^1.11.0",
     "next": "15.4.2",
-    "next-intl": "^4.5.5",
     "node-fetch": "^3.3.2",
     "pdf-merger-js": "^5.1.2",
     "pptxgenjs": "^4.0.1",
