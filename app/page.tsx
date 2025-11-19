@@ -595,6 +595,11 @@ export default function Component1920WLight() {
                     </a>
                   </li>
                   <li>
+                    <a href="/pricing" className="text-sm text-gray-600 hover:text-gray-900 transition">
+                      Pricing
+                    </a>
+                  </li>
+                  <li>
                     <a href="/login" className="text-sm text-gray-600 hover:text-gray-900 transition">
                       Login
                     </a>
