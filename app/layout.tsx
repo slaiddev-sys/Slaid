@@ -17,7 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Next.js will automatically generate favicon from /app/icon.png */}
+        {/* Favicon with cache busting */}
+        <link rel="icon" href="/basic-plan.png?v=2024" type="image/png" />
+        <link rel="shortcut icon" href="/basic-plan.png?v=2024" type="image/png" />
+        <link rel="apple-touch-icon" href="/basic-plan.png?v=2024" />
         {/* Direct Google Fonts import for better reliability */}
         <link
           href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600&family=Open+Sans:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&family=Source+Serif+Pro:wght@400;600;700&family=Oswald:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&family=Lato:wght@300;400;700&family=Noto+Sans:wght@300;400;500;600;700&family=Bebas+Neue&family=Raleway:wght@300;400;500;600;700&family=DM+Serif+Display:wght@400&family=Cabin:wght@400;500;600;700&display=swap"
