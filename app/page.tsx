@@ -279,7 +279,7 @@ export default function Component1920WLight() {
           </div>
           
           {/* Right Side - Upload Container (from Editor) - Moved Further Right */}
-          <div className="relative w-full lg:w-[60%] xl:w-[58%] mt-6 sm:mt-8 lg:mt-0 flex flex-col items-end">
+          <div className="relative w-full lg:w-[60%] xl:w-[58%] mt-6 sm:mt-8 lg:mt-0 flex flex-col items-center lg:items-end">
             {/* Free Credits Badge */}
             <div className="w-full max-w-md mb-4 flex justify-start">
               <div className="flex items-center gap-3">
@@ -330,29 +330,29 @@ export default function Component1920WLight() {
                     </span>.
                   </p>
                   <p className="text-xs text-center mt-2" style={{ color: '#002903' }}>Support formats: .xlsx, .xsl, .csv</p>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        
+          
         {/* Demo Video - Full Width Below */}
         <div className="w-full mt-6 sm:mt-8 md:mt-10">
-          <video 
+            <video 
             key="demo-video"
             className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl border-4 border-gray-200"
-            autoPlay
-            muted
-            loop
-            playsInline
+              autoPlay
+              muted
+              loop
+              playsInline
             onLoadedData={(e) => {
               e.currentTarget.currentTime = 0;
               e.currentTarget.play();
             }}
-          >
-            <source src="/Slaid : Demo.mp4" type="video/mp4" />
-            Your browser does not support the video tag.
-          </video>
+            >
+              <source src="/Slaid : Demo.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
         </div>
 
         {/* Bento Card Section */}
@@ -473,12 +473,12 @@ export default function Component1920WLight() {
             Frequently Asked Questions
           </h2>
 
-          <div className="max-w-3xl mx-auto space-y-4">
+          <div className="max-w-3xl mx-auto space-y-4 px-4">
             
             {/* FAQ Item 1 */}
-            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-6">
+            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
-                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
                   How does Slaid analyze my Excel data?
                 </h3>
                 <span className="transition group-open:rotate-180">
@@ -493,9 +493,9 @@ export default function Component1920WLight() {
             </details>
 
             {/* FAQ Item 2 */}
-            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-6">
+            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
-                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
                   Can I edit the presentation after it's generated?
                 </h3>
                 <span className="transition group-open:rotate-180">
@@ -510,9 +510,9 @@ export default function Component1920WLight() {
             </details>
 
             {/* FAQ Item 3 */}
-            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-6">
+            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
-                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
                   What file formats does Slaid support?
                 </h3>
                 <span className="transition group-open:rotate-180">
@@ -527,9 +527,9 @@ export default function Component1920WLight() {
             </details>
 
             {/* FAQ Item 4 */}
-            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-6">
+            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
-                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
                   How many credits do I need to create a presentation?
                 </h3>
                 <span className="transition group-open:rotate-180">
@@ -544,9 +544,9 @@ export default function Component1920WLight() {
             </details>
 
             {/* FAQ Item 5 */}
-            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-6">
+            <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
-                <h3 className="text-lg font-semibold" style={{ color: '#002903' }}>
+                <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
                   Is my data secure?
                 </h3>
                 <span className="transition group-open:rotate-180">
@@ -562,8 +562,8 @@ export default function Component1920WLight() {
 
           </div>
         </div>
-
-        </main>
+        
+      </main>
 
         {/* Footer */}
         <footer className="w-full border-t border-gray-200 bg-white mt-16 sm:mt-20 md:mt-24">
@@ -639,6 +639,6 @@ export default function Component1920WLight() {
             </div>
           </div>
         </footer>
-      </div>
-    );
-  }
+    </div>
+  );
+}
