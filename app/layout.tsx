@@ -4,8 +4,49 @@ import "./fonts.css";
 import { AuthProvider } from "../components/AuthProvider";
 
 export const metadata: Metadata = {
-  title: "Slaid - AI Presentation Generator",
-  description: "Transform Data to Professional Reports",
+  title: "Slaid - AI Presentation Generator | Transform Excel to Professional Reports",
+  description: "Transform your Excel data into professional presentations instantly with AI. Smart analysis, interactive charts, and PowerPoint-ready reports. Get 50 free credits.",
+  keywords: ["excel to presentation", "AI presentation generator", "data visualization", "excel analysis", "powerpoint generator", "spreadsheet to slides", "data reports", "business intelligence"],
+  authors: [{ name: "Slaid" }],
+  creator: "Slaid",
+  publisher: "Slaid",
+  metadataBase: new URL('https://slaidapp.com'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    title: "Slaid - Transform Excel into Professional Data Presentations",
+    description: "Upload any spreadsheet and get AI-powered analysis, interactive charts, and slide-ready reports in seconds. No design skills needed.",
+    url: 'https://slaidapp.com',
+    siteName: 'Slaid',
+    images: [
+      {
+        url: '/Slide-Ready.png',
+        width: 1200,
+        height: 630,
+        alt: 'Slaid AI Presentation Generator',
+      }
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "Slaid - Transform Excel into Professional Presentations",
+    description: "AI-powered presentation generator. Upload Excel, get beautiful reports instantly.",
+    images: ['/Slide-Ready.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
   icons: {
     icon: [
       { url: '/basic-plan.png', type: 'image/png' },
@@ -13,6 +54,9 @@ export const metadata: Metadata = {
     ],
     shortcut: '/basic-plan.png',
     apple: '/basic-plan.png',
+  },
+  verification: {
+    google: 'google-site-verification-code-here', // You'll need to add this from Google Search Console
   },
 };
 

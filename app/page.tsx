@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ChartBlock from "../components/blocks/ChartBlock";
+import Head from "next/head";
 
 // TypewriterWord component
 function TypewriterWord() {
@@ -198,8 +199,44 @@ function Component1({ variant = "1" }: Component1Props) {
 export default function Component1920WLight() {
   const router = useRouter();
 
+  // Structured data for SEO
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Slaid",
+    "applicationCategory": "BusinessApplication",
+    "operatingSystem": "Web",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": "Get 50 free credits to start"
+    },
+    "description": "Transform your Excel data into professional presentations instantly with AI. Smart analysis, interactive charts, and PowerPoint-ready reports.",
+    "url": "https://slaidapp.com",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "1353"
+    },
+    "featureList": [
+      "Smart Excel Analysis",
+      "AI-Powered Insights",
+      "Interactive Charts",
+      "PowerPoint Export",
+      "Slide-Ready Reports"
+    ]
+  };
+
   return (
-    <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden">
+    <>
+      {/* Structured Data for SEO */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      
+      <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden">
       
       {/* Navigation Bar - Logo and Auth Buttons */}
       <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 w-full">
@@ -639,6 +676,7 @@ export default function Component1920WLight() {
             </div>
           </div>
         </footer>
-    </div>
+      </div>
+    </>
   );
 }
