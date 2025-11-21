@@ -267,7 +267,7 @@ export default function Component1920WLight() {
       {/* Main Content: left-aligned layout */}
       <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 md:pt-12 lg:pt-16 xl:pt-20 pb-8 sm:pb-12 md:pb-16 max-w-6xl 2xl:max-w-7xl mx-auto">
         {/* Main Content Row - Title and Description (Centered) */}
-        <div className="flex flex-col items-center justify-center w-full mb-12 text-center max-w-4xl mx-auto">
+        <div className="flex flex-col items-center justify-center w-full mb-8 text-center max-w-4xl mx-auto">
           {/* Customer Avatars */}
           <div className="flex items-center gap-3 mb-4 md:mb-5">
             <div className="flex -space-x-2">
@@ -314,7 +314,7 @@ export default function Component1920WLight() {
         </div>
           
         {/* Demo Video - Full Width Below */}
-        <div className="w-full mt-6 sm:mt-8 md:mt-10">
+        <div className="w-full mt-4 sm:mt-6 md:mt-8">
             <video 
             key="demo-video"
             className="w-full h-auto rounded-lg sm:rounded-xl md:rounded-2xl shadow-lg sm:shadow-xl lg:shadow-2xl border-4 border-gray-200"
