@@ -337,21 +337,48 @@ CHECKPOINT BEFORE SUBMITTING YOUR JSON:
 
 🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨🚨
 
-🌍 CRITICAL LANGUAGE REQUIREMENT - READ THIS FIRST:
-1. **DETECT THE LANGUAGE** of the user's request: "${presentationPrompt}"
-2. **USE ONLY THAT LANGUAGE** for 100% of the presentation content
-3. **NO MIXING LANGUAGES** - If Spanish, everything in Spanish. If English, everything in English.
-4. This applies to:
-   - Slide titles
-   - Descriptions and subtitles  
-   - Chart labels and axis titles
-   - Table headers and data labels
-   - Insight texts and interpretations
-   - All props: title, subtitle, description, leftText, rightText, insights, limitations, etc.
-5. **EXAMPLE**: If user writes "créame una presentación", use Spanish for EVERYTHING:
-   - ✅ "Análisis de Ventas" (correct)
-   - ❌ "Sales Analysis" (wrong - do not mix English)
-6. **VERIFY** before generating: Is EVERY word in the detected language?
+🌍🌍🌍 ABSOLUTE #1 PRIORITY - LANGUAGE DETECTION - READ THIS BEFORE ANYTHING ELSE 🌍🌍🌍
+
+**STEP 1: ANALYZE THE USER'S PROMPT LANGUAGE**
+User's prompt: "${presentationPrompt}"
+
+**LANGUAGE DETECTION RULES:**
+✅ If prompt contains English words (like "create", "make", "generate", "show me", "analyze") → USE 100% ENGLISH
+✅ If prompt contains Spanish words (like "crear", "genera", "hazme", "muéstrame", "analiza") → USE 100% SPANISH
+
+**EXAMPLES:**
+- Prompt: "create a presentation" → ENGLISH (all slides in English)
+- Prompt: "créame una presentación" → SPANISH (all slides in Spanish)  
+- Prompt: "analyze my data" → ENGLISH (all slides in English)
+- Prompt: "analiza mis datos" → SPANISH (all slides in Spanish)
+
+🚨 **CRITICAL RULE - NO MIXING**: 
+- If you detect ENGLISH → Every single word in every slide MUST be in ENGLISH
+- If you detect SPANISH → Every single word in every slide MUST be in SPANISH
+- **ZERO TOLERANCE** for mixing languages in the same presentation
+
+**THIS APPLIES TO 100% OF ALL TEXT:**
+- Slide titles ✓
+- Descriptions and subtitles ✓
+- Chart labels and axis titles ✓
+- Table headers (actualTableTitle, targetTableTitle, metricColumnHeader, etc.) ✓
+- Insight texts and interpretations ✓
+- KPI labels ✓
+- Performance labels (performanceLabel) ✓
+- Button text ✓
+- All props in layouts ✓
+
+**WRONG EXAMPLES (DO NOT DO THIS):**
+❌ English prompt + Spanish titles: "Sales Analysis" mixed with "Crecimiento"
+❌ Spanish prompt + English labels: "Análisis de Ventas" mixed with "Growth"
+❌ Mixing within same slide: "Revenue Trends" with "Tendencias" labels
+
+**VERIFY BEFORE GENERATING EACH SLIDE:**
+- What language did I detect from the prompt?
+- Is EVERY SINGLE WORD in my slide using that language?
+- Did I accidentally mix languages anywhere?
+
+**IF UNSURE**: Use English as default, but once chosen, NEVER switch languages mid-presentation.
 
 EXCEL DATA SUMMARY:
 ${dataSummary}
@@ -861,12 +888,31 @@ RULES:
    
    - **THIS RULE IS NON-NEGOTIABLE** - Area charts make presentations look professional and modern
 
-🌍 **FINAL LANGUAGE CHECK BEFORE GENERATING JSON:**
-- Review the user's request language: "${presentationPrompt}"
-- **EVERY** field in the JSON below (title, subtitle, description, leftText, rightText, insights, etc.) MUST be in the SAME language
-- **NO English text if the request is in Spanish**
-- **NO Spanish text if the request is in English**
-- Double-check: Are ALL your text fields in the correct language?
+🌍🌍🌍 **MANDATORY FINAL LANGUAGE VERIFICATION - DO NOT SKIP THIS** 🌍🌍🌍
+
+**STOP AND VERIFY NOW:**
+
+1. **What language did I detect from this prompt?** "${presentationPrompt}"
+   - Contains words like "create", "analyze", "show me" → ENGLISH
+   - Contains words like "crear", "analizar", "muéstrame" → SPANISH
+
+2. **Have I used that EXACT language in EVERY slide I'm about to generate?**
+   - Go through EVERY title, description, label, insight
+   - Check for accidental mixing (e.g., "Revenue" in Spanish presentation)
+
+3. **CRITICAL CHECKS:**
+   ❌ If prompt is ENGLISH → NO Spanish words anywhere (no "Análisis", "Crecimiento", "Ingresos")
+   ❌ If prompt is SPANISH → NO English words anywhere (no "Revenue", "Growth", "Analysis")
+
+4. **COMMON MISTAKES TO AVOID:**
+   - English prompt but chart labels in Spanish
+   - Spanish prompt but table headers in English  
+   - Mixed languages in performanceLabel, actualTableTitle, targetTableTitle
+   - Switching languages between slides
+
+5. **FINAL QUESTION:** Can I guarantee 100% language consistency?
+   - YES → Proceed to generate JSON
+   - NO → Fix all mixed language instances NOW before generating
 
 🚨🚨🚨 FINAL MANDATORY CHECKPOINT - VERIFY NO DUPLICATE CONTENT 🚨🚨🚨
 
