@@ -269,7 +269,7 @@ export default function Component1920WLight() {
         {/* Main Content Row - Title and Description (Centered) */}
         <div className="flex flex-col items-center justify-center w-full mb-8 text-center max-w-4xl mx-auto">
           {/* Customer Avatars */}
-          <div className="flex items-center gap-3 mb-4 md:mb-5">
+          <div className="flex flex-col items-center gap-2 mb-4 md:mb-5">
             <div className="flex -space-x-2">
               <img 
                 src="/Ellipse.png" 
