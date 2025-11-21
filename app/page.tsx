@@ -266,112 +266,52 @@ export default function Component1920WLight() {
       </div>
       {/* Main Content: left-aligned layout */}
       <main className="relative z-10 flex flex-col items-start justify-start w-full flex-1 px-4 sm:px-6 lg:px-8 pt-6 sm:pt-10 md:pt-12 lg:pt-16 xl:pt-20 pb-8 sm:pb-12 md:pb-16 max-w-6xl 2xl:max-w-7xl mx-auto">
-        {/* Main Content Row - Title and Upload Container */}
-        <div className="flex flex-col lg:flex-row gap-6 sm:gap-8 md:gap-10 lg:gap-8 xl:gap-10 items-start justify-between w-full mb-12">
-          {/* Left Side - Title and Description */}
-          <div className="flex-shrink-0 w-full lg:w-[35%] xl:w-[38%]">
-            {/* Customer Avatars */}
-            <div className="flex items-center gap-3 mb-4 md:mb-5">
-              <div className="flex -space-x-2">
-                <img 
-                  src="/Ellipse.png" 
-                  alt="Customer" 
-                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                />
-                <img 
-                  src="/Ellipse (1).png" 
-                  alt="Customer" 
-                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                />
-                <img 
-                  src="/Ellipse (2).png" 
-                  alt="Customer" 
-                  className="w-10 h-10 rounded-full border-2 border-white object-cover"
-                />
-              </div>
-              <p className="text-sm sm:text-base text-gray-600">
-                Used by <span className="font-semibold text-gray-900">1353</span> happy customers
-              </p>
+        {/* Main Content Row - Title and Description (Centered) */}
+        <div className="flex flex-col items-center justify-center w-full mb-12 text-center max-w-4xl mx-auto">
+          {/* Customer Avatars */}
+          <div className="flex items-center gap-3 mb-4 md:mb-5">
+            <div className="flex -space-x-2">
+              <img 
+                src="/Ellipse.png" 
+                alt="Customer" 
+                className="w-10 h-10 rounded-full border-2 border-white object-cover"
+              />
+              <img 
+                src="/Ellipse (1).png" 
+                alt="Customer" 
+                className="w-10 h-10 rounded-full border-2 border-white object-cover"
+              />
+              <img 
+                src="/Ellipse (2).png" 
+                alt="Customer" 
+                className="w-10 h-10 rounded-full border-2 border-white object-cover"
+              />
             </div>
-            
-            {/* Heading */}
-            <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-4 md:mb-5 text-left tracking-tighter" style={{ color: '#002903' }}>
-              Transform your Excel into a professional data presentation
-            </h1>
-            {/* Subheading */}
-            <p className="max-w-full text-left text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-5 md:mb-6 leading-relaxed" style={{ color: '#002903' }}>
-              Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.
+            <p className="text-sm sm:text-base text-gray-600">
+              Used by <span className="font-semibold text-gray-900">1353</span> happy customers
             </p>
-            
-            {/* Get Started Button */}
-            <button
-              onClick={() => router.push('/signup')}
-              className="text-sm sm:text-base font-medium text-white px-6 sm:px-7 md:px-8 py-3 sm:py-3.5 rounded-full transition-all duration-200 whitespace-nowrap active:opacity-90 touch-manipulation shadow-lg hover:shadow-xl hover:scale-[1.02]"
-              style={{ backgroundColor: '#002903' }}
-              onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
-              onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
-            >
-              Get Started
-            </button>
           </div>
           
-          {/* Right Side - Upload Container (from Editor) - Moved Further Right */}
-          <div className="relative w-full lg:w-[60%] xl:w-[58%] mt-6 sm:mt-8 lg:mt-0 flex flex-col items-center lg:items-end">
-            {/* Free Credits Badge */}
-            <div className="w-full max-w-md mb-4 flex justify-start">
-              <div className="flex items-center gap-3">
-                <img 
-                  src="/ai credit-icon.png" 
-                  alt="Credits" 
-                  className="w-6 h-6 object-contain"
-                />
-                <span className="text-base font-medium" style={{ color: '#002903' }}>Get 50 free credits by signing up</span>
-              </div>
-            </div>
-            
-            <div 
-              className="relative w-full max-w-md cursor-pointer"
-              onClick={() => router.push('/signup')}
-            >
-              <div 
-                className="bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border-4 border-gray-200 min-h-[380px] sm:min-h-[400px] lg:min-h-[420px] flex flex-col items-center justify-center relative transition-all duration-200 hover:shadow-2xl hover:scale-[1.02]"
-              >
-                {/* Layered Cards Background */}
-                <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
-                  {/* Back card */}
-                  <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform rotate-3 translate-x-2 translate-y-2 transition-transform duration-300 group-hover:translate-x-6"></div>
-                  {/* Middle card */}
-                  <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform -rotate-1 translate-x-1 translate-y-1 transition-transform duration-300 group-hover:-translate-x-4"></div>
-                  {/* Front card */}
-                  <div className="relative w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-start p-3 sm:p-4 transition-transform duration-300">
-                    {/* Document header lines */}
-                    <div className="w-full mb-6">
-                      <div className="h-1.5 bg-gray-200 rounded mb-2"></div>
-                      <div className="h-1.5 bg-gray-200 rounded w-2/3 mb-2"></div>
-                      <div className="h-1.5 bg-gray-200 rounded w-1/2"></div>
-                    </div>
-                    
-                    {/* Google Sheets icon in center */}
-                    <div className="flex-1 flex items-center justify-center">
-                      <img src="/google-sheets.png" alt="Google Sheets" className="w-12 h-16 sm:w-14 sm:h-18 lg:w-16 lg:h-20 object-contain" />
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>Upload Files</h3>
-                  <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>
-                    Drag and drop your files here, or{' '}
-                    <span className="text-blue-500 hover:underline">
-                      click to select
-                    </span>.
-                  </p>
-                  <p className="text-xs text-center mt-2" style={{ color: '#002903' }}>Support formats: .xlsx, .xsl, .csv</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          {/* Heading */}
+          <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-4 md:mb-5 tracking-tighter" style={{ color: '#002903' }}>
+            Transform your Excel into a professional data presentation
+          </h1>
+          {/* Subheading */}
+          <p className="max-w-full text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-5 md:mb-6 leading-relaxed" style={{ color: '#002903' }}>
+            Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.
+          </p>
+          
+          {/* Get Started Button */}
+          <button
+            onClick={() => router.push('/signup')}
+            className="text-sm sm:text-base font-medium text-white px-6 sm:px-7 md:px-8 py-3 sm:py-3.5 rounded-full transition-all duration-200 whitespace-nowrap active:opacity-90 touch-manipulation shadow-lg hover:shadow-xl hover:scale-[1.02]"
+            style={{ backgroundColor: '#002903' }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
+          >
+            Get Started
+          </button>
+        </div>
           
         {/* Demo Video - Full Width Below */}
         <div className="w-full mt-6 sm:mt-8 md:mt-10">
