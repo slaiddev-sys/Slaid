@@ -304,12 +304,24 @@ export default function Component1920WLight() {
           {/* Get Started Button */}
           <button
             onClick={() => router.push('/signup')}
-            className="text-sm sm:text-base font-medium text-white px-6 sm:px-7 md:px-8 py-3 sm:py-3.5 rounded-full transition-all duration-200 whitespace-nowrap active:opacity-90 touch-manipulation shadow-lg hover:shadow-xl hover:scale-[1.02]"
+            className="text-sm sm:text-base font-medium text-white px-6 sm:px-7 md:px-8 py-3 sm:py-3.5 rounded-full transition-all duration-200 whitespace-nowrap active:opacity-90 touch-manipulation shadow-lg hover:shadow-xl hover:scale-[1.02] flex items-center gap-2"
             style={{ backgroundColor: '#002903' }}
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
           >
             Get Started
+            <svg 
+              xmlns="http://www.w3.org/2000/svg" 
+              className="h-4 w-4 sm:h-5 sm:w-5" 
+              viewBox="0 0 20 20" 
+              fill="currentColor"
+            >
+              <path 
+                fillRule="evenodd" 
+                d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" 
+                clipRule="evenodd" 
+              />
+            </svg>
           </button>
         </div>
           
