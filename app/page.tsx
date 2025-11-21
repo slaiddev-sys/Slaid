@@ -327,7 +327,7 @@ export default function Component1920WLight() {
               e.currentTarget.play();
             }}
             >
-              <source src="/Slaid : Demo.mp4" type="video/mp4" />
+              <source src="/Slaid video 2.mp4" type="video/mp4" />
               Your browser does not support the video tag.
             </video>
         </div>
