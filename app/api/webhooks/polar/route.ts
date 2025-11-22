@@ -10,16 +10,16 @@ const PRODUCT_MAPPING: Record<string, { credits: number; description: string; ty
   '92d6ad27-31d8-4a6d-989a-98da344ad7eb': { credits: 2000, description: '2000 credits purchase ($100)', type: 'credit_pack', planType: 'free' },
   
   // Basic Plan Product IDs
-  '481ff240-aadc-44c9-a58e-2fee7ab26b90': { credits: 700, description: 'Basic Monthly Plan - 700 credits', type: 'basic_plan', planType: 'basic' },
-  '3f8500aa-7847-40dc-bcde-844bbef74742': { credits: 8400, description: 'Basic Annual Plan - 8,400 credits', type: 'basic_plan', planType: 'basic' },
+  '481ff240-aadc-44c9-a58e-2fee7ab26b90': { credits: 500, description: 'Basic Monthly Plan - 500 credits', type: 'basic_plan', planType: 'basic' },
+  '3f8500aa-7847-40dc-bcde-844bbef74742': { credits: 6000, description: 'Basic Annual Plan - 6,000 credits', type: 'basic_plan', planType: 'basic' },
   
   // Pro Plan Product IDs
-  '5a954dc6-891d-428a-a948-05409fe765e2': { credits: 1500, description: 'Pro Monthly Plan - 1,500 credits', type: 'pro_plan', planType: 'pro' },
-  '8739ccac-36f9-4e28-8437-8b36bb1e7d71': { credits: 18000, description: 'Pro Annual Plan - 18,000 credits', type: 'pro_plan', planType: 'pro' },
+  '5a954dc6-891d-428a-a948-05409fe765e2': { credits: 1000, description: 'Pro Monthly Plan - 1,000 credits', type: 'pro_plan', planType: 'pro' },
+  '8739ccac-36f9-4e28-8437-8b36bb1e7d71': { credits: 12000, description: 'Pro Annual Plan - 12,000 credits', type: 'pro_plan', planType: 'pro' },
   
   // Ultra Plan Product IDs
-  '71bf9c78-f930-437a-b076-62a0c1946d14': { credits: 3000, description: 'Ultra Monthly Plan - 3,000 credits', type: 'ultra_plan', planType: 'ultra' },
-  'df5e66f6-2e9f-4f32-a347-ed4e46f37b0f': { credits: 36000, description: 'Ultra Annual Plan - 36,000 credits', type: 'ultra_plan', planType: 'ultra' },
+  '71bf9c78-f930-437a-b076-62a0c1946d14': { credits: 2000, description: 'Ultra Monthly Plan - 2,000 credits', type: 'ultra_plan', planType: 'ultra' },
+  'df5e66f6-2e9f-4f32-a347-ed4e46f37b0f': { credits: 24000, description: 'Ultra Annual Plan - 24,000 credits', type: 'ultra_plan', planType: 'ultra' },
 }
 
 export async function POST(request: NextRequest) {
