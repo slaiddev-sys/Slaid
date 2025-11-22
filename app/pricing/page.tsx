@@ -197,31 +197,8 @@ export default function PricingPage() {
             <img src="/slaid logo verde.png" alt="Slaid Logo" className="h-9 w-auto cursor-pointer hover:opacity-80 transition" />
           </Link>
         </div>
-        <div className="flex flex-row gap-3 items-center justify-end">
-          {user ? (
-            <>
-              <Link href="/editor" className="h-[40px] px-5 py-2 rounded-full text-[13.2px] font-medium font-sans transition shadow-sm flex items-center" style={{ color: '#002903', border: '1px solid #002903', backgroundColor: 'transparent' }}>
-                Editor
-              </Link>
-              <button 
-                onClick={handleSignOut}
-                className="h-[40px] px-5 py-2 rounded-full text-[13.2px] font-medium font-sans transition shadow-sm hover:bg-gray-100"
-                style={{ color: '#002903', border: '1px solid #002903', backgroundColor: 'transparent' }}
-              >
-                Sign Out
-              </button>
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="h-[40px] px-5 py-2 rounded-full text-[13.2px] font-medium font-sans transition shadow-sm flex items-center hover:bg-gray-100" style={{ color: '#002903', border: '1px solid #002903', backgroundColor: 'transparent' }}>
-                Login
-              </Link>
-              <Link href="/signup" className="h-[40px] px-5 py-2 rounded-full text-white text-[13.2px] font-medium font-sans transition-all duration-200 shadow flex items-center" style={{ backgroundColor: '#002903' }}>
-                Sign Up
-              </Link>
-            </>
-          )}
-        </div>
+        {/* Empty div for spacing - no buttons shown */}
+        <div></div>
       </div>
 
       {/* Pricing content */}
