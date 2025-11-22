@@ -29,9 +29,9 @@ export const polarConfig = {
   // URLs - use current domain or fallback
   get successUrl() {
     if (typeof window !== 'undefined') {
-      return `${window.location.origin}/success`;
+      return `${window.location.origin}/purchase-success`;
     }
-    return `${process.env.NEXT_PUBLIC_BASE_URL || 'https://slaidapp.com'}/success`;
+    return `${process.env.NEXT_PUBLIC_BASE_URL || 'https://slaidapp.com'}/purchase-success`;
   },
   get cancelUrl() {
     if (typeof window !== 'undefined') {

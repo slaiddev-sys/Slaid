@@ -5,6 +5,7 @@ import Link from "next/link";
 import PolarCheckout from "../../components/PolarCheckout";
 import { getProductId } from "../../lib/polar-config";
 import { useAuth } from "../../components/AuthProvider";
+import { useCredits } from "../../components/hooks/useCredits";
 
 const CHECK_ICON = (
   <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M4.5 7.5l2 2 3-3" stroke="#002903" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -183,10 +184,25 @@ export default function PricingPage() {
   const [isAnnualPro, setIsAnnualPro] = useState(false);
   const [isAnnualUltra, setIsAnnualUltra] = useState(false);
   const { user, profile, signOut, credits } = useAuth();
+  const { refreshCredits } = useCredits();
 
   const handleSignOut = async () => {
     await signOut();
   };
+
+  // Auto-refresh credits when window regains focus (e.g., returning from Polar checkout)
+  React.useEffect(() => {
+    const handleWindowFocus = () => {
+      console.log('🔄 Window focused - refreshing credits...');
+      refreshCredits();
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, [refreshCredits]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center py-0 px-0 font-sans w-full">

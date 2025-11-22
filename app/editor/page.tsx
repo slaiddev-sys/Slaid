@@ -289,6 +289,20 @@ export default function EditorPage() {
   const [workspaceSlides, setWorkspaceSlides] = useState<{ [key: string]: { [presentationId: string]: { title: string }[] } }>({});
   const [currentPresentationId, setCurrentPresentationId] = useState<string>(uuidv4());
 
+  // Auto-refresh credits when window regains focus (e.g., returning from Polar checkout)
+  React.useEffect(() => {
+    const handleWindowFocus = () => {
+      console.log('🔄 Window focused - refreshing credits...');
+      refreshCredits();
+    };
+
+    window.addEventListener('focus', handleWindowFocus);
+    
+    return () => {
+      window.removeEventListener('focus', handleWindowFocus);
+    };
+  }, [refreshCredits]);
+
   // Persist activeVersion to localStorage
   React.useEffect(() => {
     if (activeVersion !== null && currentPresentationId) {
