@@ -206,9 +206,19 @@ export default function AuthCallback() {
             // Ensure profile and workspace exist (handles both new and existing users)
             await ensureUserProfileAndWorkspace(sessionData.session.user);
             
+            // Check if user is new (created within last 5 seconds)
+            const userCreatedAt = new Date(sessionData.session.user.created_at);
+            const now = new Date();
+            const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 5000; // 5 seconds
+            
             setStatus('Authentication successful! Redirecting...');
             setTimeout(() => {
-              router.push('/editor');
+              // Redirect new users to pricing page, existing users to editor
+              if (isNewUser) {
+                router.push('/pricing');
+              } else {
+                router.push('/editor');
+              }
             }, 1000);
             return;
           }
@@ -232,9 +242,19 @@ export default function AuthCallback() {
           // Ensure profile and workspace exist (handles both new and existing users)
           await ensureUserProfileAndWorkspace(refreshData.session.user);
           
+          // Check if user is new (created within last 5 seconds)
+          const userCreatedAt = new Date(refreshData.session.user.created_at);
+          const now = new Date();
+          const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 5000; // 5 seconds
+          
           setStatus('Authentication successful! Redirecting...');
           setTimeout(() => {
-            router.push('/editor');
+            // Redirect new users to pricing page, existing users to editor
+            if (isNewUser) {
+              router.push('/pricing');
+            } else {
+              router.push('/editor');
+            }
           }, 1000);
           return;
         }

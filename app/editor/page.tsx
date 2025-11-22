@@ -2776,8 +2776,8 @@ export default function EditorPage() {
     const plans = [
       {
         name: "Basic",
-        monthly: { price: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "700 credits" },
-        annual: { price: "$261", period: "/year", save: "Save $87 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "8,400 credits" },
+        monthly: { price: "$14.50", originalPrice: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "500 credits" },
+        annual: { price: "$130.50", originalPrice: "$261", period: "/year", save: "Save $217.50 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "6,000 credits" },
         desc: ["Perfect for getting started."],
         icon: "/basic-plan.png",
         baseFeatures: [
@@ -2788,8 +2788,8 @@ export default function EditorPage() {
       },
       {
         name: "Pro",
-        monthly: { price: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "1500 credits" },
-        annual: { price: "$441", period: "/year", save: "Save $147 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "18,000 credits" },
+        monthly: { price: "$24.50", originalPrice: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "1000 credits" },
+        annual: { price: "$220.50", originalPrice: "$441", period: "/year", save: "Save $367.50 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "12,000 credits" },
         desc: ["Designed for professionals."],
         icon: "/pro-plan.png",
         baseFeatures: [
@@ -2800,8 +2800,8 @@ export default function EditorPage() {
       },
       {
         name: "Ultra",
-        monthly: { price: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "3000 credits" },
-        annual: { price: "$801", period: "/year", save: "Save $267 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "36,000 credits" },
+        monthly: { price: "$44.50", originalPrice: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "2000 credits" },
+        annual: { price: "$400.50", originalPrice: "$801", period: "/year", save: "Save $534 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "24,000 credits" },
         desc: ["For teams and power users."],
         icon: "/ultra-red-plan.png",
         baseFeatures: [
@@ -2850,8 +2850,17 @@ export default function EditorPage() {
             </div>
             {/* Price */}
             <div className="mb-1 flex items-end gap-2">
-              <p className="text-gray-900 text-[28px] leading-[36px] font-normal">{priceData.price}</p>
-              <span className="text-gray-600 text-[16px] font-normal">{priceData.period}</span>
+              <div className="flex flex-col">
+                {priceData.originalPrice && (
+                  <span className="text-gray-500 text-[14px] line-through">{priceData.originalPrice}</span>
+                )}
+                <p className="text-gray-900 text-[28px] leading-[36px] font-normal">{priceData.price}</p>
+              </div>
+              <span className="text-gray-600 text-[16px] font-normal mb-1">{priceData.period}</span>
+            </div>
+            {/* Black Friday Badge */}
+            <div className="bg-black text-white text-[11px] font-semibold px-2 py-1 rounded-md mb-2 inline-block w-fit">
+              BLACK FRIDAY 50% OFF
             </div>
             {/* Save text */}
             {priceData.save && <div className="text-[#002903] text-[13px] font-medium mb-1">{priceData.save}</div>}

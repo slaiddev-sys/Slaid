@@ -471,7 +471,7 @@ export default function Component1920WLight() {
                   How does Slaid analyze my Excel data?
                 </h3>
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -488,7 +488,7 @@ export default function Component1920WLight() {
                   Can I edit the presentation after it's generated?
                 </h3>
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -505,7 +505,7 @@ export default function Component1920WLight() {
                   What file formats does Slaid support?
                 </h3>
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -522,7 +522,7 @@ export default function Component1920WLight() {
                   How many credits do I need to create a presentation?
                 </h3>
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
@@ -539,7 +539,7 @@ export default function Component1920WLight() {
                   Is my data secure?
                 </h3>
                 <span className="transition group-open:rotate-180">
-                  <svg fill="none" height="24" shape-rendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
+                  <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
                     <path d="M6 9l6 6 6-6"></path>
                   </svg>
                 </span>
