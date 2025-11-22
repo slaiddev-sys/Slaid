@@ -41,9 +41,9 @@ export async function GET(request: NextRequest) {
         console.warn('⚠️ Database functions not created yet, returning fallback credits')
         return NextResponse.json({ 
           credits: {
-            total_credits: 50,
+            total_credits: 0,
             used_credits: 0,
-            remaining_credits: 50,
+            remaining_credits: 0,
             plan_type: 'free',
             last_renewal_date: new Date().toISOString()
           },
