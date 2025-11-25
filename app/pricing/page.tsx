@@ -63,7 +63,7 @@ export default function PricingPage() {
             onClick={() => setBillingCycle('yearly')}
             className={`w-full p-6 rounded-2xl transition-all ${
               billingCycle === 'yearly'
-                ? 'bg-white border-2 border-[#002903] shadow-lg'
+                ? 'bg-[#d3d3d3] border-2 border-[#002903] shadow-lg'
                 : 'bg-white border-2 border-gray-200 hover:border-gray-300'
             }`}
           >
@@ -95,7 +95,7 @@ export default function PricingPage() {
             onClick={() => setBillingCycle('monthly')}
             className={`w-full p-6 rounded-2xl transition-all ${
               billingCycle === 'monthly'
-                ? 'bg-white border-2 border-[#002903] shadow-lg'
+                ? 'bg-[#d3d3d3] border-2 border-[#002903] shadow-lg'
                 : 'bg-white border-2 border-gray-200 hover:border-gray-300'
             }`}
           >
@@ -126,11 +126,11 @@ export default function PricingPage() {
             productId={productId}
             planName="Pro"
             isAnnual={billingCycle === 'yearly'}
-            className="w-full p-6 bg-[#002903] hover:bg-[#001a02] text-white font-bold text-2xl rounded-2xl transition shadow-md hover:shadow-lg"
+            className="w-full py-8 px-6 bg-[#002903] hover:bg-[#001a02] text-white font-bold text-2xl rounded-2xl transition shadow-md hover:shadow-lg"
             buttonText="Start my $1 free trial"
           />
         ) : (
-          <button className="w-full p-6 bg-[#002903] hover:bg-[#001a02] text-white font-bold text-2xl rounded-2xl transition shadow-md hover:shadow-lg">
+          <button className="w-full py-8 px-6 bg-[#002903] hover:bg-[#001a02] text-white font-bold text-2xl rounded-2xl transition shadow-md hover:shadow-lg">
             Start my $1 free trial
           </button>
         )}
