@@ -42,14 +42,14 @@ export default function PricingPage() {
       </div>
 
       {/* Main Content */}
-      <div className="w-full max-w-md mx-auto text-center">
+      <div className="w-full max-w-xl mx-auto text-center">
         {/* Logo */}
         <div className="flex items-center justify-center mb-4">
           <img src="/slaid logo verde.png" alt="Slaid" className="h-12 w-auto object-contain" />
         </div>
 
         {/* Tagline */}
-        <p className="text-gray-700 text-lg mb-12 max-w-md mx-auto">
+        <p className="text-gray-700 text-base mb-12 max-w-md mx-auto">
           Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.
         </p>
 
