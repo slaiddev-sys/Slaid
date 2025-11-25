@@ -54,7 +54,7 @@ export default function PricingPage() {
         </p>
 
         {/* Pricing Cards */}
-        <div className="space-y-3 mb-8">
+        <div className="space-y-3 mb-3">
           {/* Yearly Plan - Highlighted */}
           <button
             onClick={() => setBillingCycle('yearly')}
