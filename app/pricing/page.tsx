@@ -120,25 +120,6 @@ export default function PricingPage() {
           </button>
         </div>
 
-        {/* CTA Button */}
-        {productId ? (
-          <PolarCheckout
-            productId={productId}
-            planName="Pro"
-            isAnnual={billingCycle === 'yearly'}
-            className="w-full py-10 px-8 bg-[#002903] hover:bg-[#001a02] text-white font-extrabold text-[3.5rem] leading-none rounded-2xl transition shadow-md hover:shadow-lg"
-            buttonText="Start my free trial"
-          />
-        ) : (
-          <button className="w-full py-10 px-8 bg-[#002903] hover:bg-[#001a02] text-white font-extrabold text-[3.5rem] leading-none rounded-2xl transition shadow-md hover:shadow-lg">
-            Start my free trial
-          </button>
-        )}
-
-        {/* Trial Info */}
-        <p className="text-gray-600 text-sm mt-4">
-          3 days trial • <span className="font-semibold">$1 today</span> • Cancel anytime
-        </p>
 
         {/* Terms and Privacy */}
         <div className="flex items-center justify-center gap-4 mt-6">
