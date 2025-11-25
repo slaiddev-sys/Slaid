@@ -30,7 +30,7 @@ export default function PricingPage() {
   const productId = getProductId('Pro', billingCycle === 'yearly');
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8" style={{ backgroundColor: '#FAF7F0' }}>
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 bg-white">
       {/* Back Button */}
       <div className="absolute top-6 left-6">
         <Link href="/" className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition">
@@ -138,11 +138,11 @@ export default function PricingPage() {
             productId={productId}
             planName="Pro"
             isAnnual={billingCycle === 'yearly'}
-            className="w-full py-4 bg-[#FFC107] hover:bg-[#FFB300] text-gray-900 font-bold text-lg rounded-xl transition shadow-md hover:shadow-lg"
+            className="w-full py-6 bg-[#FFC107] hover:bg-[#FFB300] text-gray-900 font-bold text-xl rounded-xl transition shadow-md hover:shadow-lg"
             buttonText="Start my $1 free trial"
           />
         ) : (
-          <button className="w-full py-4 bg-[#FFC107] hover:bg-[#FFB300] text-gray-900 font-bold text-lg rounded-xl transition shadow-md hover:shadow-lg">
+          <button className="w-full py-6 bg-[#FFC107] hover:bg-[#FFB300] text-gray-900 font-bold text-xl rounded-xl transition shadow-md hover:shadow-lg">
             Start my $1 free trial
           </button>
         )}
