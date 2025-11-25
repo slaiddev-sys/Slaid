@@ -126,14 +126,19 @@ export default function PricingPage() {
             productId={productId}
             planName="Basic"
             isAnnual={billingCycle === 'yearly'}
-            className="w-full py-8 px-6 bg-[#002903] hover:bg-[#001a02] text-white font-bold text-2xl leading-tight rounded-2xl transition shadow-md hover:shadow-lg"
+            className="w-full py-6 px-6 bg-[#002903] hover:bg-[#001a02] text-white font-bold text-xl leading-tight rounded-2xl transition shadow-md hover:shadow-lg"
             buttonText="Start my free trial"
           />
         ) : (
-          <button className="w-full py-8 px-6 bg-[#002903] hover:bg-[#001a02] text-white font-bold text-2xl leading-tight rounded-2xl transition shadow-md hover:shadow-lg">
+          <button className="w-full py-6 px-6 bg-[#002903] hover:bg-[#001a02] text-white font-bold text-xl leading-tight rounded-2xl transition shadow-md hover:shadow-lg">
             Start my free trial
           </button>
         )}
+
+        {/* Trial Info */}
+        <p className="text-gray-500 text-sm mt-3 font-medium">
+          3 days trial • Cancel anytime
+        </p>
 
         {/* Terms and Privacy */}
         <div className="flex items-center justify-center gap-4 mt-6">
