@@ -63,7 +63,7 @@ export default function PricingPage() {
             onClick={() => setBillingCycle('yearly')}
             className={`w-full p-6 rounded-2xl transition-all ${
               billingCycle === 'yearly'
-                ? 'bg-[#FFC107] border-2 border-[#002903] shadow-lg'
+                ? 'bg-white border-2 border-[#002903] shadow-lg'
                 : 'bg-white border-2 border-gray-200 hover:border-gray-300'
             }`}
           >
