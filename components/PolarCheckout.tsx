@@ -8,13 +8,15 @@ interface PolarCheckoutProps {
   planName: string;
   isAnnual?: boolean;
   className?: string;
+  buttonText?: string;
 }
 
 export default function PolarCheckout({ 
   productId, 
   planName, 
   isAnnual = false,
-  className = "" 
+  className = "",
+  buttonText = "Get Started"
 }: PolarCheckoutProps) {
   const { user } = useAuth();
 
@@ -25,7 +27,7 @@ export default function PolarCheckout({
         className={`w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition ${className}`}
         onClick={() => alert('Payment system is being configured. Please try again later.')}
       >
-        Get Started
+        {buttonText}
       </button>
     );
   }
@@ -70,7 +72,7 @@ export default function PolarCheckout({
         }
       }}
     >
-      Get Started
+      {buttonText}
     </button>
   );
 }
