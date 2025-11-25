@@ -26,8 +26,8 @@ export default function PricingPage() {
     };
   }, [refreshCredits]);
 
-  // Get the Pro plan product ID based on billing cycle
-  const productId = getProductId('Pro', billingCycle === 'yearly');
+  // Get the Basic plan product ID based on billing cycle
+  const productId = getProductId('Basic', billingCycle === 'yearly');
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-8 bg-white">
@@ -120,6 +120,20 @@ export default function PricingPage() {
           </button>
         </div>
 
+        {/* CTA Button */}
+        {productId ? (
+          <PolarCheckout
+            productId={productId}
+            planName="Basic"
+            isAnnual={billingCycle === 'yearly'}
+            className="w-full py-10 px-8 bg-[#002903] hover:bg-[#001a02] text-white font-extrabold text-[3.5rem] leading-none rounded-2xl transition shadow-md hover:shadow-lg"
+            buttonText="Start my free trial"
+          />
+        ) : (
+          <button className="w-full py-10 px-8 bg-[#002903] hover:bg-[#001a02] text-white font-extrabold text-[3.5rem] leading-none rounded-2xl transition shadow-md hover:shadow-lg">
+            Start my free trial
+          </button>
+        )}
 
         {/* Terms and Privacy */}
         <div className="flex items-center justify-center gap-4 mt-6">
