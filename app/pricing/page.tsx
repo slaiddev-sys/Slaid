@@ -53,7 +53,7 @@ export default function PricingPage() {
 
         {/* Tagline */}
         <p className="text-gray-700 text-lg mb-12 max-w-md mx-auto">
-          Unlock the full experience and make your presentations look pro
+          Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.
         </p>
 
         {/* Pricing Cards */}
