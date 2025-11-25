@@ -43,12 +43,9 @@ export default function PricingPage() {
 
       {/* Main Content */}
       <div className="w-full max-w-xl mx-auto text-center">
-        {/* Logo and Title */}
-        <div className="flex items-center justify-center gap-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-[#002903] flex items-center justify-center">
-            <img src="/basic-plan.png" alt="Slaid" className="w-8 h-8 object-contain" />
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900">Slaid</h1>
+        {/* Logo */}
+        <div className="flex items-center justify-center mb-4">
+          <img src="/slaid logo verde.png" alt="Slaid" className="h-12 w-auto object-contain" />
         </div>
 
         {/* Tagline */}
