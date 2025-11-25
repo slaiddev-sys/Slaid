@@ -70,7 +70,7 @@ export default function PricingPage() {
                   <span className="text-2xl font-bold text-gray-900">Yearly – $64.99</span>
                   <span className="text-lg text-gray-500 line-through">$129.99</span>
                   <span className="px-2 py-1 bg-[#002903] text-white text-xs font-bold rounded">
-                    SAVE 50%
+                    BLACK FRIDAY 50% OFF
                   </span>
                 </div>
                 <p className="text-gray-600 text-sm">$5.42 / month</p>
@@ -101,6 +101,9 @@ export default function PricingPage() {
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-2xl font-bold text-gray-900">Monthly – $14.99</span>
                   <span className="text-lg text-gray-500 line-through">$29.99</span>
+                  <span className="px-2 py-1 bg-[#002903] text-white text-xs font-bold rounded">
+                    BLACK FRIDAY 50% OFF
+                  </span>
                 </div>
                 <p className="text-gray-600 text-sm">$14.99 / month</p>
               </div>
