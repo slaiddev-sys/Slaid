@@ -24,7 +24,7 @@ export default function PolarCheckout({
   if (!polarConfig.publicAccessToken || !productId) {
     return (
       <button 
-        className={`w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition ${className}`}
+        className={`flex items-center justify-center transition ${className}`}
         onClick={() => alert('Payment system is being configured. Please try again later.')}
       >
         {buttonText}
@@ -34,7 +34,7 @@ export default function PolarCheckout({
 
   return (
     <button 
-      className={`w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition ${className}`}
+      className={`flex items-center justify-center transition ${className}`}
       onClick={async () => {
         try {
           // Get user email - CRITICAL for webhook matching
