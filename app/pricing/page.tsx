@@ -70,12 +70,13 @@ export default function PricingPage() {
             <div className="flex items-center justify-between">
               <div className="text-left">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl font-bold text-gray-900">Yearly – $99</span>
+                  <span className="text-2xl font-bold text-gray-900">Yearly – $64.99</span>
+                  <span className="text-lg text-gray-500 line-through">$129.99</span>
                   <span className="px-2 py-1 bg-[#002903] text-white text-xs font-bold rounded">
-                    SAVE 57%
+                    SAVE 50%
                   </span>
                 </div>
-                <p className="text-gray-600 text-sm">$8.25 / month</p>
+                <p className="text-gray-600 text-sm">$5.42 / month</p>
               </div>
               <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                 billingCycle === 'yearly' ? 'border-[#002903] bg-[#002903]' : 'border-gray-300'
