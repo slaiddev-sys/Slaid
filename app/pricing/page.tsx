@@ -64,18 +64,20 @@ export default function PricingPage() {
                 : 'bg-white border-2 border-gray-200 hover:border-gray-300'
             }`}
           >
-            <div className="flex items-center justify-between">
-              <div className="text-left">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl font-bold text-gray-900">Yearly – $129.99</span>
-                  <span className="text-lg text-gray-500 line-through">$260.00</span>
-                  <span className="px-2 py-1 bg-[#002903] text-white text-xs font-bold rounded">
+            <div className="flex items-center justify-between w-full">
+              <div className="text-left flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xl sm:text-2xl font-bold text-gray-900">Yearly – $129.99</span>
+                    <span className="text-base sm:text-lg text-gray-500 line-through">$260.00</span>
+                  </div>
+                  <span className="px-2 py-1 bg-[#002903] text-white text-[10px] sm:text-xs font-bold rounded w-fit">
                     BLACK FRIDAY 50% OFF
                   </span>
                 </div>
                 <p className="text-gray-600 text-sm">$10.83 / month</p>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-3 ${
                 billingCycle === 'yearly' ? 'border-[#002903] bg-[#002903]' : 'border-gray-300'
               }`}>
                 {billingCycle === 'yearly' && (
@@ -96,18 +98,20 @@ export default function PricingPage() {
                 : 'bg-white border-2 border-gray-200 hover:border-gray-300'
             }`}
           >
-            <div className="flex items-center justify-between">
-              <div className="text-left">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-2xl font-bold text-gray-900">Monthly – $14.99</span>
-                  <span className="text-lg text-gray-500 line-through">$29.99</span>
-                  <span className="px-2 py-1 bg-[#002903] text-white text-xs font-bold rounded">
+            <div className="flex items-center justify-between w-full">
+              <div className="text-left flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 mb-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xl sm:text-2xl font-bold text-gray-900">Monthly – $14.99</span>
+                    <span className="text-base sm:text-lg text-gray-500 line-through">$29.99</span>
+                  </div>
+                  <span className="px-2 py-1 bg-[#002903] text-white text-[10px] sm:text-xs font-bold rounded w-fit">
                     BLACK FRIDAY 50% OFF
                   </span>
                 </div>
                 <p className="text-gray-600 text-sm">$14.99 / month</p>
               </div>
-              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ml-3 ${
                 billingCycle === 'monthly' ? 'border-[#002903] bg-[#002903]' : 'border-gray-300'
               }`}>
                 {billingCycle === 'monthly' && (
