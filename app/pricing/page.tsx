@@ -41,22 +41,6 @@ export default function PricingPage() {
         </Link>
       </div>
 
-      {/* Top Right Buttons */}
-      <div className="absolute top-6 right-6 flex gap-3">
-        <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition border border-gray-200">
-          Unlimited presentations
-        </button>
-        <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition border border-gray-200">
-          Cloud Storage
-        </button>
-        <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition border border-gray-200">
-          AI Image Generator
-        </button>
-        <button className="px-4 py-2 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-50 transition border border-gray-200">
-          Export to PPT
-        </button>
-      </div>
-
       {/* Main Content */}
       <div className="w-full max-w-xl mx-auto text-center">
         {/* Logo and Title */}
