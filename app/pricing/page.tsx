@@ -129,7 +129,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
             <span className="flex items-center justify-center w-3.5 h-3.5">
               {CHECK_ICON}
             </span>
-            <span className="text-gray-900 text-[11.15px] leading-[17.5px] font-normal">{priceData.credits}</span>
+            <span className="text-gray-900 text-[13px] leading-[20px] font-normal">{priceData.credits}</span>
           </div>
           {/* Base features */}
           {plan.baseFeatures.map((f: any, i: number) => (
@@ -137,7 +137,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
               <span className="flex items-center justify-center w-3.5 h-3.5">
                 {f.included ? CHECK_ICON : CROSS_ICON}
               </span>
-              <span className={f.included ? "text-gray-900 text-[11.15px] leading-[17.5px] font-normal" : "text-gray-500 text-[11.15px] leading-[17.5px] font-normal line-through"}>{f.text}</span>
+              <span className={f.included ? "text-gray-900 text-[13px] leading-[20px] font-normal" : "text-gray-500 text-[13px] leading-[20px] font-normal line-through"}>{f.text}</span>
             </div>
           ))}
         </div>
