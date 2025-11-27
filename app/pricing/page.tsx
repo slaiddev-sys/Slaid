@@ -157,6 +157,9 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
         </button>
       ) : plan.name === "Basic" ? (
         <div>
+          <p className="text-center text-gray-600 text-[11px] mb-2 leading-tight">
+            3 days for free, then $14.99/month
+          </p>
           {productId ? (
             <PolarCheckout
               productId={productId}
@@ -170,9 +173,6 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
               Free Trial
             </button>
           )}
-          <p className="text-center text-gray-600 text-[11px] mt-2 leading-tight">
-            3 days for free, then $14.99/month
-          </p>
         </div>
       ) : plan.name === "Pro" && currentPlanType === 'pro' ? (
         <button 
