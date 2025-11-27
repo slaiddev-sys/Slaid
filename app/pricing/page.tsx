@@ -65,7 +65,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
   
   return (
     <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto rounded-xl ${
-      plan.name === "Basic" ? "border-2 border-[#002903] shadow-lg" : ""
+      plan.name === "Basic" ? "border-4 border-[#002903] shadow-lg" : ""
     }`}>
       {/* Header: icon left, toggle right */}
       <div className="flex flex-row items-center justify-between mb-3">
