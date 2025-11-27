@@ -104,10 +104,12 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           </div>
           <span className="text-gray-600 text-[16px] font-normal mb-1">{priceData.period}</span>
         </div>
-        {/* Black Friday Badge */}
-        <div className="bg-black text-white text-[11px] font-semibold px-2 py-1 rounded-md mb-2 inline-block w-fit">
-          BLACK FRIDAY 50% OFF
-        </div>
+        {/* Black Friday Badge - only for non-Basic plans */}
+        {plan.name !== "Basic" && (
+          <div className="bg-black text-white text-[11px] font-semibold px-2 py-1 rounded-md mb-2 inline-block w-fit">
+            BLACK FRIDAY 50% OFF
+          </div>
+        )}
         {/* Save text */}
         {priceData.save && <div className="text-[#002903] text-[13px] font-medium mb-1">{priceData.save}</div>}
         {/* Description */}
