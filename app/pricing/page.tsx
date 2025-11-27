@@ -241,7 +241,7 @@ export default function PricingPage() {
           <h1 className="text-gray-900 text-[40px] font-normal leading-[48px] mb-4 tracking-tight">Pricing</h1>
           <p className="text-gray-600 text-[15px] leading-[24px] max-w-2xl mx-auto">Choose the plan that perfectly fits your needs. Scale up anytime as you grow.</p>
         </div>
-        <div className="flex flex-col md:flex-row gap-0.5 w-full max-w-4xl justify-center mx-auto">
+        <div className="flex flex-col md:flex-row gap-6 w-full max-w-4xl justify-center mx-auto">
           <PlanCard plan={plans[0]} isAnnual={isAnnualBasic} onToggle={() => setIsAnnualBasic(v => !v)} currentPlanType={credits?.plan_type} />
           <PlanCard plan={plans[1]} isAnnual={isAnnualPro} onToggle={() => setIsAnnualPro(v => !v)} currentPlanType={credits?.plan_type} />
           <PlanCard plan={plans[2]} isAnnual={isAnnualUltra} onToggle={() => setIsAnnualUltra(v => !v)} currentPlanType={credits?.plan_type} />
