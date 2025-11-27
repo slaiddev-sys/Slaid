@@ -17,8 +17,8 @@ const CROSS_ICON = (
 const plans = [
   {
     name: "Basic",
-    monthly: { price: "$14.50", originalPrice: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "500 credits" },
-    annual: { price: "$130.50", originalPrice: "$261", period: "/year", save: "Save $217.50 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "6,000 credits" },
+    monthly: { price: "$0", originalPrice: null, period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "500 credits" },
+    annual: { price: "$0", originalPrice: null, period: "/year", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "6,000 credits" },
     desc: ["Perfect for getting started."],
     icon: "/basic-plan.png",
     baseFeatures: [
@@ -155,9 +155,14 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           Downgrade plan
         </button>
       ) : plan.name === "Basic" ? (
-        <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]">
-          Free Trial
-        </button>
+        <div>
+          <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]">
+            Free Trial
+          </button>
+          <p className="text-center text-gray-600 text-[11px] mt-2 leading-tight">
+            3 days for free, then $14.99/month
+          </p>
+        </div>
       ) : plan.name === "Pro" && currentPlanType === 'pro' ? (
         <button 
           className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
