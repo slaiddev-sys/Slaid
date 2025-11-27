@@ -150,24 +150,9 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           Downgrade plan
         </button>
       ) : plan.name === "Basic" ? (
-        <div className="flex flex-col gap-2">
-          {productId ? (
-            <PolarCheckout
-              productId={productId}
-              planName={plan.name}
-              isAnnual={isAnnual}
-              className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
-              buttonText="Get Started"
-            />
-          ) : (
-            <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]">
-              Get Started
-            </button>
-          )}
-          <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition border-2 border-[#002903] text-[#002903] hover:bg-[#002903] hover:text-white">
-            Free Trial
-          </button>
-        </div>
+        <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]">
+          Free Trial
+        </button>
       ) : plan.name === "Pro" && currentPlanType === 'pro' ? (
         <button 
           className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
