@@ -138,27 +138,46 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
       {/* Button */}
       {plan.name === "Basic" && currentPlanType === 'basic' ? (
         <button 
-          className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
+          className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
           disabled
         >
           Current plan
         </button>
       ) : plan.name === "Basic" && (currentPlanType === 'pro' || currentPlanType === 'ultra') ? (
         <button 
-          className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
+          className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
         >
           Downgrade plan
         </button>
+      ) : plan.name === "Basic" ? (
+        <div className="flex flex-col gap-2">
+          {productId ? (
+            <PolarCheckout
+              productId={productId}
+              planName={plan.name}
+              isAnnual={isAnnual}
+              className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
+              buttonText="Get Started"
+            />
+          ) : (
+            <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]">
+              Get Started
+            </button>
+          )}
+          <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition border-2 border-[#002903] text-[#002903] hover:bg-[#002903] hover:text-white">
+            Free Trial
+          </button>
+        </div>
       ) : plan.name === "Pro" && currentPlanType === 'pro' ? (
         <button 
-          className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
+          className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
           disabled
         >
           Current plan
         </button>
       ) : plan.name === "Ultra" && currentPlanType === 'ultra' ? (
         <button 
-          className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
+          className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
           disabled
         >
           Current plan
@@ -168,10 +187,11 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           productId={productId}
           planName={plan.name}
           isAnnual={isAnnual}
-          className={priceData.buttonColor}
+          className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition ${priceData.buttonColor}`}
+          buttonText="Get Started"
         />
       ) : (
-        <button className={`w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition ${priceData.buttonColor}`}>
+        <button className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition ${priceData.buttonColor}`}>
           Get Started
         </button>
       )}
