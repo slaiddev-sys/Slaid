@@ -71,6 +71,15 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
       <div className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full rounded-xl ${
         plan.name === "Basic" ? "" : ""
       }`}>
+      {/* Most Popular Badge for Basic Plan */}
+      {plan.name === "Basic" && (
+        <div className="absolute -top-3 right-4 bg-[#002903] text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M6 1l1.545 3.13L11 4.635 8.5 7.07l.59 3.43L6 8.885 2.91 10.5l.59-3.43L1 4.635l3.455-.505L6 1z" fill="currentColor"/>
+          </svg>
+          MOST POPULAR
+        </div>
+      )}
       {/* Header: icon left, toggle right */}
       <div className="flex flex-row items-center justify-between mb-3">
         <div className="w-[42px] h-[42px] flex items-center justify-center relative">
