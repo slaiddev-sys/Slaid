@@ -66,7 +66,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
   
   return (
     <div key={plan.name} className={`relative w-full max-w-[300px] min-w-[260px] mx-auto ${
-      plan.name === "Basic" ? "pt-1 px-1 pb-[2px] rounded-xl bg-gradient-to-b from-[#002903] via-[#002903] via-70% to-[#004d06] shadow-lg" : ""
+      plan.name === "Basic" ? "pt-1 px-1 pb-1 rounded-xl bg-[#002903] shadow-lg" : ""
     }`}>
       <div className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full rounded-xl ${
         plan.name === "Basic" ? "" : ""
