@@ -89,7 +89,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
         </div>
       </div>
       {/* Card content with fixed min-height for alignment */}
-      <div className="flex flex-col flex-1 min-h-[220px]">
+      <div className="flex flex-col flex-1 min-h-[280px]">
         {/* Plan name */}
         <div className="mb-1">
           <p className="text-gray-900 text-[13.45px] leading-[21px] font-normal">{plan.name}</p>
