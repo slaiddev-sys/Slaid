@@ -66,20 +66,11 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
   
   return (
     <div key={plan.name} className={`relative w-full max-w-[300px] min-w-[260px] mx-auto ${
-      plan.name === "Basic" ? "pt-1 px-1 pb-1 rounded-xl bg-[#002903] shadow-lg" : ""
+      plan.name === "Basic" ? "pt-1 px-1 pb-0 rounded-xl bg-[#002903] shadow-lg" : ""
     }`}>
-      <div className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full rounded-xl ${
-        plan.name === "Basic" ? "" : ""
+      <div className={`relative bg-gray-100 flex flex-col pt-[21px] px-[21px] w-full rounded-xl ${
+        plan.name === "Basic" ? "pb-[2px]" : "pb-[35px]"
       }`}>
-      {/* Most Popular Badge for Basic Plan */}
-      {plan.name === "Basic" && (
-        <div className="absolute -top-3 right-4 bg-[#002903] text-white text-[11px] font-bold px-3 py-1 rounded-full flex items-center gap-1">
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <path d="M6 1l1.545 3.13L11 4.635 8.5 7.07l.59 3.43L6 8.885 2.91 10.5l.59-3.43L1 4.635l3.455-.505L6 1z" fill="currentColor"/>
-          </svg>
-          MOST POPULAR
-        </div>
-      )}
       {/* Header: icon left, toggle right */}
       <div className="flex flex-row items-center justify-between mb-3">
         <div className="w-[42px] h-[42px] flex items-center justify-center relative">
@@ -213,6 +204,17 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
         </button>
       )}
     </div>
+    {/* Most Popular Badge for Basic Plan - positioned at bottom in green border area */}
+    {plan.name === "Basic" && (
+      <div className="flex items-center justify-center py-2">
+        <div className="bg-white text-[#002903] text-[10px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wide shadow-sm">
+          <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+            <path d="M6 1l1.545 3.13L11 4.635 8.5 7.07l.59 3.43L6 8.885 2.91 10.5l.59-3.43L1 4.635l3.455-.505L6 1z" fill="#002903"/>
+          </svg>
+          Most Popular
+        </div>
+      </div>
+    )}
     </div>
   );
 }
