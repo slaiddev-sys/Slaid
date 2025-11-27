@@ -69,7 +69,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
       plan.name === "Basic" ? "pt-1 px-1 pb-0 rounded-xl bg-[#002903] shadow-lg" : ""
     }`}>
       <div className={`relative bg-gray-100 flex flex-col pt-[21px] px-[21px] w-full rounded-xl ${
-        plan.name === "Basic" ? "pb-[2px]" : "pb-[35px]"
+        plan.name === "Basic" ? "pb-0" : "pb-[35px]"
       }`}>
       {/* Header: icon left, toggle right */}
       <div className="flex flex-row items-center justify-between mb-3">
@@ -206,7 +206,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
     </div>
     {/* Most Popular Badge for Basic Plan - positioned at bottom in green border area */}
     {plan.name === "Basic" && (
-      <div className="flex items-center justify-center py-2">
+      <div className="flex items-center justify-center pb-1 pt-0.5">
         <div className="bg-white text-[#002903] text-[10px] font-bold px-3 py-0.5 rounded-full flex items-center gap-1 uppercase tracking-wide shadow-sm">
           <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
             <path d="M6 1l1.545 3.13L11 4.635 8.5 7.07l.59 3.43L6 8.885 2.91 10.5l.59-3.43L1 4.635l3.455-.505L6 1z" fill="#002903"/>
