@@ -37,6 +37,7 @@ const plans = [
       { text: "Unlimited presentations", included: true },
       { text: "Slide preview before generating", included: true },
       { text: "Export as PDF", included: true },
+      { text: "Priority support", included: true },
     ],
   },
   {
