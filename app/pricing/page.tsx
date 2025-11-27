@@ -123,7 +123,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           <p className="text-gray-600 text-[11.34px] leading-[17.5px] font-normal">Including</p>
         </div>
         {/* Feature list */}
-        <div className="flex flex-col gap-[9.5px] mb-8">
+        <div className="flex flex-col gap-[9.5px] mb-12">
           {/* Credits - dynamic based on monthly/annual */}
           <div className="flex flex-row items-center gap-[10.5px]">
             <span className="flex items-center justify-center w-3.5 h-3.5">
