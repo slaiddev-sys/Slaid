@@ -159,9 +159,19 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
         </button>
       ) : plan.name === "Basic" ? (
         <div>
-          <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]">
-            Free Trial
-          </button>
+          {productId ? (
+            <PolarCheckout
+              productId={productId}
+              planName={plan.name}
+              isAnnual={isAnnual}
+              className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]"
+              buttonText="Free Trial"
+            />
+          ) : (
+            <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]">
+              Free Trial
+            </button>
+          )}
           <p className="text-center text-gray-600 text-[11px] mt-2 leading-tight">
             3 days for free, then $14.99/month
           </p>
