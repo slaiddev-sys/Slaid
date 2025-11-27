@@ -64,7 +64,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
   const toggleBgColor = isAnnual ? priceData.toggleColor : '#9CA3AF';
   
   return (
-    <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto`}>
+    <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto rounded-xl`}>
       {/* Header: icon left, toggle right */}
       <div className="flex flex-row items-center justify-between mb-3">
         <div className="w-[42px] h-[42px] flex items-center justify-center relative">
