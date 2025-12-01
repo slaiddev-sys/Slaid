@@ -2621,7 +2621,7 @@ export default function EditorPage() {
     
     return (
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn modal-overlay"
+        className="fixed inset-0 z-50 flex items-center justify-center"
         onClick={() => {
           setShowCreditsModal(false);
           refreshCredits();
@@ -2631,7 +2631,7 @@ export default function EditorPage() {
         <div className="absolute inset-0 bg-black/60" />
         {/* Modal with fade and scale transition */}
         <div 
-          className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-[#23272f] animate-scaleIn modal-content"
+          className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-[#23272f]"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -2731,12 +2731,12 @@ export default function EditorPage() {
     };
     return (
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn modal-overlay"
+        className="fixed inset-0 z-50 flex items-center justify-center"
         onClick={() => setShowCreditPacksModal(false)}
       >
         <div className="absolute inset-0 bg-black/60" />
         <div 
-          className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 border border-[#23272f] animate-scaleIn modal-content"
+          className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 border border-[#23272f]"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -2954,12 +2954,15 @@ export default function EditorPage() {
 
     return (
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn modal-overlay"
-        onClick={() => setShowPricingModal(false)}
+        className="fixed inset-0 z-50 flex items-center justify-center"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowPricingModal(false);
+        }}
       >
         <div className="absolute inset-0 bg-black/60" />
         <div 
-          className="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl p-8 animate-scaleIn modal-content"
+          className="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl p-8"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -2989,8 +2992,8 @@ export default function EditorPage() {
   // Help Modal
   function HelpModal() {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fadeIn modal-overlay">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-gray-200 animate-scaleIn modal-content">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-gray-200">
           <button
             className="absolute top-4 right-4 text-gray-500 hover:text-gray-900 text-xl font-bold focus:outline-none"
             onClick={() => setShowHelpModal(false)}
@@ -3035,8 +3038,8 @@ export default function EditorPage() {
   // API Overload Modal (similar to OpenAI's design)
   function ApiOverloadModal() {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fadeIn modal-overlay">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 mx-4 animate-scaleIn modal-content">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 mx-4">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-red-600">
@@ -3173,11 +3176,11 @@ export default function EditorPage() {
     
     return (
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fadeIn modal-overlay"
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fadeIn"
         onClick={() => setShowSettingsModal(false)}
       >
         <div 
-          className="bg-white rounded-2xl shadow-xl w-full max-w-md h-[600px] max-h-screen overflow-y-auto p-7 relative border border-gray-200 animate-scaleIn modal-content scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]"
+          className="bg-white rounded-2xl shadow-xl w-full max-w-md h-[600px] max-h-screen overflow-y-auto p-7 relative border border-gray-200 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]"
           onClick={(e) => e.stopPropagation()}
         >
           <button
@@ -3350,8 +3353,8 @@ export default function EditorPage() {
     if (!showDeleteConfirmation) return null;
 
     return (
-      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 animate-fadeIn modal-overlay">
-        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 animate-scaleIn modal-content">
+      <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60">
+        <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
               <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -7481,7 +7484,7 @@ export default function EditorPage() {
       {showTitleMenu && (
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" onClick={() => setShowTitleMenu(false)} />
-          <div className="relative w-[400px] bg-white rounded-2xl shadow-xl border border-[#23272f] py-6 px-6 animate-scaleIn modal-content z-10">
+          <div className="relative w-[400px] bg-white rounded-2xl shadow-xl border border-[#23272f] py-6 px-6 z-10">
             <div className="text-gray-500 text-xs font-medium tracking-wide mb-2 px-1">Presentation options</div>
             <div className="flex flex-col gap-1 mb-2 px-1">
               <button 
@@ -7731,9 +7734,9 @@ export default function EditorPage() {
       )}
       {/* Export Modal */}
       {showExportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn modal-overlay">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowExportModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 animate-scaleIn modal-content z-10">
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 z-10">
             <h2 className="text-[#002903] text-xl font-semibold mb-4">Export Presentation</h2>
             <p className="text-[#002903] text-sm mb-6">
               Your presentation <span className="text-[#002903] font-medium">{currentPresentation?.title || 'Untitled'}</span> contains <span className="text-[#002903] font-medium">{slides.length} slides</span>.
@@ -7776,9 +7779,9 @@ export default function EditorPage() {
       )}
       {/* Edit In Modal */}
       {showEditInModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center animate-fadeIn modal-overlay">
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="absolute inset-0 bg-black/60" onClick={() => setShowEditInModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 animate-scaleIn modal-content z-10">
+          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 z-10">
             <h2 className="text-[#002903] text-xl font-semibold mb-2">Export to PowerPoint</h2>
             <p className="text-gray-600 text-sm mb-6">
               Download your presentation as a PowerPoint file
