@@ -213,12 +213,8 @@ export default function AuthCallback() {
             
             setStatus('Authentication successful! Redirecting...');
             setTimeout(() => {
-              // Redirect new users to pricing page, existing users to editor
-              if (isNewUser) {
-                router.push('/pricing');
-              } else {
-                router.push('/editor');
-              }
+              // Redirect all users to editor
+              router.push('/editor');
             }, 1000);
             return;
           }
@@ -249,8 +245,8 @@ export default function AuthCallback() {
           
           setStatus('Authentication successful! Redirecting...');
           setTimeout(() => {
-            // Redirect ALL users to pricing page after Google auth
-            router.push('/pricing');
+            // Redirect all users to editor
+            router.push('/editor');
           }, 1000);
           return;
         }
