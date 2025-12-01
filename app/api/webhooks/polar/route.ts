@@ -46,11 +46,59 @@ export async function POST(request: NextRequest) {
     const eventType = body.type
     console.log('📬 Event type:', eventType, 'Event ID:', eventId)
 
-    // We support checkout.completed, order.paid, subscription.created, and subscription.active
-    const supportedEvents = ['checkout.completed', 'order.paid', 'subscription.created', 'subscription.active']
+    // We support checkout.completed, order.paid, subscription.created, subscription.active, and subscription.canceled
+    const supportedEvents = ['checkout.completed', 'order.paid', 'subscription.created', 'subscription.active', 'subscription.canceled']
     if (!supportedEvents.includes(eventType)) {
       console.log('⏭️ Ignoring unsupported event:', eventType)
       return NextResponse.json({ received: true })
+    }
+
+    // Handle subscription cancellation
+    if (eventType === 'subscription.canceled') {
+      const subscriptionId = eventData.id
+      const customerEmail = eventData.customer?.email || eventData.user?.email
+
+      if (!customerEmail) {
+        console.error('❌ No customer email found in subscription.canceled event')
+        return NextResponse.json({ error: 'No customer email' }, { status: 400 })
+      }
+
+      console.log('🚫 Processing subscription cancellation:', { subscriptionId, customerEmail })
+
+      // Find user by email
+      const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers()
+      if (userError) {
+        console.error('❌ Error fetching users:', userError)
+        return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
+      }
+      
+      const user = users?.find(u => u.email === customerEmail)
+      if (!user) {
+        console.error('❌ User not found for email:', customerEmail)
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
+
+      // Update subscription status to cancelled
+      const { error: updateError } = await supabaseAdmin
+        .from('user_credits')
+        .update({ 
+          subscription_status: 'cancelled'
+        })
+        .eq('user_id', user.id)
+        .eq('subscription_id', subscriptionId)
+
+      if (updateError) {
+        console.error('❌ Failed to update subscription status:', updateError)
+        return NextResponse.json({ error: 'Failed to update subscription' }, { status: 500 })
+      }
+
+      console.log('✅ Subscription cancelled successfully for user:', user.id)
+      
+      return NextResponse.json({ 
+        success: true,
+        message: 'Subscription cancelled',
+        userId: user.id
+      })
     }
 
     // Extract data based on event type
@@ -67,6 +115,9 @@ export async function POST(request: NextRequest) {
     } else if (eventType === 'subscription.created' || eventType === 'subscription.active') {
       productId = eventData.product_id
       customerEmail = eventData.customer?.email || eventData.user?.email
+    } else if (eventType === 'subscription.canceled') {
+      // This case is already handled above
+      return NextResponse.json({ received: true })
     } else {
       console.error('❌ Unexpected event type:', eventType)
       return NextResponse.json({ error: 'Unexpected event type' }, { status: 400 })
@@ -164,11 +215,16 @@ export async function POST(request: NextRequest) {
     if (product.type === 'basic_plan' || product.type === 'pro_plan' || product.type === 'ultra_plan') {
       console.log(`🚀 Upgrading user to ${product.planType} plan:`, userId)
       
+      // Extract subscription ID from the event data
+      const subscriptionId = eventData.id || eventData.subscription_id
+      console.log('📋 Subscription ID:', subscriptionId)
+      
       const { error: updatePlanError } = await supabaseAdmin
         .from('user_credits')
         .update({ 
           plan_type: product.planType,
           subscription_status: 'active',
+          subscription_id: subscriptionId,
           last_renewal_date: new Date().toISOString()
         })
         .eq('user_id', userId)
@@ -177,7 +233,7 @@ export async function POST(request: NextRequest) {
         console.error('❌ Failed to upgrade user plan:', updatePlanError)
         // Don't fail the webhook - credits were added successfully
       } else {
-        console.log(`✅ User plan upgraded to ${product.planType}:`, userId)
+        console.log(`✅ User plan upgraded to ${product.planType} with subscription ID:`, subscriptionId)
       }
     }
 
