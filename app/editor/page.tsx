@@ -3158,7 +3158,7 @@ export default function EditorPage() {
         'ultra': '$89.00/month'
       };
       const planDescriptions: Record<string, string> = {
-        'free': '100 credits (one-time) with basic features.',
+        'free': '35 credits (one-time) with basic features.',
         'basic': '700 credits per month with slide preview and PDF export.',
         'pro': '1,500 credits per month with all features.',
         'ultra': '3,000 credits per month with priority support.'
