@@ -2837,7 +2837,7 @@ export default function EditorPage() {
       const toggleBgColor = isAnnual ? priceData.toggleColor : '#9CA3AF';
       
       return (
-        <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto`}>
+        <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto rounded-xl`}>
           {/* Header: icon left, toggle right */}
           <div className="flex flex-row items-center justify-between mb-3">
             <div className="w-[42px] h-[42px] flex items-center justify-center relative">
@@ -2872,9 +2872,9 @@ export default function EditorPage() {
               </div>
               <span className="text-gray-600 text-[16px] font-normal mb-1">{priceData.period}</span>
             </div>
-            {/* Black Friday Badge */}
+            {/* Christmas Badge */}
             <div className="bg-black text-white text-[11px] font-semibold px-2 py-1 rounded-md mb-2 inline-block w-fit">
-              BLACK FRIDAY 50% OFF
+              CHRISTMAS 50% OFF
             </div>
             {/* Save text */}
             {priceData.save && <div className="text-[#002903] text-[13px] font-medium mb-1">{priceData.save}</div>}
@@ -2911,27 +2911,27 @@ export default function EditorPage() {
           {/* Button */}
           {plan.name === "Basic" && credits?.plan_type === 'basic' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
+              className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
               Current plan
             </button>
           ) : plan.name === "Basic" && (credits?.plan_type === 'pro' || credits?.plan_type === 'ultra') ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition bg-[#002903] text-white hover:bg-[#001a02]"
+              className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]"
             >
               Downgrade plan
             </button>
           ) : plan.name === "Pro" && credits?.plan_type === 'pro' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
+              className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
               Current plan
             </button>
           ) : plan.name === "Ultra" && credits?.plan_type === 'ultra' ? (
             <button 
-              className="w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal bg-gray-300 text-gray-700 cursor-not-allowed"
+              className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
               Current plan
@@ -2941,10 +2941,10 @@ export default function EditorPage() {
               productId={productId}
               planName={plan.name}
               isAnnual={isAnnual}
-              className={priceData.buttonColor}
+              className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition ${priceData.buttonColor}`}
             />
           ) : (
-            <button className={`w-full h-[40px] rounded-[6.75px] flex items-center justify-center text-[13px] leading-[17.5px] font-normal transition ${priceData.buttonColor}`}>
+            <button className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition ${priceData.buttonColor}`}>
               Get Started
             </button>
           )}
