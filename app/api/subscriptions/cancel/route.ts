@@ -43,10 +43,42 @@ export async function POST(request: NextRequest) {
       subscription_status: userCredits.subscription_status
     });
 
-    // In a real implementation, you would call Polar's API to cancel the subscription
-    // For now, we'll update the database to mark the subscription as cancelled
-    // The user will retain access until their current billing period ends
+    // Cancel subscription in Polar if we have a subscription_id
+    if (userCredits.subscription_id) {
+      try {
+        console.log('🔄 Cancelling subscription in Polar:', userCredits.subscription_id);
+        
+        const polarAccessToken = process.env.POLAR_SH_ACCESS_TOKEN;
+        
+        if (!polarAccessToken) {
+          console.error('❌ Polar access token not configured');
+          return NextResponse.json({ error: 'Payment system not configured' }, { status: 500 });
+        }
 
+        // Call Polar API to cancel subscription
+        const polarResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}/cancel`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${polarAccessToken}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!polarResponse.ok) {
+          const errorData = await polarResponse.json().catch(() => ({}));
+          console.error('❌ Polar API error:', errorData);
+          throw new Error('Failed to cancel subscription with Polar');
+        }
+
+        console.log('✅ Subscription cancelled in Polar');
+      } catch (polarError: any) {
+        console.error('❌ Error cancelling with Polar:', polarError);
+        // Continue to update database even if Polar call fails
+        // This ensures the user's intent to cancel is recorded
+      }
+    }
+
+    // Update the database to mark the subscription as cancelled
     const { error: updateError } = await supabaseAdmin
       .from('user_credits')
       .update({
