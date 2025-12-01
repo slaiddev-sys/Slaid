@@ -70,7 +70,7 @@ async function ensureUserProfileAndWorkspace(user: any) {
           .from('profiles')
           .update({ 
             plan_type: 'free',
-            credits: 10 
+            credits: 50 
           })
           .eq('id', user.id);
         
