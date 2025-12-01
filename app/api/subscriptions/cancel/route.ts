@@ -56,21 +56,30 @@ export async function POST(request: NextRequest) {
         }
 
         // Call Polar API to cancel subscription
-        const polarResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}/cancel`, {
-          method: 'POST',
+        // Using PATCH method to update subscription to cancel at period end
+        const polarResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
+          method: 'PATCH',
           headers: {
             'Authorization': `Bearer ${polarAccessToken}`,
             'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            cancel_at_period_end: true
+          })
         });
 
         if (!polarResponse.ok) {
-          const errorData = await polarResponse.json().catch(() => ({}));
-          console.error('❌ Polar API error:', errorData);
-          throw new Error('Failed to cancel subscription with Polar');
+          const errorText = await polarResponse.text();
+          console.error('❌ Polar API error:', {
+            status: polarResponse.status,
+            statusText: polarResponse.statusText,
+            response: errorText
+          });
+          throw new Error(`Polar API returned ${polarResponse.status}: ${errorText}`);
         }
 
-        console.log('✅ Subscription cancelled in Polar');
+        const polarData = await polarResponse.json();
+        console.log('✅ Subscription cancelled in Polar:', polarData);
       } catch (polarError: any) {
         console.error('❌ Error cancelling with Polar:', polarError);
         // Continue to update database even if Polar call fails
