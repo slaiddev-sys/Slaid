@@ -7128,6 +7128,9 @@ export default function EditorPage() {
                           setLoadingStep(1);
                           await new Promise(resolve => setTimeout(resolve, 500));
 
+                          // Step 2: Generating slides (set once for all batches)
+                          setLoadingStep(2);
+
                           for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
                             const startSlide = batchIndex * SLIDES_PER_BATCH + 1;
                             const endSlide = Math.min((batchIndex + 1) * SLIDES_PER_BATCH, slideCountNum);
@@ -7149,9 +7152,6 @@ export default function EditorPage() {
                                 { role: 'assistant', text: 'Creating presentation...', isLoading: true }
                               ];
                             }
-
-                            // Step 2: Generate slides for this batch
-                            setLoadingStep(2);
                             
                             const requestBody = {
                               uploadResult: uploadResult,
