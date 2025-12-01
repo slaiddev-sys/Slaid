@@ -3176,8 +3176,11 @@ export default function EditorPage() {
     
     return (
       <div 
-        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 animate-fadeIn"
-        onClick={() => setShowSettingsModal(false)}
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowSettingsModal(false);
+        }}
       >
         <div 
           className="bg-white rounded-2xl shadow-xl w-full max-w-md h-[600px] max-h-screen overflow-y-auto p-7 relative border border-gray-200 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]"
