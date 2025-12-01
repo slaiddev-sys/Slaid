@@ -7329,14 +7329,8 @@ export default function EditorPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className={`text-base font-medium ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-900'}`}>Generating slides...</h3>
-                        <p className={`text-sm ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-500'}`}>
-                          {batchProgress.total > 1 ? (
-                            `Batch ${batchProgress.current}/${batchProgress.total}: Slides ${batchProgress.slideRange}`
-                          ) : (
-                            'Creating your presentation structure'
-                          )}
-                        </p>
+                        <h3 className={`text-base font-medium ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-900'}`}>Generating slides</h3>
+                        <p className={`text-sm ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-500'}`}>Creating your presentation structure</p>
                       </div>
                     </div>
 
