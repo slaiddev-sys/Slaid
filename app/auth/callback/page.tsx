@@ -82,6 +82,42 @@ async function ensureUserProfileAndWorkspace(user: any) {
       }
     } else {
       console.log('✅ Profile already exists:', existingProfile);
+      
+      // Even if profile exists (e.g. created by trigger), we need to ensure new users get their credits
+      // Check if user was created recently (last 5 minutes)
+      const userCreatedAt = new Date(user.created_at);
+      const now = new Date();
+      const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 5 * 60 * 1000; // 5 minutes
+      
+      if (isNewUser) {
+        console.log('🆕 New user detected with existing profile. Checking credits...');
+        
+        // Fetch current credits
+        const { data: currentProfile, error: fetchError } = await supabase
+          .from('profiles')
+          .select('credits')
+          .eq('id', user.id)
+          .single();
+          
+        if (!fetchError && (currentProfile?.credits === 0 || currentProfile?.credits === null)) {
+          console.log('🔄 Updating initial credits to 50 for new user...');
+          const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ 
+              plan_type: 'free',
+              credits: 50 
+            })
+            .eq('id', user.id);
+            
+          if (updateError) {
+            console.error('❌ Error updating initial credits:', updateError);
+          } else {
+            console.log('✅ Initial credits set to 50');
+          }
+        } else {
+          console.log('ℹ️ Credits already set or user not eligible:', currentProfile?.credits);
+        }
+      }
     }
     
     // Check if workspace exists
