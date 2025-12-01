@@ -70,7 +70,7 @@ async function ensureUserProfileAndWorkspace(user: any) {
           .from('profiles')
           .update({ 
             plan_type: 'free',
-            credits: 50 
+            credits: 35 
           })
           .eq('id', user.id);
         
@@ -100,19 +100,19 @@ async function ensureUserProfileAndWorkspace(user: any) {
           .single();
           
         if (!fetchError && (currentProfile?.credits === 0 || currentProfile?.credits === null)) {
-          console.log('🔄 Updating initial credits to 50 for new user...');
+          console.log('🔄 Updating initial credits to 35 for new user...');
           const { error: updateError } = await supabase
             .from('profiles')
             .update({ 
               plan_type: 'free',
-              credits: 50 
+              credits: 35 
             })
             .eq('id', user.id);
             
           if (updateError) {
             console.error('❌ Error updating initial credits:', updateError);
           } else {
-            console.log('✅ Initial credits set to 50');
+            console.log('✅ Initial credits set to 35');
           }
         } else {
           console.log('ℹ️ Credits already set or user not eligible:', currentProfile?.credits);
