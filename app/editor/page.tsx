@@ -4141,7 +4141,7 @@ export default function EditorPage() {
                   {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
                     {editingWorkspace ? (
                       <input
                         type="text"
@@ -4204,17 +4204,7 @@ export default function EditorPage() {
                         className="bg-transparent border-none outline-none text-gray-900 font-medium text-sm max-w-[140px]"
                       />
                     ) : (
-                      <>
-                        <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
-                        {/* Sidebar toggle button */}
-                        <button
-                          className="w-5 h-5 flex items-center justify-center transition-colors flex-shrink-0"
-                          aria-label="Collapse sidebar"
-                          onClick={() => setSidebarCollapsed(true)}
-                        >
-                          <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-5 h-5 object-contain" />
-                        </button>
-                      </>
+                      <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
                     )}
                   </div>
                   <span className="text-gray-500 text-xs">
@@ -4225,10 +4215,22 @@ export default function EditorPage() {
                   </span>
                 </div>
               </div>
+              {/* Sidebar toggle button */}
+              <button
+                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
+                aria-label="Collapse sidebar"
+                onClick={() => setSidebarCollapsed(true)}
+              >
+                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-5 h-5 object-contain" />
+              </button>
             </div>
             {/* Main scrollable section */}
             <div className="flex-1 min-h-0 flex flex-col">
               <div className="px-4 mt-3">
+                {/* Sidebar icon */}
+                <div className="flex items-center justify-center mb-3">
+                  <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
+                </div>
                 <button
                   className="w-full flex items-center justify-start gap-2 bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] rounded-lg py-1.5 mb-3 transition font-medium pl-3"
                   onClick={async () => {
@@ -4586,27 +4588,39 @@ export default function EditorPage() {
       <main className="flex-1 flex flex-col md:flex-row h-screen w-full overflow-hidden">
         {/* Chat/editor column - Hide during onboarding */}
         {!showOnboarding && (
-          <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
+          <section className={`${sidebarCollapsed ? 'hidden' : 'w-[420px]'} flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0 transition-all duration-300`}>
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-2 relative">
             <h2 className="text-[#002903] text-xl font-medium break-words w-full line-clamp-2">
               {currentPresentation?.title || "Untitled Presentation"}
             </h2>
-            {/* Three dots icon */}
-            <button
-              className="ml-2 p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
-              onClick={e => {
-                e.stopPropagation();
-                setShowTitleMenu(v => !v);
-              }}
-              aria-label="Presentation options"
-            >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <circle cx="5" cy="12" r="2" fill="currentColor"/>
-                <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                <circle cx="19" cy="12" r="2" fill="currentColor"/>
-              </svg>
-            </button>
+            <div className="flex items-center gap-2">
+              {/* Collapse sidebar button */}
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+                onClick={() => setSidebarCollapsed(true)}
+                aria-label="Close chat"
+              >
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              {/* Three dots icon */}
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+                onClick={e => {
+                  e.stopPropagation();
+                  setShowTitleMenu(v => !v);
+                }}
+                aria-label="Presentation options"
+              >
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <circle cx="5" cy="12" r="2" fill="currentColor"/>
+                  <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                  <circle cx="19" cy="12" r="2" fill="currentColor"/>
+                </svg>
+              </button>
+            </div>
           </div>
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {messages.length === 0 ? (
@@ -7389,8 +7403,18 @@ export default function EditorPage() {
           /* Normal Slide preview column */
           <section className="flex-1 flex flex-col h-full bg-white overflow-hidden">
           {/* Top bar */}
-          <div className="bg-[#F9FAFB] border-b border-gray-200 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 flex justify-end items-center">
-            <div className="flex gap-2 sm:gap-3 flex-wrap">
+          <div className="bg-[#F9FAFB] border-b border-gray-200 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 flex justify-between items-center">
+            {/* Chat toggle button - only show when chat is collapsed */}
+            {sidebarCollapsed && (
+              <button
+                className="w-9 h-9 rounded-xl bg-transparent hover:bg-gray-100 flex items-center justify-center transition"
+                aria-label="Open chat"
+                onClick={() => setSidebarCollapsed(false)}
+              >
+                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
+              </button>
+            )}
+            <div className={`flex gap-2 sm:gap-3 flex-wrap ${sidebarCollapsed ? '' : 'ml-auto'}`}>
               {/* PowerPoint Export button */}
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // Check if user has Basic, Pro, or Ultra plan for PowerPoint export
