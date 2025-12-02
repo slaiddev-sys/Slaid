@@ -3197,8 +3197,8 @@ export default function EditorPage() {
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5"/><line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
           </button>
-          <h2 className="text-gray-900 text-2xl font-bold mb-1">Settings</h2>
-          <p className="text-gray-500 text-sm mb-6">Manage your account and workspace preferences</p>
+          <h2 className="text-gray-900 text-2xl font-bold mb-1">{t.editor.settingsModal.title}</h2>
+          <p className="text-gray-500 text-sm mb-6">{t.editor.settingsModal.accountSettings}</p>
           {/* Account Section */}
           <div className="mb-7">
             <h3 className="text-gray-900 text-lg font-semibold mb-3">Account</h3>
@@ -3265,7 +3265,7 @@ export default function EditorPage() {
                       onClick={handleCancelSubscription}
                       disabled={isCancelling}
                     >
-                      {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
+                      {isCancelling ? t.editor.settingsModal.cancelling : t.editor.settingsModal.cancelSubscription}
                     </button>
                   </>
                 )}
@@ -3278,7 +3278,7 @@ export default function EditorPage() {
               onClick={handleLogout}
               className="w-full bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] font-medium rounded px-3 py-2 text-sm transition"
             >
-              Log Out
+              {t.editor.logout}
             </button>
           </div>
           {/* Delete Account Section */}
@@ -4542,7 +4542,7 @@ export default function EditorPage() {
                   <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="2"/>
                   <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" strokeWidth="2"/>
                 </svg>
-                Settings
+                {t.editor.settings}
               </button>
               <button
                 ref={helpButtonRef}
@@ -4573,7 +4573,7 @@ export default function EditorPage() {
                   <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                Help & support
+                {t.editor.help}
               </button>
             </div>
           </>
@@ -6948,7 +6948,7 @@ export default function EditorPage() {
                   </div>
                   
                   <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
-                    <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>Upload Files</h3>
+                    <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>{t.editor.uploadTitle}</h3>
                     {isUploading || isAnalyzing ? (
                       <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#002903] mx-auto mb-2"></div>
@@ -6958,7 +6958,7 @@ export default function EditorPage() {
                       </div>
                     ) : (
                     <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>
-                      Drag and drop your files here, or{' '}
+                      {t.editor.uploadSubtitle}{' '}
                   <button 
                         className="text-blue-500 hover:underline"
                         onClick={() => {
@@ -7000,7 +7000,7 @@ export default function EditorPage() {
                           </div>
                         )}
                     
-                    <p className="text-xs text-center mt-2" style={{ color: '#002903' }}>Support formats: .xlsx, .xsl, .csv</p>
+                    <p className="text-xs text-center mt-2" style={{ color: '#002903' }}>{t.editor.supportedFormats}</p>
                 </div>
               </div>
             </div>
