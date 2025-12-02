@@ -20,7 +20,7 @@ interface ExcelFullWidthChartCategoricalResponsiveProps {
   canvasHeight?: number;
 }
 
-const ExcelFullWidthChartCategorical_Responsive: React.FC<ExcelFullWidthChartCategoricalResponsiveProps> = ({ 
+const ExcelFullWidthChartCategorical_Responsive: React.FC<ExcelFullWidthChartCategoricalResponsiveProps> = React.memo(({ 
   title = "Category Distribution",
   chartData = {
     type: 'bar' as const,
@@ -86,7 +86,9 @@ const ExcelFullWidthChartCategorical_Responsive: React.FC<ExcelFullWidthChartCat
       </div>
     </div>
   );
-};
+}));
+
+ExcelFullWidthChartCategorical_Responsive.displayName = 'ExcelFullWidthChartCategorical_Responsive';
 
 export default ExcelFullWidthChartCategorical_Responsive;
 
