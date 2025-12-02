@@ -4208,9 +4208,9 @@ export default function EditorPage() {
                   </div>
                   <span className="text-gray-500 text-xs">
                     {credits?.plan_type === 'basic' ? 'Basic plan' : 
-                     credits?.plan_type === 'pro' ? 'Pro plan' : 
-                     credits?.plan_type === 'ultra' ? 'Ultra plan' : 
-                     'Free plan'}
+                     credits?.plan_type === 'pro' ? (language === 'es' ? 'Plan Pro' : 'Pro plan') : 
+                     credits?.plan_type === 'ultra' ? (language === 'es' ? 'Plan Ultra' : 'Ultra plan') : 
+                     language === 'es' ? 'Plan Gratuito' : 'Free plan'}
                   </span>
                 </div>
               </div>
@@ -4281,11 +4281,11 @@ export default function EditorPage() {
                   }}
                 >
                   <span className="text-[#002903] text-lg font-bold leading-none">+</span>
-                  <span className="font-medium text-sm">New presentation</span>
+                  <span className="font-medium text-sm">{t.editor.newPresentation}</span>
                 </button>
               </div>
               <div className="px-4 mt-2 flex-1 min-h-0 flex flex-col">
-                <div className="text-gray-500 text-xs font-medium mb-3 uppercase tracking-wide">PRESENTATIONS</div>
+                <div className="text-gray-500 text-xs font-medium mb-3 uppercase tracking-wide">{language === 'es' ? 'PRESENTACIONES' : 'PRESENTATIONS'}</div>
                 <div className="flex flex-col gap-1 overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]">
                   {(workspacePresentations[currentWorkspace] || []).map(p => (
                     <div
@@ -4529,7 +4529,7 @@ export default function EditorPage() {
             </div>
             {/* Fixed bottom section */}
             <div className="px-4 pb-4 border-t border-gray-200 pt-4">
-              <button className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium rounded-lg py-1.5 mb-4 text-sm transition" onClick={() => setShowPricingModal(true)}>Upgrade for more credits</button>
+              <button className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium rounded-lg py-1.5 mb-4 text-sm transition" onClick={() => setShowPricingModal(true)}>{language === 'es' ? 'Mejora para más créditos' : 'Upgrade for more credits'}</button>
               <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5 mb-4">
                 <span className="flex items-center gap-2 text-gray-700 text-sm font-medium">
                   <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain" />
@@ -7398,8 +7398,8 @@ export default function EditorPage() {
                 }
               }}>
                 <img src="/power-point.png" alt="PowerPoint" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
-                <span className="hidden sm:inline">Edit in PowerPoint</span>
-                <span className="sm:hidden">Edit</span>
+                <span className="hidden sm:inline">{language === 'es' ? 'Editar en PowerPoint' : 'Edit in PowerPoint'}</span>
+                <span className="sm:hidden">{language === 'es' ? 'Editar' : 'Edit'}</span>
               </button>
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // Check if user has Pro plan for Preview feature
@@ -7413,8 +7413,8 @@ export default function EditorPage() {
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span className="hidden sm:inline">Preview</span>
-                <span className="sm:hidden">View</span>
+                <span className="hidden sm:inline">{language === 'es' ? 'Vista previa' : 'Preview'}</span>
+                <span className="sm:hidden">{language === 'es' ? 'Ver' : 'View'}</span>
               </button>
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // Check if user has Pro plan for Export feature
@@ -7425,7 +7425,7 @@ export default function EditorPage() {
                 }
               }}>
                 <img src="/export-icon.png" alt="Export" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
-                <span>Export to PDF</span>
+                <span>{language === 'es' ? 'Exportar a PDF' : 'Export to PDF'}</span>
               </button>
             </div>
           </div>
@@ -7594,7 +7594,7 @@ export default function EditorPage() {
                   }
                 }}
               >
-                Preview presentation
+                {language === 'es' ? 'Vista previa de presentación' : 'Preview presentation'}
               </button>
               <button 
                 className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
