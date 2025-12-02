@@ -2013,8 +2013,8 @@ export default function EditorPage() {
     });
   }, [currentPresentationId, activeSlide, currentWorkspace]);
 
-  // Function to render a single block
-  const renderBlock = (block: any, index: number, isPresentationMode = false) => {
+  // Function to render a single block - Memoized to prevent unnecessary re-renders
+  const renderBlock = React.useCallback((block: any, index: number, isPresentationMode = false) => {
     console.log(`🔷 Rendering block ${index}: ${block.type}`);
     
     const Component = componentMap[block.type];
@@ -2459,10 +2459,10 @@ export default function EditorPage() {
     }
     
     return React.createElement(Component, { key: index, ...propsToPass });
-  };
+  }, [isExportMode, messages, language]);
 
-  // Function to render slide content
-  const renderSlideContent = (slideIndex?: number, isPresentationMode = false) => {
+  // Function to render slide content - Memoized to prevent chart re-initialization
+  const renderSlideContent = React.useCallback((slideIndex?: number, isPresentationMode = false) => {
     // TEST: Disabled - show real presentation data
     const testBlueGradient = false; // DISABLED: Show real Claude-generated presentations
     
@@ -2575,7 +2575,7 @@ export default function EditorPage() {
         </div>
       </div>
     );
-  };
+  }, [messages, memoizedSlides, activeSlide, renderBlock, isExportMode, exportSlideData]);
 
   useEffect(() => {
     const textarea = textareaRef.current;
