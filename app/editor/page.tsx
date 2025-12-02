@@ -4206,7 +4206,7 @@ export default function EditorPage() {
                     ) : (
                       <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
                     )}
-                    <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-4 h-4 object-contain" />
+                    <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain ml-auto" />
                   </div>
                   <span className="text-gray-500 text-xs">
                     {credits?.plan_type === 'basic' ? 'Basic plan' : 
