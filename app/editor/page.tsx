@@ -7460,7 +7460,14 @@ export default function EditorPage() {
           <div className="flex-1 flex flex-col px-2 sm:px-3 md:px-4 lg:px-8 py-4 md:py-6 bg-[#f9fafb] overflow-y-auto">
             <div className="flex flex-col items-center gap-4 md:gap-6 bg-[#f9fafb] w-full">
               {slides.map((slide: any, slideIndex: number) => (
-                              <div
+                <div key={`slide-wrapper-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`} className="relative w-full flex items-center justify-center gap-4">
+                  {/* Slide Number */}
+                  <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#002903] text-white font-bold text-lg flex items-center justify-center shadow-md">
+                    {slideIndex + 1}
+                  </div>
+                  
+                  {/* Slide Container */}
+                  <div
                   key={`slide-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`}
                   className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full max-w-full"
           style={{
@@ -7505,6 +7512,7 @@ export default function EditorPage() {
                     </div>
                         </div>
                       </div>
+                </div>
               ))}
           </div>
         </div>
