@@ -22,7 +22,7 @@ interface ExcelFullWidthChartResponsiveProps {
   canvasHeight?: number;
 }
 
-const ExcelFullWidthChart_Responsive: React.FC<ExcelFullWidthChartResponsiveProps> = React.memo(({ 
+const ExcelFullWidthChart_Responsive = React.memo<ExcelFullWidthChartResponsiveProps>(({ 
   title = "Performance Overview",
   chartData = {
     type: 'area' as const,
@@ -116,7 +116,7 @@ const ExcelFullWidthChart_Responsive: React.FC<ExcelFullWidthChartResponsiveProp
       </div>
     </div>
   );
-}));
+});
 
 ExcelFullWidthChart_Responsive.displayName = 'ExcelFullWidthChart_Responsive';
 

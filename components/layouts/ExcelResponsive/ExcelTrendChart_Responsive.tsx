@@ -18,7 +18,7 @@ interface ExcelTrendChartResponsiveProps {
   canvasHeight?: number;
 }
 
-const ExcelTrendChart_Responsive: React.FC<ExcelTrendChartResponsiveProps> = React.memo(({ 
+const ExcelTrendChart_Responsive = React.memo<ExcelTrendChartResponsiveProps>(({ 
   title = "Revenue Performance by Quarter",
   chartData = {
     type: 'bar' as const,
@@ -132,7 +132,7 @@ const ExcelTrendChart_Responsive: React.FC<ExcelTrendChartResponsiveProps> = Rea
       </div>
     </div>
   );
-}));
+});
 
 ExcelTrendChart_Responsive.displayName = 'ExcelTrendChart_Responsive';
 
