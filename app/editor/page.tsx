@@ -4141,7 +4141,7 @@ export default function EditorPage() {
                   {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     {editingWorkspace ? (
                       <input
                         type="text"
@@ -4206,6 +4206,7 @@ export default function EditorPage() {
                     ) : (
                       <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
                     )}
+                    <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-4 h-4 object-contain" />
                   </div>
                   <span className="text-gray-500 text-xs">
                     {credits?.plan_type === 'basic' ? 'Basic plan' : 
@@ -4227,10 +4228,6 @@ export default function EditorPage() {
             {/* Main scrollable section */}
             <div className="flex-1 min-h-0 flex flex-col">
               <div className="px-4 mt-3">
-                {/* Sidebar icon */}
-                <div className="flex items-center justify-center mb-3">
-                  <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
-                </div>
                 <button
                   className="w-full flex items-center justify-start gap-2 bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] rounded-lg py-1.5 mb-3 transition font-medium pl-3"
                   onClick={async () => {
