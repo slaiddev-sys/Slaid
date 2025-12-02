@@ -1219,14 +1219,15 @@ export default function EditorPage() {
     const data = getCurrentPresentationData();
     console.log('🔄 currentPresentationData updated for presentation:', currentPresentationId, 'data:', data?.title);
     return data;
-  }, [getCurrentPresentationData, currentPresentationId, messages]);
+  }, [getCurrentPresentationData, currentPresentationId, messages, presentationMessages]);
   
   // Create a stable reference for slides that only changes when the actual slide data changes
   const slides = React.useMemo(() => {
     const slideData = currentPresentationData?.slides || [{ title: "New Slide 1" }];
     console.log('🎬 Slides updated for presentation:', currentPresentationId, 'slides:', slideData.length, 'first slide:', slideData[0]?.title);
-    return slideData;
-  }, [currentPresentationData?.slides, currentPresentationId]);
+    // Force new reference when slides change by stringifying
+    return JSON.parse(JSON.stringify(slideData));
+  }, [currentPresentationData?.slides, currentPresentationId, presentationMessages]);
 
   // Create stable references for individual slide data to prevent unnecessary re-renders
   const memoizedSlides = React.useMemo(() => {
