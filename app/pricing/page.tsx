@@ -6,6 +6,8 @@ import PolarCheckout from "../../components/PolarCheckout";
 import { getProductId } from "../../lib/polar-config";
 import { useAuth } from "../../components/AuthProvider";
 import { useCredits } from "../../components/hooks/useCredits";
+import { useLanguage } from "../../hooks/useLanguage";
+import { getTranslations } from "../../lib/translations";
 
 const CHECK_ICON = (
   <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M4.5 7.5l2 2 3-3" stroke="#002903" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
@@ -14,48 +16,49 @@ const CROSS_ICON = (
   <span className="text-gray-500 text-[12.3px]">×</span>
 );
 
-const plans = [
+// Plans function to get localized plan data
+const getPlans = (t: any) => [
   {
     name: "Basic",
-    monthly: { price: "$0", originalPrice: null, period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "500 credits" },
-    annual: { price: "$0", originalPrice: null, period: "/year", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "6,000 credits" },
-    desc: ["Perfect for getting started."],
+    monthly: { price: "$0", originalPrice: null, period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `500 ${t.pricing.monthlyCredits}` },
+    annual: { price: "$0", originalPrice: null, period: "/year", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `6,000 ${t.pricing.annualCredits}` },
+    desc: [t.pricing.basicDescription],
     icon: "/basic-plan.png",
     baseFeatures: [
-      { text: "Unlimited presentations", included: true },
-      { text: "Slide preview before generating", included: true },
-      { text: "Export as PDF", included: true },
+      { text: t.pricing.unlimitedPresentations, included: true },
+      { text: t.pricing.slidePreview, included: true },
+      { text: t.pricing.exportPDF, included: true },
     ],
   },
   {
     name: "Pro",
-    monthly: { price: "$24.50", originalPrice: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "1000 credits" },
-    annual: { price: "$220.50", originalPrice: "$441", period: "/year", save: "Save $367.50 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "12,000 credits" },
-    desc: ["Designed for professionals."],
+    monthly: { price: "$24.50", originalPrice: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: `1000 ${t.pricing.monthlyCredits}` },
+    annual: { price: "$220.50", originalPrice: "$441", period: "/year", save: t.pricing.savePerYear.replace('{amount}', '$367.50'), buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: `12,000 ${t.pricing.annualCredits}` },
+    desc: [t.pricing.proDescription],
     icon: "/pro-plan.png",
     baseFeatures: [
-      { text: "Unlimited presentations", included: true },
-      { text: "Slide preview before generating", included: true },
-      { text: "Export as PDF", included: true },
-      { text: "Priority support", included: true },
+      { text: t.pricing.unlimitedPresentations, included: true },
+      { text: t.pricing.slidePreview, included: true },
+      { text: t.pricing.exportPDF, included: true },
+      { text: t.pricing.prioritySupport, included: true },
     ],
   },
   {
     name: "Ultra",
-    monthly: { price: "$44.50", originalPrice: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "2000 credits" },
-    annual: { price: "$400.50", originalPrice: "$801", period: "/year", save: "Save $534 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "24,000 credits" },
-    desc: ["For teams and power users."],
+    monthly: { price: "$44.50", originalPrice: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: `2000 ${t.pricing.monthlyCredits}` },
+    annual: { price: "$400.50", originalPrice: "$801", period: "/year", save: t.pricing.savePerYear.replace('{amount}', '$534'), buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: `24,000 ${t.pricing.annualCredits}` },
+    desc: [t.pricing.ultraDescription],
     icon: "/ultra-red-plan.png",
     baseFeatures: [
-      { text: "Unlimited presentations", included: true },
-      { text: "Slide preview before generating", included: true },
-      { text: "Export as PDF", included: true },
-      { text: "Priority support", included: true },
+      { text: t.pricing.unlimitedPresentations, included: true },
+      { text: t.pricing.slidePreview, included: true },
+      { text: t.pricing.exportPDF, included: true },
+      { text: t.pricing.prioritySupport, included: true },
     ],
   },
 ];
 
-function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType }: { plan: any; isAnnual?: boolean; onToggle?: () => void; currentPlanType?: string }) {
+function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType, t }: { plan: any; isAnnual?: boolean; onToggle?: () => void; currentPlanType?: string; t: any }) {
   const priceData = isAnnual ? plan.annual : plan.monthly;
   
   // Get the appropriate Polar product ID based on plan name and billing cycle
@@ -75,7 +78,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           <img src={plan.icon} alt={`${plan.name} Plan Icon`} className="w-[42px] h-[42px] object-contain" />
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-600 text-[13px]">Monthly</span>
+          <span className="text-gray-600 text-[13px]">{t.pricing.monthly}</span>
           <label className="relative inline-block w-10 align-middle select-none cursor-pointer">
             <input type="checkbox" className="sr-only peer" checked={isAnnual} onChange={onToggle} />
             <span 
@@ -84,7 +87,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
             />
             <span className="dot absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition peer-checked:left-6" />
           </label>
-          <span className="text-gray-600 text-[13px]">Annual</span>
+          <span className="text-gray-600 text-[13px]">{t.pricing.annual}</span>
         </div>
       </div>
       {/* Card content with fixed min-height for alignment */}
@@ -106,7 +109,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
         {/* Christmas Badge - only for non-Basic plans */}
         {plan.name !== "Basic" && (
           <div className="bg-black text-white text-[11px] font-semibold px-2 py-1 rounded-md mb-2 inline-block w-fit">
-            CHRISTMAS 50% OFF
+            {t.pricing.discount}
           </div>
         )}
         {/* Save text */}
@@ -119,7 +122,7 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
         </div>
         {/* Including label */}
         <div className="mb-2">
-          <p className="text-gray-600 text-[11.34px] leading-[17.5px] font-normal">Including</p>
+          <p className="text-gray-600 text-[11.34px] leading-[17.5px] font-normal">{t.pricing.including}</p>
         </div>
         {/* Feature list */}
         <div className="flex flex-col gap-[9.5px] mb-12">
@@ -147,18 +150,18 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
           disabled
         >
-          Current plan
+          {t.pricing.currentPlan}
         </button>
       ) : plan.name === "Basic" && (currentPlanType === 'pro' || currentPlanType === 'ultra') ? (
         <button 
           className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]"
         >
-          Downgrade plan
+          {t.pricing.downgradePlan}
         </button>
       ) : plan.name === "Basic" ? (
         <div>
           <p className="text-center text-gray-600 text-[11px] mb-2 leading-tight">
-            3 days for free, then $14.99/month
+            {t.pricing.freeTrial3Days}
           </p>
           {productId ? (
             <PolarCheckout
@@ -166,11 +169,11 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
               planName={plan.name}
               isAnnual={isAnnual}
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]"
-              buttonText="Free Trial"
+              buttonText={t.pricing.freeTrialButton}
             />
           ) : (
             <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]">
-              Free Trial
+              {t.pricing.freeTrialButton}
             </button>
           )}
         </div>
@@ -179,14 +182,14 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
           disabled
         >
-          Current plan
+          {t.pricing.currentPlan}
         </button>
       ) : plan.name === "Ultra" && currentPlanType === 'ultra' ? (
         <button 
           className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
           disabled
         >
-          Current plan
+          {t.pricing.currentPlan}
         </button>
       ) : productId ? (
         <PolarCheckout
@@ -194,11 +197,11 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           planName={plan.name}
           isAnnual={isAnnual}
           className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition ${priceData.buttonColor}`}
-          buttonText="Get Started"
+          buttonText={t.pricing.getStarted}
         />
       ) : (
         <button className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition ${priceData.buttonColor}`}>
-          Get Started
+          {t.pricing.getStarted}
         </button>
       )}
     </div>
@@ -212,6 +215,8 @@ export default function PricingPage() {
   const [isAnnualUltra, setIsAnnualUltra] = useState(false);
   const { user, profile, signOut, credits } = useAuth();
   const { refreshCredits } = useCredits();
+  const { language, changeLanguage } = useLanguage();
+  const t = getTranslations(language);
 
   const handleSignOut = async () => {
     await signOut();
@@ -246,14 +251,40 @@ export default function PricingPage() {
 
       {/* Pricing content */}
       <div className="pt-8 pb-24 w-full flex flex-col items-center px-4">
+        {/* Language Switcher */}
+        <div className="absolute top-6 right-6 flex items-center gap-1 border border-gray-300 rounded-full p-1">
+          <button
+            onClick={() => changeLanguage('en')}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition ${
+              language === 'en' 
+                ? 'bg-[#002903] text-white' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            EN
+          </button>
+          <button
+            onClick={() => changeLanguage('es')}
+            className={`px-3 py-1 rounded-full text-sm font-medium transition ${
+              language === 'es' 
+                ? 'bg-[#002903] text-white' 
+                : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            ES
+          </button>
+        </div>
+        
         <div className="text-center mb-12">
-          <h1 className="text-gray-900 text-[40px] font-normal leading-[48px] mb-4 tracking-tight">Pricing</h1>
-          <p className="text-gray-600 text-[15px] leading-[24px] max-w-2xl mx-auto">Choose the plan that perfectly fits your needs. Scale up anytime as you grow.</p>
+          <h1 className="text-gray-900 text-[40px] font-normal leading-[48px] mb-4 tracking-tight">{t.pricing.title}</h1>
+          <p className="text-gray-600 text-[15px] leading-[24px] max-w-2xl mx-auto">{t.pricing.subtitle}</p>
         </div>
         <div className="flex flex-col md:flex-row gap-6 w-full max-w-4xl justify-center mx-auto">
-          <PlanCard plan={plans[0]} isAnnual={isAnnualBasic} onToggle={() => setIsAnnualBasic(v => !v)} currentPlanType={credits?.plan_type} />
-          <PlanCard plan={plans[1]} isAnnual={isAnnualPro} onToggle={() => setIsAnnualPro(v => !v)} currentPlanType={credits?.plan_type} />
-          <PlanCard plan={plans[2]} isAnnual={isAnnualUltra} onToggle={() => setIsAnnualUltra(v => !v)} currentPlanType={credits?.plan_type} />
+          {getPlans(t).map((plan, idx) => {
+            const isAnnual = idx === 0 ? isAnnualBasic : idx === 1 ? isAnnualPro : isAnnualUltra;
+            const onToggle = idx === 0 ? () => setIsAnnualBasic(v => !v) : idx === 1 ? () => setIsAnnualPro(v => !v) : () => setIsAnnualUltra(v => !v);
+            return <PlanCard key={plan.name} plan={plan} isAnnual={isAnnual} onToggle={onToggle} currentPlanType={credits?.plan_type} t={t} />;
+          })}
         </div>
       </div>
 
@@ -273,27 +304,27 @@ export default function PricingPage() {
                 <span className="text-xl font-semibold" style={{ color: '#002903' }}>Slaid</span>
               </div>
               <p className="text-sm text-gray-600">
-                Transform your Excel into professional data presentations with AI-powered insights.
+                {t.home.footerSlogan}
               </p>
             </div>
 
             {/* Menu Section */}
             <div>
-              <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>Menu</h3>
+              <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>{t.home.footerMenuTitle}</h3>
               <ul className="space-y-2">
                 <li>
                   <a href="/" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                    Home
+                    {t.home.footerHome}
                   </a>
                 </li>
                 <li>
                   <a href="/login" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                    Login
+                    {t.home.footerLogin}
                   </a>
                 </li>
                 <li>
                   <a href="/signup" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                    Sign Up
+                    {t.home.footerSignup}
                   </a>
                 </li>
               </ul>
@@ -301,21 +332,21 @@ export default function PricingPage() {
 
             {/* Policies Section */}
             <div>
-              <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>Policies</h3>
+              <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>{t.home.footerPoliciesTitle}</h3>
               <ul className="space-y-2">
                 <li>
                   <a href="/privacy" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                    Privacy Policy
+                    {t.home.footerPrivacy}
                   </a>
                 </li>
                 <li>
                   <a href="/terms" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                    Terms of Service
+                    {t.home.footerTerms}
                   </a>
                 </li>
                 <li>
                   <a href="/cookies" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                    Cookie Policy
+                    {t.home.footerCookies}
                   </a>
                 </li>
               </ul>
@@ -326,7 +357,7 @@ export default function PricingPage() {
           {/* Copyright */}
           <div className="mt-8 pt-6 border-t border-gray-200">
             <p className="text-sm text-gray-500 text-center">
-              © {new Date().getFullYear()} Slaid. All rights reserved.
+              © {new Date().getFullYear()} Slaid. {t.home.footerCopyright}
             </p>
           </div>
         </div>

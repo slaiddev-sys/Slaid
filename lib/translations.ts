@@ -78,28 +78,34 @@ export interface Translations {
     freeTrialSubtext: string;
     getStarted: string;
     discount: string;
+    currentPlan: string;
+    downgradePlan: string;
     
     // Plans
     basicPlan: string;
     proPlan: string;
     ultraPlan: string;
+    basicDescription: string;
+    proDescription: string;
+    ultraDescription: string;
     
     // Features
-    feature1: string;
-    feature2: string;
-    feature3: string;
-    feature4: string;
-    feature5: string;
-    feature6: string;
-    feature7: string;
-    feature8: string;
-    feature9: string;
+    including: string;
+    monthlyCredits: string;
+    annualCredits: string;
+    unlimitedPresentations: string;
+    slidePreview: string;
+    exportPDF: string;
     prioritySupport: string;
+    
+    // Save messages
+    savePerYear: string;
     
     // Other
     termsAndPrivacy: string;
     viewTerms: string;
     privacyPolicy: string;
+    freeTrial3Days: string;
   };
   
   // Editor
@@ -214,33 +220,38 @@ export const translations: Record<Language, Translations> = {
     },
     
     pricing: {
-      title: 'Choose your plan',
-      subtitle: 'Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.',
+      title: 'Pricing',
+      subtitle: 'Choose the plan that perfectly fits your needs. Scale up anytime as you grow.',
       monthly: 'Monthly',
       annual: 'Annual',
-      freeTrialButton: 'Start my free trial',
+      freeTrialButton: 'Free Trial',
       freeTrialSubtext: '3 days trial • Cancel anytime',
       getStarted: 'Get Started',
-      discount: 'Christmas 50% discount',
+      discount: 'CHRISTMAS 50% OFF',
+      currentPlan: 'Current plan',
+      downgradePlan: 'Downgrade plan',
       
       basicPlan: 'Basic',
       proPlan: 'Pro',
       ultraPlan: 'Ultra',
+      basicDescription: 'Perfect for getting started.',
+      proDescription: 'Designed for professionals.',
+      ultraDescription: 'For teams and power users.',
       
-      feature1: '500 credits per month',
-      feature2: '1,000 credits per month',
-      feature3: '2,000 credits per month',
-      feature4: 'AI-powered analysis',
-      feature5: 'PowerPoint export',
-      feature6: 'Interactive charts',
-      feature7: 'Unlimited presentations',
-      feature8: 'Advanced customization',
-      feature9: 'Team collaboration',
+      including: 'Including',
+      monthlyCredits: 'credits',
+      annualCredits: 'credits',
+      unlimitedPresentations: 'Unlimited presentations',
+      slidePreview: 'Slide preview before generating',
+      exportPDF: 'Export as PDF',
       prioritySupport: 'Priority support',
+      
+      savePerYear: 'Save {amount} per year',
       
       termsAndPrivacy: 'Terms and Privacy',
       viewTerms: 'View Terms',
       privacyPolicy: 'Privacy Policy',
+      freeTrial3Days: '3 days for free, then $14.99/month',
     },
     
     editor: {
@@ -350,33 +361,38 @@ export const translations: Record<Language, Translations> = {
     },
     
     pricing: {
-      title: 'Elige tu plan',
-      subtitle: 'Desbloquea el potencial de tus datos de Excel con nuestro generador de presentaciones basado en IA.',
+      title: 'Precios',
+      subtitle: 'Elige el plan que se adapte perfectamente a tus necesidades. Escala en cualquier momento.',
       monthly: 'Mensual',
       annual: 'Anual',
-      freeTrialButton: 'Iniciar prueba gratis',
+      freeTrialButton: 'Prueba Gratis',
       freeTrialSubtext: '3 días de prueba • Cancela en cualquier momento',
       getStarted: 'Comenzar',
-      discount: 'Descuento navideño 50%',
+      discount: 'DESCUENTO NAVIDEÑO 50%',
+      currentPlan: 'Plan actual',
+      downgradePlan: 'Bajar de plan',
       
       basicPlan: 'Básico',
       proPlan: 'Pro',
       ultraPlan: 'Ultra',
+      basicDescription: 'Perfecto para empezar.',
+      proDescription: 'Diseñado para profesionales.',
+      ultraDescription: 'Para equipos y usuarios avanzados.',
       
-      feature1: '500 créditos por mes',
-      feature2: '1,000 créditos por mes',
-      feature3: '2,000 créditos por mes',
-      feature4: 'Análisis impulsado por IA',
-      feature5: 'Exportar a PowerPoint',
-      feature6: 'Gráficos interactivos',
-      feature7: 'Presentaciones ilimitadas',
-      feature8: 'Personalización avanzada',
-      feature9: 'Colaboración en equipo',
+      including: 'Incluye',
+      monthlyCredits: 'créditos',
+      annualCredits: 'créditos',
+      unlimitedPresentations: 'Presentaciones ilimitadas',
+      slidePreview: 'Vista previa antes de generar',
+      exportPDF: 'Exportar como PDF',
       prioritySupport: 'Soporte prioritario',
+      
+      savePerYear: 'Ahorra {amount} por año',
       
       termsAndPrivacy: 'Términos y Privacidad',
       viewTerms: 'Ver Términos',
       privacyPolicy: 'Política de Privacidad',
+      freeTrial3Days: '3 días gratis, luego $14.99/mes',
     },
     
     editor: {
