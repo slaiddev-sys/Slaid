@@ -2946,6 +2946,7 @@ export default function EditorPage() {
               planName={plan.name}
               isAnnual={isAnnual}
               className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition ${priceData.buttonColor}`}
+              buttonText={t.pricing.getStarted}
             />
           ) : (
             <button className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition ${priceData.buttonColor}`}>
