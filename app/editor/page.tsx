@@ -4101,7 +4101,7 @@ export default function EditorPage() {
         </div>
       )}
       {/* Sidebar */}
-      <aside className={`flex flex-col h-screen bg-white border-r border-gray-200 transition-all duration-300 ease-in-out ${sidebarCollapsed ? "w-14" : "w-[300px]"} hidden md:flex`}>
+      <aside className={`flex flex-col h-screen bg-white border-r border-gray-200 ${sidebarCollapsed ? "w-14" : "w-[300px]"} hidden md:flex`}>
         {sidebarCollapsed ? (
           <>
             {/* Top: sidebar toggle icon (points left) */}
@@ -4585,7 +4585,7 @@ export default function EditorPage() {
       <main className="flex-1 flex flex-col md:flex-row h-screen w-full overflow-hidden">
         {/* Chat/editor column - Hide during onboarding */}
         {!showOnboarding && (
-          <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0 transition-all duration-300">
+          <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-2 relative">
             <h2 className="text-[#002903] text-xl font-medium break-words w-full line-clamp-2">
@@ -7480,19 +7480,8 @@ export default function EditorPage() {
                         position: 'absolute',
                         top: '50%',
                         left: '50%',
-                        transform: 'translate(-50%, -50%) scale(var(--slide-scale, 1))',
+                        transform: `translate(-50%, -50%) scale(${sidebarCollapsed ? 1.36 : 1.135})`,
                         transformOrigin: 'center center'
-                      }}
-                      ref={(el) => {
-                        if (el) {
-                          const container = el.parentElement;
-                          if (container) {
-                            const scaleX = container.clientWidth / 881;
-                            const scaleY = container.clientHeight / 495;
-                            const scale = Math.min(scaleX, scaleY, sidebarCollapsed ? 1.36 : 1.135);
-                            el.style.setProperty('--slide-scale', scale.toString());
-                          }
-                        }
                       }}
                     >
                       {renderSlideContent(slideIndex)}
