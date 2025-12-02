@@ -1225,16 +1225,18 @@ export default function EditorPage() {
   const slides = React.useMemo(() => {
     const slideData = currentPresentationData?.slides || [{ title: "New Slide 1" }];
     console.log('🎬 Slides updated for presentation:', currentPresentationId, 'slides:', slideData.length, 'first slide:', slideData[0]?.title);
+    console.log('🔍 Slide modifications detected:', slideData.map((s: any) => ({ id: s.id, lastModified: s._lastModified })));
     // Force new reference when slides change by stringifying
     return JSON.parse(JSON.stringify(slideData));
-  }, [currentPresentationData?.slides, currentPresentationId, presentationMessages]);
+  }, [currentPresentationData?.slides, currentPresentationId, presentationMessages, messages]);
 
   // Create stable references for individual slide data to prevent unnecessary re-renders
   const memoizedSlides = React.useMemo(() => {
     return slides.map((slide: any, index: number) => ({
       ...slide,
       _slideIndex: index,
-      _lastModified: currentPresentationData?._lastModified || Date.now()
+      // Preserve slide-level _lastModified if it exists, otherwise use presentation-level or current time
+      _lastModified: slide._lastModified || currentPresentationData?._lastModified || Date.now()
     }));
   }, [slides, currentPresentationData?._lastModified]);
 
@@ -7459,7 +7461,7 @@ export default function EditorPage() {
             <div className="flex flex-col items-center gap-4 md:gap-6 bg-[#f9fafb] w-full">
               {slides.map((slide: any, slideIndex: number) => (
                               <div
-                  key={`slide-${slideIndex}-${sidebarCollapsed}`}
+                  key={`slide-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`}
                   className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full max-w-full"
           style={{
                     width: 'min(100%, ' + (sidebarCollapsed ? '1200px' : '1000px') + ')',
