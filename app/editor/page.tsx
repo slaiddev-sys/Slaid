@@ -4140,16 +4140,8 @@ export default function EditorPage() {
                 <div className="h-8 w-8 rounded-full bg-[#002903] flex items-center justify-center text-white font-medium text-sm">
                   {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
                 </div>
-                {/* Sidebar toggle button */}
-                <button
-                  className="w-6 h-6 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors flex-shrink-0"
-                  aria-label="Collapse sidebar"
-                  onClick={() => setSidebarCollapsed(true)}
-                >
-                  <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-4 h-4 object-contain" />
-                </button>
                 <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     {editingWorkspace ? (
                       <input
                         type="text"
@@ -4212,7 +4204,17 @@ export default function EditorPage() {
                         className="bg-transparent border-none outline-none text-gray-900 font-medium text-sm max-w-[140px]"
                       />
                     ) : (
-                      <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
+                      <>
+                        <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
+                        {/* Sidebar toggle button */}
+                        <button
+                          className="w-5 h-5 flex items-center justify-center transition-colors flex-shrink-0"
+                          aria-label="Collapse sidebar"
+                          onClick={() => setSidebarCollapsed(true)}
+                        >
+                          <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-5 h-5 object-contain" />
+                        </button>
+                      </>
                     )}
                   </div>
                   <span className="text-gray-500 text-xs">
