@@ -62,6 +62,8 @@ import FeaturebaseWidget, { openFeaturebaseWidget } from '../../components/Featu
 import { supabase } from '../../lib/supabase';
 import PolarCheckout from '../../components/PolarCheckout';
 import { getProductId } from '../../lib/polar-config';
+import { useLanguage } from '../../hooks/useLanguage';
+import { getTranslations } from '../../lib/translations';
 
 // Extend Window interface for the new presentation flag
 declare global {
@@ -89,6 +91,8 @@ export default function EditorPage() {
   
   const router = useRouter();
   const { user, signOut } = useAuth();
+  const { language, changeLanguage } = useLanguage();
+  const t = getTranslations(language);
   const { 
     credits, 
     loading: creditsLoading, 

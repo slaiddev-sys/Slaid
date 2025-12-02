@@ -308,19 +308,38 @@ export const translations: Record<Language, Translations> = {
       help: 'Help',
       logout: 'Logout',
       
-      uploadTitle: 'Upload your Excel file',
-      uploadSubtitle: 'Drag and drop or click to select',
-      uploadButton: 'Select File',
+      // Upload section
+      uploadTitle: 'Upload Files',
+      uploadSubtitle: 'Drag and drop your files here, or',
+      clickToSelect: 'click to select',
+      supportedFormats: 'Support formats: .xlsx, .xsl, .csv',
       
+      // Loading states
       analyzingContent: 'Analyzing content',
       generatingSlides: 'Generating slides',
       applyingDesign: 'Applying design',
       
+      // Sidebar
+      editSlide: 'Edit Slide',
+      deleteSlide: 'Delete slide',
+      duplicateSlide: 'Duplicate slide',
+      
+      // Export
+      export: 'Export',
+      exportPDF: 'Export as PDF',
+      exportPPTX: 'Export as PowerPoint',
+      exportGoogleSlides: 'Export to Google Slides',
+      exporting: 'Exporting...',
+      
+      // Pricing Modal
       pricingModal: {
         title: 'Upgrade your plan',
-        upgradeMessage: 'Get more credits and unlock premium features',
+        subtitle: 'Get more credits and unlock premium features',
+        monthly: 'Monthly',
+        annual: 'Annual',
       },
       
+      // Settings Modal
       settingsModal: {
         title: 'Settings',
         accountSettings: 'Account Settings',
@@ -331,15 +350,45 @@ export const translations: Record<Language, Translations> = {
         ultraPlan: 'Ultra Plan - 2,000 credits/month',
         manageSubscription: 'Manage Subscription',
         cancelSubscription: 'Cancel Subscription',
+        cancelling: 'Cancelling...',
         deleteAccount: 'Delete Account',
         close: 'Close',
       },
       
+      // Help Modal
       helpModal: {
         title: 'Help & Support',
+        description: 'Need assistance? We\'re here to help!',
         contactSupport: 'Contact Support',
         email: 'support@slaidapp.com',
+        documentation: 'Documentation',
+        tutorials: 'Video Tutorials',
         close: 'Close',
+      },
+      
+      // Credits Modal
+      creditsModal: {
+        title: 'Get More Credits',
+        currentBalance: 'Current Balance',
+        creditPacks: 'Credit Packs',
+        or: 'or',
+        subscriptionPlans: 'Subscription Plans',
+      },
+      
+      // Share Modal
+      shareModal: {
+        title: 'Share Presentation',
+        copyLink: 'Copy Link',
+        linkCopied: 'Link copied!',
+        close: 'Close',
+      },
+      
+      // Error messages
+      errors: {
+        uploadError: 'Error uploading file',
+        generateError: 'Error generating slides',
+        notEnoughCredits: 'Not enough credits',
+        authRequired: 'Authentication required',
       },
     },
   },
@@ -473,19 +522,38 @@ export const translations: Record<Language, Translations> = {
       help: 'Ayuda',
       logout: 'Cerrar sesión',
       
-      uploadTitle: 'Sube tu archivo de Excel',
-      uploadSubtitle: 'Arrastra y suelta o haz clic para seleccionar',
-      uploadButton: 'Seleccionar Archivo',
+      // Upload section
+      uploadTitle: 'Subir Archivos',
+      uploadSubtitle: 'Arrastra y suelta tus archivos aquí, o',
+      clickToSelect: 'haz clic para seleccionar',
+      supportedFormats: 'Formatos soportados: .xlsx, .xsl, .csv',
       
+      // Loading states
       analyzingContent: 'Analizando contenido',
       generatingSlides: 'Generando diapositivas',
       applyingDesign: 'Aplicando diseño',
       
+      // Sidebar
+      editSlide: 'Editar Diapositiva',
+      deleteSlide: 'Eliminar diapositiva',
+      duplicateSlide: 'Duplicar diapositiva',
+      
+      // Export
+      export: 'Exportar',
+      exportPDF: 'Exportar como PDF',
+      exportPPTX: 'Exportar como PowerPoint',
+      exportGoogleSlides: 'Exportar a Google Slides',
+      exporting: 'Exportando...',
+      
+      // Pricing Modal
       pricingModal: {
         title: 'Mejora tu plan',
-        upgradeMessage: 'Obtén más créditos y desbloquea funciones premium',
+        subtitle: 'Obtén más créditos y desbloquea funciones premium',
+        monthly: 'Mensual',
+        annual: 'Anual',
       },
       
+      // Settings Modal
       settingsModal: {
         title: 'Configuración',
         accountSettings: 'Configuración de Cuenta',
@@ -496,15 +564,45 @@ export const translations: Record<Language, Translations> = {
         ultraPlan: 'Plan Ultra - 2,000 créditos/mes',
         manageSubscription: 'Administrar Suscripción',
         cancelSubscription: 'Cancelar Suscripción',
+        cancelling: 'Cancelando...',
         deleteAccount: 'Eliminar Cuenta',
         close: 'Cerrar',
       },
       
+      // Help Modal
       helpModal: {
         title: 'Ayuda y Soporte',
+        description: '¿Necesitas ayuda? ¡Estamos aquí para ayudarte!',
         contactSupport: 'Contactar Soporte',
         email: 'support@slaidapp.com',
+        documentation: 'Documentación',
+        tutorials: 'Tutoriales en Video',
         close: 'Cerrar',
+      },
+      
+      // Credits Modal
+      creditsModal: {
+        title: 'Obtener Más Créditos',
+        currentBalance: 'Saldo Actual',
+        creditPacks: 'Paquetes de Créditos',
+        or: 'o',
+        subscriptionPlans: 'Planes de Suscripción',
+      },
+      
+      // Share Modal
+      shareModal: {
+        title: 'Compartir Presentación',
+        copyLink: 'Copiar Enlace',
+        linkCopied: '¡Enlace copiado!',
+        close: 'Cerrar',
+      },
+      
+      // Error messages
+      errors: {
+        uploadError: 'Error al subir archivo',
+        generateError: 'Error al generar diapositivas',
+        notEnoughCredits: 'Créditos insuficientes',
+        authRequired: 'Autenticación requerida',
       },
     },
   },
