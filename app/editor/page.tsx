@@ -7464,12 +7464,11 @@ export default function EditorPage() {
             <div className="flex flex-col items-center gap-4 md:gap-6 bg-[#f9fafb] w-full">
               {slides.map((slide: any, slideIndex: number) => (
                               <div
-                  key={`slide-${slideIndex}`}
+                  key={`slide-${slideIndex}-${sidebarCollapsed}`}
                   className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full max-w-full"
           style={{
                     width: 'min(100%, ' + (sidebarCollapsed ? '1200px' : '1000px') + ')',
-                    aspectRatio: '16 / 9',
-            transition: 'width 300ms ease-in-out'
+                    aspectRatio: '16 / 9'
           }}
         >
           <div 
