@@ -1226,9 +1226,14 @@ export default function EditorPage() {
     const slideData = currentPresentationData?.slides || [{ title: "New Slide 1" }];
     console.log('🎬 Slides updated for presentation:', currentPresentationId, 'slides:', slideData.length, 'first slide:', slideData[0]?.title);
     console.log('🔍 Slide modifications detected:', slideData.map((s: any) => ({ id: s.id, lastModified: s._lastModified })));
+    
+    // Calculate a hash of all slide timestamps to detect any changes
+    const slidesHash = slideData.map((s: any) => `${s.id}-${s._lastModified || 0}`).join('|');
+    console.log('🔑 Slides hash:', slidesHash);
+    
     // Force new reference when slides change by stringifying
     return JSON.parse(JSON.stringify(slideData));
-  }, [currentPresentationData?.slides, currentPresentationId, presentationMessages, messages]);
+  }, [currentPresentationData?.slides, currentPresentationId, presentationMessages, messages, activeSlide]);
 
   // Create stable references for individual slide data to prevent unnecessary re-renders
   const memoizedSlides = React.useMemo(() => {
@@ -6466,6 +6471,12 @@ export default function EditorPage() {
                         });
                         console.log('🔍 DIRECT SUCCESS DEBUG: Success message replacement completed');
                         
+                        // Force immediate re-render by updating a dummy state
+                        setTimeout(() => {
+                          console.log('🔄 Forcing re-render after direct slide modification');
+                          setActiveSlide(prev => prev); // Trigger re-render
+                        }, 50);
+                        
                         return; // Exit early for single slide modifications
                       } else {
                         throw new Error('Cannot modify slide: No existing presentation found');
@@ -6561,6 +6572,12 @@ export default function EditorPage() {
                           };
                         });
                         console.log('🔍 WRAPPED SUCCESS DEBUG: Success message replacement completed');
+                        
+                        // Force immediate re-render by updating a dummy state
+                        setTimeout(() => {
+                          console.log('🔄 Forcing re-render after slide modification');
+                          setActiveSlide(prev => prev); // Trigger re-render
+                        }, 50);
                         
                         return; // Exit early for single slide operations
                       } else {
