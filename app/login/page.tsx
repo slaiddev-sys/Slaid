@@ -5,18 +5,13 @@ import { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signInWithGoogle } from "../../lib/auth";
 import SupabaseSetupNotice from "../../components/SupabaseSetupNotice";
+import { useLanguage } from "../../hooks/useLanguage";
+import { getTranslations } from "../../lib/translations";
 
 const imgLogo41 = "/slaid logo verde.png";
 const imgBackground = "http://localhost:3845/assets/c8cea87b5bbb736c60e6d80d56ee2ee70dd81613.png";
 
-function TypewriterPlaceholder() {
-  const phrases = [
-    "Build a forecast presentation with this spreadsheet.",
-    "Create a data room from this financial data.",
-    "Make a performance review for the marketing team.",
-    "Turn this into a client report with insights.",
-    "Summarize this sales report in 5 slides.",
-  ];
+function TypewriterPlaceholder({ phrases }: { phrases: string[] }) {
   const [index, setIndex] = useState(0);
   const [displayed, setDisplayed] = useState("");
   const [typing, setTyping] = useState(true);
@@ -45,7 +40,7 @@ function TypewriterPlaceholder() {
       }
     }
     return () => clearTimeout(timeout);
-  }, [displayed, typing, index]);
+  }, [displayed, typing, index, phrases]);
 
   return displayed;
 }
@@ -56,6 +51,8 @@ function LoginPageContent() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const { language, changeLanguage } = useLanguage();
+  const t = getTranslations(language);
   
   // Check if Supabase is configured
   const isSupabaseConfigured = process.env.NEXT_PUBLIC_SUPABASE_URL && 
@@ -70,13 +67,13 @@ function LoginPageContent() {
     const retryOAuth = searchParams.get('retry_oauth');
     
     if (errorParam === 'auth_failed') {
-      setError('Authentication failed. Please check your Supabase configuration and try again.');
+      setError(t.auth.authFailed);
     } else if (errorParam === 'unexpected') {
-      setError('An unexpected error occurred during authentication. Please try again.');
+      setError(t.auth.unexpectedError);
     } else if (errorParam === 'auth_timeout') {
-      setError('Authentication timed out. This may happen with new accounts. Please try again.');
+      setError(t.auth.authTimeout);
     } else if (messageParam === 'account_deleted') {
-      setSuccess('Your account data has been successfully deleted and you have been signed out.');
+      setSuccess(t.auth.accountDeleted);
     }
     
     // Handle OAuth retry after database trigger bypass (legacy - should not be needed anymore)
@@ -120,8 +117,32 @@ function LoginPageContent() {
               <img src={imgLogo41} alt="Slaid logo" className="h-10 sm:h-12 w-auto" />
             </button>
           </div>
+          {/* Language Switcher */}
+          <div className="absolute top-6 right-6 flex items-center gap-1 border border-gray-300 rounded-full p-1">
+            <button
+              onClick={() => changeLanguage('en')}
+              className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition ${
+                language === 'en' 
+                  ? 'bg-[#002903] text-white' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => changeLanguage('es')}
+              className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition ${
+                language === 'es' 
+                  ? 'bg-[#002903] text-white' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              ES
+            </button>
+          </div>
+          
           {/* Heading */}
-          <h1 className="text-lg sm:text-xl font-medium font-sans mb-6" style={{ color: '#002903' }}>Log in to your account</h1>
+          <h1 className="text-lg sm:text-xl font-medium font-sans mb-6" style={{ color: '#002903' }}>{t.auth.loginTitle}</h1>
           
           {/* Supabase Setup Notice */}
           {!isSupabaseConfigured && <SupabaseSetupNotice />}
@@ -149,13 +170,13 @@ function LoginPageContent() {
             <span className="w-5 h-5 flex items-center justify-center">
               <svg width="18" height="18" viewBox="0 0 18 18"><g><path fill="#4285F4" d="M17.64 9.2045c0-.638-.057-1.252-.163-1.84H9v3.481h4.844a4.137 4.137 0 0 1-1.797 2.717v2.26h2.908c1.703-1.57 2.685-3.885 2.685-6.618z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.805 5.96-2.18l-2.908-2.26c-.807.54-1.84.86-3.052.86-2.348 0-4.337-1.587-5.05-3.724H.96v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.95 10.856A5.41 5.41 0 0 1 3.5 9c0-.644.11-1.272.304-1.856V4.812H.96A8.997 8.997 0 0 0 0 9c0 1.418.34 2.76.96 3.944l2.99-2.088z"/><path fill="#EA4335" d="M9 3.579c1.32 0 2.5.454 3.43 1.346l2.572-2.572C13.47.805 11.43 0 9 0A8.997 8.997 0 0 0 .96 4.812l2.99 2.332C4.663 5.166 6.652 3.579 9 3.579z"/></g></svg>
             </span>
-            {loading ? 'Signing in...' : 'Continue with Google'}
+            {loading ? t.auth.signingIn : t.auth.continueWithGoogle}
           </button>
         </div>
         {/* Sign up link */}
         <div className="text-center text-sm font-sans mt-6 lg:mt-8" style={{ color: '#002903' }}>
-          Don't have an account?{' '}
-          <Link href="/signup" className="font-bold underline" style={{ color: '#002903' }}>Sign up</Link>
+          {t.auth.dontHaveAccount}{' '}
+          <Link href="/signup" className="font-bold underline" style={{ color: '#002903' }}>{t.auth.signupLink}</Link>
         </div>
       </div>
       {/* Right column: Visual representation - Hidden on mobile */}
@@ -173,7 +194,7 @@ function LoginPageContent() {
           <div className="bg-white rounded-lg shadow-lg px-6 py-3 flex items-center min-w-[220px] w-full max-w-md">
             <input
               className="flex-1 bg-transparent outline-none border-none text-black placeholder-black text-sm font-sans"
-              placeholder={TypewriterPlaceholder()}
+              placeholder={TypewriterPlaceholder({ phrases: t.auth.typewriterPhrases })}
               disabled
             />
             <button className="ml-2 rounded-full w-8 h-8 flex items-center justify-center" style={{ backgroundColor: '#002903' }}>

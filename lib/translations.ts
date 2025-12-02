@@ -108,6 +108,27 @@ export interface Translations {
     freeTrial3Days: string;
   };
   
+  // Auth (Login/Signup)
+  auth: {
+    loginTitle: string;
+    signupTitle: string;
+    continueWithGoogle: string;
+    signingIn: string;
+    dontHaveAccount: string;
+    alreadyHaveAccount: string;
+    signupLink: string;
+    loginLink: string;
+    
+    // Typewriter phrases
+    typewriterPhrases: string[];
+    
+    // Error messages
+    authFailed: string;
+    unexpectedError: string;
+    authTimeout: string;
+    accountDeleted: string;
+  };
+  
   // Editor
   editor: {
     workspace: string;
@@ -254,6 +275,30 @@ export const translations: Record<Language, Translations> = {
       freeTrial3Days: '3 days for free, then $14.99/month',
     },
     
+    auth: {
+      loginTitle: 'Log in to your account',
+      signupTitle: 'Create your account',
+      continueWithGoogle: 'Continue with Google',
+      signingIn: 'Signing in...',
+      dontHaveAccount: "Don't have an account?",
+      alreadyHaveAccount: 'Already have an account?',
+      signupLink: 'Sign up',
+      loginLink: 'Log in',
+      
+      typewriterPhrases: [
+        "Build a forecast presentation with this spreadsheet.",
+        "Create a data room from this financial data.",
+        "Make a performance review for the marketing team.",
+        "Turn this into a client report with insights.",
+        "Summarize this sales report in 5 slides.",
+      ],
+      
+      authFailed: 'Authentication failed. Please check your Supabase configuration and try again.',
+      unexpectedError: 'An unexpected error occurred during authentication. Please try again.',
+      authTimeout: 'Authentication timed out. This may happen with new accounts. Please try again.',
+      accountDeleted: 'Your account data has been successfully deleted and you have been signed out.',
+    },
+    
     editor: {
       workspace: 'Workspace',
       newPresentation: 'New Presentation',
@@ -393,6 +438,30 @@ export const translations: Record<Language, Translations> = {
       viewTerms: 'Ver Términos',
       privacyPolicy: 'Política de Privacidad',
       freeTrial3Days: '3 días gratis, luego $14.99/mes',
+    },
+    
+    auth: {
+      loginTitle: 'Inicia sesión en tu cuenta',
+      signupTitle: 'Crea tu cuenta',
+      continueWithGoogle: 'Continuar con Google',
+      signingIn: 'Iniciando sesión...',
+      dontHaveAccount: '¿No tienes una cuenta?',
+      alreadyHaveAccount: '¿Ya tienes una cuenta?',
+      signupLink: 'Regístrate',
+      loginLink: 'Inicia sesión',
+      
+      typewriterPhrases: [
+        "Crea una presentación de pronósticos con esta hoja de cálculo.",
+        "Genera un data room con estos datos financieros.",
+        "Haz una revisión de desempeño para el equipo de marketing.",
+        "Convierte esto en un informe para clientes con insights.",
+        "Resume este reporte de ventas en 5 diapositivas.",
+      ],
+      
+      authFailed: 'Error de autenticación. Por favor verifica tu configuración de Supabase e intenta nuevamente.',
+      unexpectedError: 'Ocurrió un error inesperado durante la autenticación. Por favor intenta nuevamente.',
+      authTimeout: 'La autenticación expiró. Esto puede ocurrir con cuentas nuevas. Por favor intenta nuevamente.',
+      accountDeleted: 'Los datos de tu cuenta han sido eliminados exitosamente y has cerrado sesión.',
     },
     
     editor: {
