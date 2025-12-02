@@ -4,6 +4,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import ChartBlock from "../components/blocks/ChartBlock";
 import Head from "next/head";
+import { useLanguage } from "../hooks/useLanguage";
+import { getTranslations } from "../lib/translations";
 
 // TypewriterWord component
 function TypewriterWord() {
@@ -198,6 +200,8 @@ function Component1({ variant = "1" }: Component1Props) {
 
 export default function Component1920WLight() {
   const router = useRouter();
+  const { language, changeLanguage, isLoading } = useLanguage();
+  const t = getTranslations(language);
 
   // Structured data for SEO
   const structuredData = {
@@ -238,12 +242,36 @@ export default function Component1920WLight() {
       
       <div className="bg-white box-border flex flex-col items-center justify-start pt-0 px-0 relative min-h-screen w-full overflow-x-hidden">
       
-      {/* Navigation Bar - Logo and Auth Buttons */}
+      {/* Navigation Bar - Logo, Language Switcher and Auth Buttons */}
       <div className="relative z-10 box-border flex flex-row items-center justify-between max-w-6xl 2xl:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:py-8 w-full">
         <div className="bg-center bg-contain bg-no-repeat h-[32px] sm:h-[36px] md:h-[40px] shrink-0 w-[100px] sm:w-[115px] md:w-[130px]" style={{ backgroundImage: `url('${imgLogo41}')` }} />
         
-        {/* Auth Buttons */}
+        {/* Auth Buttons and Language Switcher */}
         <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
+          {/* Language Switcher */}
+          <div className="flex items-center gap-1 border border-gray-300 rounded-full p-1">
+            <button
+              onClick={() => changeLanguage('en')}
+              className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition ${
+                language === 'en' 
+                  ? 'bg-[#002903] text-white' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => changeLanguage('es')}
+              className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium transition ${
+                language === 'es' 
+                  ? 'bg-[#002903] text-white' 
+                  : 'text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              ES
+            </button>
+          </div>
+          
           <a
             href="/login"
             className="text-sm sm:text-base font-medium px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 rounded-full transition-colors whitespace-nowrap active:bg-gray-100 touch-manipulation"
@@ -251,7 +279,7 @@ export default function Component1920WLight() {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f3f4f6'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
           >
-            Login
+            {t.nav.login}
           </a>
           <a
             href="/signup"
@@ -260,7 +288,7 @@ export default function Component1920WLight() {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
           >
-            Sign Up
+            {t.nav.signup}
           </a>
         </div>
       </div>
@@ -288,17 +316,17 @@ export default function Component1920WLight() {
               />
             </div>
             <p className="text-sm sm:text-base text-gray-600">
-              Used by <span className="font-semibold text-gray-900">1353</span> happy customers
+              {t.home.customersText} <span className="font-semibold text-gray-900">1353</span> {t.home.happyCustomers}
             </p>
           </div>
           
           {/* Heading */}
           <h1 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-4 md:mb-5 tracking-tighter" style={{ color: '#002903' }}>
-            Transform your Excel into a professional data presentation
+            {t.home.mainTitle}
           </h1>
           {/* Subheading */}
           <p className="max-w-full text-[14px] sm:text-[15px] md:text-[16px] lg:text-[17px] 2xl:text-lg font-sans mb-5 md:mb-6 leading-relaxed" style={{ color: '#002903' }}>
-            Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.
+            {t.home.subtitle}
           </p>
           
           {/* Get Started Button */}
@@ -309,7 +337,7 @@ export default function Component1920WLight() {
             onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#001a02'}
             onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#002903'}
           >
-            Get Started
+            {t.home.getStarted}
             <svg 
               xmlns="http://www.w3.org/2000/svg" 
               className="h-4 w-4 sm:h-5 sm:w-5" 
@@ -348,12 +376,12 @@ export default function Component1920WLight() {
         <div className="w-full mt-12 sm:mt-16 md:mt-20 lg:mt-24">
           {/* Section Title */}
           <h2 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-4 text-center tracking-tighter" style={{ color: '#002903' }}>
-            Unlock the power of your data
+            {t.home.bentoTitle}
           </h2>
           
           {/* Section Description */}
           <p className="text-center text-base sm:text-lg text-gray-600 max-w-3xl mx-auto mb-8 sm:mb-10 md:mb-12 leading-relaxed px-4">
-            Slaid doesn't just turn spreadsheets into visual reports — it acts like an analyst, interpreting your data, spotting patterns, and suggesting clear, actionable insights.
+            {t.home.bentoDescription}
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
@@ -370,10 +398,10 @@ export default function Component1920WLight() {
               </div>
               
               <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: '#002903' }}>
-                Smart Excel Analysis — Let AI do the number crunching.
+                {t.home.smartExcelTitle}
               </h3>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Upload any spreadsheet and Slaid will automatically analyze your data — no formulas, no pivot tables. From trends to anomalies, it detects what matters most and gets to work instantly.
+                {t.home.smartExcelDescription}
               </p>
             </div>
 
@@ -389,20 +417,20 @@ export default function Component1920WLight() {
               </div>
               
               <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: '#002903' }}>
-                Slide-Ready Reports — From raw data to polished storytelling.
+                {t.home.slideReadyTitle}
               </h3>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Turn your analysis into a structured presentation with titles, charts, summaries and key takeaways. No design skills needed — everything is laid out for clarity and impact.
+                {t.home.slideReadyDescription}
               </p>
             </div>
 
             {/* Row 2, Card 3 - Interactive Charts (2 cols - wider) */}
             <div className="bg-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 border-2 border-gray-200 md:col-span-2">
               <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: '#002903' }}>
-                Interactive Charts — Explore, filter, and highlight what matters.
+                {t.home.interactiveChartsTitle}
               </h3>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6">
-                Charts in Slaid aren't static images. You can click, explore, and dig deeper into the numbers — making it easier to find insights and adapt visuals before exporting.
+                {t.home.interactiveChartsDescription}
               </p>
               
               {/* Area Chart */}
@@ -436,7 +464,7 @@ export default function Component1920WLight() {
                 >
                   <div className="flex items-center gap-3">
                     <img src="/power-point.png" alt="PowerPoint" className="w-7 h-7 object-contain" />
-                    <span className="text-sm sm:text-base">Edit in PowerPoint</span>
+                    <span className="text-sm sm:text-base">{t.home.editPowerPointButton}</span>
                   </div>
                   <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -445,10 +473,10 @@ export default function Component1920WLight() {
               </div>
               
               <h3 className="text-base sm:text-lg font-semibold mb-3" style={{ color: '#002903' }}>
-                Edit in PowerPoint — Make it yours with your tools.
+                {t.home.editPowerPointTitle}
               </h3>
               <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
-                Export your report to PowerPoint or your favorite editor. You're free to tweak every slide or drop it straight into your workflow, fully editable.
+                {t.home.editPowerPointDescription}
               </p>
             </div>
 
@@ -459,7 +487,7 @@ export default function Component1920WLight() {
         <div className="w-full mt-16 sm:mt-20 md:mt-24 lg:mt-28">
           {/* Section Title */}
           <h2 className="font-helvetica-neue text-[2rem] sm:text-[2.25rem] md:text-[2.75rem] lg:text-[2.5rem] xl:text-[3rem] 2xl:text-[3.65rem] font-normal leading-[1.15] sm:leading-tight mb-8 sm:mb-10 md:mb-12 text-center tracking-tighter" style={{ color: '#002903' }}>
-            Frequently Asked Questions
+            {t.home.faqTitle}
           </h2>
 
           <div className="max-w-3xl mx-auto space-y-4 px-4">
@@ -468,7 +496,7 @@ export default function Component1920WLight() {
             <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
                 <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
-                  How does Slaid analyze my Excel data?
+                  {t.home.faq1Question}
                 </h3>
                 <span className="transition group-open:rotate-180">
                   <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
@@ -477,7 +505,7 @@ export default function Component1920WLight() {
                 </span>
               </summary>
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Slaid uses advanced AI to automatically detect patterns, trends, and insights in your spreadsheet. Simply upload your Excel file, and our AI will analyze the data structure, identify key metrics, and generate meaningful visualizations without requiring any manual setup.
+                {t.home.faq1Answer}
               </p>
             </details>
 
@@ -485,7 +513,7 @@ export default function Component1920WLight() {
             <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
                 <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
-                  Can I edit the presentation after it's generated?
+                  {t.home.faq2Question}
                 </h3>
                 <span className="transition group-open:rotate-180">
                   <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
@@ -494,7 +522,7 @@ export default function Component1920WLight() {
                 </span>
               </summary>
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Yes! You can export your presentation to PowerPoint for full editing capabilities. All text remains editable, and charts are preserved as high-quality images. This allows you to customize every detail using the tools you already know.
+                {t.home.faq2Answer}
               </p>
             </details>
 
@@ -502,7 +530,7 @@ export default function Component1920WLight() {
             <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
                 <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
-                  What file formats does Slaid support?
+                  {t.home.faq3Question}
                 </h3>
                 <span className="transition group-open:rotate-180">
                   <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
@@ -511,7 +539,7 @@ export default function Component1920WLight() {
                 </span>
               </summary>
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Slaid currently supports .xlsx, .xls, and .csv file formats. You can upload spreadsheets from Excel, Google Sheets (exported as .xlsx), or any other application that exports to these standard formats.
+                {t.home.faq3Answer}
               </p>
             </details>
 
@@ -519,7 +547,7 @@ export default function Component1920WLight() {
             <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
                 <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
-                  How many credits do I need to create a presentation?
+                  {t.home.faq4Question}
                 </h3>
                 <span className="transition group-open:rotate-180">
                   <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
@@ -528,7 +556,7 @@ export default function Component1920WLight() {
                 </span>
               </summary>
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Credit usage depends on the number of slides you generate. Smaller presentations (5 slides) use fewer credits, while larger presentations (15+ slides) require more. New users get 50 free credits to get started, and you can always upgrade your plan for more credits.
+                {t.home.faq4Answer}
               </p>
             </details>
 
@@ -536,7 +564,7 @@ export default function Component1920WLight() {
             <details className="group bg-white border-2 border-gray-200 rounded-2xl p-4 sm:p-6">
               <summary className="flex justify-between items-center cursor-pointer list-none">
                 <h3 className="text-base sm:text-lg font-semibold pr-4" style={{ color: '#002903' }}>
-                  Is my data secure?
+                  {t.home.faq5Question}
                 </h3>
                 <span className="transition group-open:rotate-180">
                   <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24" style={{ color: '#002903' }}>
@@ -545,7 +573,7 @@ export default function Component1920WLight() {
                 </span>
               </summary>
               <p className="mt-4 text-gray-600 leading-relaxed">
-                Absolutely. Your data is encrypted in transit and at rest. We never share your data with third parties, and you maintain full ownership of all uploaded files and generated presentations. You can delete your data at any time from your account settings.
+                {t.home.faq5Answer}
               </p>
             </details>
 
@@ -570,27 +598,27 @@ export default function Component1920WLight() {
                   <span className="text-xl font-semibold" style={{ color: '#002903' }}>Slaid</span>
                 </div>
                 <p className="text-sm text-gray-600">
-                  Transform your Excel into professional data presentations with AI-powered insights.
+                  {t.home.footerSlogan}
                 </p>
               </div>
 
               {/* Menu Section */}
               <div>
-                <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>Menu</h3>
+                <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>{t.home.footerMenuTitle}</h3>
                 <ul className="space-y-2">
                   <li>
                     <a href="/" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                      Home
+                      {t.home.footerHome}
                     </a>
                   </li>
                   <li>
                     <a href="/login" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                      Login
+                      {t.home.footerLogin}
                     </a>
                   </li>
                   <li>
                     <a href="/signup" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                      Sign Up
+                      {t.home.footerSignup}
                     </a>
                   </li>
                 </ul>
@@ -598,21 +626,21 @@ export default function Component1920WLight() {
 
               {/* Policies Section */}
               <div>
-                <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>Policies</h3>
+                <h3 className="text-sm font-semibold mb-4" style={{ color: '#002903' }}>{t.home.footerPoliciesTitle}</h3>
                 <ul className="space-y-2">
                   <li>
                     <a href="/privacy" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                      Privacy Policy
+                      {t.home.footerPrivacy}
                     </a>
                   </li>
                   <li>
                     <a href="/terms" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                      Terms of Service
+                      {t.home.footerTerms}
                     </a>
                   </li>
                   <li>
                     <a href="/cookies" className="text-sm text-gray-600 hover:text-gray-900 transition">
-                      Cookie Policy
+                      {t.home.footerCookies}
                     </a>
                   </li>
                 </ul>
@@ -623,7 +651,7 @@ export default function Component1920WLight() {
             {/* Copyright */}
             <div className="mt-8 pt-6 border-t border-gray-200">
               <p className="text-sm text-gray-500 text-center">
-                © {new Date().getFullYear()} Slaid. All rights reserved.
+                © {new Date().getFullYear()} Slaid. {t.home.footerCopyright}
               </p>
             </div>
           </div>
