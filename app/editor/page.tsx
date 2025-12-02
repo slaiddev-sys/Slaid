@@ -2793,40 +2793,40 @@ export default function EditorPage() {
 
     const plans = [
       {
-        name: "Basic",
-        monthly: { price: "$14.50", originalPrice: "$29", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "500 credits" },
-        annual: { price: "$130.50", originalPrice: "$261", period: "/year", save: "Save $217.50 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: "6,000 credits" },
-        desc: ["Perfect for getting started."],
+        name: language === 'es' ? 'Básico' : "Basic",
+        monthly: { price: "$14.50", originalPrice: "$29", period: language === 'es' ? '/mes' : "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "500 créditos" : "500 credits" },
+        annual: { price: "$130.50", originalPrice: "$261", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra $217.50 por año" : "Save $217.50 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "6,000 créditos" : "6,000 credits" },
+        desc: [language === 'es' ? 'Perfecto para empezar.' : "Perfect for getting started."],
         icon: "/basic-plan.png",
         baseFeatures: [
-          { text: "Unlimited presentations", included: true },
-          { text: "Slide preview before generating", included: true },
-          { text: "Export as PDF", included: true },
+          { text: language === 'es' ? 'Presentaciones ilimitadas' : "Unlimited presentations", included: true },
+          { text: language === 'es' ? 'Vista previa antes de generar' : "Slide preview before generating", included: true },
+          { text: language === 'es' ? 'Exportar como PDF' : "Export as PDF", included: true },
         ],
       },
       {
         name: "Pro",
-        monthly: { price: "$24.50", originalPrice: "$49", period: "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "1000 credits" },
-        annual: { price: "$220.50", originalPrice: "$441", period: "/year", save: "Save $367.50 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: "12,000 credits" },
-        desc: ["Designed for professionals."],
+        monthly: { price: "$24.50", originalPrice: "$49", period: language === 'es' ? '/mes' : "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: language === 'es' ? "1000 créditos" : "1000 credits" },
+        annual: { price: "$220.50", originalPrice: "$441", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra $367.50 por año" : "Save $367.50 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: language === 'es' ? "12,000 créditos" : "12,000 credits" },
+        desc: [language === 'es' ? 'Diseñado para profesionales.' : "Designed for professionals."],
         icon: "/pro-plan.png",
         baseFeatures: [
-          { text: "Unlimited presentations", included: true },
-          { text: "Slide preview before generating", included: true },
-          { text: "Export as PDF", included: true },
+          { text: language === 'es' ? 'Presentaciones ilimitadas' : "Unlimited presentations", included: true },
+          { text: language === 'es' ? 'Vista previa antes de generar' : "Slide preview before generating", included: true },
+          { text: language === 'es' ? 'Exportar como PDF' : "Export as PDF", included: true },
         ],
       },
       {
         name: "Ultra",
-        monthly: { price: "$44.50", originalPrice: "$89", period: "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "2000 credits" },
-        annual: { price: "$400.50", originalPrice: "$801", period: "/year", save: "Save $534 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: "24,000 credits" },
-        desc: ["For teams and power users."],
+        monthly: { price: "$44.50", originalPrice: "$89", period: language === 'es' ? '/mes' : "/month", save: null, buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: language === 'es' ? "2000 créditos" : "2000 credits" },
+        annual: { price: "$400.50", originalPrice: "$801", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra $534 por año" : "Save $534 per year", buttonColor: "bg-[#441100] text-white hover:bg-[#330d00]", toggleColor: "#441100", credits: language === 'es' ? "24,000 créditos" : "24,000 credits" },
+        desc: [language === 'es' ? 'Para equipos y usuarios avanzados.' : "For teams and power users."],
         icon: "/ultra-red-plan.png",
         baseFeatures: [
-          { text: "Unlimited presentations", included: true },
-          { text: "Slide preview before generating", included: true },
-          { text: "Export as PDF", included: true },
-          { text: "Priority support", included: true },
+          { text: language === 'es' ? 'Presentaciones ilimitadas' : "Unlimited presentations", included: true },
+          { text: language === 'es' ? 'Vista previa antes de generar' : "Slide preview before generating", included: true },
+          { text: language === 'es' ? 'Exportar como PDF' : "Export as PDF", included: true },
+          { text: language === 'es' ? 'Soporte prioritario' : "Priority support", included: true },
         ],
       },
     ];
@@ -2848,7 +2848,7 @@ export default function EditorPage() {
               <img src={plan.icon} alt={`${plan.name} Plan Icon`} className="w-[42px] h-[42px] object-contain" />
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-gray-600 text-[13px]">Monthly</span>
+              <span className="text-gray-600 text-[13px]">{t.pricing.monthly}</span>
               <label className="relative inline-block w-10 align-middle select-none cursor-pointer">
                 <input type="checkbox" className="sr-only peer" checked={isAnnual} onChange={onToggle} />
                 <span 
@@ -2857,7 +2857,7 @@ export default function EditorPage() {
                 />
                 <span className="dot absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition peer-checked:left-6" />
               </label>
-              <span className="text-gray-600 text-[13px]">Annual</span>
+              <span className="text-gray-600 text-[13px]">{t.pricing.annual}</span>
             </div>
           </div>
           {/* Card content with fixed min-height for alignment */}
@@ -2878,7 +2878,7 @@ export default function EditorPage() {
             </div>
             {/* Christmas Badge */}
             <div className="bg-black text-white text-[11px] font-semibold px-2 py-1 rounded-md mb-2 inline-block w-fit">
-              CHRISTMAS 50% OFF
+              {t.pricing.discount}
             </div>
             {/* Save text */}
             {priceData.save && <div className="text-[#002903] text-[13px] font-medium mb-1">{priceData.save}</div>}
@@ -2890,7 +2890,7 @@ export default function EditorPage() {
             </div>
             {/* Including label */}
             <div className="mb-2">
-              <p className="text-gray-600 text-[11.34px] leading-[17.5px] font-normal">Including</p>
+              <p className="text-gray-600 text-[11.34px] leading-[17.5px] font-normal">{t.pricing.including}</p>
             </div>
             {/* Feature list */}
             <div className="flex flex-col gap-[9.5px] mb-8">
@@ -2918,27 +2918,27 @@ export default function EditorPage() {
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
-              Current plan
+              {t.pricing.currentPlan}
             </button>
           ) : plan.name === "Basic" && (credits?.plan_type === 'pro' || credits?.plan_type === 'ultra') ? (
             <button 
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]"
             >
-              Downgrade plan
+              {t.pricing.downgradePlan}
             </button>
           ) : plan.name === "Pro" && credits?.plan_type === 'pro' ? (
             <button 
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
-              Current plan
+              {t.pricing.currentPlan}
             </button>
           ) : plan.name === "Ultra" && credits?.plan_type === 'ultra' ? (
             <button 
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
-              Current plan
+              {t.pricing.currentPlan}
             </button>
           ) : productId ? (
             <PolarCheckout
@@ -2949,7 +2949,7 @@ export default function EditorPage() {
             />
           ) : (
             <button className={`w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition ${priceData.buttonColor}`}>
-              Get Started
+              {t.pricing.getStarted}
             </button>
           )}
         </div>
@@ -2980,8 +2980,8 @@ export default function EditorPage() {
             </svg>
           </button>
           <div className="text-center mb-8">
-            <h1 className="text-gray-900 text-[32px] font-normal leading-[42px] mb-3 tracking-tight">Pricing</h1>
-            <p className="text-gray-600 text-[13.5px] leading-[21px] max-w-2xl mx-auto">Choose the plan that perfectly fits your needs. Scale up anytime as you grow.</p>
+            <h1 className="text-gray-900 text-[32px] font-normal leading-[42px] mb-3 tracking-tight">{t.pricing.title}</h1>
+            <p className="text-gray-600 text-[13.5px] leading-[21px] max-w-2xl mx-auto">{t.pricing.subtitle}</p>
           </div>
           <div className="flex flex-col md:flex-row gap-0.5 w-full max-w-4xl justify-center mx-auto">
             <PlanCard plan={plans[0]} isAnnual={isAnnualBasic} onToggle={() => setIsAnnualBasic(v => !v)} />
@@ -3201,8 +3201,8 @@ export default function EditorPage() {
           <p className="text-gray-500 text-sm mb-6">{t.editor.settingsModal.accountSettings}</p>
           {/* Account Section */}
           <div className="mb-7">
-            <h3 className="text-gray-900 text-lg font-semibold mb-3">Account</h3>
-            <label className="block text-gray-500 text-xs mb-1">Display Name</label>
+            <h3 className="text-gray-900 text-lg font-semibold mb-3">{language === 'es' ? 'Cuenta' : 'Account'}</h3>
+            <label className="block text-gray-500 text-xs mb-1">{language === 'es' ? 'Nombre para mostrar' : 'Display Name'}</label>
             <input 
               className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]" 
               value={localDisplayName}
@@ -3221,7 +3221,7 @@ export default function EditorPage() {
                 }
               }}
             />
-            <label className="block text-gray-500 text-xs mb-1">Email</label>
+            <label className="block text-gray-500 text-xs mb-1">{language === 'es' ? 'Correo electrónico' : 'Email'}</label>
             <input 
               className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]" 
               value={user?.email || ''} 
@@ -3230,7 +3230,7 @@ export default function EditorPage() {
           </div>
           {/* Subscription Plan Section */}
           <div className="mb-7">
-            <h3 className="text-gray-900 text-lg font-semibold mb-3">Subscription Plan</h3>
+            <h3 className="text-gray-900 text-lg font-semibold mb-3">{language === 'es' ? 'Plan de Suscripción' : 'Subscription Plan'}</h3>
             <div className="bg-white border border-gray-200 rounded-lg p-4 mb-2">
               <div className="flex items-center justify-between mb-1">
                 <div className="text-gray-900 font-semibold">{planInfo.name}</div>
@@ -3246,7 +3246,7 @@ export default function EditorPage() {
                       setShowPricingModal(true);
                     }}
                   >
-                    Upgrade Plan
+                    {language === 'es' ? 'Mejorar Plan' : 'Upgrade Plan'}
                   </button>
                 )}
                 {planInfo.isPaid && (
@@ -3258,7 +3258,7 @@ export default function EditorPage() {
                         setShowPricingModal(true);
                       }}
                     >
-                      Change Plan
+                      {language === 'es' ? 'Cambiar Plan' : 'Change Plan'}
                     </button>
                     <button 
                       className="bg-gray-500 text-white font-medium rounded px-3 py-1 text-sm hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed" 
@@ -3283,14 +3283,14 @@ export default function EditorPage() {
           </div>
           {/* Delete Account Section */}
           <div className="mb-0">
-            <h3 className="text-gray-900 text-lg font-semibold mb-3">Delete Account</h3>
+            <h3 className="text-gray-900 text-lg font-semibold mb-3">{language === 'es' ? 'Eliminar Cuenta' : 'Delete Account'}</h3>
             <div className="bg-white border border-gray-200 rounded-lg p-4 mb-5">
-              <div className="text-gray-600 text-sm mb-3">Once you delete your account, there is no going back. Please be certain.</div>
+              <div className="text-gray-600 text-sm mb-3">{language === 'es' ? 'Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate.' : 'Once you delete your account, there is no going back. Please be certain.'}</div>
               <button 
                 className="bg-red-600 text-white font-medium rounded px-4 py-2 text-sm hover:bg-red-700 transition"
                 onClick={() => setShowDeleteConfirmation(true)}
               >
-                Delete Account
+                {language === 'es' ? 'Eliminar Cuenta' : 'Delete Account'}
               </button>
             </div>
             <hr className="border-gray-200 mb-4" />
@@ -3299,13 +3299,13 @@ export default function EditorPage() {
                 className="text-gray-500 hover:text-gray-900 font-medium rounded px-3 py-1 text-sm transition"
                 onClick={() => setShowSettingsModal(false)}
               >
-                Cancel
+                {language === 'es' ? 'Cancelar' : 'Cancel'}
               </button>
               <button 
                 className="bg-[#f3f4f6] text-[#002903] font-semibold rounded px-4 py-2 text-sm hover:bg-gray-200 transition"
                 onClick={() => setShowSettingsModal(false)}
               >
-                Save Changes
+                {language === 'es' ? 'Guardar Cambios' : 'Save Changes'}
               </button>
             </div>
           </div>
