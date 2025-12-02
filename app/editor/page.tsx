@@ -4141,7 +4141,7 @@ export default function EditorPage() {
                   {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-2">
                     {editingWorkspace ? (
                       <input
                         type="text"
@@ -4206,6 +4206,14 @@ export default function EditorPage() {
                     ) : (
                       <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
                     )}
+                    {/* Sidebar toggle button */}
+                    <button
+                      className="w-6 h-6 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors flex-shrink-0"
+                      aria-label="Collapse sidebar"
+                      onClick={() => setSidebarCollapsed(true)}
+                    >
+                      <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-4 h-4 object-contain" />
+                    </button>
                   </div>
                   <span className="text-gray-500 text-xs">
                     {credits?.plan_type === 'basic' ? 'Basic plan' : 
@@ -4215,14 +4223,6 @@ export default function EditorPage() {
                   </span>
                 </div>
               </div>
-              {/* Sidebar toggle button */}
-              <button
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                aria-label="Collapse sidebar"
-                onClick={() => setSidebarCollapsed(true)}
-              >
-                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-5 h-5 object-contain" />
-              </button>
             </div>
             {/* Main scrollable section */}
             <div className="flex-1 min-h-0 flex flex-col">
