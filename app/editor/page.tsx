@@ -7480,8 +7480,22 @@ export default function EditorPage() {
                         position: 'absolute',
                         top: '50%',
                         left: '50%',
-                        transform: `translate(-50%, -50%) scale(${sidebarCollapsed ? 1.36 : 1.135})`,
+                        transform: 'translate(-50%, -50%) scale(var(--slide-scale, 1))',
                         transformOrigin: 'center center'
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          // Use requestAnimationFrame to ensure immediate update
+                          requestAnimationFrame(() => {
+                            const container = el.parentElement;
+                            if (container) {
+                              const scaleX = container.clientWidth / 881;
+                              const scaleY = container.clientHeight / 495;
+                              const scale = Math.min(scaleX, scaleY);
+                              el.style.setProperty('--slide-scale', scale.toString());
+                            }
+                          });
+                        }
                       }}
                     >
                       {renderSlideContent(slideIndex)}
