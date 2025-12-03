@@ -4391,7 +4391,6 @@ export default function EditorPage() {
                     ) : (
                       <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
                     )}
-                    <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain ml-auto" />
                   </div>
                   <span className="text-gray-500 text-xs">
                     {credits?.plan_type === 'basic' ? 'Basic plan' : 
@@ -4401,13 +4400,15 @@ export default function EditorPage() {
                   </span>
                 </div>
               </div>
-              {/* Sidebar toggle button */}
+              {/* Close sidebar button */}
               <button
-                className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-colors"
-                aria-label="Collapse sidebar"
+                className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+                aria-label="Close sidebar"
                 onClick={() => setSidebarCollapsed(true)}
               >
-                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-5 h-5 object-contain" />
+                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
             {/* Main scrollable section */}
@@ -4776,33 +4777,21 @@ export default function EditorPage() {
             <h2 className="text-[#002903] text-xl font-medium break-words w-full line-clamp-2">
               {currentPresentation?.title || "Untitled Presentation"}
             </h2>
-            <div className="flex items-center gap-2">
-              {/* Collapse sidebar button */}
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
-                onClick={() => setSidebarCollapsed(true)}
-                aria-label="Close chat"
-              >
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              {/* Three dots icon */}
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
-                onClick={e => {
-                  e.stopPropagation();
-                  setShowTitleMenu(v => !v);
-                }}
-                aria-label="Presentation options"
-              >
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                  <circle cx="5" cy="12" r="2" fill="currentColor"/>
-                  <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                  <circle cx="19" cy="12" r="2" fill="currentColor"/>
-                </svg>
-              </button>
-            </div>
+            {/* Three dots icon */}
+            <button
+              className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+              onClick={e => {
+                e.stopPropagation();
+                setShowTitleMenu(v => !v);
+              }}
+              aria-label="Presentation options"
+            >
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                <circle cx="5" cy="12" r="2" fill="currentColor"/>
+                <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                <circle cx="19" cy="12" r="2" fill="currentColor"/>
+              </svg>
+            </button>
           </div>
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {messages.length === 0 ? (
