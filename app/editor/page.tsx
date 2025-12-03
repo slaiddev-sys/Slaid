@@ -4804,7 +4804,25 @@ export default function EditorPage() {
                 const fallbackPresentationData = !latestPresentationData && assistantMessage ? 
                   (assistantMessage as any).presentationData : null;
                 
-                const effectivePresentationData = latestPresentationData || fallbackPresentationData;
+                let effectivePresentationData = latestPresentationData || fallbackPresentationData;
+                
+                // 🔧 CRITICAL FIX: Load presentation data from workspaceSlides if not in messages
+                // This allows modification of presentations loaded from database without chat history
+                if (!effectivePresentationData && currentPresentation) {
+                  console.log('🔄 No presentation data in messages - trying to load from workspaceSlides');
+                  const slidesFromWorkspace = workspaceSlides[currentWorkspace]?.[currentPresentationId];
+                  
+                  if (slidesFromWorkspace && slidesFromWorkspace.length > 0) {
+                    console.log('✅ Found presentation slides in workspaceSlides:', slidesFromWorkspace.length, 'slides');
+                    effectivePresentationData = {
+                      title: currentPresentation.title,
+                      slides: slidesFromWorkspace
+                    };
+                    console.log('✅ Presentation data loaded from workspaceSlides for modification');
+                  } else {
+                    console.log('⚠️ No slides found in workspaceSlides either');
+                  }
+                }
                 
                 // Determine if this is a modification request
                 // 🎯 ENHANCED INTENT CLASSIFICATION - Use ORIGINAL prompt for intent detection
@@ -4871,26 +4889,6 @@ export default function EditorPage() {
                   willSendExistingPresentation: isModification && !!effectivePresentationData,
                   existingPresentationTitle: effectivePresentationData?.title
                 });
-                
-                // Special case: modification request on existing presentation without chat history
-                if (isModificationAttempt && currentPresentation && !effectivePresentationData && !hasAnyAssistantMessages) {
-                  console.log('🚫 Cannot modify existing presentation without chat history');
-                  
-                  // Only add assistant response (user message already added above)
-                  setPresentationMessages(prev => ({
-                    ...prev,
-                    [currentPresentationId]: [
-                      ...(prev[currentPresentationId] || []),
-                        {
-                          role: "assistant",
-                          text: `**Cannot modify this presentation**\n\nThis presentation doesn't have any chat history, so I can't modify it. To use font changes like "Instrument Serif", please:\n\n1. **Start a new chat** by clicking "New Presentation", or\n2. **Create a new presentation** with your desired content\n\n*Example: "Create a presentation about dogs using Instrument Serif font"*`,
-                          version: 1
-                        }
-                    ]
-                  }));
-                  
-                  return;
-                }
 
                 // Generate dynamic reasoning based on user prompt
                 const { text: dynamicReasoning } = generateReasoningWithTiming(userPrompt, isModification);
