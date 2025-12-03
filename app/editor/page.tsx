@@ -740,9 +740,8 @@ export default function EditorPage() {
             if (dataResult?.success && dataResult?.state) {
               return {
                 presentationId: presentation.id,
-                slides: dataResult.state.slides?.map((slide: any, index: number) => ({
-                  title: slide.title || `Slide ${index + 1}`
-                })) || [],
+                // CRITICAL: Store complete slide structure (id, blocks), not just title
+                slides: dataResult.state.slides || [],
                 messages: dataResult.state.messages || []
               };
             }
@@ -1206,17 +1205,45 @@ export default function EditorPage() {
       return bestMatch.presentationData;
     }
     
-         // FALLBACK: If no messages but current presentation exists, 
-     // this means it's an existing presentation without chat history
-     if (currentPresentation) {
-       console.log('⚠️ Existing presentation without chat history - cannot modify');
-       console.log('📋 Current presentation:', {
-         title: currentPresentation.title,
-         presentationId: currentPresentation.id
-       });
-       // Return null to indicate no modifiable data available
-       return null;
-     }
+    // FALLBACK: Try to load from workspaceSlides if no messages exist yet
+    if (currentPresentationId && workspaceSlides[currentWorkspace]?.[currentPresentationId]) {
+      console.log('💾 Loading from workspaceSlides (fallback)');
+      const slidesArray = workspaceSlides[currentWorkspace][currentPresentationId];
+      const presentationTitle = workspacePresentations[currentWorkspace]?.find(p => p.id === currentPresentationId)?.title || 'Untitled';
+      
+      const fallbackPresentation = {
+        title: presentationTitle,
+        slides: slidesArray.map((slideData: any, index: number) => {
+          // If slideData is already a full slide object with id and blocks, use it directly
+          if (slideData.id && slideData.blocks) {
+            return slideData;
+          }
+          // Otherwise create a basic slide structure
+          return {
+            id: `slide-${index + 1}`,
+            blocks: [
+              { type: "BackgroundBlock", props: { color: "bg-white" } },
+              { 
+                type: "Cover_ProductLayout", 
+                props: { 
+                  title: slideData.title || `Slide ${index + 1}`,
+                  paragraph: "",
+                  imageUrl: "/Default-Image-2.png",
+                  fontFamily: "font-helvetica-neue"
+                }
+              }
+            ]
+          };
+        })
+      };
+      
+      console.log('✅ Loaded fallback presentation:', {
+        title: fallbackPresentation.title,
+        slideCount: fallbackPresentation.slides.length
+      });
+      
+      return fallbackPresentation;
+    }
     
     console.log('❌ No presentation data found anywhere!');
     return null;
