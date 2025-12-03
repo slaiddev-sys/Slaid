@@ -289,18 +289,55 @@ export default function EditorPage() {
   // 🚫 REQUIRE ACTIVE PLAN - Redirect to pricing if user has no plan
   React.useEffect(() => {
     // Wait for credits to load
-    if (creditsLoading) return;
-    
-    // Check if user is authenticated and has loaded credits
-    if (user && credits) {
-      const planType = credits?.plan_type;
-      
-      // If no plan or plan is null/undefined, redirect to pricing
-      if (!planType || planType === 'none' || planType === '') {
-        console.log('🚫 No active plan detected - redirecting to pricing');
-        router.push('/pricing');
-      }
+    if (creditsLoading) {
+      console.log('⏳ Credits loading, waiting...');
+      return;
     }
+    
+    // Only check if user is authenticated
+    if (!user) {
+      console.log('⏳ No user yet, waiting for auth...');
+      return;
+    }
+    
+    // Give extra time for credits to load after auth
+    const checkPlan = async () => {
+      // Small delay to ensure credits are fully loaded
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Check again after delay
+      if (creditsLoading) {
+        console.log('⏳ Still loading after delay...');
+        return;
+      }
+      
+      // If credits loaded but no data, might be new user
+      if (!credits) {
+        console.log('⚠️ Credits loaded but no data - might be new user');
+        console.log('🚫 No credits data - redirecting to pricing');
+        router.push('/pricing');
+        return;
+      }
+      
+      const planType = credits?.plan_type;
+      console.log('✅ Plan type detected:', planType);
+      
+      // Allow access for valid plans: basic, pro, ultra
+      if (planType && ['basic', 'pro', 'ultra'].includes(planType.toLowerCase())) {
+        console.log('✅ Valid plan detected, allowing access:', planType);
+        return; // Allow access
+      }
+      
+      // Only redirect if explicitly no plan
+      if (!planType || planType === 'none' || planType === '') {
+        console.log('🚫 No active plan detected - redirecting to pricing', { planType });
+        router.push('/pricing');
+      } else {
+        console.warn('⚠️ Unknown plan type, but allowing access:', planType);
+      }
+    };
+    
+    checkPlan();
   }, [user, credits, creditsLoading, router]);
   
   // Helper function to get auth headers for API calls
