@@ -4831,8 +4831,8 @@ export default function EditorPage() {
       </aside>
       {/* Main content: chat + slide preview */}
       <main className="flex-1 flex flex-col md:flex-row h-screen w-full overflow-hidden">
-        {/* Chat/editor column - Hide during onboarding and when sidebar is collapsed */}
-        {!showOnboarding && !sidebarCollapsed && (
+        {/* Chat/editor column - Hide during onboarding */}
+        {!showOnboarding && (
           <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-2 relative">
@@ -7812,6 +7812,16 @@ export default function EditorPage() {
           <section className="flex-1 flex flex-col h-full bg-white overflow-hidden">
           {/* Top bar */}
           <div className="bg-[#F9FAFB] border-b border-gray-200 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 flex justify-between items-center">
+            {/* Chat toggle button - only show when chat is collapsed */}
+            {sidebarCollapsed && (
+              <button
+                className="w-9 h-9 rounded-xl bg-transparent hover:bg-gray-100 flex items-center justify-center transition"
+                aria-label="Open chat"
+                onClick={() => setSidebarCollapsed(false)}
+              >
+                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
+              </button>
+            )}
             <div className={`flex gap-2 sm:gap-3 flex-wrap ${sidebarCollapsed ? '' : 'ml-auto'}`}>
               {/* PowerPoint Export button */}
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
