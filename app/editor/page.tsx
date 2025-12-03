@@ -61,6 +61,82 @@ import { useCredits } from '../../components/hooks/useCredits';
 import FeaturebaseWidget, { openFeaturebaseWidget } from '../../components/FeaturebaseWidget';
 import { supabase } from '../../lib/supabase';
 import PolarCheckout from '../../components/PolarCheckout';
+
+// 🎯 MEMOIZED SLIDE COMPONENT - Prevents re-renders when typing in input
+const MemoizedSlide = React.memo<{
+  slide: any;
+  slideIndex: number;
+  slideContent: React.ReactNode;
+  sidebarCollapsed: boolean;
+}>(({ slide, slideIndex, slideContent, sidebarCollapsed }) => {
+  return (
+    <div key={`slide-wrapper-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`} className="relative w-full flex flex-col items-center gap-1" style={{
+      width: 'min(100%, ' + (sidebarCollapsed ? '1200px' : '1000px') + ')'
+    }}>
+      {/* Slide Number - Small, gray, above slide */}
+      <div className="text-gray-500 text-xs font-medium self-start">
+        Slide {slideIndex + 1}
+      </div>
+      
+      {/* Slide Container */}
+      <div
+        key={`slide-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`}
+        className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full"
+        style={{
+          aspectRatio: '16 / 9'
+        }}
+      >
+        <div 
+          className="slide-content w-full h-full"
+          style={{
+            transformOrigin: 'center center',
+            position: 'absolute',
+            inset: 0
+          }}
+        >
+          <div 
+            style={{
+              width: '881px',
+              height: '495px',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) scale(var(--slide-scale, 1))',
+              transformOrigin: 'center center'
+            }}
+            ref={(el) => {
+              if (el) {
+                // Use requestAnimationFrame to ensure immediate update
+                requestAnimationFrame(() => {
+                  const container = el.parentElement;
+                  if (container) {
+                    const scaleX = container.clientWidth / 881;
+                    const scaleY = container.clientHeight / 495;
+                    const scale = Math.min(scaleX, scaleY);
+                    el.style.setProperty('--slide-scale', scale.toString());
+                  }
+                });
+              }
+            }}
+          >
+            {slideContent}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  // Custom comparison: only re-render if slide data actually changed
+  const slideChanged = (
+    prevProps.slide?.id !== nextProps.slide?.id ||
+    prevProps.slide?._lastModified !== nextProps.slide?._lastModified ||
+    prevProps.slideIndex !== nextProps.slideIndex ||
+    prevProps.sidebarCollapsed !== nextProps.sidebarCollapsed
+  );
+  
+  // Return true if props are the same (don't re-render), false if different (re-render)
+  return !slideChanged;
+});
 import { getProductId } from '../../lib/polar-config';
 import { useLanguage } from '../../hooks/useLanguage';
 import { getTranslations } from '../../lib/translations';
@@ -1280,6 +1356,14 @@ export default function EditorPage() {
       _lastModified: slide._lastModified || currentPresentationData?._lastModified || Date.now()
     }));
   }, [slides, currentPresentationData?._lastModified]);
+
+  // 🎯 MEMOIZED SLIDE CONTENTS - Pre-render all slides and memoize them
+  // This prevents re-rendering charts when typing in input
+  const memoizedSlideContents = React.useMemo(() => {
+    return slides.map((slide: any, slideIndex: number) => 
+      renderSlideContent(slideIndex)
+    );
+  }, [slides, renderSlideContent]);
 
   // Function to detect if the prompt is a modification request
   // 🎯 USER INTENT CLASSIFICATION FUNCTIONS
@@ -7565,60 +7649,13 @@ export default function EditorPage() {
           <div className="flex-1 flex flex-col px-2 sm:px-3 md:px-4 lg:px-8 py-4 md:py-6 bg-[#f9fafb] overflow-y-auto">
             <div className="flex flex-col items-center gap-4 md:gap-6 bg-[#f9fafb] w-full">
               {slides.map((slide: any, slideIndex: number) => (
-                <div key={`slide-wrapper-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`} className="relative w-full flex flex-col items-center gap-1" style={{
-                  width: 'min(100%, ' + (sidebarCollapsed ? '1200px' : '1000px') + ')'
-                }}>
-                  {/* Slide Number - Small, gray, above slide */}
-                  <div className="text-gray-500 text-xs font-medium self-start">
-                    Slide {slideIndex + 1}
-                  </div>
-                  
-                  {/* Slide Container */}
-                  <div
-                  key={`slide-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`}
-                  className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full"
-          style={{
-                    aspectRatio: '16 / 9'
-          }}
-        >
-          <div 
-            className="slide-content w-full h-full"
-            style={{
-                      transformOrigin: 'center center',
-              position: 'absolute',
-              inset: 0
-                    }}
-                  >
-                    <div 
-                      style={{
-                        width: '881px',
-                        height: '495px',
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%) scale(var(--slide-scale, 1))',
-                        transformOrigin: 'center center'
-                      }}
-                      ref={(el) => {
-                        if (el) {
-                          // Use requestAnimationFrame to ensure immediate update
-                          requestAnimationFrame(() => {
-                            const container = el.parentElement;
-                            if (container) {
-                              const scaleX = container.clientWidth / 881;
-                              const scaleY = container.clientHeight / 495;
-                              const scale = Math.min(scaleX, scaleY);
-                              el.style.setProperty('--slide-scale', scale.toString());
-                            }
-                          });
-                        }
-                      }}
-                    >
-                      {renderSlideContent(slideIndex)}
-                    </div>
-                        </div>
-                      </div>
-                </div>
+                <MemoizedSlide
+                  key={`slide-${slideIndex}-${slide?.id || slideIndex}`}
+                  slide={slide}
+                  slideIndex={slideIndex}
+                  slideContent={memoizedSlideContents[slideIndex]}
+                  sidebarCollapsed={sidebarCollapsed}
+                />
               ))}
           </div>
         </div>
