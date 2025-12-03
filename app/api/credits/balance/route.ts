@@ -38,13 +38,13 @@ export async function GET(request: NextRequest) {
       
       // If database functions don't exist yet, return fallback credits
       if (creditError.message?.includes('get_user_credits') || creditError.message?.includes('function')) {
-        console.warn('⚠️ Database functions not created yet, returning fallback credits')
+        console.warn('⚠️ Database functions not created yet - user must select a plan')
         return NextResponse.json({ 
           credits: {
             total_credits: 0,
             used_credits: 0,
             remaining_credits: 0,
-            plan_type: 'free',
+            plan_type: 'none', // Force user to select a plan
             last_renewal_date: new Date().toISOString()
           },
           fallback: true 

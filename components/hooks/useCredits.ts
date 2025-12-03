@@ -58,14 +58,14 @@ export function useCredits(): UseCreditsReturn {
           url: response.url
         })
         
-        // If database functions don't exist yet, use fallback credits
+        // If database functions don't exist yet, user needs to select a plan
         if (errorData.error?.includes('get_user_credits') || errorData.error?.includes('function') || response.status === 500 || response.status === 401) {
-          console.warn('⚠️ Credit system not fully configured, using fallback credits. Status:', response.status, 'Error:', errorData.error)
+          console.warn('⚠️ Credit system not fully configured - user must select a plan. Status:', response.status, 'Error:', errorData.error)
           setCredits({
             total_credits: 0,
             used_credits: 0,
             remaining_credits: 0,
-            plan_type: 'free',
+            plan_type: 'none' as any, // Force redirect to pricing
             last_renewal_date: new Date().toISOString()
           })
           return

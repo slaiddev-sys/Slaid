@@ -3350,16 +3350,14 @@ export default function EditorPage() {
 
     // Get plan display info
     const getPlanInfo = () => {
-      const planType = credits?.plan_type || 'free';
+      const planType = credits?.plan_type || 'basic';
       const planNames: Record<string, string> = {
-        'free': 'Free Plan',
         'basic': 'Basic Plan',
         'pro': 'Pro Plan',
         'ultra': 'Ultra Plan'
       };
       const planPrices: Record<string, string> = {
-        'free': '$0.00/month',
-        'basic': '$29.00/month',
+        'basic': '$14.99/month',
         'pro': '$49.00/month',
         'ultra': '$89.00/month'
       };
@@ -7778,24 +7776,16 @@ export default function EditorPage() {
             <div className={`flex gap-2 sm:gap-3 flex-wrap ${sidebarCollapsed ? '' : 'ml-auto'}`}>
               {/* PowerPoint Export button */}
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
-                // Check if user has Basic, Pro, or Ultra plan for PowerPoint export
-                if (credits?.plan_type === 'free') {
-                  setShowPricingModal(true);
-                } else {
-                  setShowEditInModal(true);
-                }
+                // All paid plans (Basic, Pro, Ultra) have access to PowerPoint export
+                setShowEditInModal(true);
               }}>
                 <img src="/power-point.png" alt="PowerPoint" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
                 <span className="hidden sm:inline">{language === 'es' ? 'Editar en PowerPoint' : 'Edit in PowerPoint'}</span>
                 <span className="sm:hidden">{language === 'es' ? 'Editar' : 'Edit'}</span>
               </button>
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
-                // Check if user has Pro plan for Preview feature
-                if (credits?.plan_type === 'free') {
-                  setShowPricingModal(true);
-                } else {
-                  setShowFullscreenPreview(true);
-                }
+                // All paid plans (Basic, Pro, Ultra) have access to Preview feature
+                setShowFullscreenPreview(true);
               }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-black sm:w-4 sm:h-4">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -7805,12 +7795,8 @@ export default function EditorPage() {
                 <span className="sm:hidden">{language === 'es' ? 'Ver' : 'View'}</span>
               </button>
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
-                // Check if user has Pro plan for Export feature
-                if (credits?.plan_type === 'free') {
-                  setShowPricingModal(true);
-                } else {
-                  setShowExportModal(true);
-                }
+                // All paid plans (Basic, Pro, Ultra) have access to Export PDF feature
+                setShowExportModal(true);
               }}>
                 <img src="/export-icon.png" alt="Export" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
                 <span>{language === 'es' ? 'Exportar a PDF' : 'Export to PDF'}</span>
@@ -7951,12 +7937,8 @@ export default function EditorPage() {
                 className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
                 onClick={() => {
                   setShowTitleMenu(false);
-                  // Check if user has Pro plan for Export feature
-                  if (credits?.plan_type === 'free') {
-                    setShowPricingModal(true);
-                  } else {
-                    setShowExportModal(true);
-                  }
+                  // All paid plans (Basic, Pro, Ultra) have access to Export PDF feature
+                  setShowExportModal(true);
                 }}
               >
                 Export as PDF

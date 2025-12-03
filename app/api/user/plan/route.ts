@@ -27,11 +27,11 @@ export async function GET(request: NextRequest) {
 
     if (creditError) {
       console.error('❌ Error fetching user plan:', creditError);
-      // If no record exists, return free plan as default
+      // If no record exists, user must select a plan
       return NextResponse.json({
-        plan_type: 'free',
-        total_credits: 100,
-        remaining_credits: 100,
+        plan_type: 'none',
+        total_credits: 0,
+        remaining_credits: 0,
         last_renewal_date: new Date().toISOString()
       });
     }
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     console.log('✅ User plan fetched:', creditData.plan_type);
 
     return NextResponse.json({
-      plan_type: creditData.plan_type || 'free',
+      plan_type: creditData.plan_type || 'none',
       total_credits: creditData.total_credits,
       remaining_credits: creditData.remaining_credits,
       last_renewal_date: creditData.last_renewal_date
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     console.error('❌ Unexpected error in plan API:', error);
     return NextResponse.json({ 
       error: 'Internal server error',
-      plan_type: 'free' // Default to free on error
+      plan_type: 'none' // User must select a plan
     }, { status: 500 });
   }
 }
