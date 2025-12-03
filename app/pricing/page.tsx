@@ -20,8 +20,8 @@ const CROSS_ICON = (
 const getPlans = (t: any) => [
   {
     name: "Basic",
-    monthly: { price: "$14.99", originalPrice: "$29.99", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `500 ${t.pricing.monthlyCredits}` },
-    annual: { price: "$134.91", originalPrice: "$269.82", period: "/year", save: t.pricing.savePerYear.replace('{amount}', '$134.91'), buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `6,000 ${t.pricing.annualCredits}` },
+    monthly: { price: "$9.99", originalPrice: "$19.99", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `500 ${t.pricing.monthlyCredits}` },
+    annual: { price: "$89.91", originalPrice: "$179.82", period: "/year", save: t.pricing.savePerYear.replace('{amount}', '$89.91'), buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `6,000 ${t.pricing.annualCredits}` },
     desc: [t.pricing.basicDescription],
     icon: "/basic-plan.png",
     baseFeatures: [
@@ -106,12 +106,10 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
           </div>
           <span className="text-gray-600 text-[16px] font-normal mb-1">{priceData.period}</span>
         </div>
-        {/* Christmas Badge - only for non-Basic plans */}
-        {plan.name !== "Basic" && (
-          <div className="bg-black text-white text-[11px] font-semibold px-2 py-1 rounded-md mb-2 inline-block w-fit">
-            {t.pricing.discount}
-          </div>
-        )}
+        {/* Christmas Badge - all plans */}
+        <div className="bg-black text-white text-[11px] font-semibold px-2 py-1 rounded-md mb-2 inline-block w-fit">
+          {t.pricing.discount}
+        </div>
         {/* Save text */}
         {priceData.save && <div className="text-[#002903] text-[13px] font-medium mb-1">{priceData.save}</div>}
         {/* Description */}
