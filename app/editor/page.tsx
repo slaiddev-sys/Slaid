@@ -4831,8 +4831,8 @@ export default function EditorPage() {
       </aside>
       {/* Main content: chat + slide preview */}
       <main className="flex-1 flex flex-col md:flex-row h-screen w-full overflow-hidden">
-        {/* Chat/editor column - Hide during onboarding */}
-        {!showOnboarding && (
+        {/* Chat/editor column - Hide during onboarding and when sidebar is collapsed */}
+        {!showOnboarding && !sidebarCollapsed && (
           <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
           {/* Header */}
           <div className="flex items-center justify-between px-6 pt-6 pb-2 relative">
