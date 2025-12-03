@@ -69,7 +69,7 @@ async function ensureUserProfileAndWorkspace(user: any) {
       }
     } else {
       console.log('✅ Profile already exists:', existingProfile);
-      console.log('ℹ️ User must select a plan to access the editor');
+      console.log('✅ Existing user will be redirected to editor');
     }
     
     // Check if workspace exists
@@ -194,15 +194,27 @@ export default function AuthCallback() {
             // Ensure profile and workspace exist (handles both new and existing users)
             await ensureUserProfileAndWorkspace(sessionData.session.user);
             
-            // Check if user is new (created within last 5 seconds)
+            // Check if user is new (created within last 30 seconds)
             const userCreatedAt = new Date(sessionData.session.user.created_at);
             const now = new Date();
-            const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 5000; // 5 seconds
+            const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 30000; // 30 seconds
+            console.log('🔍 User age check:', {
+              createdAt: userCreatedAt,
+              now: now,
+              ageInSeconds: (now.getTime() - userCreatedAt.getTime()) / 1000,
+              isNewUser
+            });
             
             setStatus('Authentication successful! Redirecting...');
             setTimeout(() => {
-              // Redirect all users to pricing page
+              // Redirect NEW users to pricing page, EXISTING users to editor
+              if (isNewUser) {
+                console.log('🆕 New user - redirecting to pricing');
                 router.push('/pricing');
+              } else {
+                console.log('✅ Existing user - redirecting to editor');
+                router.push('/editor');
+              }
             }, 1000);
             return;
           }
@@ -226,15 +238,27 @@ export default function AuthCallback() {
           // Ensure profile and workspace exist (handles both new and existing users)
           await ensureUserProfileAndWorkspace(refreshData.session.user);
           
-          // Check if user is new (created within last 5 seconds)
+          // Check if user is new (created within last 30 seconds)
           const userCreatedAt = new Date(refreshData.session.user.created_at);
           const now = new Date();
-          const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 5000; // 5 seconds
+          const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 30000; // 30 seconds
+          console.log('🔍 User age check (refresh):', {
+            createdAt: userCreatedAt,
+            now: now,
+            ageInSeconds: (now.getTime() - userCreatedAt.getTime()) / 1000,
+            isNewUser
+          });
           
           setStatus('Authentication successful! Redirecting...');
           setTimeout(() => {
-            // Redirect all users to pricing page
+            // Redirect NEW users to pricing page, EXISTING users to editor
+            if (isNewUser) {
+              console.log('🆕 New user - redirecting to pricing');
               router.push('/pricing');
+            } else {
+              console.log('✅ Existing user - redirecting to editor');
+              router.push('/editor');
+            }
           }, 1000);
           return;
         }
