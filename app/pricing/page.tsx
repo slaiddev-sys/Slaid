@@ -160,20 +160,17 @@ function PlanCard({ plan, isAnnual = false, onToggle = () => {}, currentPlanType
         </button>
       ) : plan.name === "Basic" ? (
         <div>
-          <p className="text-center text-gray-600 text-[11px] mb-2 leading-tight">
-            {t.pricing.freeTrial3Days}
-          </p>
           {productId ? (
             <PolarCheckout
               productId={productId}
               planName={plan.name}
               isAnnual={isAnnual}
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]"
-              buttonText={t.pricing.freeTrialButton}
+              buttonText={t.pricing.getStarted}
             />
           ) : (
             <button className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]">
-              {t.pricing.freeTrialButton}
+              {t.pricing.getStarted}
             </button>
           )}
         </div>
