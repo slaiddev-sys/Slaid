@@ -7304,7 +7304,7 @@ export default function EditorPage() {
                       <div className="text-center">
                         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#002903] mx-auto mb-2"></div>
                         <p className="text-sm text-[#002903]">
-                          {isUploading ? 'Uploading file...' : 'Analyzing data...'}
+                          {isUploading ? (language === 'es' ? 'Subiendo archivo...' : 'Uploading file...') : (language === 'es' ? 'Analizando datos...' : 'Analyzing data...')}
                         </p>
                       </div>
                     ) : (
@@ -7329,7 +7329,7 @@ export default function EditorPage() {
                           input.click();
                         }}
                       >
-                        click to select
+                        {language === 'es' ? 'haz clic para seleccionar' : 'click to select'}
                       </button>.
                     </p>
                         )}
@@ -7339,12 +7339,12 @@ export default function EditorPage() {
                             <p className="text-sm text-red-600 text-center">{uploadError}</p>
                             {uploadError.includes('taking longer than expected') && (
                               <div className="mt-2 text-xs text-gray-600 text-center">
-                                <p>Try reducing your dataset size or simplifying your prompt.</p>
+                                <p>{language === 'es' ? 'Intenta reducir el tamaño de tu conjunto de datos o simplificar tu solicitud.' : 'Try reducing your dataset size or simplifying your prompt.'}</p>
                                 <button 
                                   onClick={() => setUploadError('')}
                                   className="mt-1 text-blue-600 hover:underline"
                                 >
-                                  Try Again
+                                  {language === 'es' ? 'Intentar de nuevo' : 'Try Again'}
                                 </button>
                 </div>
                             )}
@@ -7371,13 +7371,17 @@ export default function EditorPage() {
                 </button>
                 
                 {/* Title */}
-                <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">Describe what your presentation will be about</h2>
+                <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">
+                  {language === 'es' ? 'Describe de qué tratará tu presentación' : 'Describe what your presentation will be about'}
+                </h2>
 
                 {/* Text Area with Send Button */}
                 <div className="mb-8 relative">
                   <textarea
                     className="w-full h-40 p-4 pr-16 bg-[#f3f4f6] border-none rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#002903] focus:border-transparent placeholder-[#717182] text-[#002903]"
-                    placeholder="Describe your dataset's origin and context — including its source, contents, and structure — and indicate what you aim to extract or visualize from it..."
+                    placeholder={language === 'es' 
+                      ? 'Describe el origen y contexto de tu conjunto de datos — incluyendo su fuente, contenido y estructura — e indica qué deseas extraer o visualizar de él...'
+                      : "Describe your dataset's origin and context — including its source, contents, and structure — and indicate what you aim to extract or visualize from it..."}
                     style={{ fontSize: '16px' }}
                     value={presentationPrompt}
                     onChange={(e) => setPresentationPrompt(e.target.value)}
@@ -7421,13 +7425,19 @@ export default function EditorPage() {
                 </button>
                 
                 {/* Title */}
-                <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">¿How many slides do you want?</h2>
+                <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">
+                  {language === 'es' ? '¿Cuántas diapositivas quieres?' : 'How many slides do you want?'}
+                </h2>
 
                 {/* Slide Count Selection Buttons */}
                 <div className="flex justify-center gap-3 mb-6">
-                  {['Less than 5', '6-10', '11-15', '16-20', 'More than 20'].map((option) => {
+                  {(language === 'es' 
+                    ? ['Menos de 5', '6-10', '11-15', '16-20', 'Más de 20']
+                    : ['Less than 5', '6-10', '11-15', '16-20', 'More than 20']
+                  ).map((option, index) => {
+                    const originalOption = ['Less than 5', '6-10', '11-15', '16-20', 'More than 20'][index];
                     // Estimate credits needed (backend only - not shown to user)
-                    const slideCount = getSlideCountNumber(option);
+                    const slideCount = getSlideCountNumber(originalOption);
                     const estimatedCredits = Math.ceil(slideCount * 2.5);
                     const canAfford = (credits?.remaining_credits || 0) >= estimatedCredits;
                     
@@ -7451,22 +7461,22 @@ export default function EditorPage() {
                             hasUploadResult: !!uploadResult,
                             presentationPrompt: presentationPrompt.trim()
                           });
-                          setUploadError('Please ensure all fields are filled: file uploaded and description provided.');
+                          setUploadError(language === 'es' ? 'Por favor asegúrate de completar todos los campos: archivo subido y descripción proporcionada.' : 'Please ensure all fields are filled: file uploaded and description provided.');
                           return;
                         }
 
                         // Convert slide count text to number
-                        const slideCountNum = getSlideCountNumber(option);
+                        const slideCountNum = getSlideCountNumber(originalOption);
                         
                         if (slideCountNum < 1) {
-                          console.error('❌ Invalid slide count:', option);
-                          setUploadError('Please select a valid slide count.');
+                          console.error('❌ Invalid slide count:', originalOption);
+                          setUploadError(language === 'es' ? 'Por favor selecciona un número válido de diapositivas.' : 'Please select a valid slide count.');
                           return;
                         }
 
                         // Set both states together to avoid blank screen
                         setIsLoading(true);
-                        setSelectedSlideCount(option);
+                        setSelectedSlideCount(originalOption);
                         setUploadError('');
 
                         // Calculate batches (10 slides per batch)
@@ -7660,8 +7670,8 @@ export default function EditorPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className="text-base font-medium text-gray-900">Analyzing content</h3>
-                        <p className="text-sm text-gray-500">Processing your data and requirements</p>
+                        <h3 className="text-base font-medium text-gray-900">{language === 'es' ? 'Analizando contenido' : 'Analyzing content'}</h3>
+                        <p className="text-sm text-gray-500">{language === 'es' ? 'Procesando tus datos y requisitos' : 'Processing your data and requirements'}</p>
                       </div>
                     </div>
 
@@ -7684,8 +7694,8 @@ export default function EditorPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className={`text-base font-medium ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-900'}`}>Generating slides</h3>
-                        <p className={`text-sm ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-500'}`}>Creating your presentation structure</p>
+                        <h3 className={`text-base font-medium ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-900'}`}>{language === 'es' ? 'Generando diapositivas' : 'Generating slides'}</h3>
+                        <p className={`text-sm ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-500'}`}>{language === 'es' ? 'Creando la estructura de tu presentación' : 'Creating your presentation structure'}</p>
                       </div>
                     </div>
 
@@ -7702,8 +7712,8 @@ export default function EditorPage() {
                         </div>
                       )}
                       <div className="flex-1">
-                        <h3 className={`text-base font-medium ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-900'}`}>Applying design</h3>
-                        <p className={`text-sm ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-500'}`}>Styling your slides</p>
+                        <h3 className={`text-base font-medium ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-900'}`}>{language === 'es' ? 'Aplicando diseño' : 'Applying design'}</h3>
+                        <p className={`text-sm ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-500'}`}>{language === 'es' ? 'Estilizando tus diapositivas' : 'Styling your slides'}</p>
                       </div>
                     </div>
 
