@@ -1194,6 +1194,15 @@ export default function EditorPage() {
         isLoading: bestMatch.isLoading,
         version: bestMatch.version
       });
+      console.log('✅✅✅ PRESENTATION DATA BEING RETURNED:', {
+        title: bestMatch.presentationData?.title,
+        slides: bestMatch.presentationData?.slides?.map((s: any) => ({
+          id: s.id,
+          blockCount: s.blocks?.length,
+          firstBlockType: s.blocks?.[0]?.type,
+          lastModified: s._lastModified
+        }))
+      });
       return bestMatch.presentationData;
     }
     
@@ -6374,8 +6383,19 @@ export default function EditorPage() {
                     throw new Error(`Failed to parse server response: ${jsonError instanceof Error ? jsonError.message : 'Invalid JSON'}`);
                   }
 
-                  console.log('🚨 Response status check:', { ok: response.ok, status: response.status, dataType: data?.type });
+                    console.log('🚨 Response status check:', { ok: response.ok, status: response.status, dataType: data?.type });
                   console.log('🚨 Full API response data:', data);
+                  console.log('🚨 CRITICAL DEBUG - Response structure:', {
+                    hasId: !!data?.id,
+                    hasBlocks: !!data?.blocks,
+                    hasTitle: !!data?.title,
+                    hasSlides: !!data?.slides,
+                    slidesIsArray: Array.isArray(data?.slides),
+                    slidesLength: data?.slides?.length,
+                    firstSlide: data?.slides?.[0],
+                    isModification: isModification,
+                    effectivePresentationExists: !!effectivePresentationData
+                  });
 
                   if (response.ok) {
                     console.log('🎉 SUCCESS: API call successful, processing response...');
@@ -6424,9 +6444,11 @@ export default function EditorPage() {
                     
                     if (data.id && data.blocks) {
                       // Single slide modification response (direct slide object)
+                      console.log('🔄🔄🔄 ENTERING DIRECT SLIDE MODIFICATION PATH 🔄🔄🔄');
                       console.log('🔄 Processing single slide modification (direct):', {
                         slideId: data.id,
-                        blockCount: data.blocks.length
+                        blockCount: data.blocks.length,
+                        slideBlocks: data.blocks
                       });
                       
                       // Update the existing presentation with the modified slide
@@ -6446,12 +6468,26 @@ export default function EditorPage() {
                         
                         console.log('🎉 SUCCESS: Single slide modification completed');
                         console.log('🔍 DIRECT SUCCESS DEBUG: About to replace loading message with success');
+                        console.log('🔍🔍🔍 UPDATED PRESENTATION (DIRECT) DETAILS:', {
+                          title: updatedPresentation.title,
+                          slideCount: updatedPresentation.slides.length,
+                          modifiedSlideId: data.id,
+                          modifiedSlideBlocks: updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks
+                        });
                         
                         // Replace loading message with success - REMOVE AND ADD NEW
                         setPresentationMessages(prev => {
                           const existingMessages = prev[currentPresentationId] || [];
                           const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
                           const nextVersion = assistantMessages.length + 1;
+                          
+                          console.log('💾💾💾 SAVING UPDATED PRESENTATION TO MESSAGES (DIRECT)');
+                          console.log('💾 Presentation being saved:', {
+                            title: updatedPresentation.title,
+                            slideCount: updatedPresentation.slides.length,
+                            version: nextVersion,
+                            modifiedSlideBlocks: updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks
+                          });
                           
                           return {
                           ...prev,
@@ -6483,10 +6519,13 @@ export default function EditorPage() {
                       }
                     } else if (!data.title && Array.isArray(data.slides) && data.slides.length > 0) {
                       // Single slide modification or add new slide response (wrapped in slides array)
+                      console.log('🔄🔄🔄 ENTERING WRAPPED SLIDES MODIFICATION PATH 🔄🔄🔄');
                       console.log('🔄 Processing single slide modification/addition (wrapped):', {
                         slideCount: data.slides.length,
                         firstSlideId: data.slides[0]?.id,
-                        intent: finalIntent
+                        firstSlideBlocks: data.slides[0]?.blocks,
+                        intent: finalIntent,
+                        allSlides: data.slides
                       });
                       console.log('🔍 WRAPPED SLIDES DEBUG: About to process wrapped slides response');
                       
@@ -6516,18 +6555,28 @@ export default function EditorPage() {
                             }
                           });
                         } else {
-                          console.log('🔄 Modifying existing slide(s)');
+                          console.log('🔄🔄🔄 MODIFYING EXISTING SLIDE(S) 🔄🔄🔄');
+                          console.log('🔄 Number of slides to modify:', data.slides.length);
                           // Update each modified slide (existing behavior)
                           data.slides.forEach((modifiedSlide: any) => {
+                            console.log('🔄 Modifying slide:', modifiedSlide.id, 'with blocks:', modifiedSlide.blocks);
                             // Add a timestamp to force re-render even if content is similar
                             const slideWithTimestamp = {
                               ...modifiedSlide,
                               _lastModified: Date.now()
                             };
                             
+                            console.log('🔄 Searching for slide with ID:', modifiedSlide.id, 'in', updatedPresentation.slides.length, 'slides');
+                            const beforeSlides = updatedPresentation.slides.map((s: any) => ({ id: s.id, blocks: s.blocks?.length }));
+                            
                             updatedPresentation.slides = updatedPresentation.slides.map((slide: any) => 
                               slide.id === modifiedSlide.id ? slideWithTimestamp : slide
                             );
+                            
+                            const afterSlides = updatedPresentation.slides.map((s: any) => ({ id: s.id, blocks: s.blocks?.length, modified: s._lastModified }));
+                            console.log('🔄 BEFORE modification:', beforeSlides);
+                            console.log('🔄 AFTER modification:', afterSlides);
+                            console.log('🔄 Modified slide now has blocks:', updatedPresentation.slides.find((s: any) => s.id === modifiedSlide.id)?.blocks);
                           });
                         }
 
@@ -6548,12 +6597,26 @@ export default function EditorPage() {
                         console.log('🎉 SUCCESS: Single slide operation completed');
                         console.log('📊 Updated presentation now has', updatedPresentation.slides.length, 'slides');
                         console.log('🔍 WRAPPED SUCCESS DEBUG: About to replace loading message with success');
+                        console.log('🔍🔍🔍 UPDATED PRESENTATION DETAILS:', {
+                          title: updatedPresentation.title,
+                          slideCount: updatedPresentation.slides.length,
+                          allSlideIds: updatedPresentation.slides.map((s: any) => s.id),
+                          allSlideBlocks: updatedPresentation.slides.map((s: any) => ({ id: s.id, blockCount: s.blocks?.length, firstBlockType: s.blocks?.[0]?.type })),
+                          modifiedSlides: updatedPresentation.slides.filter((s: any) => s._lastModified)
+                        });
                         
                         // Replace loading message with success - REMOVE AND ADD NEW
                         setPresentationMessages(prev => {
                           const existingMessages = prev[currentPresentationId] || [];
                           const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
                           const nextVersion = assistantMessages.length + 1;
+                          
+                          console.log('💾💾💾 SAVING UPDATED PRESENTATION TO MESSAGES');
+                          console.log('💾 Presentation being saved:', {
+                            title: updatedPresentation.title,
+                            slideCount: updatedPresentation.slides.length,
+                            version: nextVersion
+                          });
                           
                           return {
                           ...prev,
