@@ -3357,7 +3357,7 @@ export default function EditorPage() {
         'ultra': 'Ultra Plan'
       };
       const planPrices: Record<string, string> = {
-        'basic': '$9.99/month',
+        'basic': '$14.99/month',
         'pro': '$49.00/month',
         'ultra': '$89.00/month'
       };
