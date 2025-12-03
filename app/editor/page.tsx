@@ -153,6 +153,13 @@ const IsolatedSlideRenderer = React.memo<{
   sidebarCollapsed: boolean;
 }>(({ slideData, slideIndex, sidebarCollapsed }) => {
   
+  console.log(`🎨 IsolatedSlideRenderer rendering slide ${slideIndex}:`, {
+    slideId: slideData?.id,
+    _lastModified: slideData?._lastModified,
+    blockCount: slideData?.blocks?.length,
+    firstBlockType: slideData?.blocks?.[0]?.type
+  });
+  
   // Render blocks directly inside this component (isolated from parent)
   const renderBlocksIsolated = React.useCallback((blocks: any[]) => {
     if (!blocks || !Array.isArray(blocks)) return null;
@@ -231,23 +238,25 @@ const IsolatedSlideRenderer = React.memo<{
   );
 }, (prevProps, nextProps) => {
   // ONLY re-render if slide data actually changes
-  const slidesEqual = (
-    prevProps.slideData?.id === nextProps.slideData?.id &&
-    prevProps.slideData?._lastModified === nextProps.slideData?._lastModified &&
-    prevProps.slideIndex === nextProps.slideIndex &&
-    prevProps.sidebarCollapsed === nextProps.sidebarCollapsed
-  );
+  const idSame = prevProps.slideData?.id === nextProps.slideData?.id;
+  const modifiedSame = prevProps.slideData?._lastModified === nextProps.slideData?._lastModified;
+  const indexSame = prevProps.slideIndex === nextProps.slideIndex;
+  const collapsedSame = prevProps.sidebarCollapsed === nextProps.sidebarCollapsed;
+  
+  const slidesEqual = idSame && modifiedSame && indexSame && collapsedSame;
   
   // Debug logging to track re-renders
-  if (!slidesEqual) {
-    console.log(`🔄 Slide ${nextProps.slideIndex} will re-render:`, {
-      prevId: prevProps.slideData?.id,
-      nextId: nextProps.slideData?.id,
-      prevModified: prevProps.slideData?._lastModified,
-      nextModified: nextProps.slideData?._lastModified,
-      changed: !slidesEqual
-    });
-  }
+  console.log('');
+  console.log('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓');
+  console.log(`🔍 React.memo comparison for Slide ${nextProps.slideIndex}:`);
+  console.log('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓');
+  console.log('   ID same?', idSame, `(${prevProps.slideData?.id} vs ${nextProps.slideData?.id})`);
+  console.log('   Modified same?', modifiedSame, `(${prevProps.slideData?._lastModified} vs ${nextProps.slideData?._lastModified})`);
+  console.log('   Index same?', indexSame);
+  console.log('   Collapsed same?', collapsedSame);
+  console.log('   → RESULT:', slidesEqual ? '✅ SKIP RE-RENDER' : '🔄 WILL RE-RENDER');
+  console.log('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓');
+  console.log('');
   
   return slidesEqual; // true = don't re-render, false = re-render
 });
@@ -1307,13 +1316,27 @@ export default function EditorPage() {
   // Get current presentation data and slides - memoized to prevent unnecessary re-renders
   const getCurrentPresentationData = React.useCallback((customMessages?: any[]) => {
     const messagesToUse = customMessages || messages;
-    console.log('🔍 getCurrentPresentationData called');
+    console.log('');
+    console.log('═══════════════════════════════════════════════════════════');
+    console.log('🔍🔍🔍 getCurrentPresentationData CALLED');
+    console.log('═══════════════════════════════════════════════════════════');
     console.log('📱 Current presentation ID:', currentPresentationId);
     console.log('📱 Active version:', activeVersion);
     console.log('📱 Presentation messages keys:', Object.keys(presentationMessages));
     console.log('📱 Total messages for current presentation:', messagesToUse.length);
     console.log('📱 All messages for current presentation:', messagesToUse.map(m => ({ role: m.role, hasData: !!m.presentationData, isLoading: m.isLoading, version: m.version })));
-    console.log('📱 Full presentationMessages state:', presentationMessages);
+    
+    // Show ACTUAL slide data from each message
+    messagesToUse.forEach((msg, idx) => {
+      if (msg.presentationData?.slides) {
+        console.log(`📱 Message ${idx} slide data:`, msg.presentationData.slides.map((s: any) => ({
+          id: s.id,
+          _lastModified: s._lastModified,
+          blockCount: s.blocks?.length,
+          firstBlockType: s.blocks?.[0]?.type
+        })));
+      }
+    });
     
     // 🔧 VERSION HISTORY: If activeVersion is set, return data from that specific version
     if (activeVersion !== null) {
@@ -1361,15 +1384,27 @@ export default function EditorPage() {
         isLoading: bestMatch.isLoading,
         version: bestMatch.version
       });
-      console.log('✅✅✅ PRESENTATION DATA BEING RETURNED:', {
-        title: bestMatch.presentationData?.title,
-        slides: bestMatch.presentationData?.slides?.map((s: any) => ({
-          id: s.id,
-          blockCount: s.blocks?.length,
-          firstBlockType: s.blocks?.[0]?.type,
-          lastModified: s._lastModified
-        }))
-      });
+      console.log('✅✅✅ PRESENTATION DATA BEING RETURNED:');
+      console.log('   Title:', bestMatch.presentationData?.title);
+      console.log('   Presentation _lastModified:', bestMatch.presentationData?._lastModified);
+      console.log('   Slides:', bestMatch.presentationData?.slides?.map((s: any) => ({
+        id: s.id,
+        _lastModified: s._lastModified,
+        blockCount: s.blocks?.length,
+        firstBlockType: s.blocks?.[0]?.type,
+        // Show first block props for charts to see if colors changed
+        firstBlockProps: s.blocks?.[0]?.props ? {
+          title: s.blocks[0].props.title,
+          chartData: s.blocks[0].props.chartData ? {
+            series: s.blocks[0].props.chartData.series?.map((ser: any) => ({
+              id: ser.id,
+              color: ser.color
+            }))
+          } : undefined
+        } : undefined
+      })));
+      console.log('═══════════════════════════════════════════════════════════');
+      console.log('');
       return bestMatch.presentationData;
     }
     
@@ -1448,10 +1483,19 @@ export default function EditorPage() {
       _lastModified: slide._lastModified || currentPresentationData?._lastModified || Date.now()
     }));
     
-    console.log('🔄 memoizedSlides updated:', {
-      slideCount: memoized.length,
-      timestamps: memoized.map((s: any) => ({ id: s.id, modified: s._lastModified }))
-    });
+    console.log('');
+    console.log('🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷');
+    console.log('🔄 memoizedSlides RECALCULATED');
+    console.log('🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷');
+    console.log('   Slide count:', memoized.length);
+    console.log('   Timestamps:', memoized.map((s: any) => ({ 
+      id: s.id, 
+      modified: s._lastModified,
+      blockCount: s.blocks?.length 
+    })));
+    console.log('   Presentation _lastModified:', currentPresentationData?._lastModified);
+    console.log('🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷');
+    console.log('');
     
     return memoized;
   }, [slides, currentPresentationData?._lastModified]);
@@ -6483,13 +6527,26 @@ export default function EditorPage() {
                   let data;
                   try {
                     data = await response.json();
-                    console.log('API response data:', {
-                      success: response.ok,
-                      title: data?.title,
-                      slideCount: data?.slides?.length,
-                      error: data?.error,
-                      hasBackgroundBlocks: false
-                    });
+                    console.log('');
+                    console.log('═══════════════════════════════════════════════════════════');
+                    console.log('📥📥📥 RAW API RESPONSE RECEIVED');
+                    console.log('═══════════════════════════════════════════════════════════');
+                    console.log('   Success:', response.ok);
+                    console.log('   Title:', data?.title);
+                    console.log('   Slide count:', data?.slides?.length);
+                    console.log('   Has ID (direct slide):', !!data?.id);
+                    console.log('   Has blocks (direct slide):', !!data?.blocks);
+                    console.log('   Error:', data?.error);
+                    if (data?.slides) {
+                      console.log('   Slide IDs:', data.slides.map((s: any) => s.id));
+                      console.log('   First slide:', data.slides[0]);
+                    } else if (data?.blocks) {
+                      console.log('   Direct slide ID:', data.id);
+                      console.log('   Direct slide blocks:', data.blocks.length);
+                      console.log('   First block:', data.blocks[0]);
+                    }
+                    console.log('═══════════════════════════════════════════════════════════');
+                    console.log('');
                   
                   // 🛡️ CRITICAL FAILSAFE: Validate report slide count
                   if (isReportRequest(userPrompt) && !isModification && data?.slides) {
@@ -6627,14 +6684,20 @@ export default function EditorPage() {
                             ]
                           };
                         });
-                        console.log('🔍 DIRECT SUCCESS DEBUG: Success message replacement completed');
-                        console.log('🔍 DIRECT SUCCESS DEBUG: Updated slides with timestamps:', 
-                          updatedPresentation.slides.map((s: any) => ({ 
-                            id: s.id, 
-                            _lastModified: s._lastModified,
-                            blockCount: s.blocks?.length 
-                          }))
-                        );
+                        
+                        console.log('');
+                        console.log('███████████████████████████████████████████████████████████');
+                        console.log('💾💾💾 DATA SAVED TO MESSAGES - DIRECT PATH');
+                        console.log('███████████████████████████████████████████████████████████');
+                        console.log('🔍 Updated presentation:');
+                        console.log('   - Title:', updatedPresentation.title);
+                        console.log('   - Presentation _lastModified:', updatedPresentation._lastModified);
+                        console.log('   - Modified slide ID:', data.id);
+                        console.log('   - Modified slide _lastModified:', updatedPresentation.slides.find((s: any) => s.id === data.id)?._lastModified);
+                        console.log('   - Modified slide blocks:', updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks?.length);
+                        console.log('   - First block of modified slide:', updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks?.[0]);
+                        console.log('███████████████████████████████████████████████████████████');
+                        console.log('');
                         
                         // Force immediate re-render by updating a dummy state
                         setTimeout(() => {
@@ -6766,14 +6829,28 @@ export default function EditorPage() {
                             ]
                           };
                         });
-                        console.log('🔍 WRAPPED SUCCESS DEBUG: Success message replacement completed');
-                        console.log('🔍 WRAPPED SUCCESS DEBUG: Updated slides with timestamps:', 
-                          updatedPresentation.slides.map((s: any) => ({ 
-                            id: s.id, 
-                            _lastModified: s._lastModified,
-                            blockCount: s.blocks?.length 
-                          }))
-                        );
+                        
+                        console.log('');
+                        console.log('███████████████████████████████████████████████████████████');
+                        console.log('💾💾💾 DATA SAVED TO MESSAGES - WRAPPED PATH');
+                        console.log('███████████████████████████████████████████████████████████');
+                        console.log('🔍 Updated presentation:');
+                        console.log('   - Title:', updatedPresentation.title);
+                        console.log('   - Presentation _lastModified:', updatedPresentation._lastModified);
+                        console.log('   - All slide IDs:', updatedPresentation.slides.map((s: any) => s.id));
+                        console.log('   - All slide timestamps:', updatedPresentation.slides.map((s: any) => ({ id: s.id, modified: s._lastModified })));
+                        console.log('   - Modified slides:', data.slides.map((s: any) => s.id));
+                        data.slides.forEach((modSlide: any) => {
+                          const slideInPresentation = updatedPresentation.slides.find((s: any) => s.id === modSlide.id);
+                          console.log(`   - Slide ${modSlide.id}:`, {
+                            found: !!slideInPresentation,
+                            _lastModified: slideInPresentation?._lastModified,
+                            blockCount: slideInPresentation?.blocks?.length,
+                            firstBlock: slideInPresentation?.blocks?.[0]
+                          });
+                        });
+                        console.log('███████████████████████████████████████████████████████████');
+                        console.log('');
                         
                         // Force immediate re-render by updating a dummy state
                         setTimeout(() => {
