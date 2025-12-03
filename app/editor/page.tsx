@@ -61,82 +61,6 @@ import { useCredits } from '../../components/hooks/useCredits';
 import FeaturebaseWidget, { openFeaturebaseWidget } from '../../components/FeaturebaseWidget';
 import { supabase } from '../../lib/supabase';
 import PolarCheckout from '../../components/PolarCheckout';
-
-// 🎯 MEMOIZED SLIDE COMPONENT - Prevents re-renders when typing in input
-const MemoizedSlide = React.memo<{
-  slide: any;
-  slideIndex: number;
-  slideContent: React.ReactNode;
-  sidebarCollapsed: boolean;
-}>(({ slide, slideIndex, slideContent, sidebarCollapsed }) => {
-  return (
-    <div key={`slide-wrapper-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`} className="relative w-full flex flex-col items-center gap-1" style={{
-      width: 'min(100%, ' + (sidebarCollapsed ? '1200px' : '1000px') + ')'
-    }}>
-      {/* Slide Number - Small, gray, above slide */}
-      <div className="text-gray-500 text-xs font-medium self-start">
-        Slide {slideIndex + 1}
-      </div>
-      
-      {/* Slide Container */}
-      <div
-        key={`slide-${slideIndex}-${slide?.id || slideIndex}-${slide?._lastModified || Date.now()}`}
-        className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full"
-        style={{
-          aspectRatio: '16 / 9'
-        }}
-      >
-        <div 
-          className="slide-content w-full h-full"
-          style={{
-            transformOrigin: 'center center',
-            position: 'absolute',
-            inset: 0
-          }}
-        >
-          <div 
-            style={{
-              width: '881px',
-              height: '495px',
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%) scale(var(--slide-scale, 1))',
-              transformOrigin: 'center center'
-            }}
-            ref={(el) => {
-              if (el) {
-                // Use requestAnimationFrame to ensure immediate update
-                requestAnimationFrame(() => {
-                  const container = el.parentElement;
-                  if (container) {
-                    const scaleX = container.clientWidth / 881;
-                    const scaleY = container.clientHeight / 495;
-                    const scale = Math.min(scaleX, scaleY);
-                    el.style.setProperty('--slide-scale', scale.toString());
-                  }
-                });
-              }
-            }}
-          >
-            {slideContent}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}, (prevProps, nextProps) => {
-  // Custom comparison: only re-render if slide data actually changed
-  const slideChanged = (
-    prevProps.slide?.id !== nextProps.slide?.id ||
-    prevProps.slide?._lastModified !== nextProps.slide?._lastModified ||
-    prevProps.slideIndex !== nextProps.slideIndex ||
-    prevProps.sidebarCollapsed !== nextProps.sidebarCollapsed
-  );
-  
-  // Return true if props are the same (don't re-render), false if different (re-render)
-  return !slideChanged;
-});
 import { getProductId } from '../../lib/polar-config';
 import { useLanguage } from '../../hooks/useLanguage';
 import { getTranslations } from '../../lib/translations';
@@ -159,6 +83,163 @@ const truncateVersionTitle = (message: string): string => {
   }
   return cleanMessage.slice(0, 15) + '...';
 };
+
+// Component map for rendering generated blocks - MOVED OUTSIDE FOR ISOLATION
+const componentMap: { [key: string]: React.ComponentType<any> } = {
+  TextBlock,
+  BackgroundBlock,
+  ImageBlock,
+  Cover_LeftImageTextRight,
+  Cover_TextCenter,
+  Cover_LeftTitleRightBodyUnderlined: Cover_TextCenter,
+  Cover_ProductLayout,
+  BackCover_ThankYouWithImage,
+  Index_LeftAgendaRightImage,
+  Index_LeftAgendaRightText,
+  Quote_MissionStatement,
+  Quote_LeftTextRightImage,
+  Impact_KPIOverview,
+  Impact_SustainabilityMetrics,
+  Impact_ImageMetrics,
+  Team_AdaptiveGrid,
+  Team_MemberProfile,
+  Metrics_FinancialsSplit,
+  Metrics_FullWidthChart,
+  Lists_LeftTextRightImage,
+  Lists_GridLayout,
+  Lists_LeftTextRightImageDescription,
+  Lists_CardsLayout,
+  Lists_CardsLayoutRight,
+  Market_SizeAnalysis,
+  Competition_Analysis,
+  Roadmap_Timeline,
+  Product_iPhoneStandalone,
+  Product_MacBookCentered,
+  Product_iPhoneInCenter,
+  Product_PhysicalProduct,
+  McBook_Feature,
+  iPhone_HandFeature,
+  iPhone_StandaloneFeature,
+  Pricing_Plans,
+  Content_TextImageDescription,
+  ExcelCenteredCover_Responsive,
+  ExcelKPIDashboard_Responsive,
+  ExcelTrendChart_Responsive,
+  ExcelDataTable_Responsive,
+  ExcelBackCover_Responsive,
+  ExcelBottomCover_Responsive,
+  ExcelLeftCover_Responsive,
+  ExcelIndex_Responsive,
+  ExcelTableOfContents_Responsive,
+  ExcelFullWidthChart_Responsive,
+  ExcelFullWidthChartCategorical_Responsive,
+  ExcelPieChart_Responsive,
+  ExcelFullWidthChartWithTable_Responsive,
+  ExcelComparisonLayout_Responsive,
+  ExcelExperienceDrivenTwoRows_Responsive,
+  ExcelExperienceFullText_Responsive,
+  ExcelHowItWorks_Responsive,
+  ExcelMilestone_Responsive,
+  ExcelResultsTestimonial_Responsive,
+  ExcelBackCoverLeft_Responsive,
+  SectionSpace: () => <div className="h-4" />
+};
+
+// 🎯 ISOLATED SLIDE COMPONENT - Completely isolated from parent state changes
+// This component NEVER re-renders when chatInput changes
+const IsolatedSlideRenderer = React.memo<{
+  slideData: any;
+  slideIndex: number;
+  sidebarCollapsed: boolean;
+}>(({ slideData, slideIndex, sidebarCollapsed }) => {
+  
+  // Render blocks directly inside this component (isolated from parent)
+  const renderBlocksIsolated = React.useCallback((blocks: any[]) => {
+    if (!blocks || !Array.isArray(blocks)) return null;
+    
+    return blocks.map((block: any, index: number) => {
+      const Component = componentMap[block.type];
+      
+      if (!Component) {
+        return <div key={index} className="p-4 bg-yellow-100 text-yellow-800">Unknown component: "{block.type}"</div>;
+      }
+      
+      const propsToPass = { ...(block.props || {}) };
+      propsToPass.useFixedDimensions = true;
+      propsToPass.canvasWidth = 881;
+      propsToPass.canvasHeight = 495;
+      
+      return <div key={`${slideData?.id || slideIndex}-block-${index}`}>{React.createElement(Component, { ...propsToPass })}</div>;
+    });
+  }, [slideData, slideIndex]);
+  
+  return (
+    <div className="relative w-full flex flex-col items-center gap-1" style={{
+      width: 'min(100%, ' + (sidebarCollapsed ? '1200px' : '1000px') + ')'
+    }}>
+      {/* Slide Number */}
+      <div className="text-gray-500 text-xs font-medium self-start">
+        Slide {slideIndex + 1}
+      </div>
+      
+      {/* Slide Container */}
+      <div
+        className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full"
+        style={{ aspectRatio: '16 / 9' }}
+      >
+        <div 
+          className="slide-content w-full h-full"
+          style={{
+            transformOrigin: 'center center',
+            position: 'absolute',
+            inset: 0
+          }}
+        >
+          <div 
+            style={{
+              width: '881px',
+              height: '495px',
+              position: 'absolute',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%) scale(var(--slide-scale, 1))',
+              transformOrigin: 'center center'
+            }}
+            ref={(el) => {
+              if (el) {
+                requestAnimationFrame(() => {
+                  const container = el.parentElement;
+                  if (container) {
+                    const scaleX = container.clientWidth / 881;
+                    const scaleY = container.clientHeight / 495;
+                    const scale = Math.min(scaleX, scaleY);
+                    el.style.setProperty('--slide-scale', scale.toString());
+                  }
+                });
+              }
+            }}
+          >
+            <div className="w-full h-full relative">
+              <div className="w-full h-full relative z-10">
+                {renderBlocksIsolated(slideData?.blocks || [])}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}, (prevProps, nextProps) => {
+  // ONLY re-render if slide data actually changes
+  const slidesEqual = (
+    prevProps.slideData?.id === nextProps.slideData?.id &&
+    prevProps.slideData?._lastModified === nextProps.slideData?._lastModified &&
+    prevProps.slideIndex === nextProps.slideIndex &&
+    prevProps.sidebarCollapsed === nextProps.sidebarCollapsed
+  );
+  
+  return slidesEqual; // true = don't re-render, false = re-render
+});
 
 export default function EditorPage() {
   console.log('🚨🚨🚨 EDITOR PAGE START: Component function called at', new Date().toISOString());
@@ -1357,13 +1438,6 @@ export default function EditorPage() {
     }));
   }, [slides, currentPresentationData?._lastModified]);
 
-  // 🎯 MEMOIZED SLIDE CONTENTS - Pre-render all slides and memoize them
-  // This prevents re-rendering charts when typing in input
-  const memoizedSlideContents = React.useMemo(() => {
-    return slides.map((slide: any, slideIndex: number) => 
-      renderSlideContent(slideIndex)
-    );
-  }, [slides, renderSlideContent]);
 
   // Function to detect if the prompt is a modification request
   // 🎯 USER INTENT CLASSIFICATION FUNCTIONS
@@ -1944,86 +2018,6 @@ export default function EditorPage() {
 
   // No fallback components needed - starting fresh
 
-  // Component map for rendering generated blocks - CLEAN SLATE
-  const componentMap: { [key: string]: React.ComponentType<any> } = {
-    TextBlock,
-    BackgroundBlock,
-    ImageBlock,
-    Cover_LeftImageTextRight,
-    Cover_TextCenter,
-    Cover_LeftTitleRightBodyUnderlined: Cover_TextCenter, // Restored original Cover_TextCenter design
-    Cover_ProductLayout,
-    BackCover_ThankYouWithImage,
-    Index_LeftAgendaRightImage,
-    Index_LeftAgendaRightText,
-    Quote_MissionStatement,
-    Quote_LeftTextRightImage,
-    Impact_KPIOverview,
-    Impact_SustainabilityMetrics,
-    Impact_ImageMetrics,
-    Team_AdaptiveGrid,
-    Team_MemberProfile,
-    Metrics_FinancialsSplit,
-    Metrics_FullWidthChart,
-    Lists_LeftTextRightImage,
-    Lists_GridLayout,
-    Lists_LeftTextRightImageDescription,
-    Lists_CardsLayout,
-    Lists_CardsLayoutRight,
-    Market_SizeAnalysis,
-    Competition_Analysis,
-    Roadmap_Timeline,
-    Product_iPhoneStandalone,
-    Product_MacBookCentered,
-    Product_iPhoneInCenter,
-    Product_PhysicalProduct,
-    McBook_Feature,
-    iPhone_HandFeature,
-    iPhone_StandaloneFeature,
-    Pricing_Plans,
-    Content_TextImageDescription,
-    // Responsive Excel Layouts - Phase 1
-    ExcelCenteredCover_Responsive,
-    ExcelKPIDashboard_Responsive,
-    ExcelTrendChart_Responsive,
-    ExcelDataTable_Responsive,
-    ExcelBackCover_Responsive,
-    // Responsive Excel Layouts - Phase 2
-    ExcelBottomCover_Responsive,
-    ExcelLeftCover_Responsive,
-    ExcelIndex_Responsive,
-    ExcelTableOfContents_Responsive,
-    // Responsive Excel Layouts - Phase 3
-    ExcelFullWidthChart_Responsive,
-    ExcelFullWidthChartCategorical_Responsive,
-    ExcelPieChart_Responsive,
-    ExcelFullWidthChartWithTable_Responsive,
-    ExcelComparisonLayout_Responsive,
-    // Responsive Excel Layouts - Phase 4
-    ExcelExperienceDrivenTwoRows_Responsive,
-    ExcelExperienceFullText_Responsive,
-    ExcelHowItWorks_Responsive,
-    // Responsive Excel Layouts - Phase 5
-    ExcelMilestone_Responsive,
-    ExcelResultsTestimonial_Responsive,
-    ExcelBackCoverLeft_Responsive,
-    // Legacy component fallbacks (render as empty divs to prevent errors)
-    SectionSpace: () => <div className="h-4" />
-  };
-  
-  // Debug - comprehensive component validation
-  console.log('🔷 Components available:', Object.keys(componentMap));
-  
-  // 🔧 CRITICAL FIX: Validate all components in the map
-  Object.entries(componentMap).forEach(([name, component]) => {
-    if (!component || (typeof component !== 'function' && (typeof component !== 'object' || !(component as any).$$typeof))) {
-      console.error('❌ INVALID COMPONENT DETECTED:', name, 'Value:', component, 'Type:', typeof component);
-      // Replace invalid components with a safe fallback
-      componentMap[name] = () => <div className="p-4 bg-red-100 text-red-800">Error: Component "{name}" failed to load</div>;
-    } else {
-      console.log('✅ Valid component:', name, typeof component);
-    }
-  });
 
   // Function to handle roadmap data changes
   const handleRoadmapDataChange = useCallback((blockIndex: number, newRoadmapData: any) => {
@@ -7648,12 +7642,11 @@ export default function EditorPage() {
           {/* Slide content area */}
           <div className="flex-1 flex flex-col px-2 sm:px-3 md:px-4 lg:px-8 py-4 md:py-6 bg-[#f9fafb] overflow-y-auto">
             <div className="flex flex-col items-center gap-4 md:gap-6 bg-[#f9fafb] w-full">
-              {slides.map((slide: any, slideIndex: number) => (
-                <MemoizedSlide
+              {memoizedSlides.map((slide: any, slideIndex: number) => (
+                <IsolatedSlideRenderer
                   key={`slide-${slideIndex}-${slide?.id || slideIndex}`}
-                  slide={slide}
+                  slideData={slide}
                   slideIndex={slideIndex}
-                  slideContent={memoizedSlideContents[slideIndex]}
                   sidebarCollapsed={sidebarCollapsed}
                 />
               ))}
