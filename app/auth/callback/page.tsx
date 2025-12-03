@@ -64,60 +64,12 @@ async function ensureUserProfileAndWorkspace(user: any) {
       } else {
         console.log('✅ Profile created successfully:', insertedProfile);
         
-        // Try to update with additional fields if the table supports them
-        console.log('🔄 Attempting to add additional profile fields...');
-        const { error: updateError } = await supabase
-          .from('profiles')
-          .update({ 
-            plan_type: 'free',
-            credits: 35 
-          })
-          .eq('id', user.id);
-        
-        if (updateError) {
-          console.log('⚠️  Could not add additional fields (table might not have these columns):', updateError.message);
-        } else {
-          console.log('✅ Additional profile fields added successfully');
-        }
+        // Profile created - no initial credits assigned (user must select a plan)
+        console.log('✅ Profile created - user must select a plan to get credits');
       }
     } else {
       console.log('✅ Profile already exists:', existingProfile);
-      
-      // Even if profile exists (e.g. created by trigger), we need to ensure new users get their credits
-      // Check if user was created recently (last 5 minutes)
-      const userCreatedAt = new Date(user.created_at);
-      const now = new Date();
-      const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 5 * 60 * 1000; // 5 minutes
-      
-      if (isNewUser) {
-        console.log('🆕 New user detected with existing profile. Checking credits...');
-        
-        // Fetch current credits
-        const { data: currentProfile, error: fetchError } = await supabase
-          .from('profiles')
-          .select('credits')
-          .eq('id', user.id)
-          .single();
-          
-        if (!fetchError && (currentProfile?.credits === 0 || currentProfile?.credits === null)) {
-          console.log('🔄 Updating initial credits to 35 for new user...');
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ 
-              plan_type: 'free',
-              credits: 35 
-            })
-            .eq('id', user.id);
-            
-          if (updateError) {
-            console.error('❌ Error updating initial credits:', updateError);
-          } else {
-            console.log('✅ Initial credits set to 35');
-          }
-        } else {
-          console.log('ℹ️ Credits already set or user not eligible:', currentProfile?.credits);
-        }
-      }
+      console.log('ℹ️ User must select a plan to access the editor');
     }
     
     // Check if workspace exists

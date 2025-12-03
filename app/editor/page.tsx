@@ -286,6 +286,23 @@ export default function EditorPage() {
     isAuthenticated
   } = useUserWorkspaces();
   
+  // 🚫 REQUIRE ACTIVE PLAN - Redirect to pricing if user has no plan
+  React.useEffect(() => {
+    // Wait for credits to load
+    if (creditsLoading) return;
+    
+    // Check if user is authenticated and has loaded credits
+    if (user && credits) {
+      const planType = credits?.plan_type;
+      
+      // If no plan or plan is null/undefined, redirect to pricing
+      if (!planType || planType === 'none' || planType === '') {
+        console.log('🚫 No active plan detected - redirecting to pricing');
+        router.push('/pricing');
+      }
+    }
+  }, [user, credits, creditsLoading, router]);
+  
   // Helper function to get auth headers for API calls
   const getAuthHeaders = useCallback(async () => {
     try {
