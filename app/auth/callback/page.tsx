@@ -249,8 +249,8 @@ export default function AuthCallback() {
             
             setStatus('Authentication successful! Redirecting...');
             setTimeout(() => {
-              // Redirect all users to editor
-              router.push('/editor');
+              // Redirect all users to pricing page
+                router.push('/pricing');
             }, 1000);
             return;
           }
@@ -281,8 +281,8 @@ export default function AuthCallback() {
           
           setStatus('Authentication successful! Redirecting...');
           setTimeout(() => {
-            // Redirect all users to editor
-            router.push('/editor');
+            // Redirect all users to pricing page
+              router.push('/pricing');
           }, 1000);
           return;
         }

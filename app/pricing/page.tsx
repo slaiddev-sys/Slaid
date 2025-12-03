@@ -277,7 +277,14 @@ export default function PricingPage() {
         
         <div className="text-center mb-12">
           <h1 className="text-gray-900 text-[40px] font-normal leading-[48px] mb-4 tracking-tight">{t.pricing.title}</h1>
-          <p className="text-gray-600 text-[15px] leading-[24px] max-w-2xl mx-auto">{t.pricing.subtitle}</p>
+          <p className="text-gray-600 text-[15px] leading-[24px] max-w-2xl mx-auto mb-6">{t.pricing.subtitle}</p>
+          
+          {/* Continue to Editor button */}
+          <Link href="/editor">
+            <button className="text-gray-600 hover:text-gray-900 text-sm font-medium underline transition">
+              {language === 'es' ? 'Continuar al editor →' : 'Continue to editor →'}
+            </button>
+          </Link>
         </div>
         <div className="flex flex-col md:flex-row gap-6 w-full max-w-4xl justify-center mx-auto">
           {getPlans(t).map((plan, idx) => {
