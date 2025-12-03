@@ -1261,8 +1261,12 @@ export default function EditorPage() {
 
   const currentPresentation = workspacePresentations[currentWorkspace]?.find(p => p.id === currentPresentationId);
 
-  // Helper to get current messages
-  const messages = presentationMessages[currentPresentationId] || [];
+  // Helper to get current messages - use useMemo to ensure it updates when presentationMessages changes
+  const messages = React.useMemo(() => {
+    const msgs = presentationMessages[currentPresentationId] || [];
+    console.log('📨 Messages recalculated for presentation:', currentPresentationId, 'count:', msgs.length);
+    return msgs;
+  }, [presentationMessages, currentPresentationId]);
 
   // Load activeVersion from localStorage on component mount and when presentation changes
   React.useEffect(() => {
@@ -1453,7 +1457,7 @@ export default function EditorPage() {
     
     console.log('❌ No presentation data found anywhere!');
     return null;
-  }, [messages, currentPresentationId, presentationMessages, currentPresentation, activeVersion]);
+  }, [messages, currentPresentationId, presentationMessages, currentPresentation, activeVersion, workspaceSlides, currentWorkspace, workspacePresentations]);
 
   // Memoize the current presentation data to prevent unnecessary re-renders
   // Use deep comparison to avoid re-creating when the actual data hasn't changed
@@ -4777,21 +4781,21 @@ export default function EditorPage() {
             <h2 className="text-[#002903] text-xl font-medium break-words w-full line-clamp-2">
               {currentPresentation?.title || "Untitled Presentation"}
             </h2>
-            {/* Three dots icon */}
-            <button
-              className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
-              onClick={e => {
-                e.stopPropagation();
-                setShowTitleMenu(v => !v);
-              }}
-              aria-label="Presentation options"
-            >
-              <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                <circle cx="5" cy="12" r="2" fill="currentColor"/>
-                <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                <circle cx="19" cy="12" r="2" fill="currentColor"/>
-              </svg>
-            </button>
+              {/* Three dots icon */}
+              <button
+                className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+                onClick={e => {
+                  e.stopPropagation();
+                  setShowTitleMenu(v => !v);
+                }}
+                aria-label="Presentation options"
+              >
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <circle cx="5" cy="12" r="2" fill="currentColor"/>
+                  <circle cx="12" cy="12" r="2" fill="currentColor"/>
+                  <circle cx="19" cy="12" r="2" fill="currentColor"/>
+                </svg>
+              </button>
           </div>
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
             {messages.length === 0 ? (
@@ -6551,7 +6555,7 @@ export default function EditorPage() {
                     throw new Error(`Failed to parse server response: ${jsonError instanceof Error ? jsonError.message : 'Invalid JSON'}`);
                   }
 
-                    console.log('🚨 Response status check:', { ok: response.ok, status: response.status, dataType: data?.type });
+                  console.log('🚨 Response status check:', { ok: response.ok, status: response.status, dataType: data?.type });
                   console.log('🚨 Full API response data:', data);
                   console.log('🚨 CRITICAL DEBUG - Response structure:', {
                     hasId: !!data?.id,
@@ -7752,7 +7756,7 @@ export default function EditorPage() {
               {/* PowerPoint Export button */}
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // All paid plans (Basic, Pro, Ultra) have access to PowerPoint export
-                setShowEditInModal(true);
+                  setShowEditInModal(true);
               }}>
                 <img src="/power-point.png" alt="PowerPoint" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
                 <span className="hidden sm:inline">{language === 'es' ? 'Editar en PowerPoint' : 'Edit in PowerPoint'}</span>
@@ -7760,7 +7764,7 @@ export default function EditorPage() {
               </button>
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // All paid plans (Basic, Pro, Ultra) have access to Preview feature
-                setShowFullscreenPreview(true);
+                  setShowFullscreenPreview(true);
               }}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-black sm:w-4 sm:h-4">
                   <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -7771,7 +7775,7 @@ export default function EditorPage() {
               </button>
               <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
                 // All paid plans (Basic, Pro, Ultra) have access to Export PDF feature
-                setShowExportModal(true);
+                  setShowExportModal(true);
               }}>
                 <img src="/export-icon.png" alt="Export" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
                 <span>{language === 'es' ? 'Exportar a PDF' : 'Export to PDF'}</span>
@@ -7899,7 +7903,7 @@ export default function EditorPage() {
                 onClick={() => {
                   setShowTitleMenu(false);
                   // All paid plans (Basic, Pro, Ultra) have access to Preview
-                  setShowFullscreenPreview(true);
+                    setShowFullscreenPreview(true);
                 }}
               >
                 {language === 'es' ? 'Vista previa de presentación' : 'Preview presentation'}
@@ -7909,7 +7913,7 @@ export default function EditorPage() {
                 onClick={() => {
                   setShowTitleMenu(false);
                   // All paid plans (Basic, Pro, Ultra) have access to Export PDF feature
-                  setShowExportModal(true);
+                    setShowExportModal(true);
                 }}
               >
                 Export as PDF
