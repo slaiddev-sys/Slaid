@@ -286,71 +286,8 @@ export default function EditorPage() {
     isAuthenticated
   } = useUserWorkspaces();
   
-  // 🚫 REQUIRE ACTIVE PLAN - Redirect to pricing if user has no plan
-  const [accessCheckAttempts, setAccessCheckAttempts] = React.useState(0);
-  
-  React.useEffect(() => {
-    console.log('🔍 ACCESS CHECK ATTEMPT', accessCheckAttempts, ':', {
-      user: !!user,
-      creditsLoading,
-      hasCredits: !!credits,
-      planType: credits?.plan_type,
-      remainingCredits: credits?.remaining_credits
-    });
-    
-    // Wait for user
-    if (!user) {
-      console.log('⏳ No user yet, waiting for auth...');
-      return;
-    }
-    
-    // If still loading, wait
-    if (creditsLoading) {
-      console.log('⏳ Credits still loading...');
-      return;
-    }
-    
-    // Credits finished loading - now check the result
-    const planType = credits?.plan_type?.toLowerCase();
-    
-    console.log('🔑 FINAL PLAN TYPE CHECK:', {
-      raw: credits?.plan_type,
-      normalized: planType,
-      hasCreditsObject: !!credits,
-      isBasic: planType === 'basic',
-      isPro: planType === 'pro',
-      isUltra: planType === 'ultra',
-      remainingCredits: credits?.remaining_credits
-    });
-    
-    // WHITELIST: Allow these plans (case-insensitive)
-    if (planType === 'basic' || planType === 'pro' || planType === 'ultra') {
-      console.log('✅✅✅ PLAN VALID - ACCESS GRANTED:', planType);
-      return; // Allow access - don't redirect
-    }
-    
-    // If we have credits object but plan_type is missing/invalid, retry a few times
-    if (credits && (!planType || planType === 'none' || planType === '')) {
-      if (accessCheckAttempts < 3) {
-        console.log(`⏳ No valid plan yet, retry ${accessCheckAttempts + 1}/3 in 1 second...`);
-        setTimeout(() => {
-          setAccessCheckAttempts(prev => prev + 1);
-        }, 1000);
-        return;
-      }
-      
-      // After 3 attempts, block access
-      console.log('🚫 No valid plan after 3 attempts - redirecting to pricing');
-      router.push('/pricing');
-      return;
-    }
-    
-    // No credits object at all - definitely needs to select plan
-    if (!credits) {
-      console.log('🚫 No credits object - new user, redirecting to pricing');
-      router.push('/pricing');
-    }
-  }, [user, credits, creditsLoading, router, accessCheckAttempts]);
+  // Note: Access control is handled by auth callback (redirects new users to pricing)
+  // No need to redirect from within editor - this causes issues on page refresh
   
   // Helper function to get auth headers for API calls
   const getAuthHeaders = useCallback(async () => {
