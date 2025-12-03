@@ -287,10 +287,10 @@ export default function EditorPage() {
   } = useUserWorkspaces();
   
   // 🚫 REQUIRE ACTIVE PLAN - Redirect to pricing if user has no plan
-  const [accessCheckDone, setAccessCheckDone] = React.useState(false);
+  const [accessCheckAttempts, setAccessCheckAttempts] = React.useState(0);
   
   React.useEffect(() => {
-    console.log('🔍 ACCESS CHECK:', {
+    console.log('🔍 ACCESS CHECK ATTEMPT', accessCheckAttempts, ':', {
       user: !!user,
       creditsLoading,
       hasCredits: !!credits,
@@ -298,55 +298,59 @@ export default function EditorPage() {
       remainingCredits: credits?.remaining_credits
     });
     
-    // Wait for BOTH user and credits to be ready
-    if (!user || creditsLoading) {
-      console.log('⏳ Waiting for auth and credits to load...', { 
-        hasUser: !!user, 
-        creditsLoading 
-      });
+    // Wait for user
+    if (!user) {
+      console.log('⏳ No user yet, waiting for auth...');
       return;
     }
     
-    // Give additional time for credits to fully populate
-    if (!accessCheckDone) {
-      const timer = setTimeout(() => {
-        setAccessCheckDone(true);
-        
-        console.log('🔍 DELAYED ACCESS CHECK:', {
-          hasCredits: !!credits,
-          planType: credits?.plan_type
-        });
-        
-        // If still no credits after delay, must be new user
-        if (!credits) {
-          console.log('🚫 No credits after delay - new user, redirecting to pricing');
-          router.push('/pricing');
-          return;
-        }
-        
-        const planType = credits?.plan_type?.toLowerCase();
-        console.log('🔑 Plan type check:', {
-          raw: credits?.plan_type,
-          normalized: planType,
-          isBasic: planType === 'basic',
-          isPro: planType === 'pro',
-          isUltra: planType === 'ultra'
-        });
-        
-        // WHITELIST: Allow these plans ONLY
-        if (planType === 'basic' || planType === 'pro' || planType === 'ultra') {
-          console.log('✅✅✅ PLAN VALID - ACCESS GRANTED:', planType);
-          return; // Allow access
-        }
-        
-        // Block everything else
-        console.log('🚫🚫🚫 INVALID PLAN - REDIRECTING TO PRICING:', planType);
-        router.push('/pricing');
-      }, 1000); // Wait 1 second for credits to fully load
-      
-      return () => clearTimeout(timer);
+    // If still loading, wait
+    if (creditsLoading) {
+      console.log('⏳ Credits still loading...');
+      return;
     }
-  }, [user, credits, creditsLoading, router, accessCheckDone]);
+    
+    // Credits finished loading - now check the result
+    const planType = credits?.plan_type?.toLowerCase();
+    
+    console.log('🔑 FINAL PLAN TYPE CHECK:', {
+      raw: credits?.plan_type,
+      normalized: planType,
+      hasCreditsObject: !!credits,
+      isBasic: planType === 'basic',
+      isPro: planType === 'pro',
+      isUltra: planType === 'ultra',
+      remainingCredits: credits?.remaining_credits
+    });
+    
+    // WHITELIST: Allow these plans (case-insensitive)
+    if (planType === 'basic' || planType === 'pro' || planType === 'ultra') {
+      console.log('✅✅✅ PLAN VALID - ACCESS GRANTED:', planType);
+      return; // Allow access - don't redirect
+    }
+    
+    // If we have credits object but plan_type is missing/invalid, retry a few times
+    if (credits && (!planType || planType === 'none' || planType === '')) {
+      if (accessCheckAttempts < 3) {
+        console.log(`⏳ No valid plan yet, retry ${accessCheckAttempts + 1}/3 in 1 second...`);
+        setTimeout(() => {
+          setAccessCheckAttempts(prev => prev + 1);
+        }, 1000);
+        return;
+      }
+      
+      // After 3 attempts, block access
+      console.log('🚫 No valid plan after 3 attempts - redirecting to pricing');
+      router.push('/pricing');
+      return;
+    }
+    
+    // No credits object at all - definitely needs to select plan
+    if (!credits) {
+      console.log('🚫 No credits object - new user, redirecting to pricing');
+      router.push('/pricing');
+    }
+  }, [user, credits, creditsLoading, router, accessCheckAttempts]);
   
   // Helper function to get auth headers for API calls
   const getAuthHeaders = useCallback(async () => {
