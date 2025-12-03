@@ -83,6 +83,13 @@ export async function GET(request: NextRequest) {
       })
     }
 
+    console.log('✅ Returning existing credit data:', {
+      user_id: user.id,
+      plan_type: creditData[0]?.plan_type,
+      remaining_credits: creditData[0]?.remaining_credits,
+      total_credits: creditData[0]?.total_credits
+    })
+    
     return NextResponse.json({ 
       credits: creditData[0],
       initialized: false 

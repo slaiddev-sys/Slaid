@@ -81,6 +81,12 @@ export function useCredits(): UseCreditsReturn {
         credits: data.credits
       })
       
+      console.log('🔑 CREDITS DATA RECEIVED:', {
+        plan_type: data.credits?.plan_type,
+        remaining_credits: data.credits?.remaining_credits,
+        total_credits: data.credits?.total_credits
+      })
+      
       setCredits(data.credits)
 
       if (data.initialized) {
