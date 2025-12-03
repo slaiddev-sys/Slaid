@@ -6693,6 +6693,16 @@ export default function EditorPage() {
                         console.log('███████████████████████████████████████████████████████████');
                         console.log('');
                         
+                        // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
+                        console.log('🔄 SYNCING workspaceSlides with updated presentation');
+                        setWorkspaceSlides(prev => ({
+                          ...prev,
+                          [currentWorkspace]: {
+                            ...prev[currentWorkspace],
+                            [currentPresentationId]: updatedPresentation.slides
+                          }
+                        }));
+                        
                         // Force immediate re-render by updating a dummy state
                         setTimeout(() => {
                           console.log('🔄 Forcing re-render after direct slide modification');
@@ -6846,6 +6856,16 @@ export default function EditorPage() {
                         console.log('███████████████████████████████████████████████████████████');
                         console.log('');
                         
+                        // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
+                        console.log('🔄 SYNCING workspaceSlides with updated presentation');
+                        setWorkspaceSlides(prev => ({
+                          ...prev,
+                          [currentWorkspace]: {
+                            ...prev[currentWorkspace],
+                            [currentPresentationId]: updatedPresentation.slides
+                          }
+                        }));
+                        
                         // Force immediate re-render by updating a dummy state
                         setTimeout(() => {
                           console.log('🔄 Forcing re-render after slide modification');
@@ -6933,6 +6953,16 @@ export default function EditorPage() {
                           ]
                         };
                       });
+                      
+                      // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
+                      console.log('🔄 SYNCING workspaceSlides with new presentation');
+                      setWorkspaceSlides(prev => ({
+                        ...prev,
+                        [currentWorkspace]: {
+                          ...prev[currentWorkspace],
+                          [currentPresentationId]: presentationWithTimestamps.slides
+                        }
+                      }));
                       
                       // Force immediate re-render by triggering a state change
                         setTimeout(() => {
