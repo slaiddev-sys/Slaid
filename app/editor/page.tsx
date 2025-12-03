@@ -238,6 +238,17 @@ const IsolatedSlideRenderer = React.memo<{
     prevProps.sidebarCollapsed === nextProps.sidebarCollapsed
   );
   
+  // Debug logging to track re-renders
+  if (!slidesEqual) {
+    console.log(`🔄 Slide ${nextProps.slideIndex} will re-render:`, {
+      prevId: prevProps.slideData?.id,
+      nextId: nextProps.slideData?.id,
+      prevModified: prevProps.slideData?._lastModified,
+      nextModified: nextProps.slideData?._lastModified,
+      changed: !slidesEqual
+    });
+  }
+  
   return slidesEqual; // true = don't re-render, false = re-render
 });
 
@@ -1430,12 +1441,19 @@ export default function EditorPage() {
 
   // Create stable references for individual slide data to prevent unnecessary re-renders
   const memoizedSlides = React.useMemo(() => {
-    return slides.map((slide: any, index: number) => ({
+    const memoized = slides.map((slide: any, index: number) => ({
       ...slide,
       _slideIndex: index,
       // Preserve slide-level _lastModified if it exists, otherwise use presentation-level or current time
       _lastModified: slide._lastModified || currentPresentationData?._lastModified || Date.now()
     }));
+    
+    console.log('🔄 memoizedSlides updated:', {
+      slideCount: memoized.length,
+      timestamps: memoized.map((s: any) => ({ id: s.id, modified: s._lastModified }))
+    });
+    
+    return memoized;
   }, [slides, currentPresentationData?._lastModified]);
 
 
@@ -6566,7 +6584,8 @@ export default function EditorPage() {
                           ...effectivePresentationData,
                           slides: effectivePresentationData.slides.map((slide: any) => 
                             slide.id === data.id ? slideWithTimestamp : slide
-                          )
+                          ),
+                          _lastModified: Date.now() // Add timestamp to presentation itself to force update
                         };
                         
                         console.log('🎉 SUCCESS: Single slide modification completed');
@@ -6609,6 +6628,13 @@ export default function EditorPage() {
                           };
                         });
                         console.log('🔍 DIRECT SUCCESS DEBUG: Success message replacement completed');
+                        console.log('🔍 DIRECT SUCCESS DEBUG: Updated slides with timestamps:', 
+                          updatedPresentation.slides.map((s: any) => ({ 
+                            id: s.id, 
+                            _lastModified: s._lastModified,
+                            blockCount: s.blocks?.length 
+                          }))
+                        );
                         
                         // Force immediate re-render by updating a dummy state
                         setTimeout(() => {
@@ -6697,6 +6723,9 @@ export default function EditorPage() {
                           });
                         }
                         
+                        // Add timestamp to presentation itself to force update
+                        updatedPresentation._lastModified = Date.now();
+                        
                         console.log('🎉 SUCCESS: Single slide operation completed');
                         console.log('📊 Updated presentation now has', updatedPresentation.slides.length, 'slides');
                         console.log('🔍 WRAPPED SUCCESS DEBUG: About to replace loading message with success');
@@ -6738,6 +6767,13 @@ export default function EditorPage() {
                           };
                         });
                         console.log('🔍 WRAPPED SUCCESS DEBUG: Success message replacement completed');
+                        console.log('🔍 WRAPPED SUCCESS DEBUG: Updated slides with timestamps:', 
+                          updatedPresentation.slides.map((s: any) => ({ 
+                            id: s.id, 
+                            _lastModified: s._lastModified,
+                            blockCount: s.blocks?.length 
+                          }))
+                        );
                         
                         // Force immediate re-render by updating a dummy state
                         setTimeout(() => {
@@ -6778,15 +6814,53 @@ export default function EditorPage() {
                       return changeDesc;
                     };
 
-                    // 🔧 CLEAN CHAT: Skip adding success messages to keep chat clean
-                    // Instead of showing chat messages, just update presentation data directly
-                    console.log('🎉 SUCCESS: Presentation generated, updating slides directly without chat messages');
+                    // FULL PRESENTATION GENERATION - Store in presentationMessages
+                    console.log('🎉 SUCCESS: Full presentation generated, storing in messages');
                       
                       console.log('🎯 About to store presentation data:', {
                         currentPresentationId,
                         hasData: !!data,
                         dataTitle: data?.title,
                         slideCount: data?.slides?.length
+                      });
+                      
+                      // Add _lastModified timestamp to presentation and each slide
+                      const presentationWithTimestamps = {
+                        ...data,
+                        _lastModified: Date.now(),
+                        slides: data.slides.map((slide: any) => ({
+                          ...slide,
+                          _lastModified: Date.now()
+                        }))
+                      };
+                      
+                      // Store presentation in messages
+                      setPresentationMessages(prev => {
+                        const existingMessages = prev[currentPresentationId] || [];
+                        const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                        const nextVersion = assistantMessages.length + 1;
+                        
+                        console.log('💾 Saving new presentation to messages:', {
+                          title: presentationWithTimestamps.title,
+                          slideCount: presentationWithTimestamps.slides.length,
+                          version: nextVersion
+                        });
+                        
+                        return {
+                          ...prev,
+                          [currentPresentationId]: [
+                            ...existingMessages.filter(msg => !msg.isLoading),
+                            {
+                              id: `assistant-result-${Date.now()}-${Math.random()}`,
+                              role: "assistant" as const,
+                              text: `Successfully created "${presentationWithTimestamps.title}"\n\n${presentationWithTimestamps.slides.length} slides generated!`,
+                              isLoading: false,
+                              presentationData: presentationWithTimestamps,
+                              userMessage: originalPrompt,
+                              version: nextVersion
+                            }
+                          ]
+                        };
                       });
                       
                       // Force immediate re-render by triggering a state change
