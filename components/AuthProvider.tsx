@@ -56,6 +56,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔐 Auth state changed:', event, session?.user?.id);
+        
         if (session) {
           setUser(session.user);
           // Create profile from user metadata
@@ -64,6 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             email: session.user.email || ''
           });
         } else {
+          console.log('🔐 No session - clearing user state');
           setUser(null);
           setProfile(null);
         }

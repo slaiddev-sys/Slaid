@@ -194,28 +194,44 @@ export default function AuthCallback() {
             // Ensure profile and workspace exist (handles both new and existing users)
             await ensureUserProfileAndWorkspace(sessionData.session.user);
             
-            // Check if user is new (created within last 30 seconds)
-            const userCreatedAt = new Date(sessionData.session.user.created_at);
-            const now = new Date();
-            const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 30000; // 30 seconds
-            console.log('🔍 User age check:', {
-              createdAt: userCreatedAt,
-              now: now,
-              ageInSeconds: (now.getTime() - userCreatedAt.getTime()) / 1000,
-              isNewUser
-            });
+            // Check if user has a paid plan - redirect to pricing if not
+            console.log('🔍 Checking user plan status...');
             
-            setStatus('Authentication successful! Redirecting...');
-            setTimeout(() => {
-              // Redirect NEW users to pricing page, EXISTING users to editor
-              if (isNewUser) {
-                console.log('🆕 New user - redirecting to pricing');
+            try {
+              const { data: profileData, error: profileError } = await supabase
+                .from('profiles')
+                .select('plan_type')
+                .eq('id', sessionData.session.user.id)
+                .single();
+              
+              const hasPaidPlan = profileData?.plan_type && 
+                profileData.plan_type !== 'free' && 
+                profileData.plan_type !== 'none';
+              
+              console.log('🔍 Plan check result:', {
+                plan_type: profileData?.plan_type,
+                hasPaidPlan
+              });
+              
+              setStatus('Authentication successful! Redirecting...');
+              setTimeout(() => {
+                // Redirect users WITHOUT paid plan to pricing page
+                if (!hasPaidPlan) {
+                  console.log('💳 No paid plan - redirecting to pricing');
+                  router.push('/pricing');
+                } else {
+                  console.log('✅ Paid plan detected - redirecting to editor');
+                  router.push('/editor');
+                }
+              }, 1000);
+            } catch (error) {
+              console.error('❌ Error checking plan:', error);
+              // On error, redirect to pricing to be safe
+              console.log('⚠️ Error checking plan - redirecting to pricing');
+              setTimeout(() => {
                 router.push('/pricing');
-              } else {
-                console.log('✅ Existing user - redirecting to editor');
-                router.push('/editor');
-              }
-            }, 1000);
+              }, 1000);
+            }
             return;
           }
           
@@ -238,28 +254,44 @@ export default function AuthCallback() {
           // Ensure profile and workspace exist (handles both new and existing users)
           await ensureUserProfileAndWorkspace(refreshData.session.user);
           
-          // Check if user is new (created within last 30 seconds)
-          const userCreatedAt = new Date(refreshData.session.user.created_at);
-          const now = new Date();
-          const isNewUser = (now.getTime() - userCreatedAt.getTime()) < 30000; // 30 seconds
-          console.log('🔍 User age check (refresh):', {
-            createdAt: userCreatedAt,
-            now: now,
-            ageInSeconds: (now.getTime() - userCreatedAt.getTime()) / 1000,
-            isNewUser
-          });
+          // Check if user has a paid plan - redirect to pricing if not
+          console.log('🔍 Checking user plan status (refresh)...');
           
-          setStatus('Authentication successful! Redirecting...');
-          setTimeout(() => {
-            // Redirect NEW users to pricing page, EXISTING users to editor
-            if (isNewUser) {
-              console.log('🆕 New user - redirecting to pricing');
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('plan_type')
+              .eq('id', refreshData.session.user.id)
+              .single();
+            
+            const hasPaidPlan = profileData?.plan_type && 
+              profileData.plan_type !== 'free' && 
+              profileData.plan_type !== 'none';
+            
+            console.log('🔍 Plan check result (refresh):', {
+              plan_type: profileData?.plan_type,
+              hasPaidPlan
+            });
+            
+            setStatus('Authentication successful! Redirecting...');
+            setTimeout(() => {
+              // Redirect users WITHOUT paid plan to pricing page
+              if (!hasPaidPlan) {
+                console.log('💳 No paid plan - redirecting to pricing');
+                router.push('/pricing');
+              } else {
+                console.log('✅ Paid plan detected - redirecting to editor');
+                router.push('/editor');
+              }
+            }, 1000);
+          } catch (error) {
+            console.error('❌ Error checking plan (refresh):', error);
+            // On error, redirect to pricing to be safe
+            console.log('⚠️ Error checking plan - redirecting to pricing');
+            setTimeout(() => {
               router.push('/pricing');
-            } else {
-              console.log('✅ Existing user - redirecting to editor');
-              router.push('/editor');
-            }
-          }, 1000);
+            }, 1000);
+          }
           return;
         }
 

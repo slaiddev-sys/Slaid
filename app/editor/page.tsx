@@ -286,8 +286,57 @@ export default function EditorPage() {
     isAuthenticated
   } = useUserWorkspaces();
   
-  // Note: Access control is handled by auth callback (redirects new users to pricing)
-  // No need to redirect from within editor - this causes issues on page refresh
+  // Access control: Check if user has a paid plan
+  useEffect(() => {
+    const checkPaidPlan = async () => {
+      console.log('🔍 Editor: Access check started', {
+        hasUser: !!user,
+        userId: user?.id,
+        creditsLoading,
+        credits: credits
+      });
+
+      if (!user) {
+        console.log('⚠️ No user found - redirecting to login');
+        router.push('/login');
+        return;
+      }
+
+      // Wait for credits to load
+      if (creditsLoading) {
+        console.log('⏳ Editor: Waiting for credits to load...');
+        return;
+      }
+
+      // If credits still null after loading, redirect to pricing
+      if (!credits) {
+        console.log('⚠️ No credits data - redirecting to pricing');
+        router.push('/pricing');
+        return;
+      }
+
+      // Check if user has a paid plan
+      const hasPaidPlan = credits?.plan_type && 
+        credits.plan_type !== 'free' && 
+        credits.plan_type !== 'none';
+
+      console.log('🔍 Editor access check:', {
+        plan_type: credits?.plan_type,
+        hasPaidPlan,
+        remaining_credits: credits?.remaining_credits,
+        willRedirect: !hasPaidPlan
+      });
+
+      if (!hasPaidPlan) {
+        console.log('💳 No paid plan detected - redirecting to pricing');
+        router.push('/pricing');
+      } else {
+        console.log('✅ Paid plan detected - access granted');
+      }
+    };
+
+    checkPaidPlan();
+  }, [user?.id, credits, creditsLoading, router]); // Use user.id to trigger on user change
   
   // Helper function to get auth headers for API calls
   const getAuthHeaders = useCallback(async () => {

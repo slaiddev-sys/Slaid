@@ -28,12 +28,14 @@ export function useCredits(): UseCreditsReturn {
 
   const refreshCredits = useCallback(async () => {
     if (!user) {
+      console.log('🔄 useCredits: No user, clearing credits');
       setCredits(null)
       setLoading(false)
       return
     }
 
     try {
+      console.log('🔄 useCredits: Refreshing credits for user:', user.id);
       setLoading(true)
       setError(null)
 
@@ -228,10 +230,14 @@ export function useCredits(): UseCreditsReturn {
     return credits ? credits.remaining_credits >= amount : false
   }, [credits])
 
-  // Load credits when user changes
+  // Load credits when user changes - RESET state when user changes
   useEffect(() => {
-    refreshCredits()
-  }, [refreshCredits])
+    console.log('🔄 useCredits: User changed, resetting and refreshing credits');
+    setCredits(null); // Clear previous user's credits
+    setLoading(true);
+    setError(null);
+    refreshCredits();
+  }, [user?.id, refreshCredits]) // Depend on user.id to trigger on user change
 
   return {
     credits,
