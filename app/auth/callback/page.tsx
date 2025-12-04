@@ -198,18 +198,19 @@ export default function AuthCallback() {
             console.log('🔍 Checking user plan status...');
             
             try {
-              const { data: profileData, error: profileError } = await supabase
-                .from('profiles')
+              // Check plan_type from user_credits table (where Polar webhook updates it)
+              const { data: creditsData, error: creditsError } = await supabase
+                .from('user_credits')
                 .select('plan_type')
-                .eq('id', sessionData.session.user.id)
+                .eq('user_id', sessionData.session.user.id)
                 .single();
               
             // EXPLICIT check: only basic, pro, ultra are paid plans
-            const hasPaidPlan = profileData?.plan_type && 
-              ['basic', 'pro', 'ultra'].includes(profileData.plan_type.toLowerCase());
+            const hasPaidPlan = creditsData?.plan_type && 
+              ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
               
               console.log('🔍 Plan check result:', {
-                plan_type: profileData?.plan_type,
+                plan_type: creditsData?.plan_type,
                 hasPaidPlan
               });
               
@@ -258,18 +259,19 @@ export default function AuthCallback() {
           console.log('🔍 Checking user plan status (refresh)...');
           
           try {
-            const { data: profileData, error: profileError } = await supabase
-              .from('profiles')
+            // Check plan_type from user_credits table (where Polar webhook updates it)
+            const { data: creditsData, error: creditsError } = await supabase
+              .from('user_credits')
               .select('plan_type')
-              .eq('id', refreshData.session.user.id)
+              .eq('user_id', refreshData.session.user.id)
               .single();
             
             // EXPLICIT check: only basic, pro, ultra are paid plans
-            const hasPaidPlan = profileData?.plan_type && 
-              ['basic', 'pro', 'ultra'].includes(profileData.plan_type.toLowerCase());
+            const hasPaidPlan = creditsData?.plan_type && 
+              ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
             
             console.log('🔍 Plan check result (refresh):', {
-              plan_type: profileData?.plan_type,
+              plan_type: creditsData?.plan_type,
               hasPaidPlan
             });
             
