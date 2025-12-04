@@ -315,10 +315,9 @@ export default function EditorPage() {
         return;
       }
 
-      // Check if user has a paid plan
+      // EXPLICIT check: only basic, pro, ultra are paid plans
       const hasPaidPlan = credits?.plan_type && 
-        credits.plan_type !== 'free' && 
-        credits.plan_type !== 'none';
+        ['basic', 'pro', 'ultra'].includes(credits.plan_type.toLowerCase());
 
       console.log('🔍 Editor access check:', {
         plan_type: credits?.plan_type,

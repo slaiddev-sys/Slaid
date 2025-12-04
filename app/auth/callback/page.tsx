@@ -204,9 +204,9 @@ export default function AuthCallback() {
                 .eq('id', sessionData.session.user.id)
                 .single();
               
-              const hasPaidPlan = profileData?.plan_type && 
-                profileData.plan_type !== 'free' && 
-                profileData.plan_type !== 'none';
+            // EXPLICIT check: only basic, pro, ultra are paid plans
+            const hasPaidPlan = profileData?.plan_type && 
+              ['basic', 'pro', 'ultra'].includes(profileData.plan_type.toLowerCase());
               
               console.log('🔍 Plan check result:', {
                 plan_type: profileData?.plan_type,
@@ -264,9 +264,9 @@ export default function AuthCallback() {
               .eq('id', refreshData.session.user.id)
               .single();
             
+            // EXPLICIT check: only basic, pro, ultra are paid plans
             const hasPaidPlan = profileData?.plan_type && 
-              profileData.plan_type !== 'free' && 
-              profileData.plan_type !== 'none';
+              ['basic', 'pro', 'ultra'].includes(profileData.plan_type.toLowerCase());
             
             console.log('🔍 Plan check result (refresh):', {
               plan_type: profileData?.plan_type,
