@@ -559,6 +559,7 @@ export default function EditorPage() {
   const [isDataLoaded, setIsDataLoaded] = useState(false); // Track if database data has been loaded
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState(0);
+  const [slideUpdateKey, setSlideUpdateKey] = useState(0); // Force re-render when slides are modified
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [onboardingStep, setOnboardingStep] = useState(1); // 1: Upload Files, 2: Description, 3: Slide Count & Summary
   const [isDragOver, setIsDragOver] = useState(false);
@@ -1506,7 +1507,7 @@ export default function EditorPage() {
     
     console.log('❌ No presentation data found anywhere!');
     return null;
-  }, [messages, currentPresentationId, presentationMessages, currentPresentation, activeVersion, workspaceSlides, currentWorkspace, workspacePresentations]);
+  }, [messages, currentPresentationId, presentationMessages, currentPresentation, activeVersion, workspaceSlides, currentWorkspace, workspacePresentations, slideUpdateKey]);
 
   // Memoize the current presentation data to prevent unnecessary re-renders
   // Use deep comparison to avoid re-creating when the actual data hasn't changed
@@ -1514,7 +1515,7 @@ export default function EditorPage() {
     const data = getCurrentPresentationData();
     console.log('🔄 currentPresentationData updated for presentation:', currentPresentationId, 'data:', data?.title);
     return data;
-  }, [getCurrentPresentationData, currentPresentationId, messages, presentationMessages]);
+  }, [getCurrentPresentationData, currentPresentationId, messages, presentationMessages, slideUpdateKey]);
   
   // Create a stable reference for slides that only changes when the actual slide data changes
   const slides = React.useMemo(() => {
@@ -1528,7 +1529,7 @@ export default function EditorPage() {
     
     // Force new reference when slides change by stringifying
     return JSON.parse(JSON.stringify(slideData));
-  }, [currentPresentationData?.slides, currentPresentationId, presentationMessages, messages, activeSlide]);
+  }, [currentPresentationData?.slides, currentPresentationId, presentationMessages, messages, activeSlide, slideUpdateKey]);
 
   // Create stable references for individual slide data to prevent unnecessary re-renders
   const memoizedSlides = React.useMemo(() => {
@@ -1554,7 +1555,7 @@ export default function EditorPage() {
     console.log('');
     
     return memoized;
-  }, [slides, currentPresentationData?._lastModified]);
+  }, [slides, currentPresentationData?._lastModified, slideUpdateKey]);
 
 
   // Function to detect if the prompt is a modification request
@@ -6758,6 +6759,10 @@ export default function EditorPage() {
                           setActiveSlide(prev => prev); // Trigger re-render
                         }, 50);
                         
+                        // 🔥 FORCE RE-RENDER: Increment slideUpdateKey to trigger useMemo recalculation
+                        console.log('🔄🔄🔄 FORCING SLIDE RE-RENDER via slideUpdateKey');
+                        setSlideUpdateKey(prev => prev + 1);
+                        
                         // 🔥 FORCE IMMEDIATE SAVE AFTER MODIFICATION
                         console.log('💾💾💾 FORCING IMMEDIATE SAVE after modification');
                         const saveState = {
@@ -6935,6 +6940,10 @@ export default function EditorPage() {
                           console.log('🔄 Forcing re-render after slide modification');
                           setActiveSlide(prev => prev); // Trigger re-render
                         }, 50);
+                        
+                        // 🔥 FORCE RE-RENDER: Increment slideUpdateKey to trigger useMemo recalculation
+                        console.log('🔄🔄🔄 FORCING SLIDE RE-RENDER via slideUpdateKey');
+                        setSlideUpdateKey(prev => prev + 1);
                         
                         // 🔥 FORCE IMMEDIATE SAVE AFTER MODIFICATION
                         console.log('💾💾💾 FORCING IMMEDIATE SAVE after modification');
