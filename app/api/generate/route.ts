@@ -1612,6 +1612,27 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
       modificationContext += `And user says "change title to New Title", return:\n`;
       modificationContext += `"props": { "title": "New Title", "description": "Some desc", "chartData": {...} }\n\n`;
       
+      modificationContext += `🎨 CHART COLOR CHANGE EXAMPLES:\n`;
+      modificationContext += `If user says "change chart color to green" or "cambia el color de la gráfica a verde":\n`;
+      modificationContext += `- Find the "chartData" property in the layout props\n`;
+      modificationContext += `- Inside chartData.series, find the "color" property\n`;
+      modificationContext += `- Change ONLY the color value, keep ALL data values exactly the same\n\n`;
+      
+      modificationContext += `Color hex codes:\n`;
+      modificationContext += `- Green: "#16A34A" or "#22C55E"\n`;
+      modificationContext += `- Blue: "#3B82F6" or "#2563EB"\n`;
+      modificationContext += `- Red: "#EF4444" or "#DC2626"\n`;
+      modificationContext += `- Purple: "#8B5CF6" or "#7C3AED"\n`;
+      modificationContext += `- Orange: "#F97316" or "#EA580C"\n`;
+      modificationContext += `- Yellow: "#EAB308" or "#CA8A04"\n`;
+      modificationContext += `- Pink: "#EC4899" or "#DB2777"\n\n`;
+      
+      modificationContext += `Example - If current slide has chartData:\n`;
+      modificationContext += `"chartData": { "series": [{ "id": "Sales", "data": [100, 200], "color": "#3B82F6" }] }\n`;
+      modificationContext += `And user says "change color to green", return:\n`;
+      modificationContext += `"chartData": { "series": [{ "id": "Sales", "data": [100, 200], "color": "#16A34A" }] }\n`;
+      modificationContext += `IMPORTANT: Keep the EXACT same data values [100, 200], only change the color!\n\n`;
+      
       modificationContext += `🎯 EXISTING PRESENTATION:\n`;
       modificationContext += `Title: "${existingPresentation.title}"\n`;
       modificationContext += `Total Slides: ${existingPresentation.slides?.length || 0}\n\n`;
