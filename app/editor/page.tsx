@@ -64,6 +64,7 @@ import PolarCheckout from '../../components/PolarCheckout';
 import { getProductId } from '../../lib/polar-config';
 import { useLanguage } from '../../hooks/useLanguage';
 import { getTranslations } from '../../lib/translations';
+import { presentationAPI } from '../../lib/api-client';
 
 // Extend Window interface for the new presentation flag
 declare global {
@@ -6757,6 +6758,21 @@ export default function EditorPage() {
                           setActiveSlide(prev => prev); // Trigger re-render
                         }, 50);
                         
+                        // 🔥 FORCE IMMEDIATE SAVE AFTER MODIFICATION
+                        console.log('💾💾💾 FORCING IMMEDIATE SAVE after modification');
+                        const saveState = {
+                          slides: updatedPresentation.slides,
+                          messages: [...(presentationMessages[currentPresentationId] || [])].filter(msg => !msg.isLoading),
+                          activeSlide: activeSlide,
+                          title: updatedPresentation.title
+                        };
+                        
+                        presentationAPI.save(currentPresentationId, currentWorkspace, saveState).then(() => {
+                          console.log('✅ Modification saved immediately to database');
+                        }).catch(err => {
+                          console.error('❌ Failed to save modification:', err);
+                        });
+                        
                         return; // Exit early for single slide modifications
                       } else {
                         throw new Error('Cannot modify slide: No existing presentation found');
@@ -6919,6 +6935,21 @@ export default function EditorPage() {
                           console.log('🔄 Forcing re-render after slide modification');
                           setActiveSlide(prev => prev); // Trigger re-render
                         }, 50);
+                        
+                        // 🔥 FORCE IMMEDIATE SAVE AFTER MODIFICATION
+                        console.log('💾💾💾 FORCING IMMEDIATE SAVE after modification');
+                        const saveState = {
+                          slides: updatedPresentation.slides,
+                          messages: [...(presentationMessages[currentPresentationId] || [])].filter(msg => !msg.isLoading),
+                          activeSlide: activeSlide,
+                          title: updatedPresentation.title
+                        };
+                        
+                        presentationAPI.save(currentPresentationId, currentWorkspace, saveState).then(() => {
+                          console.log('✅ Modification saved immediately to database');
+                        }).catch(err => {
+                          console.error('❌ Failed to save modification:', err);
+                        });
                         
                         return; // Exit early for single slide operations
                       } else {
