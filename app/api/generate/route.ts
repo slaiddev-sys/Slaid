@@ -1601,6 +1601,17 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
       modificationContext += `- Modify ONLY the specific property the user mentioned (title, color, data, etc.)\n`;
       modificationContext += `- Return the slide with the same "type" in blocks[1] (the layout component)\n\n`;
       
+      modificationContext += `📝 TEXT CHANGE EXAMPLES:\n`;
+      modificationContext += `If user says "change title to Hello World" or "cambia el título a Hola Mundo":\n`;
+      modificationContext += `- Find the "title" property in the layout props\n`;
+      modificationContext += `- Change ONLY that value to the new text\n`;
+      modificationContext += `- Keep ALL other properties exactly the same\n\n`;
+      
+      modificationContext += `Example - If current slide has:\n`;
+      modificationContext += `"props": { "title": "Old Title", "description": "Some desc", "chartData": {...} }\n`;
+      modificationContext += `And user says "change title to New Title", return:\n`;
+      modificationContext += `"props": { "title": "New Title", "description": "Some desc", "chartData": {...} }\n\n`;
+      
       modificationContext += `🎯 EXISTING PRESENTATION:\n`;
       modificationContext += `Title: "${existingPresentation.title}"\n`;
       modificationContext += `Total Slides: ${existingPresentation.slides?.length || 0}\n\n`;
