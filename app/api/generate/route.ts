@@ -1627,20 +1627,23 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
       modificationContext += `STRUCTURE: The color is inside chartData.series array. Each series object has:\n`;
       modificationContext += `{ "id": "SeriesName", "data": [numbers], "color": "#HEXCODE" }\n\n`;
       
-      modificationContext += `EXAMPLE - Current slide props:\n`;
+      modificationContext += `⚠️ IMPORTANT: The "color" field may NOT exist in the current series!\n`;
+      modificationContext += `If "color" is missing, you MUST ADD it to each series object.\n\n`;
+      
+      modificationContext += `EXAMPLE - Current slide props (WITHOUT color field):\n`;
       modificationContext += `"props": {\n`;
       modificationContext += `  "title": "Sales Chart",\n`;
       modificationContext += `  "chartData": {\n`;
       modificationContext += `    "type": "bar",\n`;
       modificationContext += `    "labels": ["Q1", "Q2", "Q3"],\n`;
       modificationContext += `    "series": [\n`;
-      modificationContext += `      { "id": "Revenue", "data": [100, 150, 200], "color": "#4A3AFF" }\n`;
+      modificationContext += `      { "id": "Revenue", "data": [100, 150, 200] }\n`;
       modificationContext += `    ]\n`;
       modificationContext += `  }\n`;
       modificationContext += `}\n\n`;
       
       modificationContext += `User says: "change chart color to green"\n`;
-      modificationContext += `CORRECT RESPONSE - Only change the color value:\n`;
+      modificationContext += `CORRECT RESPONSE - ADD the color field to each series:\n`;
       modificationContext += `"props": {\n`;
       modificationContext += `  "title": "Sales Chart",\n`;
       modificationContext += `  "chartData": {\n`;
@@ -1652,7 +1655,11 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
       modificationContext += `  }\n`;
       modificationContext += `}\n\n`;
       
-      modificationContext += `CRITICAL: Keep ALL data values [100, 150, 200] EXACTLY the same! Only change "color" value!\n\n`;
+      modificationContext += `CRITICAL RULES FOR COLOR CHANGES:\n`;
+      modificationContext += `1. Keep ALL data values [100, 150, 200] EXACTLY the same!\n`;
+      modificationContext += `2. ADD "color" field to EVERY series object if it doesn't exist\n`;
+      modificationContext += `3. If multiple series exist, change ALL series to the same color\n`;
+      modificationContext += `4. Keep ALL other chartData properties (type, labels, showLegend, etc.)\n\n`;
       
       modificationContext += `🎯 EXISTING PRESENTATION:\n`;
       modificationContext += `Title: "${existingPresentation.title}"\n`;
