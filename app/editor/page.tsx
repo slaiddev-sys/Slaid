@@ -288,31 +288,63 @@ export default function EditorPage() {
   } = useUserWorkspaces();
   
   // Access control: Check if user has a paid plan
+  // Use a ref to track if we've already done the initial check
+  const hasCheckedPlan = useRef(false);
+  
   useEffect(() => {
     const checkPaidPlan = async () => {
       console.log('🔍 Editor: Access check started', {
         hasUser: !!user,
         userId: user?.id,
         creditsLoading,
-        credits: credits
+        credits: credits,
+        hasCheckedPlan: hasCheckedPlan.current
       });
 
+      // Don't redirect if no user yet - wait for auth
       if (!user) {
-        console.log('⚠️ No user found - redirecting to login');
-        router.push('/login');
+        console.log('⏳ Editor: No user yet, waiting for auth...');
         return;
       }
 
-      // Wait for credits to load
+      // Wait for credits to finish loading
       if (creditsLoading) {
         console.log('⏳ Editor: Waiting for credits to load...');
         return;
       }
 
-      // If credits still null after loading, redirect to pricing
+      // If credits is null after loading finished, check directly from database
+      // This prevents false redirects during initial load
       if (!credits) {
-        console.log('⚠️ No credits data - redirecting to pricing');
-        router.push('/pricing');
+        console.log('⚠️ Credits null after load - checking database directly...');
+        
+        try {
+          const { data: creditsData, error } = await supabase
+            .from('user_credits')
+            .select('plan_type')
+            .eq('user_id', user.id)
+            .single();
+          
+          if (error || !creditsData) {
+            console.log('❌ No credits record found - redirecting to pricing');
+            router.push('/pricing');
+            return;
+          }
+          
+          const hasPaidPlan = creditsData.plan_type && 
+            ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
+          
+          if (!hasPaidPlan) {
+            console.log('💳 No paid plan in database - redirecting to pricing');
+            router.push('/pricing');
+          } else {
+            console.log('✅ Paid plan found in database - access granted');
+            hasCheckedPlan.current = true;
+          }
+        } catch (err) {
+          console.error('❌ Error checking plan:', err);
+          // Don't redirect on error - let user stay
+        }
         return;
       }
 
@@ -323,8 +355,7 @@ export default function EditorPage() {
       console.log('🔍 Editor access check:', {
         plan_type: credits?.plan_type,
         hasPaidPlan,
-        remaining_credits: credits?.remaining_credits,
-        willRedirect: !hasPaidPlan
+        remaining_credits: credits?.remaining_credits
       });
 
       if (!hasPaidPlan) {
@@ -332,6 +363,7 @@ export default function EditorPage() {
         router.push('/pricing');
       } else {
         console.log('✅ Paid plan detected - access granted');
+        hasCheckedPlan.current = true;
       }
     };
 
