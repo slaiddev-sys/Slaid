@@ -1568,6 +1568,36 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
       requestData.messages[0].content = translationPrompt;
       console.log('📝 Translation prompt prepared with full presentation data');
     }
+    
+    // 🔥 CRITICAL FIX: For modification requests, include the existing presentation data
+    // Without this, Claude cannot know what to modify!
+    if (existingPresentation && !isTranslationRequest.isTranslation) {
+      console.log('🔧 MODIFICATION REQUEST: Adding existing presentation to prompt');
+      
+      // Get the current slide being modified (if specified)
+      const currentSlide = typeof currentSlideIndex === 'number' && currentSlideIndex >= 0 
+        ? existingPresentation.slides?.[currentSlideIndex] 
+        : null;
+      
+      let modificationContext = `\n\n🎯 EXISTING PRESENTATION DATA FOR MODIFICATION:\n`;
+      modificationContext += `Presentation Title: "${existingPresentation.title}"\n`;
+      modificationContext += `Total Slides: ${existingPresentation.slides?.length || 0}\n\n`;
+      
+      if (currentSlide) {
+        modificationContext += `📍 CURRENT SLIDE TO MODIFY (slide-${currentSlideIndex + 1}):\n`;
+        modificationContext += JSON.stringify(currentSlide, null, 2);
+        modificationContext += `\n\n`;
+      }
+      
+      modificationContext += `📋 FULL PRESENTATION STRUCTURE:\n`;
+      modificationContext += JSON.stringify(existingPresentation, null, 2);
+      modificationContext += `\n\n`;
+      modificationContext += `⚠️ IMPORTANT: Return ONLY the modified slide(s) with the SAME slide ID(s). Do NOT return a complete new presentation.\n`;
+      
+      // Append to the existing prompt
+      requestData.messages[0].content = requestData.messages[0].content + modificationContext;
+      console.log('📝 Modification prompt prepared with existing presentation data');
+    }
 
     console.log('Calling Claude API...');
 
