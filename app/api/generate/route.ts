@@ -1612,26 +1612,47 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
       modificationContext += `And user says "change title to New Title", return:\n`;
       modificationContext += `"props": { "title": "New Title", "description": "Some desc", "chartData": {...} }\n\n`;
       
-      modificationContext += `🎨 CHART COLOR CHANGE EXAMPLES:\n`;
-      modificationContext += `If user says "change chart color to green" or "cambia el color de la gráfica a verde":\n`;
-      modificationContext += `- Find the "chartData" property in the layout props\n`;
-      modificationContext += `- Inside chartData.series, find the "color" property\n`;
-      modificationContext += `- Change ONLY the color value, keep ALL data values exactly the same\n\n`;
+      modificationContext += `🎨 CHART COLOR CHANGE - CRITICAL INSTRUCTIONS:\n`;
+      modificationContext += `If user says "change chart color to green" or "cambia el color de la gráfica a verde":\n\n`;
       
-      modificationContext += `Color hex codes:\n`;
-      modificationContext += `- Green: "#16A34A" or "#22C55E"\n`;
-      modificationContext += `- Blue: "#3B82F6" or "#2563EB"\n`;
-      modificationContext += `- Red: "#EF4444" or "#DC2626"\n`;
-      modificationContext += `- Purple: "#8B5CF6" or "#7C3AED"\n`;
-      modificationContext += `- Orange: "#F97316" or "#EA580C"\n`;
-      modificationContext += `- Yellow: "#EAB308" or "#CA8A04"\n`;
-      modificationContext += `- Pink: "#EC4899" or "#DB2777"\n\n`;
+      modificationContext += `COLOR HEX CODES TO USE:\n`;
+      modificationContext += `- green/verde: "#16A34A"\n`;
+      modificationContext += `- blue/azul: "#3B82F6"\n`;
+      modificationContext += `- red/rojo: "#EF4444"\n`;
+      modificationContext += `- purple/morado: "#8B5CF6"\n`;
+      modificationContext += `- orange/naranja: "#F97316"\n`;
+      modificationContext += `- yellow/amarillo: "#EAB308"\n`;
+      modificationContext += `- pink/rosa: "#EC4899"\n\n`;
       
-      modificationContext += `Example - If current slide has chartData:\n`;
-      modificationContext += `"chartData": { "series": [{ "id": "Sales", "data": [100, 200], "color": "#3B82F6" }] }\n`;
-      modificationContext += `And user says "change color to green", return:\n`;
-      modificationContext += `"chartData": { "series": [{ "id": "Sales", "data": [100, 200], "color": "#16A34A" }] }\n`;
-      modificationContext += `IMPORTANT: Keep the EXACT same data values [100, 200], only change the color!\n\n`;
+      modificationContext += `STRUCTURE: The color is inside chartData.series array. Each series object has:\n`;
+      modificationContext += `{ "id": "SeriesName", "data": [numbers], "color": "#HEXCODE" }\n\n`;
+      
+      modificationContext += `EXAMPLE - Current slide props:\n`;
+      modificationContext += `"props": {\n`;
+      modificationContext += `  "title": "Sales Chart",\n`;
+      modificationContext += `  "chartData": {\n`;
+      modificationContext += `    "type": "bar",\n`;
+      modificationContext += `    "labels": ["Q1", "Q2", "Q3"],\n`;
+      modificationContext += `    "series": [\n`;
+      modificationContext += `      { "id": "Revenue", "data": [100, 150, 200], "color": "#4A3AFF" }\n`;
+      modificationContext += `    ]\n`;
+      modificationContext += `  }\n`;
+      modificationContext += `}\n\n`;
+      
+      modificationContext += `User says: "change chart color to green"\n`;
+      modificationContext += `CORRECT RESPONSE - Only change the color value:\n`;
+      modificationContext += `"props": {\n`;
+      modificationContext += `  "title": "Sales Chart",\n`;
+      modificationContext += `  "chartData": {\n`;
+      modificationContext += `    "type": "bar",\n`;
+      modificationContext += `    "labels": ["Q1", "Q2", "Q3"],\n`;
+      modificationContext += `    "series": [\n`;
+      modificationContext += `      { "id": "Revenue", "data": [100, 150, 200], "color": "#16A34A" }\n`;
+      modificationContext += `    ]\n`;
+      modificationContext += `  }\n`;
+      modificationContext += `}\n\n`;
+      
+      modificationContext += `CRITICAL: Keep ALL data values [100, 150, 200] EXACTLY the same! Only change "color" value!\n\n`;
       
       modificationContext += `🎯 EXISTING PRESENTATION:\n`;
       modificationContext += `Title: "${existingPresentation.title}"\n`;
@@ -1667,6 +1688,20 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
       // Append to the existing prompt
       requestData.messages[0].content = requestData.messages[0].content + modificationContext;
       console.log('📝 Modification prompt prepared with STRICT layout preservation rules');
+      
+      // 🎨 DEBUG: Log color change detection
+      const lowerPrompt = prompt.toLowerCase();
+      if (lowerPrompt.includes('color') || lowerPrompt.includes('verde') || lowerPrompt.includes('green') || 
+          lowerPrompt.includes('azul') || lowerPrompt.includes('blue') || lowerPrompt.includes('rojo') || 
+          lowerPrompt.includes('red') || lowerPrompt.includes('morado') || lowerPrompt.includes('purple')) {
+        console.log('🎨🎨🎨 COLOR CHANGE REQUEST DETECTED 🎨🎨🎨');
+        console.log('🎨 User prompt:', prompt);
+        console.log('🎨 Current slide index:', currentSlideIndex);
+        console.log('🎨 Current slide has chartData:', !!currentSlide?.blocks?.[1]?.props?.chartData);
+        if (currentSlide?.blocks?.[1]?.props?.chartData) {
+          console.log('🎨 Current chartData structure:', JSON.stringify(currentSlide.blocks[1].props.chartData, null, 2));
+        }
+      }
     }
 
     console.log('Calling Claude API...');
@@ -1697,6 +1732,18 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
     console.log('Response length:', response.content.length);
     console.log('First 500 chars:', response.content.substring(0, 500));
     console.log('Last 500 chars:', response.content.slice(-500));
+    
+    // 🎨 DEBUG: Check if response contains color changes
+    const lowerPrompt = prompt.toLowerCase();
+    if (lowerPrompt.includes('color') || lowerPrompt.includes('verde') || lowerPrompt.includes('green')) {
+      console.log('🎨🎨🎨 CHECKING COLOR CHANGE RESPONSE 🎨🎨🎨');
+      const hasNewColor = response.content.includes('#16A34A') || response.content.includes('#22C55E') || 
+                          response.content.includes('#EF4444') || response.content.includes('#3B82F6') ||
+                          response.content.includes('#8B5CF6') || response.content.includes('#F97316');
+      console.log('🎨 Response contains new color hex:', hasNewColor);
+      console.log('🎨 Response contains "series":', response.content.includes('"series"'));
+      console.log('🎨 Response contains "chartData":', response.content.includes('"chartData"'));
+    }
 
     // Clean and parse the response
     let cleanedText = response.content?.trim() || '';
