@@ -1579,24 +1579,62 @@ TRANSLATE THIS PRESENTATION PRESERVING EXACT STRUCTURE.`;
         ? existingPresentation.slides?.[currentSlideIndex] 
         : null;
       
-      let modificationContext = `\n\n🎯 EXISTING PRESENTATION DATA FOR MODIFICATION:\n`;
-      modificationContext += `Presentation Title: "${existingPresentation.title}"\n`;
+      let modificationContext = `\n\n🚨🚨🚨 CRITICAL MODIFICATION INSTRUCTIONS 🚨🚨🚨\n\n`;
+      
+      modificationContext += `⚠️ YOU ARE MODIFYING AN EXISTING SLIDE - NOT CREATING A NEW ONE!\n\n`;
+      
+      modificationContext += `📋 MANDATORY RULES:\n`;
+      modificationContext += `1. KEEP THE EXACT SAME LAYOUT TYPE - Do NOT change the layout component\n`;
+      modificationContext += `2. KEEP THE EXACT SAME SLIDE ID - Use the existing slide ID\n`;
+      modificationContext += `3. KEEP ALL EXISTING BLOCKS - Modify content WITHIN the existing blocks\n`;
+      modificationContext += `4. ONLY CHANGE what the user specifically asked to change\n`;
+      modificationContext += `5. PRESERVE all other properties exactly as they are\n\n`;
+      
+      modificationContext += `❌ DO NOT:\n`;
+      modificationContext += `- Generate a new layout type (e.g., don't change ExcelKPIDashboard to Impact_KPIOverview)\n`;
+      modificationContext += `- Create new slide IDs\n`;
+      modificationContext += `- Remove or add blocks unless explicitly asked\n`;
+      modificationContext += `- Return a full presentation - return ONLY the modified slide\n\n`;
+      
+      modificationContext += `✅ DO:\n`;
+      modificationContext += `- Copy the existing slide structure EXACTLY\n`;
+      modificationContext += `- Modify ONLY the specific property the user mentioned (title, color, data, etc.)\n`;
+      modificationContext += `- Return the slide with the same "type" in blocks[1] (the layout component)\n\n`;
+      
+      modificationContext += `🎯 EXISTING PRESENTATION:\n`;
+      modificationContext += `Title: "${existingPresentation.title}"\n`;
       modificationContext += `Total Slides: ${existingPresentation.slides?.length || 0}\n\n`;
       
       if (currentSlide) {
-        modificationContext += `📍 CURRENT SLIDE TO MODIFY (slide-${currentSlideIndex + 1}):\n`;
+        const layoutType = currentSlide.blocks?.[1]?.type || 'Unknown';
+        modificationContext += `📍 SLIDE TO MODIFY:\n`;
+        modificationContext += `- Slide ID: "${currentSlide.id}"\n`;
+        modificationContext += `- Layout Type: "${layoutType}" (KEEP THIS EXACT TYPE!)\n`;
+        modificationContext += `- Complete slide data:\n`;
         modificationContext += JSON.stringify(currentSlide, null, 2);
         modificationContext += `\n\n`;
       }
       
-      modificationContext += `📋 FULL PRESENTATION STRUCTURE:\n`;
+      modificationContext += `📋 FULL PRESENTATION (for context):\n`;
       modificationContext += JSON.stringify(existingPresentation, null, 2);
       modificationContext += `\n\n`;
-      modificationContext += `⚠️ IMPORTANT: Return ONLY the modified slide(s) with the SAME slide ID(s). Do NOT return a complete new presentation.\n`;
+      
+      modificationContext += `🔥 RESPONSE FORMAT - Return EXACTLY this structure with your modifications:\n`;
+      if (currentSlide) {
+        modificationContext += `{\n`;
+        modificationContext += `  "slides": [{\n`;
+        modificationContext += `    "id": "${currentSlide.id}",\n`;
+        modificationContext += `    "blocks": [\n`;
+        modificationContext += `      { "type": "BackgroundBlock", "props": { ... } },\n`;
+        modificationContext += `      { "type": "${currentSlide.blocks?.[1]?.type || 'SAME_LAYOUT_TYPE'}", "props": { ...modified props... } }\n`;
+        modificationContext += `    ]\n`;
+        modificationContext += `  }]\n`;
+        modificationContext += `}\n`;
+      }
       
       // Append to the existing prompt
       requestData.messages[0].content = requestData.messages[0].content + modificationContext;
-      console.log('📝 Modification prompt prepared with existing presentation data');
+      console.log('📝 Modification prompt prepared with STRICT layout preservation rules');
     }
 
     console.log('Calling Claude API...');
