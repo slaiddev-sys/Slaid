@@ -20,8 +20,8 @@ const CROSS_ICON = (
 const getPlans = (t: any) => [
   {
     name: "Basic",
-    monthly: { price: "$14.99", originalPrice: "$29.99", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `500 ${t.pricing.monthlyCredits}` },
-    annual: { price: "$134.91", originalPrice: "$269.82", period: "/year", save: t.pricing.savePerYear.replace('{amount}', '$134.91'), buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `6,000 ${t.pricing.annualCredits}` },
+    monthly: { price: "$9.99", originalPrice: "$19.99", period: "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `500 ${t.pricing.monthlyCredits}` },
+    annual: { price: "$89.91", originalPrice: "$179.88", period: "/year", save: t.pricing.savePerYear.replace('{amount}', '$89.97'), buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: `6,000 ${t.pricing.annualCredits}` },
     desc: [t.pricing.basicDescription],
     icon: "/basic-plan.png",
     baseFeatures: [

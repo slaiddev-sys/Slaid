@@ -3067,8 +3067,8 @@ export default function EditorPage() {
     const plans = [
       {
         name: language === 'es' ? 'Básico' : "Basic",
-        monthly: { price: "$14.50", originalPrice: "$29", period: language === 'es' ? '/mes' : "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "500 créditos" : "500 credits" },
-        annual: { price: "$130.50", originalPrice: "$261", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra $217.50 por año" : "Save $217.50 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "6,000 créditos" : "6,000 credits" },
+        monthly: { price: "$9.99", originalPrice: "$19.99", period: language === 'es' ? '/mes' : "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "500 créditos" : "500 credits" },
+        annual: { price: "$89.91", originalPrice: "$179.88", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra $89.97 por año" : "Save $89.97 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "6,000 créditos" : "6,000 credits" },
         desc: [language === 'es' ? 'Perfecto para empezar.' : "Perfect for getting started."],
         icon: "/basic-plan.png",
         baseFeatures: [
@@ -3429,7 +3429,7 @@ export default function EditorPage() {
         'ultra': 'Ultra Plan'
       };
       const planPrices: Record<string, string> = {
-        'basic': '$14.99/month',
+        'basic': '$9.99/month',
         'pro': '$49.00/month',
         'ultra': '$89.00/month'
       };
