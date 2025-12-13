@@ -3,43 +3,88 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCredits } from "../../components/hooks/useCredits";
+import { useAuth } from "../../components/AuthProvider";
+import { supabase } from "../../lib/supabase";
 
 export default function PurchaseSuccessPage() {
   const router = useRouter();
   const { refreshCredits } = useCredits();
+  const { user } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    if (!user) {
+      console.log('⚠️ No user found, redirecting to login');
+      router.push('/login');
+      return;
+    }
+
+    let timeoutId: NodeJS.Timeout;
     
-    const checkCreditsUpdated = async () => {
+    const checkPlanUpdated = async () => {
       try {
+        console.log(`🔍 Attempt ${attempts + 1}: Checking if plan was updated...`);
         setStatus('loading');
         
-        // Refresh credits
-        await refreshCredits();
-        
-        // Wait a bit for webhook to process (webhooks can take 2-5 seconds)
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // Check if credits were updated by refreshing again
-        await refreshCredits();
-        
-        setStatus('success');
-        
-        // Redirect to editor after 2 seconds
-        setTimeout(() => {
-          router.push('/editor');
-        }, 2000);
+        // Directly check the database for plan_type
+        const { data: creditsData, error: creditsError } = await supabase
+          .from('user_credits')
+          .select('plan_type, total_credits')
+          .eq('user_id', user.id)
+          .single();
+
+        if (creditsError) {
+          console.error('❌ Error fetching credits:', creditsError);
+          throw creditsError;
+        }
+
+        console.log('📊 Current plan status:', {
+          plan_type: creditsData?.plan_type,
+          total_credits: creditsData?.total_credits,
+          hasPaidPlan: creditsData?.plan_type && ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase())
+        });
+
+        const hasPaidPlan = creditsData?.plan_type && 
+          ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
+
+        if (hasPaidPlan) {
+          // Plan updated successfully!
+          console.log('✅ Paid plan detected! Redirecting to editor...');
+          setStatus('success');
+          
+          // Refresh credits hook to sync state
+          await refreshCredits();
+          
+          // Redirect to editor after 1.5 seconds with purchase flag
+          setTimeout(() => {
+            router.push('/editor?from_purchase=true');
+          }, 1500);
+        } else {
+          // Plan not updated yet, retry
+          console.log(`⏳ Plan not updated yet (current: ${creditsData?.plan_type}). Retrying...`);
+          
+          if (attempts < 15) {
+            // Retry up to 15 times (30 seconds total)
+            setAttempts(prev => prev + 1);
+            timeoutId = setTimeout(checkPlanUpdated, 2000);
+          } else {
+            console.error('❌ Max attempts reached, plan still not updated');
+            setStatus('error');
+            // Still redirect to editor - let editor handle it
+            setTimeout(() => {
+              router.push('/editor');
+            }, 3000);
+          }
+        }
         
       } catch (error) {
-        console.error('Error refreshing credits:', error);
+        console.error('❌ Error checking plan:', error);
         
-        // Retry up to 5 times (total 10 seconds)
-        if (attempts < 5) {
+        // Retry if we haven't exceeded attempts
+        if (attempts < 15) {
           setAttempts(prev => prev + 1);
-          setTimeout(checkCreditsUpdated, 2000);
+          timeoutId = setTimeout(checkPlanUpdated, 2000);
         } else {
           setStatus('error');
           // Still redirect to editor after error
@@ -51,12 +96,12 @@ export default function PurchaseSuccessPage() {
     };
 
     // Start checking after 1 second delay
-    setTimeout(checkCreditsUpdated, 1000);
+    timeoutId = setTimeout(checkPlanUpdated, 1000);
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (timeoutId) clearTimeout(timeoutId);
     };
-  }, []);
+  }, [attempts, user?.id]);
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
