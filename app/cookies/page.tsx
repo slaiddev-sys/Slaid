@@ -265,7 +265,7 @@ export default function CookiePolicy() {
               If you have any questions about our use of cookies or this Cookie Policy, please contact us:
             </p>
             <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">
-              <p className="text-gray-700 mb-2"><strong>Email:</strong> privacy@slaidapp.com</p>
+              <p className="text-gray-700 mb-2"><strong>Email:</strong> slaid.dev@gmail.com</p>
               <p className="text-gray-700 mb-2"><strong>Website:</strong> slaidapp.com</p>
               <p className="text-gray-700">We will respond to all legitimate inquiries within 30 days.</p>
             </div>

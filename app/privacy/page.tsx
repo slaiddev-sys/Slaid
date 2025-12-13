@@ -186,7 +186,7 @@ export default function PrivacyPolicy() {
               <li><strong>Portability:</strong> Receive your data in a portable format</li>
             </ul>
             <p className="text-gray-700 leading-relaxed">
-              To exercise any of these rights, please contact us at privacy@slaidapp.com or use the tools available in your account settings.
+              To exercise any of these rights, please contact us at slaid.dev@gmail.com or use the tools available in your account settings.
             </p>
           </section>
 
@@ -232,7 +232,7 @@ export default function PrivacyPolicy() {
               If you have any questions, concerns, or requests regarding this Privacy Policy or our data practices, please contact us:
             </p>
             <div className="bg-gray-50 p-6 rounded-xl border-2 border-gray-200">
-              <p className="text-gray-700 mb-2"><strong>Email:</strong> privacy@slaidapp.com</p>
+              <p className="text-gray-700 mb-2"><strong>Email:</strong> slaid.dev@gmail.com</p>
               <p className="text-gray-700 mb-2"><strong>Website:</strong> slaidapp.com</p>
               <p className="text-gray-700">We will respond to all legitimate requests within 30 days.</p>
             </div>
