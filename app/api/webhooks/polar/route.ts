@@ -46,8 +46,8 @@ export async function POST(request: NextRequest) {
     const eventType = body.type
     console.log('📬 Event type:', eventType, 'Event ID:', eventId)
 
-    // We support checkout.completed, order.paid, subscription.created, subscription.active, and subscription.canceled
-    const supportedEvents = ['checkout.completed', 'order.paid', 'subscription.created', 'subscription.active', 'subscription.canceled']
+    // We support checkout.created, order.created, order.paid, subscription.created, subscription.active, and subscription.canceled
+    const supportedEvents = ['checkout.created', 'checkout.completed', 'order.created', 'order.paid', 'subscription.created', 'subscription.active', 'subscription.canceled']
     if (!supportedEvents.includes(eventType)) {
       console.log('⏭️ Ignoring unsupported event:', eventType)
       return NextResponse.json({ received: true })
@@ -106,10 +106,10 @@ export async function POST(request: NextRequest) {
     let productId: string
     let customerEmail: string
 
-    if (eventType === 'checkout.completed') {
+    if (eventType === 'checkout.created' || eventType === 'checkout.completed') {
       productId = eventData.product_id
-      customerEmail = eventData.customer_email
-    } else if (eventType === 'order.paid') {
+      customerEmail = eventData.customer_email || eventData.customer?.email
+    } else if (eventType === 'order.created' || eventType === 'order.paid') {
       productId = eventData.product_id
       customerEmail = eventData.customer?.email || eventData.customer_email
     } else if (eventType === 'subscription.created' || eventType === 'subscription.active') {
@@ -152,16 +152,69 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
     }
     
-    const user = users?.find(u => u.email === customerEmail)
+    let user = users?.find(u => u.email === customerEmail)
     
+    // If user doesn't exist, create them automatically
     if (!user) {
-      console.error('❌ User not found for email:', customerEmail)
-      console.log('📋 Available users:', users?.map(u => u.email))
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      console.log('⚠️ User not found, creating automatically for email:', customerEmail)
+      
+      try {
+        // Create user with admin client
+        const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+          email: customerEmail,
+          email_confirm: true, // Auto-confirm email
+          user_metadata: {
+            created_via: 'polar_webhook',
+            created_at: new Date().toISOString()
+          }
+        })
+        
+        if (createError) {
+          console.error('❌ Error creating user:', createError)
+          return NextResponse.json({ error: 'Failed to create user', details: createError }, { status: 500 })
+        }
+        
+        user = newUser.user
+        console.log('✅ User created successfully:', { userId: user.id, email: customerEmail })
+        
+        // Wait a bit for triggers to create profile and workspace
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        
+      } catch (createErr) {
+        console.error('❌ Exception creating user:', createErr)
+        return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
+      }
     }
 
     const userId = user.id
-    console.log('✅ Found user:', { userId, email: customerEmail })
+    console.log('✅ Using user:', { userId, email: customerEmail })
+
+    // Ensure user_credits record exists (in case trigger didn't fire)
+    console.log('🔍 Ensuring user_credits record exists for user:', userId)
+    const { data: existingCredits, error: creditsCheckError } = await supabaseAdmin
+      .from('user_credits')
+      .select('user_id')
+      .eq('user_id', userId)
+      .single()
+    
+    if (creditsCheckError || !existingCredits) {
+      console.log('⚠️ No user_credits record found, creating one...')
+      const { error: initError } = await supabaseAdmin
+        .from('user_credits')
+        .insert({
+          user_id: userId,
+          total_credits: 0,
+          plan_type: 'none',
+          created_at: new Date().toISOString()
+        })
+      
+      if (initError) {
+        console.error('❌ Error initializing user_credits:', initError)
+        // Continue anyway - the add_credits function might handle it
+      } else {
+        console.log('✅ user_credits record initialized')
+      }
+    }
 
     // Check if this event was already processed (idempotency check)
     console.log('🔍 Checking if event was already processed:', eventId)
