@@ -11,6 +11,24 @@ interface ProtectedRouteProps {
   requirePaidPlan?: boolean;
 }
 
+// Check if user just purchased (within last 5 minutes)
+const hasRecentPurchase = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const purchaseTime = localStorage.getItem('slaid_just_purchased');
+  if (!purchaseTime) return false;
+  
+  const timeSincePurchase = Date.now() - parseInt(purchaseTime);
+  const fiveMinutes = 5 * 60 * 1000;
+  
+  console.log('🛒 ProtectedRoute: Checking recent purchase', {
+    purchaseTime: new Date(parseInt(purchaseTime)).toISOString(),
+    timeSincePurchase: Math.round(timeSincePurchase / 1000) + 's',
+    isRecent: timeSincePurchase < fiveMinutes
+  });
+  
+  return timeSincePurchase < fiveMinutes;
+};
+
 export default function ProtectedRoute({ 
   children, 
   redirectTo = '/login',
@@ -23,6 +41,13 @@ export default function ProtectedRoute({
 
   useEffect(() => {
     const checkAccess = async () => {
+      // FIRST: Check for recent purchase - bypasses ALL other checks
+      if (hasRecentPurchase()) {
+        console.log('🛒 ProtectedRoute: Recent purchase detected - GRANTING ACCESS');
+        setIsChecking(false);
+        return; // Grant access immediately
+      }
+
       // Wait for auth to load
       if (authLoading) {
         console.log('🔐 ProtectedRoute: Waiting for auth...');
