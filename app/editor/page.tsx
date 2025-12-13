@@ -297,18 +297,25 @@ export default function EditorPage() {
   } = useUserWorkspaces();
   
   // Access control: Check if user has a paid plan
-  // Use a ref to track if we've already done the initial check
-  const hasCheckedPlan = useRef(false);
+  // CRITICAL: Always verify plan on EVERY load - no bypass
   const purchaseCheckAttempts = useRef(0);
+  const isCheckingPlan = useRef(false); // Prevent multiple simultaneous checks
   
   useEffect(() => {
     const checkPaidPlan = async () => {
+      // Prevent multiple simultaneous checks
+      if (isCheckingPlan.current) {
+        console.log('⏳ Plan check already in progress, skipping...');
+        return;
+      }
+
+      isCheckingPlan.current = true;
+
       console.log('🔍 Editor: Access check started', {
         hasUser: !!user,
         userId: user?.id,
         creditsLoading,
         credits: credits,
-        hasCheckedPlan: hasCheckedPlan.current,
         fromPurchase: fromPurchase,
         purchaseCheckAttempts: purchaseCheckAttempts.current
       });
@@ -316,12 +323,14 @@ export default function EditorPage() {
       // Don't redirect if no user yet - wait for auth
       if (!user) {
         console.log('⏳ Editor: No user yet, waiting for auth...');
+        isCheckingPlan.current = false;
         return;
       }
 
       // Wait for credits to finish loading
       if (creditsLoading) {
         console.log('⏳ Editor: Waiting for credits to load...');
+        isCheckingPlan.current = false;
         return;
       }
 
@@ -342,12 +351,14 @@ export default function EditorPage() {
             if (fromPurchase && purchaseCheckAttempts.current < 10) {
               console.log('⏳ No credits record but user from purchase - retrying in 2s...');
               purchaseCheckAttempts.current++;
+              isCheckingPlan.current = false;
               setTimeout(() => {
                 refreshCredits();
               }, 2000);
               return;
             }
             console.log('❌ No credits record found - redirecting to pricing');
+            isCheckingPlan.current = false;
             router.push('/pricing');
             return;
           }
@@ -360,16 +371,18 @@ export default function EditorPage() {
             if (fromPurchase && purchaseCheckAttempts.current < 10) {
               console.log(`⏳ No paid plan yet but user from purchase (attempt ${purchaseCheckAttempts.current + 1}/10) - retrying in 2s...`);
               purchaseCheckAttempts.current++;
+              isCheckingPlan.current = false;
               setTimeout(() => {
                 refreshCredits();
               }, 2000);
               return;
             }
             console.log('💳 No paid plan in database - redirecting to pricing');
+            isCheckingPlan.current = false;
             router.push('/pricing');
           } else {
             console.log('✅ Paid plan found in database - access granted');
-            hasCheckedPlan.current = true;
+            isCheckingPlan.current = false;
             // Clear the purchase flag from URL
             if (fromPurchase) {
               router.replace('/editor');
@@ -377,7 +390,10 @@ export default function EditorPage() {
           }
         } catch (err) {
           console.error('❌ Error checking plan:', err);
-          // Don't redirect on error - let user stay
+          // CRITICAL: Redirect to pricing on error to prevent unauthorized access
+          console.log('🚨 SECURITY: Redirecting to pricing due to verification error');
+          router.push('/pricing');
+          return;
         }
         return;
       }
@@ -398,16 +414,18 @@ export default function EditorPage() {
         if (fromPurchase && purchaseCheckAttempts.current < 10) {
           console.log(`⏳ No paid plan yet but user from purchase (attempt ${purchaseCheckAttempts.current + 1}/10) - retrying in 2s...`);
           purchaseCheckAttempts.current++;
+          isCheckingPlan.current = false;
           setTimeout(() => {
             refreshCredits();
           }, 2000);
           return;
         }
         console.log('💳 No paid plan detected - redirecting to pricing');
+        isCheckingPlan.current = false;
         router.push('/pricing');
       } else {
         console.log('✅ Paid plan detected - access granted');
-        hasCheckedPlan.current = true;
+        isCheckingPlan.current = false;
         // Clear the purchase flag from URL
         if (fromPurchase) {
           router.replace('/editor');
