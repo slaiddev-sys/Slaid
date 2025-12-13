@@ -63,6 +63,15 @@ export async function POST(request: NextRequest) {
   }
 }
 
+// Credits per plan type (monthly)
+const PLAN_CREDITS: Record<string, number> = {
+  'basic': 500,
+  'pro': 1000,
+  'ultra': 2000,
+  'none': 0,
+  'free': 0
+};
+
 async function updatePlan(email: string, plan_type: string) {
   try {
     // Validate plan_type
@@ -74,7 +83,10 @@ async function updatePlan(email: string, plan_type: string) {
       }, { status: 400 })
     }
 
-    console.log('🔧 FORCE PLAN UPDATE:', { email, plan_type })
+    const normalizedPlan = plan_type.toLowerCase();
+    const creditsToAdd = PLAN_CREDITS[normalizedPlan] || 0;
+
+    console.log('🔧 FORCE PLAN UPDATE:', { email, plan_type: normalizedPlan, creditsToAdd })
 
     // Find user by email
     const user = await findUserByEmail(email);
@@ -85,13 +97,25 @@ async function updatePlan(email: string, plan_type: string) {
 
     console.log('✅ User found:', user.id)
 
-    // Update plan_type
+    // Get current credits
+    const { data: currentCredits } = await supabaseAdmin
+      .from('user_credits')
+      .select('total_credits, used_credits')
+      .eq('user_id', user.id)
+      .single();
+    
+    const currentTotal = currentCredits?.total_credits || 0;
+    const usedCredits = currentCredits?.used_credits || 0;
+
+    // Update plan_type AND add credits
     const { data: updateData, error: updateError } = await supabaseAdmin
       .from('user_credits')
       .update({ 
-        plan_type: plan_type.toLowerCase(),
-        subscription_status: plan_type !== 'none' && plan_type !== 'free' ? 'active' : null,
-        last_renewal_date: new Date().toISOString()
+        plan_type: normalizedPlan,
+        subscription_status: normalizedPlan !== 'none' && normalizedPlan !== 'free' ? 'active' : 'inactive',
+        last_renewal_date: new Date().toISOString(),
+        total_credits: currentTotal + creditsToAdd,
+        used_credits: usedCredits // Reset if needed
       })
       .eq('user_id', user.id)
       .select()
@@ -104,6 +128,18 @@ async function updatePlan(email: string, plan_type: string) {
       }, { status: 500 })
     }
 
+    // Also record transaction if credits were added
+    if (creditsToAdd > 0) {
+      await supabaseAdmin
+        .from('credit_transactions')
+        .insert({
+          user_id: user.id,
+          credits_amount: creditsToAdd,
+          transaction_type: 'manual_fix',
+          description: `Manual plan fix: ${normalizedPlan} plan - ${creditsToAdd} credits added`
+        });
+    }
+
     console.log('✅ Plan updated successfully:', updateData)
 
     return NextResponse.json({
@@ -112,7 +148,9 @@ async function updatePlan(email: string, plan_type: string) {
         id: user.id,
         email: user.email
       },
-      updated_to: plan_type.toLowerCase(),
+      updated_to: normalizedPlan,
+      credits_added: creditsToAdd,
+      new_total_credits: currentTotal + creditsToAdd,
       data: updateData
     })
 
