@@ -341,6 +341,18 @@ export default function EditorPage() {
         purchaseCheckAttempts: purchaseCheckAttempts.current
       });
 
+      // FIRST: Check for recent purchase - this bypasses ALL other checks
+      const recentPurchase = hasRecentPurchase();
+      if (recentPurchase) {
+        console.log('🛒 RECENT PURCHASE DETECTED IMMEDIATELY - granting access');
+        isCheckingPlan.current = false;
+        if (fromPurchase) {
+          // Clean up URL but keep access
+          window.history.replaceState({}, '', '/editor');
+        }
+        return; // Grant access, no need to check user or plan
+      }
+
       // Don't redirect if no user yet - wait for auth
       if (!user) {
         console.log('⏳ Editor: No user yet, waiting for auth...');
