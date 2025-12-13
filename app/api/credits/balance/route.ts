@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabase } from '../../../../lib/supabase'
+import { supabaseAdmin } from '../../../../lib/supabase-admin'
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,76 +23,69 @@ export async function GET(request: NextRequest) {
 
     console.log('✅ User authenticated:', user.id, user.email)
 
-    // Get user credit information
-    console.log('🔍 Calling get_user_credits function for user:', user.id)
-    const { data: creditData, error: creditError } = await supabase
-      .rpc('get_user_credits', { p_user_id: user.id })
+    // Get user credit information - USE ADMIN CLIENT to bypass RLS
+    console.log('🔍 Fetching credits from user_credits table for user:', user.id)
+    const { data: creditData, error: creditError } = await supabaseAdmin
+      .from('user_credits')
+      .select('total_credits, used_credits, plan_type, last_renewal_date, subscription_status')
+      .eq('user_id', user.id)
+      .single()
 
-    if (creditError) {
-      console.error('❌ Failed to fetch user credits:', creditError)
-      console.error('❌ Credit error details:', {
-        message: creditError.message,
-        details: creditError.details,
-        hint: creditError.hint,
-        code: creditError.code
-      })
+    // If no credit record exists, create one
+    if (creditError || !creditData) {
+      console.log('🆕 No credit record found, creating for user:', user.id)
       
-      // If database functions don't exist yet, return fallback credits
-      if (creditError.message?.includes('get_user_credits') || creditError.message?.includes('function')) {
-        console.warn('⚠️ Database functions not created yet - user must select a plan')
+      const { data: newCreditData, error: initError } = await supabaseAdmin
+        .from('user_credits')
+        .insert({
+          user_id: user.id,
+          total_credits: 0,
+          used_credits: 0,
+          plan_type: 'none',
+          last_renewal_date: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (initError) {
+        console.error('❌ Failed to initialize user credits:', initError)
         return NextResponse.json({ 
           credits: {
             total_credits: 0,
             used_credits: 0,
             remaining_credits: 0,
-            plan_type: 'none', // Force user to select a plan
+            plan_type: 'none',
             last_renewal_date: new Date().toISOString()
           },
           fallback: true 
         })
       }
-      
-      return NextResponse.json({ error: creditError.message }, { status: 500 })
-    }
 
-    // If no credit record exists, initialize with free plan
-    if (!creditData || creditData.length === 0) {
-      console.log('🆕 No credit record found, initializing for user:', user.id)
-      
-      const { error: initError } = await supabase
-        .rpc('initialize_user_credits', { 
-          p_user_id: user.id
-        })
-
-      if (initError) {
-        console.error('❌ Failed to initialize user credits:', initError)
-        return NextResponse.json({ error: 'Failed to initialize credits' }, { status: 500 })
-      }
-
-      // Fetch the newly created credit data
-      const { data: newCreditData, error: newCreditError } = await supabase
-        .rpc('get_user_credits', { p_user_id: user.id })
-
-      if (newCreditError || !newCreditData || newCreditData.length === 0) {
-        console.error('❌ Failed to fetch newly created credits:', newCreditError)
-        return NextResponse.json({ error: 'Failed to fetch credits after initialization' }, { status: 500 })
-      }
-
+      const remaining = (newCreditData.total_credits || 0) - (newCreditData.used_credits || 0)
       return NextResponse.json({ 
-        credits: newCreditData[0],
+        credits: {
+          ...newCreditData,
+          remaining_credits: remaining
+        },
         initialized: true 
       })
     }
 
+    // Calculate remaining credits
+    const remaining_credits = (creditData.total_credits || 0) - (creditData.used_credits || 0)
+    
     console.log('✅ Returning existing credit data:', {
       user_id: user.id,
-      plan_type: creditData[0]?.plan_type,
-      remaining_credits: creditData[0]?.remaining_credits,
-      total_credits: creditData[0]?.total_credits
+      plan_type: creditData.plan_type,
+      remaining_credits,
+      total_credits: creditData.total_credits
     })
     
     return NextResponse.json({ 
-      credits: creditData[0],
+      credits: {
+        ...creditData,
+        remaining_credits
+      },
       initialized: false 
     })
 

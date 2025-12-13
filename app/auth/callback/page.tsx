@@ -194,66 +194,14 @@ export default function AuthCallback() {
             // Ensure profile and workspace exist (handles both new and existing users)
             await ensureUserProfileAndWorkspace(sessionData.session.user);
             
-            // Check if user has a paid plan - redirect to pricing if not
-            console.log('🔍 Checking user plan status...');
-            
-            try {
-              // Check plan_type from user_credits table (where Polar webhook updates it)
-              const { data: creditsData, error: creditsError } = await supabase
-                .from('user_credits')
-                .select('plan_type, total_credits, subscription_status')
-                .eq('user_id', sessionData.session.user.id)
-                .single();
-              
-              console.log('🔍 Raw database response:', {
-                creditsData,
-                creditsError: creditsError?.message,
-                userId: sessionData.session.user.id,
-                email: sessionData.session.user.email
-              });
-              
-              if (creditsError) {
-                console.error('❌ Error fetching credits from database:', creditsError);
-              }
-              
-              // EXPLICIT check: only basic, pro, ultra are paid plans
-              const planType = creditsData?.plan_type?.toLowerCase()?.trim();
-              const hasPaidPlan = planType && ['basic', 'pro', 'ultra'].includes(planType);
-              
-              console.log('🔍 Plan check result:', {
-                raw_plan_type: creditsData?.plan_type,
-                normalized_plan_type: planType,
-                hasPaidPlan,
-                total_credits: creditsData?.total_credits,
-                subscription_status: creditsData?.subscription_status
-              });
-              
-              setStatus('Authentication successful! Redirecting...');
-              setTimeout(() => {
-                // Check for recent purchase in localStorage
-                const purchaseTime = localStorage.getItem('slaid_just_purchased');
-                const hasRecentPurchase = purchaseTime && (Date.now() - parseInt(purchaseTime)) < 5 * 60 * 1000;
-                
-                if (hasRecentPurchase) {
-                  console.log('🛒 Recent purchase detected - redirecting to editor with temp access');
-                  router.push('/editor?from_purchase=true');
-                } else if (!hasPaidPlan) {
-                  console.log('💳 No paid plan - redirecting to pricing');
-                  router.push('/pricing');
-                } else {
-                  console.log('✅ Paid plan detected - redirecting to editor');
-                  router.push('/editor');
-                }
-              }, 1000);
-            } catch (error) {
-              console.error('❌ Error checking plan:', error);
-              // On error, redirect to EDITOR to avoid blocking paid users
-              // The editor will do its own verification and handle correctly
-              console.log('⚠️ Error checking plan - redirecting to editor (will verify there)');
-              setTimeout(() => {
-                router.push('/editor');
-              }, 1000);
-            }
+            // SIMPLIFIED: Always redirect to editor
+            // The editor and ProtectedRoute will handle plan verification
+            // This avoids RLS issues with reading user_credits from callback
+            console.log('✅ Auth successful - redirecting to editor (plan check happens there)');
+            setStatus('Authentication successful! Redirecting...');
+            setTimeout(() => {
+              router.push('/editor');
+            }, 1000);
             return;
           }
           
@@ -276,66 +224,13 @@ export default function AuthCallback() {
           // Ensure profile and workspace exist (handles both new and existing users)
           await ensureUserProfileAndWorkspace(refreshData.session.user);
           
-          // Check if user has a paid plan - redirect to pricing if not
-          console.log('🔍 Checking user plan status (refresh)...');
-          
-          try {
-            // Check plan_type from user_credits table (where Polar webhook updates it)
-            const { data: creditsData, error: creditsError } = await supabase
-              .from('user_credits')
-              .select('plan_type, total_credits, subscription_status')
-              .eq('user_id', refreshData.session.user.id)
-              .single();
-            
-            console.log('🔍 Raw database response (refresh):', {
-              creditsData,
-              creditsError: creditsError?.message,
-              userId: refreshData.session.user.id,
-              email: refreshData.session.user.email
-            });
-            
-            if (creditsError) {
-              console.error('❌ Error fetching credits from database (refresh):', creditsError);
-            }
-            
-            // EXPLICIT check: only basic, pro, ultra are paid plans
-            const planType = creditsData?.plan_type?.toLowerCase()?.trim();
-            const hasPaidPlan = planType && ['basic', 'pro', 'ultra'].includes(planType);
-            
-            console.log('🔍 Plan check result (refresh):', {
-              raw_plan_type: creditsData?.plan_type,
-              normalized_plan_type: planType,
-              hasPaidPlan,
-              total_credits: creditsData?.total_credits,
-              subscription_status: creditsData?.subscription_status
-            });
-            
-            setStatus('Authentication successful! Redirecting...');
-            setTimeout(() => {
-              // Check for recent purchase in localStorage
-              const purchaseTime = localStorage.getItem('slaid_just_purchased');
-              const hasRecentPurchase = purchaseTime && (Date.now() - parseInt(purchaseTime)) < 5 * 60 * 1000;
-              
-              if (hasRecentPurchase) {
-                console.log('🛒 Recent purchase detected - redirecting to editor with temp access');
-                router.push('/editor?from_purchase=true');
-              } else if (!hasPaidPlan) {
-                console.log('💳 No paid plan - redirecting to pricing');
-                router.push('/pricing');
-              } else {
-                console.log('✅ Paid plan detected - redirecting to editor');
-                router.push('/editor');
-              }
-            }, 1000);
-          } catch (error) {
-            console.error('❌ Error checking plan (refresh):', error);
-            // On error, redirect to EDITOR to avoid blocking paid users
-            // The editor will do its own verification and handle correctly
-            console.log('⚠️ Error checking plan - redirecting to editor (will verify there)');
-            setTimeout(() => {
-              router.push('/editor');
-            }, 1000);
-          }
+          // SIMPLIFIED: Always redirect to editor
+          // The editor and ProtectedRoute will handle plan verification
+          console.log('✅ Auth successful (refresh) - redirecting to editor');
+          setStatus('Authentication successful! Redirecting...');
+          setTimeout(() => {
+            router.push('/editor');
+          }, 1000);
           return;
         }
 
