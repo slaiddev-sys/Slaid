@@ -1,6 +1,30 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin, isAdminConfigured } from '../../../../lib/supabase-admin'
 
+// Helper to find user by email (paginates through all users)
+async function findUserByEmail(email: string) {
+  let page = 1;
+  const perPage = 1000;
+  
+  while (true) {
+    const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers({
+      page,
+      perPage
+    });
+    
+    if (error) throw error;
+    if (!users || users.length === 0) break;
+    
+    const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+    if (user) return user;
+    
+    if (users.length < perPage) break;
+    page++;
+  }
+  
+  return null;
+}
+
 // Product mapping for credit packs and subscription plans
 const PRODUCT_MAPPING: Record<string, { credits: number; description: string; type: 'credit_pack' | 'basic_plan' | 'pro_plan' | 'ultra_plan'; planType: string }> = {
   // Credit Pack Product IDs
@@ -53,6 +77,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
+    // Extract event data FIRST - before using it!
+    const eventData = body.data
+    
     // Handle subscription cancellation
     if (eventType === 'subscription.canceled') {
       const subscriptionId = eventData.id
@@ -65,14 +92,8 @@ export async function POST(request: NextRequest) {
 
       console.log('🚫 Processing subscription cancellation:', { subscriptionId, customerEmail })
 
-      // Find user by email
-      const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers()
-      if (userError) {
-        console.error('❌ Error fetching users:', userError)
-        return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
-      }
-      
-      const user = users?.find(u => u.email === customerEmail)
+      // Find user by email using paginated search
+      const user = await findUserByEmail(customerEmail)
       if (!user) {
         console.error('❌ User not found for email:', customerEmail)
         return NextResponse.json({ error: 'User not found' }, { status: 404 })
@@ -101,8 +122,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Extract data based on event type
-    const eventData = body.data
+    // Continue with other event types
     let productId: string
     let customerEmail: string
 
@@ -143,16 +163,9 @@ export async function POST(request: NextRequest) {
       type: product.type
     })
 
-    // Find user by email using admin client
+    // Find user by email using admin client (paginated search)
     console.log('🔍 Looking for user with email:', customerEmail)
-    const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers()
-    
-    if (userError) {
-      console.error('❌ Error fetching users:', userError)
-      return NextResponse.json({ error: 'Failed to fetch users' }, { status: 500 })
-    }
-    
-    let user = users?.find(u => u.email === customerEmail)
+    let user = await findUserByEmail(customerEmail)
     
     // If user doesn't exist, create them automatically
     if (!user) {
