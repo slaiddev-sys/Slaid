@@ -20,11 +20,14 @@ export default function PurchaseSuccessPage() {
       return;
     }
 
-    let timeoutId: NodeJS.Timeout;
+    let currentAttempt = 0;
+    let timeoutId: NodeJS.Timeout | undefined;
     
     const checkPlanUpdated = async () => {
       try {
-        console.log(`🔍 Attempt ${attempts + 1}: Checking if plan was updated...`);
+        currentAttempt++;
+        console.log(`🔍 Attempt ${currentAttempt}/20: Checking if plan was updated...`);
+        setAttempts(currentAttempt);
         setStatus('loading');
         
         // Directly check the database for plan_type
@@ -42,7 +45,8 @@ export default function PurchaseSuccessPage() {
         console.log('📊 Current plan status:', {
           plan_type: creditsData?.plan_type,
           total_credits: creditsData?.total_credits,
-          hasPaidPlan: creditsData?.plan_type && ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase())
+          hasPaidPlan: creditsData?.plan_type && ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase()),
+          attempt: currentAttempt
         });
 
         const hasPaidPlan = creditsData?.plan_type && 
@@ -58,22 +62,25 @@ export default function PurchaseSuccessPage() {
           
           // Redirect to editor after 1.5 seconds with purchase flag
           setTimeout(() => {
+            console.log('🚀 Redirecting to editor with from_purchase flag');
             router.push('/editor?from_purchase=true');
           }, 1500);
+          return; // Stop checking
         } else {
           // Plan not updated yet, retry
-          console.log(`⏳ Plan not updated yet (current: ${creditsData?.plan_type}). Retrying...`);
+          console.log(`⏳ Plan not updated yet (current: ${creditsData?.plan_type}). Retrying in 2s...`);
           
-          if (attempts < 15) {
-            // Retry up to 15 times (30 seconds total)
-            setAttempts(prev => prev + 1);
+          if (currentAttempt < 20) {
+            // Retry up to 20 times (40 seconds total)
             timeoutId = setTimeout(checkPlanUpdated, 2000);
           } else {
             console.error('❌ Max attempts reached, plan still not updated');
+            console.error('❌ This means webhook did not process. Current plan:', creditsData?.plan_type);
             setStatus('error');
-            // Still redirect to editor - let editor handle it
+            // Redirect to editor with flag - editor will wait more
             setTimeout(() => {
-              router.push('/editor');
+              console.log('⚠️ Redirecting to editor despite no plan update');
+              router.push('/editor?from_purchase=true');
             }, 3000);
           }
         }
@@ -82,26 +89,26 @@ export default function PurchaseSuccessPage() {
         console.error('❌ Error checking plan:', error);
         
         // Retry if we haven't exceeded attempts
-        if (attempts < 15) {
-          setAttempts(prev => prev + 1);
+        if (currentAttempt < 20) {
           timeoutId = setTimeout(checkPlanUpdated, 2000);
         } else {
           setStatus('error');
-          // Still redirect to editor after error
+          // Redirect to editor with flag
           setTimeout(() => {
-            router.push('/editor');
+            console.log('⚠️ Redirecting to editor after error');
+            router.push('/editor?from_purchase=true');
           }, 3000);
         }
       }
     };
 
-    // Start checking after 1 second delay
-    timeoutId = setTimeout(checkPlanUpdated, 1000);
+    // Start checking after 2 second delay (give webhook time to process)
+    timeoutId = setTimeout(checkPlanUpdated, 2000);
 
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [attempts, user?.id]);
+  }, [user?.id, router, refreshCredits]); // Remove 'attempts' from dependencies!
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">

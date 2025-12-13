@@ -3044,7 +3044,8 @@ export default function EditorPage() {
         if (response.ok) {
           const checkout = await response.json();
           console.log('✅ Credit checkout created, redirecting to:', checkout.url);
-          window.open(checkout.url, '_blank');
+          // Redirect in the SAME tab so user returns to purchase-success after payment
+          window.location.href = checkout.url;
         } else {
           console.error('Failed to create checkout session:', response.statusText);
           alert('Failed to start checkout. Please try again.');
