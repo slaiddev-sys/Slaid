@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user has an active paid subscription
-    if (userCredits.plan_type === 'free') {
+    if (userCredits.plan_type === 'free' || userCredits.plan_type === 'none') {
       return NextResponse.json({ error: 'No active subscription to cancel' }, { status: 400 });
     }
 
@@ -55,17 +55,14 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Payment system not configured' }, { status: 500 });
         }
 
-        // Call Polar API to cancel subscription
-        // Using PATCH method to update subscription to cancel at period end
+        // Call Polar API to cancel subscription IMMEDIATELY
+        // Using DELETE method for immediate cancellation
         const polarResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
-          method: 'PATCH',
+          method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${polarAccessToken}`,
             'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            cancel_at_period_end: true
-          })
+          }
         });
 
         if (!polarResponse.ok) {
@@ -75,11 +72,24 @@ export async function POST(request: NextRequest) {
             statusText: polarResponse.statusText,
             response: errorText
           });
-          throw new Error(`Polar API returned ${polarResponse.status}: ${errorText}`);
+          // If DELETE doesn't work, try PATCH with cancel_at_period_end
+          const patchResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${polarAccessToken}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              cancel_at_period_end: true
+            })
+          });
+          
+          if (patchResponse.ok) {
+            console.log('✅ Subscription marked to cancel at period end in Polar');
+          }
+        } else {
+          console.log('✅ Subscription cancelled immediately in Polar');
         }
-
-        const polarData = await polarResponse.json();
-        console.log('✅ Subscription cancelled in Polar:', polarData);
       } catch (polarError: any) {
         console.error('❌ Error cancelling with Polar:', polarError);
         // Continue to update database even if Polar call fails
@@ -87,11 +97,17 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Update the database to mark the subscription as cancelled
+    // Store old plan for logging
+    const oldPlanType = userCredits.plan_type;
+
+    // Update the database - REVOKE ACCESS IMMEDIATELY
+    // Change plan_type to 'none' so user loses editor access
     const { error: updateError } = await supabaseAdmin
       .from('user_credits')
       .update({
-        subscription_status: 'cancelled'
+        plan_type: 'none',
+        subscription_status: 'cancelled',
+        subscription_id: null
       })
       .eq('user_id', user.id);
 
@@ -107,15 +123,16 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         credits_changed: 0,
         credits_amount: 0,
-        transaction_type: 'refund',
-        description: `Subscription cancelled - ${userCredits.plan_type} plan`
+        transaction_type: 'cancellation',
+        description: `Subscription cancelled - ${oldPlanType} plan revoked`
       });
 
-    console.log('✅ Subscription cancelled successfully for user:', user.id);
+    console.log('✅ Subscription cancelled and access revoked for user:', user.id);
 
     return NextResponse.json({
       success: true,
-      message: 'Subscription cancelled successfully. You will retain access until the end of your billing period.'
+      message: 'Subscription cancelled successfully. Your access has been revoked.',
+      accessRevoked: true
     });
 
   } catch (error: any) {

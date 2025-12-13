@@ -3541,7 +3541,7 @@ export default function EditorPage() {
       if (!user || isCancelling) return;
       
       const confirmed = window.confirm(
-        'Are you sure you want to cancel your subscription? You will lose access to premium features at the end of your billing period.'
+        '¿Estás seguro de que quieres cancelar tu suscripción? Perderás el acceso al editor inmediatamente.'
       );
       
       if (!confirmed) return;
@@ -3564,13 +3564,17 @@ export default function EditorPage() {
           throw new Error('Failed to cancel subscription');
         }
 
-        alert('Your subscription has been cancelled successfully. You will retain access until the end of your billing period.');
+        alert('Tu suscripción ha sido cancelada. Serás redirigido a la página de precios.');
         
-        // Refresh credits to update plan info
-        fetchCredits();
+        // Clear localStorage purchase flags
+        localStorage.removeItem('slaid_just_purchased');
+        localStorage.removeItem('slaid_purchase_pending');
+        
+        // Redirect to pricing page since they no longer have access
+        router.push('/pricing');
       } catch (error) {
         console.error('❌ Error cancelling subscription:', error);
-        alert('Failed to cancel subscription. Please contact support.');
+        alert('Error al cancelar la suscripción. Por favor contacta a soporte.');
       } finally {
         setIsCancelling(false);
       }
