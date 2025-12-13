@@ -12,25 +12,47 @@ export async function GET(request: NextRequest) {
 
     console.log('🔍 DEBUG: Checking plan for email:', email)
 
-    // Find user by email
-    const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers()
+    // Find user by email - paginate through all users
+    let user = null;
+    let page = 1;
+    let totalSearched = 0;
+    const perPage = 1000;
     
-    if (userError) {
-      console.error('❌ Error fetching users:', userError)
-      return NextResponse.json({ error: 'Failed to fetch users', details: userError }, { status: 500 })
+    while (!user) {
+      const { data: { users }, error: userError } = await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage
+      });
+      
+      if (userError) {
+        console.error('❌ Error fetching users:', userError)
+        return NextResponse.json({ error: 'Failed to fetch users', details: userError }, { status: 500 })
+      }
+      
+      if (!users || users.length === 0) {
+        break; // No more users
+      }
+      
+      totalSearched += users.length;
+      user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
+      
+      if (users.length < perPage) {
+        break; // Last page
+      }
+      
+      page++;
     }
-    
-    const user = users?.find(u => u.email === email)
     
     if (!user) {
       return NextResponse.json({ 
         error: 'User not found',
         email,
-        searched_users: users?.length || 0
+        searched_users: totalSearched,
+        note: 'User does not exist in Supabase Auth. They may need to register first.'
       }, { status: 404 })
     }
 
-    console.log('✅ User found:', user.id)
+    console.log('✅ User found:', user.id, 'after searching', totalSearched, 'users')
 
     // Get user credits info
     const { data: creditsData, error: creditsError } = await supabaseAdmin
