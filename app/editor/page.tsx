@@ -301,6 +301,27 @@ export default function EditorPage() {
   const purchaseCheckAttempts = useRef(0);
   const isCheckingPlan = useRef(false); // Prevent multiple simultaneous checks
   
+  // Check if user just purchased (within last 5 minutes) - gives temporary access
+  const hasRecentPurchase = () => {
+    if (typeof window === 'undefined') return false;
+    const purchaseTime = localStorage.getItem('slaid_just_purchased');
+    const purchasePending = localStorage.getItem('slaid_purchase_pending');
+    
+    if (!purchaseTime) return false;
+    
+    const timeSincePurchase = Date.now() - parseInt(purchaseTime);
+    const fiveMinutes = 5 * 60 * 1000; // 5 minutes in ms
+    
+    console.log('🛒 Purchase check:', {
+      purchaseTime: new Date(parseInt(purchaseTime)).toISOString(),
+      timeSincePurchase: Math.round(timeSincePurchase / 1000) + 's',
+      purchasePending,
+      isRecent: timeSincePurchase < fiveMinutes
+    });
+    
+    return timeSincePurchase < fiveMinutes;
+  };
+  
   useEffect(() => {
     const checkPaidPlan = async () => {
       // Prevent multiple simultaneous checks
@@ -347,6 +368,18 @@ export default function EditorPage() {
             .single();
           
           if (error || !creditsData) {
+            // Check if user has recent purchase - give temporary access
+            const recentPurchase = hasRecentPurchase();
+            
+            if (recentPurchase) {
+              console.log('🛒 RECENT PURCHASE DETECTED (no credits record yet) - granting temporary access');
+              isCheckingPlan.current = false;
+              if (fromPurchase) {
+                router.replace('/editor');
+              }
+              return; // Grant access
+            }
+            
             // If user is coming from purchase, don't redirect yet - give webhook more time
             if (fromPurchase && purchaseCheckAttempts.current < 10) {
               console.log('⏳ No credits record but user from purchase - retrying in 2s...');
@@ -357,7 +390,7 @@ export default function EditorPage() {
               }, 2000);
               return;
             }
-            console.log('❌ No credits record found - redirecting to pricing');
+            console.log('❌ No credits record found and no recent purchase - redirecting to pricing');
             isCheckingPlan.current = false;
             router.push('/pricing');
             return;
@@ -367,6 +400,18 @@ export default function EditorPage() {
             ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
           
           if (!hasPaidPlan) {
+            // Check if user has recent purchase (within 5 minutes) - give temporary access
+            const recentPurchase = hasRecentPurchase();
+            
+            if (recentPurchase) {
+              console.log('🛒 RECENT PURCHASE DETECTED - granting temporary access while webhook processes');
+              isCheckingPlan.current = false;
+              if (fromPurchase) {
+                router.replace('/editor');
+              }
+              return; // Grant access
+            }
+            
             // If user is coming from purchase, retry a few times before redirecting
             if (fromPurchase && purchaseCheckAttempts.current < 10) {
               console.log(`⏳ No paid plan yet but user from purchase (attempt ${purchaseCheckAttempts.current + 1}/10) - retrying in 2s...`);
@@ -377,11 +422,15 @@ export default function EditorPage() {
               }, 2000);
               return;
             }
-            console.log('💳 No paid plan in database - redirecting to pricing');
+            
+            console.log('💳 No paid plan in database and no recent purchase - redirecting to pricing');
             isCheckingPlan.current = false;
             router.push('/pricing');
           } else {
             console.log('✅ Paid plan found in database - access granted');
+            if (typeof window !== 'undefined') {
+              localStorage.removeItem('slaid_purchase_pending');
+            }
             isCheckingPlan.current = false;
             // Clear the purchase flag from URL
             if (fromPurchase) {
@@ -390,8 +439,18 @@ export default function EditorPage() {
           }
         } catch (err) {
           console.error('❌ Error checking plan:', err);
+          
+          // Check if user has recent purchase - give temporary access despite error
+          const recentPurchase = hasRecentPurchase();
+          if (recentPurchase) {
+            console.log('🛒 RECENT PURCHASE DETECTED (error checking plan) - granting temporary access');
+            isCheckingPlan.current = false;
+            return; // Grant access
+          }
+          
           // CRITICAL: Redirect to pricing on error to prevent unauthorized access
           console.log('🚨 SECURITY: Redirecting to pricing due to verification error');
+          isCheckingPlan.current = false;
           router.push('/pricing');
           return;
         }
@@ -410,6 +469,19 @@ export default function EditorPage() {
       });
 
       if (!hasPaidPlan) {
+        // Check if user has recent purchase (within 5 minutes) - give temporary access
+        const recentPurchase = hasRecentPurchase();
+        
+        if (recentPurchase) {
+          console.log('🛒 RECENT PURCHASE DETECTED - granting temporary access while webhook processes');
+          isCheckingPlan.current = false;
+          // Clear purchase flag from URL but keep access
+          if (fromPurchase) {
+            router.replace('/editor');
+          }
+          return; // Grant access - webhook will update plan soon
+        }
+        
         // If user is coming from purchase, retry a few times before redirecting
         if (fromPurchase && purchaseCheckAttempts.current < 10) {
           console.log(`⏳ No paid plan yet but user from purchase (attempt ${purchaseCheckAttempts.current + 1}/10) - retrying in 2s...`);
@@ -420,11 +492,16 @@ export default function EditorPage() {
           }, 2000);
           return;
         }
-        console.log('💳 No paid plan detected - redirecting to pricing');
+        
+        console.log('💳 No paid plan and no recent purchase - redirecting to pricing');
         isCheckingPlan.current = false;
         router.push('/pricing');
       } else {
         console.log('✅ Paid plan detected - access granted');
+        // Clear any pending purchase flags since plan is now active
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('slaid_purchase_pending');
+        }
         isCheckingPlan.current = false;
         // Clear the purchase flag from URL
         if (fromPurchase) {

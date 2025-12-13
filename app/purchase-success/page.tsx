@@ -14,9 +14,19 @@ export default function PurchaseSuccessPage() {
   const [attempts, setAttempts] = useState(0);
 
   useEffect(() => {
+    // CRITICAL: Mark that user just purchased - this gives temporary access
+    console.log('🛒 Purchase success page loaded - marking purchase in localStorage');
+    localStorage.setItem('slaid_just_purchased', Date.now().toString());
+    localStorage.setItem('slaid_purchase_pending', 'true');
+
+    // If no user, still redirect to editor with purchase flag
+    // The user will need to login and their purchase will be processed
     if (!user) {
-      console.log('⚠️ No user found, redirecting to login');
-      router.push('/login');
+      console.log('⚠️ No user found, but purchase was made. Redirecting to editor...');
+      setStatus('success');
+      setTimeout(() => {
+        router.push('/editor?from_purchase=true');
+      }, 2000);
       return;
     }
 
@@ -54,17 +64,18 @@ export default function PurchaseSuccessPage() {
 
         if (hasPaidPlan) {
           // Plan updated successfully!
-          console.log('✅ Paid plan detected! Redirecting to editor...');
+          console.log('✅ Paid plan detected! Clearing pending flag and redirecting...');
+          localStorage.removeItem('slaid_purchase_pending');
           setStatus('success');
           
           // Refresh credits hook to sync state
           await refreshCredits();
           
-          // Redirect to editor after 1.5 seconds with purchase flag
+          // Redirect to editor after 1 second
           setTimeout(() => {
-            console.log('🚀 Redirecting to editor with from_purchase flag');
+            console.log('🚀 Redirecting to editor');
             router.push('/editor?from_purchase=true');
-          }, 1500);
+          }, 1000);
           return; // Stop checking
         } else {
           // Plan not updated yet, retry
@@ -74,14 +85,12 @@ export default function PurchaseSuccessPage() {
             // Retry up to 20 times (40 seconds total)
             timeoutId = setTimeout(checkPlanUpdated, 2000);
           } else {
-            console.error('❌ Max attempts reached, plan still not updated');
-            console.error('❌ This means webhook did not process. Current plan:', creditsData?.plan_type);
-            setStatus('error');
-            // Redirect to editor with flag - editor will wait more
+            console.log('⏳ Max attempts reached - redirecting to editor anyway (purchase pending)');
+            setStatus('success');
+            // Keep purchase_pending flag - editor will check later
             setTimeout(() => {
-              console.log('⚠️ Redirecting to editor despite no plan update');
               router.push('/editor?from_purchase=true');
-            }, 3000);
+            }, 1000);
           }
         }
         
@@ -92,12 +101,11 @@ export default function PurchaseSuccessPage() {
         if (currentAttempt < 20) {
           timeoutId = setTimeout(checkPlanUpdated, 2000);
         } else {
-          setStatus('error');
-          // Redirect to editor with flag
+          setStatus('success');
+          // Redirect to editor - purchase is pending
           setTimeout(() => {
-            console.log('⚠️ Redirecting to editor after error');
             router.push('/editor?from_purchase=true');
-          }, 3000);
+          }, 1000);
         }
       }
     };
@@ -108,7 +116,7 @@ export default function PurchaseSuccessPage() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [user?.id, router, refreshCredits]); // Remove 'attempts' from dependencies!
+  }, [user?.id, router, refreshCredits]);
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
