@@ -43,58 +43,103 @@ export async function POST(request: NextRequest) {
       subscription_status: userCredits.subscription_status
     });
 
-    // Cancel subscription in Polar if we have a subscription_id
-    if (userCredits.subscription_id) {
+    // Cancel subscription in Polar
+    const polarAccessToken = process.env.POLAR_SH_ACCESS_TOKEN;
+    
+    if (!polarAccessToken) {
+      console.error('❌ Polar access token not configured');
+      return NextResponse.json({ error: 'Payment system not configured' }, { status: 500 });
+    }
+
+    let subscriptionIdToCancel = userCredits.subscription_id;
+    
+    // If no subscription_id stored, try to find subscription by customer email
+    if (!subscriptionIdToCancel) {
+      console.log('🔍 No subscription_id stored, searching Polar by email:', user.email);
+      
       try {
-        console.log('🔄 Cancelling subscription in Polar:', userCredits.subscription_id);
+        // First, find the customer by email
+        const customersResponse = await fetch(`https://api.polar.sh/v1/customers?email=${encodeURIComponent(user.email || '')}`, {
+          headers: {
+            'Authorization': `Bearer ${polarAccessToken}`,
+          }
+        });
         
-        const polarAccessToken = process.env.POLAR_SH_ACCESS_TOKEN;
+        if (customersResponse.ok) {
+          const customersData = await customersResponse.json();
+          console.log('🔍 Customers found:', customersData);
+          
+          if (customersData.items && customersData.items.length > 0) {
+            const customerId = customersData.items[0].id;
+            
+            // Now find active subscriptions for this customer
+            const subsResponse = await fetch(`https://api.polar.sh/v1/subscriptions?customer_id=${customerId}&active=true`, {
+              headers: {
+                'Authorization': `Bearer ${polarAccessToken}`,
+              }
+            });
+            
+            if (subsResponse.ok) {
+              const subsData = await subsResponse.json();
+              console.log('🔍 Subscriptions found:', subsData);
+              
+              if (subsData.items && subsData.items.length > 0) {
+                subscriptionIdToCancel = subsData.items[0].id;
+                console.log('✅ Found subscription ID:', subscriptionIdToCancel);
+              }
+            }
+          }
+        }
+      } catch (searchError) {
+        console.error('❌ Error searching for subscription:', searchError);
+      }
+    }
+
+    // Cancel the subscription in Polar
+    if (subscriptionIdToCancel) {
+      try {
+        console.log('🔄 Cancelling subscription in Polar:', subscriptionIdToCancel);
         
-        if (polarAccessToken) {
-          // Call Polar API to cancel subscription IMMEDIATELY
-          // Using DELETE method for immediate cancellation
-          const polarResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
-            method: 'DELETE',
+        // Try DELETE for immediate cancellation
+        const polarResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${subscriptionIdToCancel}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${polarAccessToken}`,
+            'Content-Type': 'application/json',
+          }
+        });
+
+        if (!polarResponse.ok) {
+          const errorText = await polarResponse.text();
+          console.log('⚠️ DELETE failed, trying PATCH:', errorText);
+          
+          // If DELETE doesn't work, try PATCH with cancel_at_period_end
+          const patchResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${subscriptionIdToCancel}`, {
+            method: 'PATCH',
             headers: {
               'Authorization': `Bearer ${polarAccessToken}`,
               'Content-Type': 'application/json',
-            }
+            },
+            body: JSON.stringify({
+              cancel_at_period_end: true
+            })
           });
-
-          if (!polarResponse.ok) {
-            const errorText = await polarResponse.text();
-            console.error('❌ Polar API error:', {
-              status: polarResponse.status,
-              statusText: polarResponse.statusText,
-              response: errorText
-            });
-            // If DELETE doesn't work, try PATCH with cancel_at_period_end
-            const patchResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
-              method: 'PATCH',
-              headers: {
-                'Authorization': `Bearer ${polarAccessToken}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                cancel_at_period_end: true
-              })
-            });
-            
-            if (patchResponse.ok) {
-              console.log('✅ Subscription marked to cancel at period end in Polar');
-            }
+          
+          if (patchResponse.ok) {
+            console.log('✅ Subscription marked to cancel at period end in Polar');
           } else {
-            console.log('✅ Subscription cancelled immediately in Polar');
+            const patchError = await patchResponse.text();
+            console.error('❌ PATCH also failed:', patchError);
           }
         } else {
-          console.log('⚠️ No Polar access token - skipping Polar cancellation');
+          console.log('✅ Subscription cancelled immediately in Polar');
         }
       } catch (polarError: any) {
         console.error('❌ Error cancelling with Polar:', polarError);
         // Continue to update database even if Polar call fails
       }
     } else {
-      console.log('⚠️ No subscription_id - skipping Polar cancellation (manual plan assignment)');
+      console.log('⚠️ No subscription found in Polar for this user');
     }
 
     // Store old plan for logging
