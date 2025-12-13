@@ -216,8 +216,14 @@ export default function AuthCallback() {
               
               setStatus('Authentication successful! Redirecting...');
               setTimeout(() => {
-                // Redirect users WITHOUT paid plan to pricing page
-                if (!hasPaidPlan) {
+                // Check for recent purchase in localStorage
+                const purchaseTime = localStorage.getItem('slaid_just_purchased');
+                const hasRecentPurchase = purchaseTime && (Date.now() - parseInt(purchaseTime)) < 5 * 60 * 1000;
+                
+                if (hasRecentPurchase) {
+                  console.log('🛒 Recent purchase detected - redirecting to editor with temp access');
+                  router.push('/editor?from_purchase=true');
+                } else if (!hasPaidPlan) {
                   console.log('💳 No paid plan - redirecting to pricing');
                   router.push('/pricing');
                 } else {
@@ -278,8 +284,14 @@ export default function AuthCallback() {
             
             setStatus('Authentication successful! Redirecting...');
             setTimeout(() => {
-              // Redirect users WITHOUT paid plan to pricing page
-              if (!hasPaidPlan) {
+              // Check for recent purchase in localStorage
+              const purchaseTime = localStorage.getItem('slaid_just_purchased');
+              const hasRecentPurchase = purchaseTime && (Date.now() - parseInt(purchaseTime)) < 5 * 60 * 1000;
+              
+              if (hasRecentPurchase) {
+                console.log('🛒 Recent purchase detected - redirecting to editor with temp access');
+                router.push('/editor?from_purchase=true');
+              } else if (!hasPaidPlan) {
                 console.log('💳 No paid plan - redirecting to pricing');
                 router.push('/pricing');
               } else {

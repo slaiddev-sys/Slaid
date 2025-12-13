@@ -9,26 +9,75 @@ import { supabase } from "../../lib/supabase";
 export default function PurchaseSuccessPage() {
   const router = useRouter();
   const { refreshCredits } = useCredits();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [attempts, setAttempts] = useState(0);
+  const [sessionChecked, setSessionChecked] = useState(false);
+
+  // First effect: Try to restore session when returning from Polar
+  useEffect(() => {
+    const restoreSession = async () => {
+      console.log('🔐 Attempting to restore session after Polar checkout...');
+      
+      try {
+        // Try to get existing session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (session) {
+          console.log('✅ Session found:', session.user.email);
+        } else {
+          console.log('⚠️ No session found, trying to refresh...');
+          // Try to refresh the session
+          const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
+          
+          if (refreshData.session) {
+            console.log('✅ Session refreshed:', refreshData.session.user.email);
+          } else {
+            console.log('❌ Could not refresh session:', refreshError?.message);
+          }
+        }
+      } catch (err) {
+        console.error('❌ Error restoring session:', err);
+      }
+      
+      setSessionChecked(true);
+    };
+    
+    restoreSession();
+  }, []);
 
   useEffect(() => {
+    // Wait for session check to complete
+    if (!sessionChecked) {
+      console.log('⏳ Waiting for session check...');
+      return;
+    }
+
     // CRITICAL: Mark that user just purchased - this gives temporary access
     console.log('🛒 Purchase success page loaded - marking purchase in localStorage');
     localStorage.setItem('slaid_just_purchased', Date.now().toString());
     localStorage.setItem('slaid_purchase_pending', 'true');
 
-    // If no user, still redirect to editor with purchase flag
-    // The user will need to login and their purchase will be processed
+    // Wait for auth to finish loading
+    if (authLoading) {
+      console.log('⏳ Auth still loading...');
+      return;
+    }
+
+    // If no user after everything, redirect to login with a flag
+    // After login, they'll be redirected to editor with temp access
     if (!user) {
-      console.log('⚠️ No user found, but purchase was made. Redirecting to editor...');
+      console.log('⚠️ No user found after session restore. User needs to login.');
+      console.log('🛒 Purchase flag saved - user will get access after login');
       setStatus('success');
       setTimeout(() => {
-        router.push('/editor?from_purchase=true');
+        // Redirect to login - after login, the purchase flag in localStorage will grant access
+        router.push('/login?from_purchase=true');
       }, 2000);
       return;
     }
+    
+    console.log('✅ User found:', user.email);
 
     let currentAttempt = 0;
     let timeoutId: NodeJS.Timeout | undefined;
@@ -116,7 +165,7 @@ export default function PurchaseSuccessPage() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [user?.id, router, refreshCredits]);
+  }, [user?.id, router, refreshCredits, sessionChecked, authLoading]);
 
   return (
     <div className="min-h-screen bg-white flex items-center justify-center px-4">
