@@ -50,51 +50,51 @@ export async function POST(request: NextRequest) {
         
         const polarAccessToken = process.env.POLAR_SH_ACCESS_TOKEN;
         
-        if (!polarAccessToken) {
-          console.error('❌ Polar access token not configured');
-          return NextResponse.json({ error: 'Payment system not configured' }, { status: 500 });
-        }
-
-        // Call Polar API to cancel subscription IMMEDIATELY
-        // Using DELETE method for immediate cancellation
-        const polarResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${polarAccessToken}`,
-            'Content-Type': 'application/json',
-          }
-        });
-
-        if (!polarResponse.ok) {
-          const errorText = await polarResponse.text();
-          console.error('❌ Polar API error:', {
-            status: polarResponse.status,
-            statusText: polarResponse.statusText,
-            response: errorText
-          });
-          // If DELETE doesn't work, try PATCH with cancel_at_period_end
-          const patchResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
-            method: 'PATCH',
+        if (polarAccessToken) {
+          // Call Polar API to cancel subscription IMMEDIATELY
+          // Using DELETE method for immediate cancellation
+          const polarResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
+            method: 'DELETE',
             headers: {
               'Authorization': `Bearer ${polarAccessToken}`,
               'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              cancel_at_period_end: true
-            })
+            }
           });
-          
-          if (patchResponse.ok) {
-            console.log('✅ Subscription marked to cancel at period end in Polar');
+
+          if (!polarResponse.ok) {
+            const errorText = await polarResponse.text();
+            console.error('❌ Polar API error:', {
+              status: polarResponse.status,
+              statusText: polarResponse.statusText,
+              response: errorText
+            });
+            // If DELETE doesn't work, try PATCH with cancel_at_period_end
+            const patchResponse = await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
+              method: 'PATCH',
+              headers: {
+                'Authorization': `Bearer ${polarAccessToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                cancel_at_period_end: true
+              })
+            });
+            
+            if (patchResponse.ok) {
+              console.log('✅ Subscription marked to cancel at period end in Polar');
+            }
+          } else {
+            console.log('✅ Subscription cancelled immediately in Polar');
           }
         } else {
-          console.log('✅ Subscription cancelled immediately in Polar');
+          console.log('⚠️ No Polar access token - skipping Polar cancellation');
         }
       } catch (polarError: any) {
         console.error('❌ Error cancelling with Polar:', polarError);
         // Continue to update database even if Polar call fails
-        // This ensures the user's intent to cancel is recorded
       }
+    } else {
+      console.log('⚠️ No subscription_id - skipping Polar cancellation (manual plan assignment)');
     }
 
     // Store old plan for logging
@@ -116,16 +116,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Failed to cancel subscription' }, { status: 500 });
     }
 
-    // Log the cancellation
-    await supabaseAdmin
-      .from('credit_transactions')
-      .insert({
-        user_id: user.id,
-        credits_changed: 0,
-        credits_amount: 0,
-        transaction_type: 'cancellation',
-        description: `Subscription cancelled - ${oldPlanType} plan revoked`
-      });
+    // Log the cancellation (don't fail if this errors)
+    try {
+      await supabaseAdmin
+        .from('credit_transactions')
+        .insert({
+          user_id: user.id,
+          credits_amount: 0,
+          transaction_type: 'cancellation',
+          description: `Subscription cancelled - ${oldPlanType} plan revoked`
+        });
+      console.log('✅ Cancellation logged in credit_transactions');
+    } catch (logError) {
+      console.error('⚠️ Failed to log cancellation (non-critical):', logError);
+      // Don't fail the cancellation just because logging failed
+    }
 
     console.log('✅ Subscription cancelled and access revoked for user:', user.id);
 
