@@ -408,8 +408,18 @@ export default function EditorPage() {
             return;
           }
           
-          const hasPaidPlan = creditsData.plan_type && 
-            ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
+          // Normalize plan_type: lowercase and trim whitespace
+          const planType = creditsData.plan_type?.toLowerCase()?.trim();
+          const hasPaidPlan = planType && ['basic', 'pro', 'ultra'].includes(planType);
+          
+          console.log('🔍 Database plan check:', {
+            raw_plan_type: creditsData.plan_type,
+            normalized_plan_type: planType,
+            hasPaidPlan,
+            isBasic: planType === 'basic',
+            isPro: planType === 'pro',
+            isUltra: planType === 'ultra'
+          });
           
           if (!hasPaidPlan) {
             // Check if user has recent purchase (within 5 minutes) - give temporary access
@@ -460,8 +470,31 @@ export default function EditorPage() {
             return; // Grant access
           }
           
-          // CRITICAL: Redirect to pricing on error to prevent unauthorized access
-          console.log('🚨 SECURITY: Redirecting to pricing due to verification error');
+          // Before redirecting, try ONE MORE direct database check
+          console.log('🔄 Retrying plan check directly from database...');
+          try {
+            const { data: retryCreditsData, error: retryError } = await supabase
+              .from('user_credits')
+              .select('plan_type')
+              .eq('user_id', user.id)
+              .single();
+            
+            if (!retryError && retryCreditsData) {
+              const retryPlanType = retryCreditsData.plan_type?.toLowerCase()?.trim();
+              const retryHasPaidPlan = retryPlanType && ['basic', 'pro', 'ultra'].includes(retryPlanType);
+              
+              if (retryHasPaidPlan) {
+                console.log('✅ Retry successful - paid plan found:', retryPlanType);
+                isCheckingPlan.current = false;
+                return; // Grant access
+              }
+            }
+          } catch (retryErr) {
+            console.error('❌ Retry also failed:', retryErr);
+          }
+          
+          // Only redirect if we're absolutely sure there's no plan
+          console.log('🚨 SECURITY: Redirecting to pricing due to verification error (after retry)');
           isCheckingPlan.current = false;
           router.push('/pricing');
           return;
@@ -470,8 +503,18 @@ export default function EditorPage() {
       }
 
       // EXPLICIT check: only basic, pro, ultra are paid plans
-      const hasPaidPlan = credits?.plan_type && 
-        ['basic', 'pro', 'ultra'].includes(credits.plan_type.toLowerCase());
+      // Normalize plan_type: lowercase and trim whitespace
+      const planType = credits?.plan_type?.toLowerCase()?.trim();
+      const hasPaidPlan = planType && ['basic', 'pro', 'ultra'].includes(planType);
+      
+      console.log('🔍 Credits hook plan check:', {
+        raw_plan_type: credits?.plan_type,
+        normalized_plan_type: planType,
+        hasPaidPlan,
+        isBasic: planType === 'basic',
+        isPro: planType === 'pro',
+        isUltra: planType === 'ultra'
+      });
 
       console.log('🔍 Editor access check:', {
         plan_type: credits?.plan_type,

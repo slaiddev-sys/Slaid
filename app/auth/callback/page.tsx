@@ -205,13 +205,46 @@ export default function AuthCallback() {
                 .eq('user_id', sessionData.session.user.id)
                 .single();
               
-            // EXPLICIT check: only basic, pro, ultra are paid plans
-            const hasPaidPlan = creditsData?.plan_type && 
-              ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
+              console.log('🔍 Auth callback plan check:', {
+                userId: sessionData.session.user.id,
+                email: sessionData.session.user.email,
+                creditsData,
+                creditsError,
+                errorCode: creditsError?.code,
+                errorMessage: creditsError?.message
+              });
+              
+              // Handle case where user_credits record doesn't exist yet
+              if (creditsError && creditsError.code === 'PGRST116') {
+                console.log('⚠️ No user_credits record found - user needs to select plan');
+                setStatus('Authentication successful! Redirecting...');
+                setTimeout(() => {
+                  router.push('/pricing');
+                }, 1000);
+                return;
+              }
+              
+              if (creditsError) {
+                console.error('❌ Error fetching plan:', creditsError);
+                // On error, redirect to editor - let editor handle it
+                setStatus('Authentication successful! Redirecting...');
+                setTimeout(() => {
+                  router.push('/editor');
+                }, 1000);
+                return;
+              }
+              
+              // EXPLICIT check: only basic, pro, ultra are paid plans
+              const planType = creditsData?.plan_type?.toLowerCase()?.trim();
+              const hasPaidPlan = planType && ['basic', 'pro', 'ultra'].includes(planType);
               
               console.log('🔍 Plan check result:', {
                 plan_type: creditsData?.plan_type,
-                hasPaidPlan
+                plan_type_lowercase: planType,
+                hasPaidPlan,
+                isBasic: planType === 'basic',
+                isPro: planType === 'pro',
+                isUltra: planType === 'ultra'
               });
               
               setStatus('Authentication successful! Redirecting...');
@@ -273,13 +306,46 @@ export default function AuthCallback() {
               .eq('user_id', refreshData.session.user.id)
               .single();
             
+            console.log('🔍 Auth callback plan check (refresh):', {
+              userId: refreshData.session.user.id,
+              email: refreshData.session.user.email,
+              creditsData,
+              creditsError,
+              errorCode: creditsError?.code,
+              errorMessage: creditsError?.message
+            });
+            
+            // Handle case where user_credits record doesn't exist yet
+            if (creditsError && creditsError.code === 'PGRST116') {
+              console.log('⚠️ No user_credits record found (refresh) - user needs to select plan');
+              setStatus('Authentication successful! Redirecting...');
+              setTimeout(() => {
+                router.push('/pricing');
+              }, 1000);
+              return;
+            }
+            
+            if (creditsError) {
+              console.error('❌ Error fetching plan (refresh):', creditsError);
+              // On error, redirect to editor - let editor handle it
+              setStatus('Authentication successful! Redirecting...');
+              setTimeout(() => {
+                router.push('/editor');
+              }, 1000);
+              return;
+            }
+            
             // EXPLICIT check: only basic, pro, ultra are paid plans
-            const hasPaidPlan = creditsData?.plan_type && 
-              ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
+            const planType = creditsData?.plan_type?.toLowerCase()?.trim();
+            const hasPaidPlan = planType && ['basic', 'pro', 'ultra'].includes(planType);
             
             console.log('🔍 Plan check result (refresh):', {
               plan_type: creditsData?.plan_type,
-              hasPaidPlan
+              plan_type_lowercase: planType,
+              hasPaidPlan,
+              isBasic: planType === 'basic',
+              isPro: planType === 'pro',
+              isUltra: planType === 'ultra'
             });
             
             setStatus('Authentication successful! Redirecting...');
