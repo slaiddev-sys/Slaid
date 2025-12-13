@@ -227,10 +227,11 @@ export default function AuthCallback() {
               }, 1000);
             } catch (error) {
               console.error('❌ Error checking plan:', error);
-              // On error, redirect to pricing to be safe
-              console.log('⚠️ Error checking plan - redirecting to pricing');
+              // On error, redirect to EDITOR to avoid blocking paid users
+              // The editor will do its own verification and handle correctly
+              console.log('⚠️ Error checking plan - redirecting to editor (will verify there)');
               setTimeout(() => {
-                router.push('/pricing');
+                router.push('/editor');
               }, 1000);
             }
             return;
@@ -288,10 +289,11 @@ export default function AuthCallback() {
             }, 1000);
           } catch (error) {
             console.error('❌ Error checking plan (refresh):', error);
-            // On error, redirect to pricing to be safe
-            console.log('⚠️ Error checking plan - redirecting to pricing');
+            // On error, redirect to EDITOR to avoid blocking paid users
+            // The editor will do its own verification and handle correctly
+            console.log('⚠️ Error checking plan - redirecting to editor (will verify there)');
             setTimeout(() => {
-              router.push('/pricing');
+              router.push('/editor');
             }, 1000);
           }
           return;
