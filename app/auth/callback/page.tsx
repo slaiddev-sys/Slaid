@@ -201,37 +201,19 @@ export default function AuthCallback() {
               // Check plan_type from user_credits table (where Polar webhook updates it)
               const { data: creditsData, error: creditsError } = await supabase
                 .from('user_credits')
-                .select('plan_type')
+                .select('plan_type, total_credits, subscription_status')
                 .eq('user_id', sessionData.session.user.id)
                 .single();
               
-              console.log('🔍 Auth callback plan check:', {
-                userId: sessionData.session.user.id,
-                email: sessionData.session.user.email,
+              console.log('🔍 Raw database response:', {
                 creditsData,
-                creditsError,
-                errorCode: creditsError?.code,
-                errorMessage: creditsError?.message
+                creditsError: creditsError?.message,
+                userId: sessionData.session.user.id,
+                email: sessionData.session.user.email
               });
               
-              // Handle case where user_credits record doesn't exist yet
-              if (creditsError && creditsError.code === 'PGRST116') {
-                console.log('⚠️ No user_credits record found - user needs to select plan');
-                setStatus('Authentication successful! Redirecting...');
-                setTimeout(() => {
-                  router.push('/pricing');
-                }, 1000);
-                return;
-              }
-              
               if (creditsError) {
-                console.error('❌ Error fetching plan:', creditsError);
-                // On error, redirect to editor - let editor handle it
-                setStatus('Authentication successful! Redirecting...');
-                setTimeout(() => {
-                  router.push('/editor');
-                }, 1000);
-                return;
+                console.error('❌ Error fetching credits from database:', creditsError);
               }
               
               // EXPLICIT check: only basic, pro, ultra are paid plans
@@ -239,12 +221,11 @@ export default function AuthCallback() {
               const hasPaidPlan = planType && ['basic', 'pro', 'ultra'].includes(planType);
               
               console.log('🔍 Plan check result:', {
-                plan_type: creditsData?.plan_type,
-                plan_type_lowercase: planType,
+                raw_plan_type: creditsData?.plan_type,
+                normalized_plan_type: planType,
                 hasPaidPlan,
-                isBasic: planType === 'basic',
-                isPro: planType === 'pro',
-                isUltra: planType === 'ultra'
+                total_credits: creditsData?.total_credits,
+                subscription_status: creditsData?.subscription_status
               });
               
               setStatus('Authentication successful! Redirecting...');
@@ -302,37 +283,19 @@ export default function AuthCallback() {
             // Check plan_type from user_credits table (where Polar webhook updates it)
             const { data: creditsData, error: creditsError } = await supabase
               .from('user_credits')
-              .select('plan_type')
+              .select('plan_type, total_credits, subscription_status')
               .eq('user_id', refreshData.session.user.id)
               .single();
             
-            console.log('🔍 Auth callback plan check (refresh):', {
-              userId: refreshData.session.user.id,
-              email: refreshData.session.user.email,
+            console.log('🔍 Raw database response (refresh):', {
               creditsData,
-              creditsError,
-              errorCode: creditsError?.code,
-              errorMessage: creditsError?.message
+              creditsError: creditsError?.message,
+              userId: refreshData.session.user.id,
+              email: refreshData.session.user.email
             });
             
-            // Handle case where user_credits record doesn't exist yet
-            if (creditsError && creditsError.code === 'PGRST116') {
-              console.log('⚠️ No user_credits record found (refresh) - user needs to select plan');
-              setStatus('Authentication successful! Redirecting...');
-              setTimeout(() => {
-                router.push('/pricing');
-              }, 1000);
-              return;
-            }
-            
             if (creditsError) {
-              console.error('❌ Error fetching plan (refresh):', creditsError);
-              // On error, redirect to editor - let editor handle it
-              setStatus('Authentication successful! Redirecting...');
-              setTimeout(() => {
-                router.push('/editor');
-              }, 1000);
-              return;
+              console.error('❌ Error fetching credits from database (refresh):', creditsError);
             }
             
             // EXPLICIT check: only basic, pro, ultra are paid plans
@@ -340,12 +303,11 @@ export default function AuthCallback() {
             const hasPaidPlan = planType && ['basic', 'pro', 'ultra'].includes(planType);
             
             console.log('🔍 Plan check result (refresh):', {
-              plan_type: creditsData?.plan_type,
-              plan_type_lowercase: planType,
+              raw_plan_type: creditsData?.plan_type,
+              normalized_plan_type: planType,
               hasPaidPlan,
-              isBasic: planType === 'basic',
-              isPro: planType === 'pro',
-              isUltra: planType === 'ultra'
+              total_credits: creditsData?.total_credits,
+              subscription_status: creditsData?.subscription_status
             });
             
             setStatus('Authentication successful! Redirecting...');

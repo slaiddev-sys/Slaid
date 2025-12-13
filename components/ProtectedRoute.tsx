@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 import { useCredits } from './hooks/useCredits';
-import { supabase } from '../lib/supabase';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -70,63 +69,21 @@ export default function ProtectedRoute({
           return;
         }
 
-        // Check plan from credits hook first
-        let hasPaidPlan = false;
-        if (credits?.plan_type) {
-          const planType = credits.plan_type.toLowerCase().trim();
-          hasPaidPlan = ['basic', 'pro', 'ultra'].includes(planType);
-          
-          console.log('🔐 ProtectedRoute: Plan check from credits hook', {
-            raw_plan_type: credits.plan_type,
-            normalized_plan_type: planType,
-            hasPaidPlan,
-            isBasic: planType === 'basic',
-            isPro: planType === 'pro',
-            isUltra: planType === 'ultra'
-          });
-        }
+        // EXPLICIT check: only basic, pro, ultra are paid plans
+        const hasPaidPlan = credits?.plan_type && 
+          ['basic', 'pro', 'ultra'].includes(credits.plan_type.toLowerCase());
 
-        // If credits hook doesn't have plan, check directly from database
-        if (!hasPaidPlan && user) {
-          console.log('🔐 ProtectedRoute: Credits hook has no plan, checking database directly...');
-          try {
-            const { data: dbCredits, error: dbError } = await supabase
-              .from('user_credits')
-              .select('plan_type')
-              .eq('user_id', user.id)
-              .single();
-            
-            if (!dbError && dbCredits?.plan_type) {
-              const dbPlanType = dbCredits.plan_type.toLowerCase().trim();
-              hasPaidPlan = ['basic', 'pro', 'ultra'].includes(dbPlanType);
-              
-              console.log('🔐 ProtectedRoute: Database plan check', {
-                raw_plan_type: dbCredits.plan_type,
-                normalized_plan_type: dbPlanType,
-                hasPaidPlan,
-                isBasic: dbPlanType === 'basic',
-                isPro: dbPlanType === 'pro',
-                isUltra: dbPlanType === 'ultra'
-              });
-            } else {
-              console.log('🔐 ProtectedRoute: Database check result', {
-                error: dbError?.message,
-                hasData: !!dbCredits,
-                plan_type: dbCredits?.plan_type
-              });
-            }
-          } catch (dbErr) {
-            console.error('🔐 ProtectedRoute: Error checking database', dbErr);
-          }
-        }
+        console.log('🔐 ProtectedRoute: Plan check', {
+          plan_type: credits?.plan_type,
+          hasPaidPlan,
+          requirePaidPlan
+        });
 
         if (!hasPaidPlan) {
-          console.log('🔐 ProtectedRoute: No paid plan found - redirecting to /pricing');
+          console.log('🔐 ProtectedRoute: No paid plan - redirecting to /pricing');
           router.push('/pricing');
           return;
         }
-        
-        console.log('🔐 ProtectedRoute: Paid plan confirmed - access granted');
       }
 
       // All checks passed
