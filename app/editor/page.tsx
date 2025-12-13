@@ -3776,9 +3776,18 @@ export default function EditorPage() {
           throw new Error(errorData.error || 'Failed to delete account');
         }
 
-        // Account data deleted successfully, sign out and redirect
+        // Clear ALL localStorage data
+        console.log('🧹 Clearing all localStorage...');
+        localStorage.clear();
+        
+        // Clear sessionStorage too
+        sessionStorage.clear();
+        
+        // Sign out from Supabase
         await signOut();
-        router.push('/login?message=account_deleted');
+        
+        // Force a hard redirect to clear any cached state
+        window.location.href = '/login?message=account_deleted';
         
       } catch (error) {
         console.error('❌ Error deleting account:', error);

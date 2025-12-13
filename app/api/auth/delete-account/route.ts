@@ -122,6 +122,8 @@ export async function DELETE(request: NextRequest) {
 
     // 9. Cancel any active Polar subscriptions
     console.log('🚫 Checking for active subscriptions to cancel...')
+    const polarAccessToken = process.env.POLAR_SH_ACCESS_TOKEN;
+    
     try {
       const { data: userCredits } = await supabaseAdmin
         .from('user_credits')
@@ -129,37 +131,86 @@ export async function DELETE(request: NextRequest) {
         .eq('user_id', user.id)
         .single()
 
-      if (userCredits && userCredits.plan_type !== 'free' && userCredits.subscription_status === 'active') {
-        console.log('📋 Found active subscription:', {
+      if (userCredits && userCredits.plan_type !== 'free' && userCredits.plan_type !== 'none') {
+        console.log('📋 Found subscription to cancel:', {
           plan_type: userCredits.plan_type,
           subscription_id: userCredits.subscription_id
         })
 
-        // Mark subscription as cancelled in database
-        await supabaseAdmin
-          .from('user_credits')
-          .update({
-            subscription_status: 'cancelled'
-          })
-          .eq('user_id', user.id)
-
-        // Log the cancellation
-        await supabaseAdmin
-          .from('credit_transactions')
-          .insert({
-            user_id: user.id,
-            credits_amount: 0,
-            transaction_type: 'refund',
-            description: `Subscription cancelled due to account deletion - ${userCredits.plan_type} plan`
-          })
-
-        console.log('✅ Subscription marked as cancelled in database')
-        console.log('⚠️ Note: You must manually cancel the subscription in Polar dashboard to stop future billing')
-      } else {
-        console.log('ℹ️ No active subscription found')
+        // Cancel in Polar if we have subscription_id
+        if (userCredits.subscription_id && polarAccessToken) {
+          try {
+            await fetch(`https://api.polar.sh/v1/subscriptions/${userCredits.subscription_id}`, {
+              method: 'DELETE',
+              headers: { 'Authorization': `Bearer ${polarAccessToken}` }
+            });
+            console.log('✅ Subscription cancelled in Polar');
+          } catch (polarError) {
+            console.warn('⚠️ Failed to cancel in Polar:', polarError);
+          }
+        } else if (polarAccessToken && user.email) {
+          // Search by email if no subscription_id
+          try {
+            const customersResponse = await fetch(`https://api.polar.sh/v1/customers?email=${encodeURIComponent(user.email)}`, {
+              headers: { 'Authorization': `Bearer ${polarAccessToken}` }
+            });
+            if (customersResponse.ok) {
+              const customersData = await customersResponse.json();
+              if (customersData.items?.[0]?.id) {
+                const subsResponse = await fetch(`https://api.polar.sh/v1/subscriptions?customer_id=${customersData.items[0].id}&active=true`, {
+                  headers: { 'Authorization': `Bearer ${polarAccessToken}` }
+                });
+                if (subsResponse.ok) {
+                  const subsData = await subsResponse.json();
+                  if (subsData.items?.[0]?.id) {
+                    await fetch(`https://api.polar.sh/v1/subscriptions/${subsData.items[0].id}`, {
+                      method: 'DELETE',
+                      headers: { 'Authorization': `Bearer ${polarAccessToken}` }
+                    });
+                    console.log('✅ Subscription found by email and cancelled in Polar');
+                  }
+                }
+              }
+            }
+          } catch (searchError) {
+            console.warn('⚠️ Failed to search/cancel subscription in Polar:', searchError);
+          }
+        }
       }
     } catch (subscriptionError) {
-      console.warn('⚠️ Failed to cancel subscription (continuing with deletion):', subscriptionError)
+      console.warn('⚠️ Failed to check subscription (continuing with deletion):', subscriptionError)
+    }
+
+    // 10. Delete credit_transactions
+    try {
+      const { error: txError } = await supabaseAdmin
+        .from('credit_transactions')
+        .delete()
+        .eq('user_id', user.id)
+      
+      if (txError) {
+        console.warn('⚠️ Failed to delete credit_transactions:', txError)
+      } else {
+        console.log('✅ Deleted credit_transactions for user')
+      }
+    } catch (e) {
+      console.warn('⚠️ credit_transactions delete error:', e)
+    }
+
+    // 11. Delete user_credits
+    try {
+      const { error: creditsError } = await supabaseAdmin
+        .from('user_credits')
+        .delete()
+        .eq('user_id', user.id)
+      
+      if (creditsError) {
+        console.warn('⚠️ Failed to delete user_credits:', creditsError)
+      } else {
+        console.log('✅ Deleted user_credits for user')
+      }
+    } catch (e) {
+      console.warn('⚠️ user_credits delete error:', e)
     }
 
     // 10. Finally, delete the user account from Supabase Auth
