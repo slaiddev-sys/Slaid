@@ -1690,7 +1690,7 @@ export default function EditorPage() {
       });
       
       return fallbackPresentation;
-    }
+     }
     
     console.log('❌ No presentation data found anywhere!');
     return null;
@@ -3520,7 +3520,6 @@ export default function EditorPage() {
     
     const { user, signOut } = useAuth();
     const [localDisplayName, setLocalDisplayName] = useState(workspaceDisplayName);
-    const [isCancelling, setIsCancelling] = useState(false);
     
     // Update local state when workspaceDisplayName changes
     useEffect(() => {
@@ -3534,49 +3533,6 @@ export default function EditorPage() {
         router.push('/login');
       } catch (error) {
         console.error('❌ Error logging out:', error);
-      }
-    };
-
-    const handleCancelSubscription = async () => {
-      if (!user || isCancelling) return;
-      
-      const confirmed = window.confirm(
-        '¿Estás seguro de que quieres cancelar tu suscripción? Perderás el acceso al editor inmediatamente.'
-      );
-      
-      if (!confirmed) return;
-      
-      setIsCancelling(true);
-      
-      try {
-        console.log('🚫 Cancelling subscription for user:', user.id);
-        
-        // Call your cancel subscription API
-        const response = await fetch('/api/subscriptions/cancel', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to cancel subscription');
-        }
-
-        alert('Tu suscripción ha sido cancelada. Serás redirigido a la página de precios.');
-        
-        // Clear localStorage purchase flags
-        localStorage.removeItem('slaid_just_purchased');
-        localStorage.removeItem('slaid_purchase_pending');
-        
-        // Redirect to pricing page since they no longer have access
-        router.push('/pricing');
-      } catch (error) {
-        console.error('❌ Error cancelling subscription:', error);
-        alert('Error al cancelar la suscripción. Por favor contacta a soporte.');
-      } finally {
-        setIsCancelling(false);
       }
     };
 
@@ -3691,13 +3647,6 @@ export default function EditorPage() {
                       }}
                     >
                       {language === 'es' ? 'Cambiar Plan' : 'Change Plan'}
-                    </button>
-                    <button 
-                      className="bg-gray-500 text-white font-medium rounded px-3 py-1 text-sm hover:bg-gray-600 transition disabled:opacity-50 disabled:cursor-not-allowed" 
-                      onClick={handleCancelSubscription}
-                      disabled={isCancelling}
-                    >
-                      {isCancelling ? t.editor.settingsModal.cancelling : t.editor.settingsModal.cancelSubscription}
                     </button>
                   </>
                 )}
