@@ -5,23 +5,23 @@ import { supabaseAdmin } from '../../../../lib/supabase-admin'
 async function findUserByEmail(email: string) {
   let page = 1;
   const perPage = 1000;
-  
+
   while (true) {
     const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers({
       page,
       perPage
     });
-    
+
     if (error) throw error;
     if (!users || users.length === 0) break;
-    
+
     const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
     if (user) return user;
-    
+
     if (users.length < perPage) break;
     page++;
   }
-  
+
   return null;
 }
 
@@ -30,14 +30,14 @@ export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const email = searchParams.get('email');
   const plan_type = searchParams.get('plan_type');
-  
+
   if (!email || !plan_type) {
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Email and plan_type query params required',
       example: '/api/debug/force-plan?email=user@example.com&plan_type=basic'
     }, { status: 400 })
   }
-  
+
   return updatePlan(email, plan_type);
 }
 
@@ -47,16 +47,16 @@ export async function POST(request: NextRequest) {
     const { email, plan_type } = body
 
     if (!email || !plan_type) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Email and plan_type required',
         example: { email: 'user@example.com', plan_type: 'basic' }
       }, { status: 400 })
     }
-    
+
     return updatePlan(email, plan_type);
   } catch (error) {
     console.error('❌ Force plan update error:', error)
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })
@@ -66,7 +66,10 @@ export async function POST(request: NextRequest) {
 // Credits per plan type (monthly)
 const PLAN_CREDITS: Record<string, number> = {
   'basic': 500,
-  'pro': 1000,
+  'weekly': 200,
+  'monthly': 500,
+  'annual': 2500,
+  'pro': 1000, // Legacy
   'ultra': 2000,
   'none': 0,
   'free': 0
@@ -77,7 +80,7 @@ async function updatePlan(email: string, plan_type: string) {
     // Validate plan_type
     const validPlans = ['none', 'free', 'basic', 'pro', 'ultra']
     if (!validPlans.includes(plan_type.toLowerCase())) {
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Invalid plan_type',
         valid_plans: validPlans
       }, { status: 400 })
@@ -90,7 +93,7 @@ async function updatePlan(email: string, plan_type: string) {
 
     // Find user by email
     const user = await findUserByEmail(email);
-    
+
     if (!user) {
       return NextResponse.json({ error: 'User not found', email }, { status: 404 })
     }
@@ -103,14 +106,14 @@ async function updatePlan(email: string, plan_type: string) {
       .select('total_credits, used_credits')
       .eq('user_id', user.id)
       .single();
-    
+
     const currentTotal = currentCredits?.total_credits || 0;
     const usedCredits = currentCredits?.used_credits || 0;
 
     // Update plan_type AND add credits
     const { data: updateData, error: updateError } = await supabaseAdmin
       .from('user_credits')
-      .update({ 
+      .update({
         plan_type: normalizedPlan,
         subscription_status: normalizedPlan !== 'none' && normalizedPlan !== 'free' ? 'active' : 'inactive',
         last_renewal_date: new Date().toISOString(),
@@ -122,7 +125,7 @@ async function updatePlan(email: string, plan_type: string) {
 
     if (updateError) {
       console.error('❌ Error updating plan:', updateError)
-      return NextResponse.json({ 
+      return NextResponse.json({
         error: 'Failed to update plan',
         details: updateError
       }, { status: 500 })
@@ -156,7 +159,7 @@ async function updatePlan(email: string, plan_type: string) {
 
   } catch (error) {
     console.error('❌ Force plan update error:', error)
-    return NextResponse.json({ 
+    return NextResponse.json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 })

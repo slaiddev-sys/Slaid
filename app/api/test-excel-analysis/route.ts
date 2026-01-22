@@ -3,6 +3,9 @@ import { FileDataProcessor } from '@/utils/fileDataProcessor';
 import Anthropic from '@anthropic-ai/sdk';
 import { supabase } from '../../../lib/supabase';
 
+// Configure max duration for large file analysis (5 minutes)
+export const maxDuration = 300; // 5 minutes in seconds
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 });

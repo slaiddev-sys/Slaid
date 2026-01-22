@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
       .rpc('add_credits', {
         p_user_id: userId,
         p_credits_to_add: credits,
-        p_transaction_type: 'purchase',
         p_description: description || 'Manual credit addition'
       })
 

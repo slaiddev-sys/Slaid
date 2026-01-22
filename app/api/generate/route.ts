@@ -4,6 +4,9 @@ import crypto from 'crypto';
 import { anthropicWrapper } from '../../../utils/anthropicWrapper';
 import { supabase } from '../../../lib/supabase';
 
+// Configure max duration for large file processing (5 minutes)
+export const maxDuration = 300; // 5 minutes in seconds
+
 // Initialize Anthropic client (keeping for backward compatibility)
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -1467,26 +1470,131 @@ DO NOT provide presentation structure - that will come from the Word document.`;
         console.log('🔍 EXCEL-ONLY MODE - Analyzing like test-excel page...');
         console.log('📊 FileData received:', JSON.stringify(fileData, null, 2));
         
-        // STEP 1: Send Excel data to AI for analysis (EXACT same as test-excel page)
-        const analysisPrompt = `Analyze this Excel data and tell me what you see.
+        // STEP 1: Prepare optimized data for AI analysis
+        // For large files, send comprehensive statistics + representative samples
+        let excelDataForAI: any = null;
+        
+        if (fileData?.processedData?.structuredData?.sheets) {
+          const sheets = fileData.processedData.structuredData.sheets;
+          excelDataForAI = {};
+          
+          Object.keys(sheets).forEach(sheetName => {
+            const sheet = sheets[sheetName];
+            const totalRows = sheet.rowCount || 0;
+            const allObjects = sheet.objects || [];
+            const allRaw = sheet.raw || [];
+            
+            console.log(`📊 Preparing sheet "${sheetName}" for AI (${totalRows.toLocaleString()} total rows)...`);
+            
+            // Calculate comprehensive statistics from ALL rows
+            const numericColumns = sheet.numericColumns || [];
+            const statistics: any = {
+              totalRows: totalRows,
+              totalColumns: sheet.columnCount || 0,
+              headers: sheet.headers || [],
+              numericColumns: numericColumns
+            };
+            
+            // Calculate statistics for each numeric column across ALL rows
+            numericColumns.forEach((colName: string) => {
+              const values: number[] = [];
+              
+              // Extract values from ALL rows
+              allObjects.forEach((row: any) => {
+                const val = row[colName];
+                if (val !== null && val !== undefined && val !== '') {
+                  const numVal = typeof val === 'string' ? parseFloat(val.replace(/[^0-9.-]/g, '')) : Number(val);
+                  if (!isNaN(numVal)) {
+                    values.push(numVal);
+                  }
+                }
+              });
+              
+              if (values.length > 0) {
+                statistics[colName] = {
+                  count: values.length,
+                  sum: values.reduce((a, b) => a + b, 0),
+                  min: Math.min(...values),
+                  max: Math.max(...values),
+                  avg: values.reduce((a, b) => a + b, 0) / values.length,
+                  median: values.sort((a, b) => a - b)[Math.floor(values.length / 2)]
+                };
+              }
+            });
+            
+            // Select representative sample rows
+            // - First 50 rows (for context and headers)
+            // - Middle rows (distributed)
+            // - Last 50 rows
+            // - Total sample: up to 200 rows or 10% of total, whichever is smaller
+            const maxSampleRows = Math.min(200, Math.max(100, Math.floor(totalRows * 0.1)));
+            const sampleIndices = new Set<number>();
+            
+            // First rows
+            for (let i = 0; i < Math.min(50, totalRows); i++) {
+              sampleIndices.add(i);
+            }
+            
+            // Middle rows (distributed)
+            if (totalRows > 100) {
+              const step = Math.floor(totalRows / 20);
+              for (let i = 50; i < totalRows - 50; i += step) {
+                sampleIndices.add(i);
+              }
+            }
+            
+            // Last rows
+            for (let i = Math.max(0, totalRows - 50); i < totalRows; i++) {
+              sampleIndices.add(i);
+            }
+            
+            const sampleIndicesArray = Array.from(sampleIndices).sort((a, b) => a - b).slice(0, maxSampleRows);
+            const sampleRows = sampleIndicesArray.map(idx => allObjects[idx]).filter(Boolean);
+            
+            console.log(`   ✅ Statistics calculated from ${totalRows.toLocaleString()} total rows`);
+            console.log(`   ✅ Sample: ${sampleRows.length} representative rows (indices: ${sampleIndicesArray[0]}-${sampleIndicesArray[sampleIndicesArray.length - 1]})`);
+            
+            excelDataForAI[sheetName] = {
+              statistics: statistics, // Statistics from ALL rows
+              sampleRows: sampleRows, // Representative sample
+              sampleIndices: sampleIndicesArray, // Which rows were sampled
+              totalRows: totalRows,
+              note: `This sheet contains ${totalRows.toLocaleString()} total rows. Statistics above are calculated from ALL ${totalRows.toLocaleString()} rows. Sample rows shown are representative examples.`
+            };
+          });
+        } else {
+          // Fallback: use original structure if processing data not available
+          excelDataForAI = fileData;
+        }
+        
+        // STEP 1: Send Excel data to AI for analysis
+        const analysisPrompt = `Analyze this Excel data and tell me what you can see.
 
 EXCEL FILE DATA TO ANALYZE:
-${JSON.stringify(fileData, null, 2)}
+${JSON.stringify(excelDataForAI, null, 2)}
+
+CRITICAL INSTRUCTIONS:
+- The "statistics" object contains COMPREHENSIVE statistics calculated from ALL rows (sum, avg, min, max, median)
+- The "sampleRows" contains representative sample rows (first, middle, last rows)
+- The "totalRows" indicates the TOTAL number of rows in the sheet
+- IMPORTANT: When analyzing, use the statistics (which are from ALL rows) as the primary source of truth
+- The sample rows are just examples - the statistics represent the complete dataset
 
 Please provide a detailed analysis of what you can see in this Excel file. Include:
-1. What sheets are present
+1. What sheets are present and how many total rows each has
 2. What headers/columns you can identify
-3. What actual data values you can see (include ALL months/rows, not just the first few)
-4. Any patterns or structure you notice
-5. Be very specific about the exact numbers and text you can read
-6. CHART RECOMMENDATIONS: Based on the data structure and content, recommend the most suitable chart types for visualizing this data
+3. Comprehensive statistics from ALL rows (use the statistics object for accurate analysis)
+4. Key patterns and insights from the complete dataset
+5. Specific numeric values and ranges from the statistics
+6. CHART RECOMMENDATIONS: Based on the data structure and statistics, recommend the most suitable chart types
 
 IMPORTANT: 
-- Analyze ALL the data rows, not just the sample data
-- If there are 5 years of data, analyze all 5 years
+- Use statistics from ALL rows (statistics object) - these represent the complete dataset
+- If a sheet has 8000 rows, the statistics.sum, statistics.avg, etc. are calculated from ALL 8000 rows
+- Reference the totalRows count to understand the full scope of data
 - Include specific chart type recommendations at the end
 
-Be honest - if you cannot see or read certain parts of the data, say so explicitly.`;
+Be specific and accurate - use the comprehensive statistics provided.`;
 
         console.log('🚀 Sending Excel data to AI for analysis first...');
         

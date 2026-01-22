@@ -22,7 +22,7 @@ export const metadata: Metadata = {
     siteName: 'Slaid',
     images: [
       {
-        url: '/Slide-Ready.png',
+        url: '/slaid-logo.png',
         width: 1200,
         height: 630,
         alt: 'Slaid AI Presentation Generator',
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: "Slaid - Transform Excel into Professional Presentations",
     description: "AI-powered presentation generator. Upload Excel, get beautiful reports instantly.",
-    images: ['/Slide-Ready.png'],
+    images: ['/slaid-logo.png'],
   },
   robots: {
     index: true,
@@ -50,11 +50,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/basic-plan.png', type: 'image/png' },
+      { url: '/slaid-favicon-verde.png', type: 'image/png' },
       { url: '/favicon.ico', type: 'image/x-icon' }
     ],
-    shortcut: '/basic-plan.png',
-    apple: '/basic-plan.png',
+    shortcut: '/slaid-favicon-verde.png',
+    apple: '/slaid-favicon-verde.png',
   },
   verification: {
     google: 'google-site-verification-code-here', // You'll need to add this from Google Search Console

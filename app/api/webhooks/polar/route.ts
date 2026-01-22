@@ -5,23 +5,23 @@ import { supabaseAdmin, isAdminConfigured } from '../../../../lib/supabase-admin
 async function findUserByEmail(email: string) {
   let page = 1;
   const perPage = 1000;
-  
+
   while (true) {
     const { data: { users }, error } = await supabaseAdmin.auth.admin.listUsers({
       page,
       perPage
     });
-    
+
     if (error) throw error;
     if (!users || users.length === 0) break;
-    
+
     const user = users.find(u => u.email?.toLowerCase() === email.toLowerCase());
     if (user) return user;
-    
+
     if (users.length < perPage) break;
     page++;
   }
-  
+
   return null;
 }
 
@@ -32,18 +32,18 @@ const PRODUCT_MAPPING: Record<string, { credits: number; description: string; ty
   'ffe50868-199d-4476-b948-ab67c3894522': { credits: 400, description: '400 credits purchase ($20)', type: 'credit_pack', planType: 'free' },
   'c098b439-a2c3-493d-b0a6-a7d849c0de4d': { credits: 1000, description: '1000 credits purchase ($50)', type: 'credit_pack', planType: 'free' },
   '92d6ad27-31d8-4a6d-989a-98da344ad7eb': { credits: 2000, description: '2000 credits purchase ($100)', type: 'credit_pack', planType: 'free' },
-  
-  // Basic Plan Product IDs
-  '481ff240-aadc-44c9-a58e-2fee7ab26b90': { credits: 500, description: 'Basic Monthly Plan - 500 credits', type: 'basic_plan', planType: 'basic' },
-  '3f8500aa-7847-40dc-bcde-844bbef74742': { credits: 6000, description: 'Basic Annual Plan - 6,000 credits', type: 'basic_plan', planType: 'basic' },
-  
-  // Pro Plan Product IDs
-  '5a954dc6-891d-428a-a948-05409fe765e2': { credits: 1000, description: 'Pro Monthly Plan - 1,000 credits', type: 'pro_plan', planType: 'pro' },
-  '8739ccac-36f9-4e28-8437-8b36bb1e7d71': { credits: 12000, description: 'Pro Annual Plan - 12,000 credits', type: 'pro_plan', planType: 'pro' },
-  
-  // Ultra Plan Product IDs
-  '71bf9c78-f930-437a-b076-62a0c1946d14': { credits: 2000, description: 'Ultra Monthly Plan - 2,000 credits', type: 'ultra_plan', planType: 'ultra' },
-  'df5e66f6-2e9f-4f32-a347-ed4e46f37b0f': { credits: 24000, description: 'Ultra Annual Plan - 24,000 credits', type: 'ultra_plan', planType: 'ultra' },
+
+  // Basic Plan Product IDs (Updated for Monthly and Annual)
+  '481ff240-aadc-44c9-a58e-2fee7ab26b90': { credits: 500, description: 'Monthly Plan - 500 credits', type: 'basic_plan', planType: 'monthly' },
+  '3f8500aa-7847-40dc-bcde-844bbef74742': { credits: 2500, description: 'Annual Plan - 2,500 credits', type: 'basic_plan', planType: 'annual' },
+
+  // Weekly Plan (Using previously labeled Pro Monthly ID)
+  '5a954dc6-891d-428a-a948-05409fe765e2': { credits: 200, description: 'Weekly Plan - 200 credits', type: 'pro_plan', planType: 'weekly' },
+
+  // Legacy / Other IDs (Keep to avoid breaking, but update if necessary)
+  '8739ccac-36f9-4e28-8437-8b36bb1e7d71': { credits: 2500, description: 'Annual Plan (Pro) - 2,500 credits', type: 'pro_plan', planType: 'annual' },
+  '71bf9c78-f930-437a-b076-62a0c1946d14': { credits: 5000, description: 'Ultra Plan - 5,000 credits', type: 'ultra_plan', planType: 'ultra' },
+  'df5e66f6-2e9f-4f32-a347-ed4e46f37b0f': { credits: 30000, description: 'Ultra Annual Plan - 30,000 credits', type: 'ultra_plan', planType: 'ultra' },
 }
 
 export async function POST(request: NextRequest) {
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     // Extract event data FIRST - before using it!
     const eventData = body.data
-    
+
     // Handle subscription cancellation
     if (eventType === 'subscription.canceled') {
       const subscriptionId = eventData.id
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
       // Update subscription status to cancelled
       const { error: updateError } = await supabaseAdmin
         .from('user_credits')
-        .update({ 
+        .update({
           subscription_status: 'cancelled'
         })
         .eq('user_id', user.id)
@@ -114,8 +114,8 @@ export async function POST(request: NextRequest) {
       }
 
       console.log('✅ Subscription cancelled successfully for user:', user.id)
-      
-      return NextResponse.json({ 
+
+      return NextResponse.json({
         success: true,
         message: 'Subscription cancelled',
         userId: user.id
@@ -166,11 +166,11 @@ export async function POST(request: NextRequest) {
     // Find user by email using admin client (paginated search)
     console.log('🔍 Looking for user with email:', customerEmail)
     let user = await findUserByEmail(customerEmail)
-    
+
     // If user doesn't exist, create them automatically
     if (!user) {
       console.log('⚠️ User not found, creating automatically for email:', customerEmail)
-      
+
       try {
         // Create user with admin client
         const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -181,18 +181,18 @@ export async function POST(request: NextRequest) {
             created_at: new Date().toISOString()
           }
         })
-        
+
         if (createError) {
           console.error('❌ Error creating user:', createError)
           return NextResponse.json({ error: 'Failed to create user', details: createError }, { status: 500 })
         }
-        
+
         user = newUser.user
         console.log('✅ User created successfully:', { userId: user.id, email: customerEmail })
-        
+
         // Wait a bit for triggers to create profile and workspace
         await new Promise(resolve => setTimeout(resolve, 1000))
-        
+
       } catch (createErr) {
         console.error('❌ Exception creating user:', createErr)
         return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
@@ -209,7 +209,7 @@ export async function POST(request: NextRequest) {
       .select('user_id')
       .eq('user_id', userId)
       .single()
-    
+
     if (creditsCheckError || !existingCredits) {
       console.log('⚠️ No user_credits record found, creating one...')
       const { error: initError } = await supabaseAdmin
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
           plan_type: 'none',
           created_at: new Date().toISOString()
         })
-      
+
       if (initError) {
         console.error('❌ Error initializing user_credits:', initError)
         // Continue anyway - the add_credits function might handle it
@@ -245,7 +245,7 @@ export async function POST(request: NextRequest) {
       // Continue anyway - better to add credits twice than not at all
     } else if (existingTransaction && existingTransaction.length > 0) {
       console.log('✅ Event already processed (duplicate detected), returning success:', eventId)
-      return NextResponse.json({ 
+      return NextResponse.json({
         success: true,
         duplicate: true,
         message: 'Event already processed',
@@ -256,7 +256,7 @@ export async function POST(request: NextRequest) {
     // Add credits to user account
     console.log('💳 Adding credits:', { userId, credits: product.credits })
     const transactionType = (product.type === 'basic_plan' || product.type === 'pro_plan' || product.type === 'ultra_plan') ? 'subscription' : 'purchase'
-    
+
     const { error: addCreditsError } = await supabaseAdmin
       .rpc('add_credits', {
         p_user_id: userId,
@@ -280,14 +280,14 @@ export async function POST(request: NextRequest) {
     // If this is a subscription plan purchase (Basic, Pro, or Ultra), upgrade the user's plan_type
     if (product.type === 'basic_plan' || product.type === 'pro_plan' || product.type === 'ultra_plan') {
       console.log(`🚀 Upgrading user to ${product.planType} plan:`, userId)
-      
+
       // Extract subscription ID from the event data
       const subscriptionId = eventData.id || eventData.subscription_id
       console.log('📋 Subscription ID:', subscriptionId)
-      
+
       const { error: updatePlanError } = await supabaseAdmin
         .from('user_credits')
-        .update({ 
+        .update({
           plan_type: product.planType,
           subscription_status: 'active',
           subscription_id: subscriptionId,
@@ -303,7 +303,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       creditsAdded: product.credits,
       userId,

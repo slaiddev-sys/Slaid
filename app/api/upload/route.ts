@@ -5,6 +5,9 @@ import crypto from 'crypto';
 import { DocumentParser } from '../../../utils/documentParser';
 import { FileDataProcessor } from '../../../utils/fileDataProcessor';
 
+// Configure max duration for large file processing (5 minutes)
+export const maxDuration = 300; // 5 minutes in seconds
+
 export async function POST(request: NextRequest) {
   try {
     console.log('Upload API: Starting file upload process...');
@@ -41,14 +44,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024; // 10MB
+    // Validate file size (max 100MB for large files support)
+    const maxSize = 100 * 1024 * 1024; // 100MB
     if (file.size > maxSize) {
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
       return NextResponse.json(
-        { error: 'File too large. Maximum size is 10MB.' },
+        { error: `File too large (${sizeMB}MB). Maximum size is 100MB.` },
         { status: 400 }
       );
     }
+    
+    console.log(`📊 File size: ${(file.size / (1024 * 1024)).toFixed(2)}MB (max: 100MB)`);
 
     // Generate unique filename
     const fileExtension = path.extname(file.name);
@@ -223,7 +229,7 @@ export async function GET() {
         images: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/avif'],
         documents: ['Excel (.xlsx, .xls)', 'Word (.docx, .doc)', 'CSV (.csv)']
       },
-      maxSize: '10MB'
+      maxSize: '100MB'
     });
   } catch (error) {
     return NextResponse.json(

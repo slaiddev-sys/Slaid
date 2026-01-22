@@ -5,14 +5,15 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 
 // Function to ensure user has profile and workspace
-async function ensureUserProfileAndWorkspace(user: any) {
+async function ensureUserProfileAndWorkspace(user: any): Promise<boolean> {
+  let isNewUser = false;
   try {
     console.log('🔧 Ensuring profile and workspace for user:', user.email);
     console.log('🔧 User object:', JSON.stringify(user, null, 2));
-    
+
     // Wait a bit for database triggers to complete (if they exist)
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Check if profile exists
     console.log('🔍 Checking if profile exists...');
     const { data: existingProfile, error: profileCheckError } = await supabase
@@ -20,41 +21,42 @@ async function ensureUserProfileAndWorkspace(user: any) {
       .select('id, email')
       .eq('id', user.id)
       .single();
-    
+
     if (profileCheckError && profileCheckError.code !== 'PGRST116') {
       console.error('❌ Error checking profile:', profileCheckError);
       console.error('Profile check error details:', JSON.stringify(profileCheckError, null, 2));
     }
-    
+
     // Create profile if it doesn't exist
     if (!existingProfile) {
       console.log('📝 Creating profile for user:', user.email);
-      
+      isNewUser = true;
+
       // Start with minimal required data
       const baseProfileData = {
         id: user.id,
         email: user.email,
         full_name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || 'User'
       };
-      
+
       console.log('📝 Base profile data:', JSON.stringify(baseProfileData, null, 2));
-      
+
       // Try to create profile with minimal data first
       const { data: insertedProfile, error: profileError } = await supabase
         .from('profiles')
         .insert(baseProfileData)
         .select();
-      
+
       if (profileError) {
         console.error('❌ Error creating profile with minimal data:', profileError);
         console.error('Profile error details:', JSON.stringify(profileError, null, 2));
-        
+
         // Try upsert with minimal data
         console.log('🔄 Trying upsert approach with minimal data...');
         const { error: upsertError } = await supabase
           .from('profiles')
           .upsert(baseProfileData, { onConflict: 'id' });
-        
+
         if (upsertError) {
           console.error('❌ Upsert also failed:', upsertError);
           console.log('⚠️  Profile creation failed, but user can still use the app');
@@ -63,15 +65,16 @@ async function ensureUserProfileAndWorkspace(user: any) {
         }
       } else {
         console.log('✅ Profile created successfully:', insertedProfile);
-        
+
         // Profile created - no initial credits assigned (user must select a plan)
         console.log('✅ Profile created - user must select a plan to get credits');
       }
     } else {
       console.log('✅ Profile already exists:', existingProfile);
       console.log('✅ Existing user will be redirected to editor');
+      isNewUser = false;
     }
-    
+
     // Check if workspace exists
     console.log('🔍 Checking if workspace exists...');
     const { data: existingWorkspace, error: workspaceCheckError } = await supabase
@@ -79,12 +82,12 @@ async function ensureUserProfileAndWorkspace(user: any) {
       .select('id, name')
       .eq('user_id', user.id)
       .single();
-    
+
     if (workspaceCheckError && workspaceCheckError.code !== 'PGRST116') {
       console.error('❌ Error checking workspace:', workspaceCheckError);
       console.error('Workspace check error details:', JSON.stringify(workspaceCheckError, null, 2));
     }
-    
+
     // Create workspace if it doesn't exist
     if (!existingWorkspace) {
       console.log('🏢 Creating workspace for user:', user.email);
@@ -94,22 +97,22 @@ async function ensureUserProfileAndWorkspace(user: any) {
         user_id: user.id
       };
       console.log('🏢 Workspace data to insert:', JSON.stringify(workspaceData, null, 2));
-      
+
       const { data: insertedWorkspace, error: workspaceError } = await supabase
         .from('workspaces')
         .insert(workspaceData)
         .select();
-      
+
       if (workspaceError) {
         console.error('❌ Error creating workspace:', workspaceError);
         console.error('Workspace error details:', JSON.stringify(workspaceError, null, 2));
-        
+
         // Try alternative approach using upsert
         console.log('🔄 Trying upsert approach for workspace...');
         const { error: upsertError } = await supabase
           .from('workspaces')
           .upsert(workspaceData, { onConflict: 'user_id,name' });
-        
+
         if (upsertError) {
           console.error('❌ Workspace upsert also failed:', upsertError);
         } else {
@@ -121,12 +124,30 @@ async function ensureUserProfileAndWorkspace(user: any) {
     } else {
       console.log('✅ Workspace already exists:', existingWorkspace);
     }
-    
+
     console.log('✅ User profile and workspace setup complete');
   } catch (error) {
     console.error('❌ Error in ensureUserProfileAndWorkspace:', error);
     console.error('❌ Full error details:', JSON.stringify(error, null, 2));
     // Don't throw - allow user to proceed even if profile/workspace creation fails
+  }
+  return isNewUser;
+}
+
+// Function to check if user has a paid plan
+async function hasPaidPlan(userId: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase
+      .from('user_credits')
+      .select('plan_type')
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !data) return false;
+    return ['basic', 'pro', 'ultra'].includes(data.plan_type?.toLowerCase());
+  } catch (error) {
+    console.error('Error checking paid plan:', error);
+    return false;
   }
 }
 
@@ -139,20 +160,20 @@ export default function AuthCallback() {
       try {
         console.log('🔐 Auth callback started');
         console.log('🔐 Current URL:', window.location.href);
-        
+
         // Check URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const error_param = urlParams.get('error');
         const error_description = urlParams.get('error_description');
-        
+
         if (error_param) {
           console.error('❌ OAuth error in URL:', error_param, error_description);
-          
+
           // Check if it's the database error we've been fighting
           if (error_param === 'server_error' && error_description?.includes('Database error saving new user')) {
             console.log('🔥 STILL getting database error! The trigger is STILL not disabled properly!');
             setStatus('Database trigger still causing issues. Attempting workaround...');
-            
+
             // Show user a clear message and redirect to a manual signup
             setTimeout(() => {
               alert('There is a database configuration issue. Please contact support or try again later.');
@@ -160,7 +181,7 @@ export default function AuthCallback() {
             }, 2000);
             return;
           }
-          
+
           setStatus(`Authentication failed: ${error_param}`);
           setTimeout(() => {
             router.push('/login?error=auth_failed');
@@ -169,42 +190,51 @@ export default function AuthCallback() {
         }
 
         setStatus('Completing authentication...');
-        
+
         // Use Supabase's built-in session handling
         // Wait for the auth state change event
         let sessionFound = false;
         let attempts = 0;
         const maxAttempts = 10;
-        
+
         while (!sessionFound && attempts < maxAttempts) {
           attempts++;
           console.log(`🔐 Checking for session (attempt ${attempts}/${maxAttempts})`);
           setStatus(`Verifying authentication... (${attempts}/${maxAttempts})`);
-          
+
           // Check current session
           const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-          
+
           if (sessionError) {
             console.error('❌ Session error:', sessionError);
           } else if (sessionData.session && sessionData.session.user) {
             console.log('✅ Session found:', sessionData.session.user.email);
             sessionFound = true;
             setStatus('Setting up your account...');
-            
+
             // Ensure profile and workspace exist (handles both new and existing users)
-            await ensureUserProfileAndWorkspace(sessionData.session.user);
-            
-            // SIMPLIFIED: Always redirect to editor
-            // The editor and ProtectedRoute will handle plan verification
-            // This avoids RLS issues with reading user_credits from callback
-            console.log('✅ Auth successful - redirecting to editor (plan check happens there)');
-            setStatus('Authentication successful! Redirecting...');
-            setTimeout(() => {
-              router.push('/editor');
-            }, 1000);
+            const isNewUser = await ensureUserProfileAndWorkspace(sessionData.session.user);
+
+            // Check if user has a paid plan
+            const userHasPlan = await hasPaidPlan(sessionData.session.user.id);
+
+            // Redirect based on whether user is new or has a plan
+            if (isNewUser || !userHasPlan) {
+              console.log(isNewUser ? '✅ New user detected - redirecting to onboarding' : '💳 No paid plan - redirecting to onboarding');
+              setStatus(isNewUser ? 'Welcome! Setting up your experience...' : 'Taking you to onboarding...');
+              setTimeout(() => {
+                router.push('/onboarding');
+              }, 1000);
+            } else {
+              console.log('✅ Existing user with plan - redirecting to editor');
+              setStatus('Authentication successful! Redirecting...');
+              setTimeout(() => {
+                router.push('/editor');
+              }, 1000);
+            }
             return;
           }
-          
+
           // Wait before next attempt
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
@@ -212,25 +242,34 @@ export default function AuthCallback() {
         // If no session found, try to refresh
         console.log('🔐 No session found, trying to refresh...');
         setStatus('Refreshing session...');
-        
+
         const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
-        
+
         if (refreshError) {
           console.error('❌ Refresh error:', refreshError);
         } else if (refreshData.session && refreshData.session.user) {
           console.log('✅ Session refreshed:', refreshData.session.user.email);
           setStatus('Setting up your account...');
-          
-          // Ensure profile and workspace exist (handles both new and existing users)
-          await ensureUserProfileAndWorkspace(refreshData.session.user);
-          
-          // SIMPLIFIED: Always redirect to editor
-          // The editor and ProtectedRoute will handle plan verification
-          console.log('✅ Auth successful (refresh) - redirecting to editor');
-          setStatus('Authentication successful! Redirecting...');
-          setTimeout(() => {
-            router.push('/editor');
-          }, 1000);
+
+          // Ensure profile and workspace exist
+          const isNewUser = await ensureUserProfileAndWorkspace(refreshData.session.user);
+
+          // Check if user has a paid plan
+          const userHasPlan = await hasPaidPlan(refreshData.session.user.id);
+
+          if (isNewUser || !userHasPlan) {
+            console.log(isNewUser ? '✅ New user detected (refresh) - redirecting to onboarding' : '💳 No paid plan (refresh) - redirecting to onboarding');
+            setStatus(isNewUser ? 'Welcome! Setting up your experience...' : 'Taking you to onboarding...');
+            setTimeout(() => {
+              router.push('/onboarding');
+            }, 1000);
+          } else {
+            console.log('✅ Auth successful (refresh) with plan - redirecting to editor');
+            setStatus('Authentication successful! Redirecting...');
+            setTimeout(() => {
+              router.push('/editor');
+            }, 1000);
+          }
           return;
         }
 
@@ -240,7 +279,7 @@ export default function AuthCallback() {
         setTimeout(() => {
           router.push('/login');
         }, 2000);
-        
+
       } catch (error) {
         console.error('❌ Unexpected error in auth callback:', error);
         setStatus('Unexpected error occurred');
@@ -252,7 +291,7 @@ export default function AuthCallback() {
 
     // Add a small delay to ensure URL is fully loaded
     const timer = setTimeout(handleAuthCallback, 500);
-    
+
     return () => clearTimeout(timer);
   }, [router]);
 

@@ -26,11 +26,11 @@ import { Product_iPhoneStandalone, Product_MacBookCentered, Product_iPhoneInCent
 import { Pricing_Plans } from '../../components/layouts/Pricing/index';
 import { Content_TextImageDescription } from '../../components/layouts/Content/index';
 // Import Responsive Excel Layouts
-import { 
-  ExcelCenteredCover_Responsive, 
-  ExcelKPIDashboard_Responsive, 
-  ExcelTrendChart_Responsive, 
-  ExcelDataTable_Responsive, 
+import {
+  ExcelCenteredCover_Responsive,
+  ExcelKPIDashboard_Responsive,
+  ExcelTrendChart_Responsive,
+  ExcelDataTable_Responsive,
   ExcelBackCover_Responsive,
   ExcelBottomCover_Responsive,
   ExcelLeftCover_Responsive,
@@ -153,34 +153,34 @@ const IsolatedSlideRenderer = React.memo<{
   slideIndex: number;
   sidebarCollapsed: boolean;
 }>(({ slideData, slideIndex, sidebarCollapsed }) => {
-  
+
   console.log(`🎨 IsolatedSlideRenderer rendering slide ${slideIndex}:`, {
     slideId: slideData?.id,
     _lastModified: slideData?._lastModified,
     blockCount: slideData?.blocks?.length,
     firstBlockType: slideData?.blocks?.[0]?.type
   });
-  
+
   // Render blocks directly inside this component (isolated from parent)
   const renderBlocksIsolated = React.useCallback((blocks: any[]) => {
     if (!blocks || !Array.isArray(blocks)) return null;
-    
+
     return blocks.map((block: any, index: number) => {
       const Component = componentMap[block.type];
-      
+
       if (!Component) {
         return <div key={index} className="p-4 bg-yellow-100 text-yellow-800">Unknown component: "{block.type}"</div>;
       }
-      
+
       const propsToPass = { ...(block.props || {}) };
       propsToPass.useFixedDimensions = true;
       propsToPass.canvasWidth = 881;
       propsToPass.canvasHeight = 495;
-      
+
       return <div key={`${slideData?.id || slideIndex}-block-${index}`}>{React.createElement(Component, { ...propsToPass })}</div>;
     });
   }, [slideData, slideIndex]);
-  
+
   return (
     <div className="relative w-full flex flex-col items-center gap-1" style={{
       width: 'min(100%, ' + (sidebarCollapsed ? '1200px' : '1000px') + ')'
@@ -189,13 +189,13 @@ const IsolatedSlideRenderer = React.memo<{
       <div className="text-gray-500 text-xs font-medium self-start">
         Slide {slideIndex + 1}
       </div>
-      
+
       {/* Slide Container */}
       <div
         className="bg-white relative overflow-hidden flex items-center justify-center border border-gray-200 w-full"
         style={{ aspectRatio: '16 / 9' }}
       >
-        <div 
+        <div
           className="slide-content w-full h-full"
           style={{
             transformOrigin: 'center center',
@@ -203,7 +203,7 @@ const IsolatedSlideRenderer = React.memo<{
             inset: 0
           }}
         >
-          <div 
+          <div
             style={{
               width: '881px',
               height: '495px',
@@ -243,9 +243,9 @@ const IsolatedSlideRenderer = React.memo<{
   const modifiedSame = prevProps.slideData?._lastModified === nextProps.slideData?._lastModified;
   const indexSame = prevProps.slideIndex === nextProps.slideIndex;
   const collapsedSame = prevProps.sidebarCollapsed === nextProps.sidebarCollapsed;
-  
+
   const slidesEqual = idSame && modifiedSame && indexSame && collapsedSame;
-  
+
   // Debug logging to track re-renders
   console.log('');
   console.log('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓');
@@ -258,7 +258,7 @@ const IsolatedSlideRenderer = React.memo<{
   console.log('   → RESULT:', slidesEqual ? '✅ SKIP RE-RENDER' : '🔄 WILL RE-RENDER');
   console.log('▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓');
   console.log('');
-  
+
   return slidesEqual; // true = don't re-render, false = re-render
 });
 
@@ -266,62 +266,73 @@ export default function EditorPage() {
   console.log('🚨🚨🚨 EDITOR PAGE START: Component function called at', new Date().toISOString());
   // 🚨 CRITICAL DEBUG: Ensure this component is loaded
   console.log('🚨 CRITICAL DEBUG: EditorPage component loaded at', new Date().toISOString());
-  
+
   const router = useRouter();
   // Read from_purchase flag from URL (client-side only to avoid Suspense issues)
   const [fromPurchase, setFromPurchase] = useState(false);
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      setFromPurchase(params.get('from_purchase') === 'true');
+      const isFromPurchase = params.get('from_purchase') === 'true';
+      setFromPurchase(isFromPurchase);
+
+      // If returning from purchase, ensure localStorage flags are set
+      // This handles cases where they were redirected directly without hitting the success page
+      if (isFromPurchase) {
+        if (!localStorage.getItem('slaid_just_purchased')) {
+          localStorage.setItem('slaid_just_purchased', Date.now().toString());
+          localStorage.setItem('slaid_purchase_pending', 'true');
+          console.log('🛒 Purchase flags initialized from URL param');
+        }
+      }
     }
   }, []);
-  
+
   const { user, signOut } = useAuth();
   const { language, changeLanguage } = useLanguage();
   const t = getTranslations(language);
-  const { 
-    credits, 
-    loading: creditsLoading, 
-    error: creditsError, 
-    refreshCredits, 
-    hasEnoughCredits 
+  const {
+    credits,
+    loading: creditsLoading,
+    error: creditsError,
+    refreshCredits,
+    hasEnoughCredits
   } = useCredits();
-  const { 
-    workspaces, 
-    currentWorkspace, 
-    setCurrentWorkspace, 
-    loading: workspacesLoading, 
+  const {
+    workspaces,
+    currentWorkspace,
+    setCurrentWorkspace,
+    loading: workspacesLoading,
     renameWorkspace,
     isAuthenticated
   } = useUserWorkspaces();
-  
+
   // Access control: Check if user has a paid plan
   // CRITICAL: Always verify plan on EVERY load - no bypass
   const purchaseCheckAttempts = useRef(0);
   const isCheckingPlan = useRef(false); // Prevent multiple simultaneous checks
-  
+
   // Check if user just purchased (within last 5 minutes) - gives temporary access
   const hasRecentPurchase = () => {
     if (typeof window === 'undefined') return false;
     const purchaseTime = localStorage.getItem('slaid_just_purchased');
     const purchasePending = localStorage.getItem('slaid_purchase_pending');
-    
+
     if (!purchaseTime) return false;
-    
+
     const timeSincePurchase = Date.now() - parseInt(purchaseTime);
     const fiveMinutes = 5 * 60 * 1000; // 5 minutes in ms
-    
+
     console.log('🛒 Purchase check:', {
       purchaseTime: new Date(parseInt(purchaseTime)).toISOString(),
       timeSincePurchase: Math.round(timeSincePurchase / 1000) + 's',
       purchasePending,
       isRecent: timeSincePurchase < fiveMinutes
     });
-    
+
     return timeSincePurchase < fiveMinutes;
   };
-  
+
   useEffect(() => {
     const checkPaidPlan = async () => {
       // Prevent multiple simultaneous checks
@@ -371,18 +382,18 @@ export default function EditorPage() {
       // This prevents false redirects during initial load
       if (!credits) {
         console.log('⚠️ Credits null after load - checking database directly...');
-        
+
         try {
           const { data: creditsData, error } = await supabase
             .from('user_credits')
             .select('plan_type')
             .eq('user_id', user.id)
             .single();
-          
+
           if (error || !creditsData) {
             // Check if user has recent purchase - give temporary access
             const recentPurchase = hasRecentPurchase();
-            
+
             if (recentPurchase) {
               console.log('🛒 RECENT PURCHASE DETECTED (no credits record yet) - granting temporary access');
               isCheckingPlan.current = false;
@@ -391,7 +402,7 @@ export default function EditorPage() {
               }
               return; // Grant access
             }
-            
+
             // If user is coming from purchase, don't redirect yet - give webhook more time
             if (fromPurchase && purchaseCheckAttempts.current < 10) {
               console.log('⏳ No credits record but user from purchase - retrying in 2s...');
@@ -402,19 +413,19 @@ export default function EditorPage() {
               }, 2000);
               return;
             }
-            console.log('❌ No credits record found and no recent purchase - redirecting to pricing');
+            console.log('❌ No credits record found and no recent purchase - redirecting to onboarding');
             isCheckingPlan.current = false;
-            router.push('/pricing');
+            router.push('/onboarding');
             return;
           }
-          
-          const hasPaidPlan = creditsData.plan_type && 
-            ['basic', 'pro', 'ultra'].includes(creditsData.plan_type.toLowerCase());
-          
+
+          const hasPaidPlan = creditsData.plan_type &&
+            ['basic', 'pro', 'ultra', 'weekly', 'monthly', 'annual'].includes(creditsData.plan_type.toLowerCase());
+
           if (!hasPaidPlan) {
             // Check if user has recent purchase (within 5 minutes) - give temporary access
             const recentPurchase = hasRecentPurchase();
-            
+
             if (recentPurchase) {
               console.log('🛒 RECENT PURCHASE DETECTED - granting temporary access while webhook processes');
               isCheckingPlan.current = false;
@@ -423,7 +434,7 @@ export default function EditorPage() {
               }
               return; // Grant access
             }
-            
+
             // If user is coming from purchase, retry a few times before redirecting
             if (fromPurchase && purchaseCheckAttempts.current < 10) {
               console.log(`⏳ No paid plan yet but user from purchase (attempt ${purchaseCheckAttempts.current + 1}/10) - retrying in 2s...`);
@@ -434,10 +445,10 @@ export default function EditorPage() {
               }, 2000);
               return;
             }
-            
-            console.log('💳 No paid plan in database and no recent purchase - redirecting to pricing');
+
+            console.log('💳 No paid plan in database and no recent purchase - redirecting to onboarding');
             isCheckingPlan.current = false;
-            router.push('/pricing');
+            router.push('/onboarding');
           } else {
             console.log('✅ Paid plan found in database - access granted');
             if (typeof window !== 'undefined') {
@@ -451,7 +462,7 @@ export default function EditorPage() {
           }
         } catch (err) {
           console.error('❌ Error checking plan:', err);
-          
+
           // Check if user has recent purchase - give temporary access despite error
           const recentPurchase = hasRecentPurchase();
           if (recentPurchase) {
@@ -459,19 +470,19 @@ export default function EditorPage() {
             isCheckingPlan.current = false;
             return; // Grant access
           }
-          
+
           // CRITICAL: Redirect to pricing on error to prevent unauthorized access
-          console.log('🚨 SECURITY: Redirecting to pricing due to verification error');
+          console.log('🚨 SECURITY: Redirecting to onboarding due to verification error');
           isCheckingPlan.current = false;
-          router.push('/pricing');
+          router.push('/onboarding');
           return;
         }
         return;
       }
 
       // EXPLICIT check: only basic, pro, ultra are paid plans
-      const hasPaidPlan = credits?.plan_type && 
-        ['basic', 'pro', 'ultra'].includes(credits.plan_type.toLowerCase());
+      const hasPaidPlan = credits?.plan_type &&
+        ['basic', 'pro', 'ultra', 'weekly', 'monthly', 'annual'].includes(credits.plan_type.toLowerCase());
 
       console.log('🔍 Editor access check:', {
         plan_type: credits?.plan_type,
@@ -483,7 +494,7 @@ export default function EditorPage() {
       if (!hasPaidPlan) {
         // Check if user has recent purchase (within 5 minutes) - give temporary access
         const recentPurchase = hasRecentPurchase();
-        
+
         if (recentPurchase) {
           console.log('🛒 RECENT PURCHASE DETECTED - granting temporary access while webhook processes');
           isCheckingPlan.current = false;
@@ -493,7 +504,7 @@ export default function EditorPage() {
           }
           return; // Grant access - webhook will update plan soon
         }
-        
+
         // If user is coming from purchase, retry a few times before redirecting
         if (fromPurchase && purchaseCheckAttempts.current < 10) {
           console.log(`⏳ No paid plan yet but user from purchase (attempt ${purchaseCheckAttempts.current + 1}/10) - retrying in 2s...`);
@@ -504,10 +515,10 @@ export default function EditorPage() {
           }, 2000);
           return;
         }
-        
-        console.log('💳 No paid plan and no recent purchase - redirecting to pricing');
+
+        console.log('💳 No paid plan and no recent purchase - redirecting to onboarding');
         isCheckingPlan.current = false;
-        router.push('/pricing');
+        router.push('/onboarding');
       } else {
         console.log('✅ Paid plan detected - access granted');
         // Clear any pending purchase flags since plan is now active
@@ -524,25 +535,25 @@ export default function EditorPage() {
 
     checkPaidPlan();
   }, [user?.id, credits, creditsLoading, router, fromPurchase, refreshCredits]); // Use user.id to trigger on user change
-  
+
   // Helper function to get auth headers for API calls
   const getAuthHeaders = useCallback(async () => {
     try {
       // First try to get the current session
       let { data: { session } } = await supabase.auth.getSession();
-      
+
       // If no session, try refreshing it
       if (!session?.access_token) {
         console.warn('⚠️ No active session found - attempting to refresh');
         const { data: refreshData } = await supabase.auth.refreshSession();
         session = refreshData.session;
       }
-      
+
       if (!session?.access_token) {
         console.error('❌ No session found even after refresh - user needs to log in');
         throw new Error('Authentication required - please log in');
       }
-      
+
       console.log('✅ Auth headers ready with token');
       return {
         'Content-Type': 'application/json',
@@ -553,7 +564,7 @@ export default function EditorPage() {
       throw error; // Re-throw so the caller knows auth failed
     }
   }, []);
-  
+
   // Check for export mode from URL parameters
   const [isExportMode, setIsExportMode] = useState(false);
   const [exportSlideIndex, setExportSlideIndex] = useState(0);
@@ -585,7 +596,7 @@ export default function EditorPage() {
       const presentationIdParam = urlParams.get('presentationId');
       const workspaceParam = urlParams.get('workspace');
       const slideDataParam = urlParams.get('slideData');
-      
+
       console.log('📄 useEffect: Checking URL params:', {
         export: exportParam,
         hasSlideData: !!slideDataParam,
@@ -593,14 +604,14 @@ export default function EditorPage() {
         hasWindowData: !!(window as any).__EXPORT_SLIDE_DATA__,
         url: window.location.href
       });
-      
+
       if (exportParam === 'true') {
         console.log('📄 Export mode detected!');
         setIsExportMode(true);
         setExportSlideIndex(slideIndexParam ? parseInt(slideIndexParam) : 0);
         setExportPresentationId(presentationIdParam);
         setExportWorkspace(workspaceParam);
-        
+
         // First check for injected slide data (from Puppeteer)
         if ((window as any).__EXPORT_SLIDE_DATA__) {
           try {
@@ -629,12 +640,12 @@ export default function EditorPage() {
         } else {
           console.error('❌ Export mode: No slideData found in window or URL!');
         }
-        
+
         // Set the active slide to the export slide
         if (slideIndexParam) {
           setActiveSlide(parseInt(slideIndexParam));
         }
-        
+
         // Set the current presentation and workspace
         if (presentationIdParam) {
           setCurrentPresentationId(parseInt(presentationIdParam));
@@ -665,25 +676,25 @@ export default function EditorPage() {
   const [activeVersion, setActiveVersion] = useState<number | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   // File upload state and handler
   const [fileData, setFileData] = useState<any>(null);
-  
+
   // Handle file data extraction
   const handleFileDataExtracted = React.useCallback((data: any, fileName: string, fileType: string) => {
-    const processedData = fileType === 'excel' 
+    const processedData = fileType === 'excel'
       ? FileDataProcessor.processExcelData(data, fileName)
       : FileDataProcessor.processWordData(data, fileName);
-    
+
     setFileData(processedData);
     console.log('File processed in editor:', processedData);
   }, []);
   const [attachedImage, setAttachedImage] = useState<string | null>(null);
   const [attachedFile, setAttachedFile] = useState<{ url: string; type: string; name: string } | null>(null);
-  const [attachedFiles, setAttachedFiles] = useState<Array<{ 
-    url: string; 
-    type: string; 
-    name: string; 
+  const [attachedFiles, setAttachedFiles] = useState<Array<{
+    url: string;
+    type: string;
+    name: string;
     isUploaded?: boolean;
     uploadStatus?: 'uploading' | 'completed' | 'error';
     suggestedVariant?: string;
@@ -691,7 +702,7 @@ export default function EditorPage() {
     uploadError?: string;
   }>>([]);
   const [presentationTitle, setPresentationTitle] = useState('Chat-Based Presentation Editor');
-  
+
   // Get the presentation title from generated data
   const getDisplayTitle = () => {
     return currentPresentationData?.title || presentationTitle;
@@ -717,7 +728,7 @@ export default function EditorPage() {
     };
 
     window.addEventListener('focus', handleWindowFocus);
-    
+
     return () => {
       window.removeEventListener('focus', handleWindowFocus);
     };
@@ -751,7 +762,7 @@ export default function EditorPage() {
   const [onboardingStep, setOnboardingStep] = useState(1); // 1: Upload Files, 2: Description, 3: Slide Count & Summary
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedSlideCount, setSelectedSlideCount] = useState(''); // No default selection
-  
+
   // Helper function to convert slide count text to number
   const getSlideCountNumber = (slideCountText: string): number => {
     switch (slideCountText) {
@@ -771,7 +782,7 @@ export default function EditorPage() {
         return isNaN(parsed) ? 5 : parsed; // No cap anymore!
     }
   };
-  
+
   // File upload and analysis states (from test-excel logic)
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -816,15 +827,17 @@ export default function EditorPage() {
   // File upload and analysis handlers (from test-excel logic)
   const handleFileUpload = async (selectedFile: File) => {
     console.log('handleFileUpload called with:', selectedFile.name);
-    
-    // Validate file size (15MB limit for reasonable processing)
-    const MAX_FILE_SIZE = 15 * 1024 * 1024; // 15MB in bytes
+
+    // Validate file size (100MB limit for large file support)
+    const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB in bytes
     if (selectedFile.size > MAX_FILE_SIZE) {
       const sizeMB = (selectedFile.size / (1024 * 1024)).toFixed(2);
-      setUploadError(`File is too large (${sizeMB}MB). Maximum file size is 15MB. Please reduce the number of rows or columns in your file and try again.`);
+      setUploadError(`File is too large (${sizeMB}MB). Maximum file size is 100MB.`);
       return;
     }
-    
+
+    console.log(`📊 Uploading file: ${selectedFile.name} (${(selectedFile.size / (1024 * 1024)).toFixed(2)}MB)`);
+
     setIsUploading(true);
     setUploadError('');
     setUploadResult(null);
@@ -839,7 +852,7 @@ export default function EditorPage() {
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Upload failed');
       }
@@ -847,19 +860,19 @@ export default function EditorPage() {
       setUploadResult(result);
       setUploadedFiles([selectedFile]);
       console.log('Upload result:', result);
-      
+
       // Automatically perform comprehensive analysis after upload
       await performComprehensiveAnalysis(result);
-      
+
     } catch (err) {
       console.error('Upload error:', err);
       let errorMessage = err instanceof Error ? err.message : 'Upload failed';
-      
+
       // If it's a JSON parsing error, it's likely because the file is too large
       if (errorMessage.includes('JSON') || errorMessage.includes('Unexpected token') || errorMessage.includes('is not valid')) {
         errorMessage = 'File too big. Please reduce the number of rows or columns and try again.';
       }
-      
+
       setUploadError(errorMessage);
     } finally {
       setIsUploading(false);
@@ -885,14 +898,14 @@ export default function EditorPage() {
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Analysis failed');
       }
 
       setAnalysisResult(result.analysis);
       setComprehensiveAnalysis(result.comprehensiveAnalysis || '');
-      
+
       // Update uploadResult with processed data for presentation generation (same as test-excel)
       if (result.processedData) {
         setUploadResult((prev: any) => ({
@@ -900,18 +913,18 @@ export default function EditorPage() {
           processedData: result.processedData
         }));
       }
-      
+
       // Move to step 2 after successful analysis
       setOnboardingStep(2);
-      
+
     } catch (err) {
       let errorMessage = err instanceof Error ? err.message : 'Analysis failed';
-      
+
       // If it's a JSON parsing error, it's likely because the file is too large
       if (errorMessage.includes('JSON') || errorMessage.includes('Unexpected token') || errorMessage.includes('is not valid')) {
         errorMessage = 'File too big. Please reduce the number of rows or columns and try again.';
       }
-      
+
       setUploadError(errorMessage);
     } finally {
       setIsAnalyzing(false);
@@ -940,16 +953,16 @@ export default function EditorPage() {
       });
 
       const result = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(result.error || 'Prompt analysis failed');
       }
 
       setPromptAnalysis(result.promptAnalysis || 'Analysis completed successfully');
-      
+
       // Move to step 3 after successful prompt analysis
       setOnboardingStep(3);
-      
+
     } catch (err) {
       setUploadError(err instanceof Error ? err.message : 'Prompt analysis failed');
     } finally {
@@ -970,9 +983,9 @@ export default function EditorPage() {
   };
   const titleMenuRef = useRef<HTMLDivElement>(null);
   const dotsButtonRef = useRef<HTMLButtonElement>(null);
-  
+
   // Get slides for current presentation (now managed by generated presentations)
-  
+
   // Helper function to update slides for current presentation
   const updateSlides = (newSlides: { title: string }[]) => {
     setWorkspaceSlides(prev => ({
@@ -983,33 +996,33 @@ export default function EditorPage() {
       }
     }));
   };
-  
+
   // Add a ref to track the last created presentation id
   const lastCreatedPresentationId = useRef<number | null>(null);
-  
+
   // Add a ref to track all created presentation IDs for better reload
   const createdPresentationIds = useRef<Set<number>>(new Set());
-  
+
   // Load persisted presentation IDs from localStorage on mount
   useEffect(() => {
     console.log('🔄🔄🔄 LOADING PERSISTED IDS EFFECT TRIGGERED for workspace:', currentWorkspace);
-    
+
     // 🔧 LOAD WORKSPACES FROM LOCALSTORAGE
     try {
       const savedWorkspaces = localStorage.getItem('slaid_workspaces');
       if (savedWorkspaces) {
         const workspaceNames = JSON.parse(savedWorkspaces) as string[];
         console.log('📂 Loading workspaces from localStorage:', workspaceNames);
-        
+
         // Initialize workspaces if they don't exist
         const initialWorkspacePresentations: { [key: string]: { id: number; title: string }[] } = {};
         const initialWorkspaceSlides: { [key: string]: { [presentationId: number]: { title: string }[] } } = {};
-        
+
         workspaceNames.forEach(workspaceName => {
           initialWorkspacePresentations[workspaceName] = [];
           initialWorkspaceSlides[workspaceName] = {};
         });
-        
+
         // Only update if we have saved workspaces and they're different from current
         if (workspaceNames.length > 0 && JSON.stringify(Object.keys(workspacePresentations)) !== JSON.stringify(workspaceNames)) {
           setWorkspacePresentations(initialWorkspacePresentations);
@@ -1020,24 +1033,24 @@ export default function EditorPage() {
     } catch (error) {
       console.error('❌ Failed to load workspaces from localStorage:', error);
     }
-    
+
     // Load persisted presentation IDs for current workspace
     try {
       const storageKey = `createdPresentationIds_${currentWorkspace}`;
       console.log('🔄🔄🔄 CHECKING LOCALSTORAGE KEY:', storageKey);
       const persistedIds = localStorage.getItem(storageKey);
       console.log('🔄🔄🔄 RAW LOCALSTORAGE VALUE:', persistedIds);
-      
+
       // Always include known existing presentation IDs
       const knownExistingIds = [1760541972152, 1760543047479, 1760543047480, 1760544327436];
-      
+
       if (persistedIds) {
         const ids = JSON.parse(persistedIds) as number[];
         // Merge persisted IDs with known existing IDs
         const allIds = [...new Set([...ids, ...knownExistingIds])];
         createdPresentationIds.current = new Set(allIds);
         console.log('🔄🔄🔄 LOADED PERSISTED + KNOWN PRESENTATION IDS:', allIds);
-        
+
         // Update localStorage with the merged list
         localStorage.setItem(storageKey, JSON.stringify(allIds));
       } else {
@@ -1051,7 +1064,7 @@ export default function EditorPage() {
       console.error('❌ Error loading persisted presentation IDs:', error);
     }
   }, [currentWorkspace]);
-  
+
   // Helper function to persist created IDs to localStorage
   const persistCreatedId = (id: number) => {
     console.log('🔄🔄🔄 PERSIST CREATED ID CALLED with ID:', id);
@@ -1077,7 +1090,7 @@ export default function EditorPage() {
         setIsDataLoaded(true);
         return [];
       }
-      
+
       console.log('🔄🔄🔄 RELOADING ALL WORKSPACE PRESENTATIONS for:', currentWorkspace)
       console.log('🔄🔄🔄 WORKSPACE DEBUG:', {
         currentWorkspace,
@@ -1085,7 +1098,7 @@ export default function EditorPage() {
         length: currentWorkspace?.length,
         isEmpty: !currentWorkspace || currentWorkspace.trim() === ''
       })
-      
+
       // Check if workspace is valid before making API call
       if (!currentWorkspace || currentWorkspace.trim() === '') {
         console.error('❌ Cannot reload presentations: invalid workspace:', currentWorkspace)
@@ -1096,11 +1109,11 @@ export default function EditorPage() {
         setIsDataLoaded(true);
         return [];
       }
-      
+
       // Get authentication headers
       try {
         const headers = await getAuthHeaders();
-        
+
         // Call the new list presentations API
         const response = await fetch(`/api/presentations/list`, {
           method: 'GET',
@@ -1132,7 +1145,7 @@ export default function EditorPage() {
 
         const presentations = result.presentations || [];
         console.log('✅ Loaded presentations from API:', presentations.length);
-        
+
         // Update workspace presentations
         const existingPresentations = presentations.map((p: any) => ({
           id: p.id,
@@ -1151,55 +1164,55 @@ export default function EditorPage() {
               method: 'GET',
               headers,
             });
-          
-          if (dataResponse.ok) {
-            const dataResult = await dataResponse.json();
-            if (dataResult?.success && dataResult?.state) {
-              return {
-                presentationId: presentation.id,
-                // CRITICAL: Store complete slide structure (id, blocks), not just title
-                slides: dataResult.state.slides || [],
-                messages: dataResult.state.messages || []
-              };
+
+            if (dataResponse.ok) {
+              const dataResult = await dataResponse.json();
+              if (dataResult?.success && dataResult?.state) {
+                return {
+                  presentationId: presentation.id,
+                  // CRITICAL: Store complete slide structure (id, blocks), not just title
+                  slides: dataResult.state.slides || [],
+                  messages: dataResult.state.messages || []
+                };
+              }
             }
+          } catch (error) {
+            console.error('❌ Failed to load data for presentation:', presentation.id, error);
           }
-        } catch (error) {
-          console.error('❌ Failed to load data for presentation:', presentation.id, error);
-        }
-        return null;
+          return null;
         });
-        
+
         const dataResults = await Promise.all(dataPromises);
         const validDataResults = dataResults.filter(Boolean) as { presentationId: string; slides: { title: string }[]; messages: any[] }[];
-        
+
         // Update workspace slides
         setWorkspaceSlides(prev => {
           const updated = { ...prev };
           if (!updated[currentWorkspace]) {
             updated[currentWorkspace] = {};
           }
-          
+
           validDataResults.forEach(result => {
             updated[currentWorkspace][result.presentationId] = result.slides;
           });
-          
+
           return updated;
         });
-        
+
         // Update presentation messages
         setPresentationMessages(prev => {
           const updated = { ...prev };
-          
+
           validDataResults.forEach(result => {
             updated[result.presentationId] = result.messages;
           });
-          
+
           return updated;
         });
-        
+
         // Mark data as loaded
         setIsDataLoaded(true);
-        
+
         return existingPresentations;
       } catch (error) {
         console.error('❌ Failed to get auth or load presentations:', error);
@@ -1231,12 +1244,12 @@ export default function EditorPage() {
 
     setIsExporting(true);
     setExportProgress(0);
-    
+
     let progressInterval: NodeJS.Timeout | null = null;
-    
+
     try {
       console.log('📄 Starting PDF export for presentation:', currentPresentation.title);
-      
+
       // Simulate progress updates during export - realistic timing for 1-2 minute process
       progressInterval = setInterval(() => {
         setExportProgress(prev => {
@@ -1246,7 +1259,7 @@ export default function EditorPage() {
           return Math.min(prev + increment, 85);
         });
       }, 1500); // Update every 1.5 seconds instead of 200ms
-      
+
       const exportData = {
         presentationId: currentPresentationId,
         workspace: currentWorkspace,
@@ -1264,7 +1277,7 @@ export default function EditorPage() {
 
       // Clear progress interval
       if (progressInterval) clearInterval(progressInterval);
-      
+
       if (!response.ok) {
         throw new Error(`Export failed: ${response.statusText}`);
       }
@@ -1274,7 +1287,7 @@ export default function EditorPage() {
 
       // Get the PDF blob
       const pdfBlob = await response.blob();
-      
+
       // Create download link
       const url = window.URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
@@ -1282,19 +1295,19 @@ export default function EditorPage() {
       link.download = `${currentPresentation.title || 'presentation'}.pdf`;
       document.body.appendChild(link);
       link.click();
-      
+
       // Cleanup
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       console.log('✅ PDF export completed successfully');
-      
+
       // Small delay to show 100% completion
       setTimeout(() => {
         setShowExportModal(false);
         setExportProgress(0);
       }, 500);
-      
+
     } catch (error) {
       console.error('❌ PDF export failed:', error);
       // Clear progress interval on error
@@ -1344,7 +1357,7 @@ export default function EditorPage() {
       // Use the enhanced reload function instead of the old loadWorkspacePresentations
       reloadWorkspacePresentations()
     }, 50); // Reduced delay to 50ms for faster loading
-    
+
     return () => clearTimeout(timeoutId);
   }, [currentWorkspace, workspacesLoading])
 
@@ -1358,7 +1371,7 @@ export default function EditorPage() {
           localStorage.removeItem(oldKey);
           console.log('🧹 Cleared old non-user-specific workspace name from localStorage');
         }
-        
+
         // Also clear any other user's workspace names to ensure clean state
         const allKeys = Object.keys(localStorage);
         const workspaceKeys = allKeys.filter(key => key.startsWith('slaid_workspace_display_name_') && key !== `slaid_workspace_display_name_${user.id}`);
@@ -1370,7 +1383,7 @@ export default function EditorPage() {
         console.warn('⚠️ Failed to clear old localStorage entries:', error);
       }
     }
-    
+
     // Try to load saved display name from localStorage first
     try {
       const userSpecificKey = `slaid_workspace_display_name_${user?.id || 'anonymous'}`;
@@ -1379,14 +1392,14 @@ export default function EditorPage() {
       console.log('🔍 Found saved display name:', savedDisplayName);
       console.log('🔍 Current workspace from hook:', currentWorkspace);
       console.log('🔍 Current user:', user?.email);
-      
+
       if (savedDisplayName) {
         console.log('📂 Loaded workspace display name from localStorage:', savedDisplayName);
         setWorkspaceDisplayName(savedDisplayName);
       } else {
         // Fallback to currentWorkspace if no saved name
         setWorkspaceDisplayName(currentWorkspace);
-        
+
         // If we have a user and currentWorkspace, save it as the default for this user
         if (user && currentWorkspace) {
           try {
@@ -1413,25 +1426,25 @@ export default function EditorPage() {
   // When switching workspace, update presentations, slides, and reset selection
   useEffect(() => {
     console.log('🔄 useEffect triggered:', { isDataLoaded, currentWorkspace, allWorkspaces: Object.keys(workspacePresentations), presentationsCount: workspacePresentations[currentWorkspace]?.length });
-    
+
     // Skip initialization until data is loaded from database
     if (!isDataLoaded) {
       console.log('⏸️ Skipping - data not loaded yet');
       return;
     }
-    
+
     // Get the workspace key - if currentWorkspace is empty, use the first available workspace
     const workspaceKey = currentWorkspace || Object.keys(workspacePresentations)[0] || '';
     console.log('🔑 Using workspace key:', workspaceKey);
-    
+
     let pres = workspacePresentations[workspaceKey];
     console.log('📊 Presentations to check:', pres?.length || 0, pres);
-    
+
     // Only check for empty workspace on initial load, not when switching presentations
     if (!hasCheckedForEmptyWorkspace.current) {
       console.log('🔍 First time check - checking if workspace is empty or all presentations are unused');
       hasCheckedForEmptyWorkspace.current = true;
-      
+
       // If workspace is empty, show onboarding instead of creating a default presentation
       if (!pres || pres.length === 0) {
         console.log('📭 No presentations found - showing onboarding');
@@ -1439,26 +1452,26 @@ export default function EditorPage() {
         setOnboardingStep(1);
         return;
       }
-      
+
       // Check if all presentations are "empty" (created but never used)
       // An empty presentation has: 1 slide, no messages (or only system messages), and default slide title
       console.log('🔍 Starting empty check for', pres.length, 'presentations');
       console.log('🔍 Available slides data:', workspaceSlides[workspaceKey]);
       console.log('🔍 Available messages data:', presentationMessages);
-      
+
       const allPresentationsEmpty = pres.every(presentation => {
         const presentationSlides = workspaceSlides[workspaceKey]?.[presentation.id] || [];
         const messages = presentationMessages[presentation.id] || [];
-        
+
         // Count user messages (not system messages)
         const userMessages = messages.filter((msg: any) => msg.role === 'user').length;
-        
+
         const isEmpty = (
           presentationSlides.length <= 1 && // Only has default slide or less
           userMessages === 0 && // No user messages
           (presentationSlides.length === 0 || presentationSlides[0]?.title?.includes('New Slide')) // Default slide title
         );
-        
+
         console.log(`🔍 Checking if presentation "${presentation.title}" (${presentation.id}) is empty:`, {
           slides: presentationSlides.length,
           userMessages,
@@ -1466,12 +1479,12 @@ export default function EditorPage() {
           firstSlideTitle: presentationSlides[0]?.title,
           isEmpty
         });
-        
+
         return isEmpty;
       });
-      
+
       console.log('🎯 All presentations empty?', allPresentationsEmpty);
-      
+
       if (allPresentationsEmpty) {
         console.log('📭 All presentations are empty - showing onboarding');
         setShowOnboarding(true);
@@ -1479,7 +1492,7 @@ export default function EditorPage() {
         return;
       }
     }
-    
+
     // Handle existing presentations - but only set presentation if we don't have one selected
     if (pres && pres.length > 0) {
       if (lastCreatedPresentationId.current && pres.some(p => p.id === lastCreatedPresentationId.current)) {
@@ -1491,7 +1504,7 @@ export default function EditorPage() {
       }
       // Only reset slide if we're switching presentations
       if (!currentPresentationId || !pres.some(p => p.id === currentPresentationId)) {
-      setActiveSlide(0);
+        setActiveSlide(0);
       }
     }
   }, [currentWorkspace, workspacePresentations, isDataLoaded, workspaceSlides, presentationMessages]);
@@ -1513,20 +1526,20 @@ export default function EditorPage() {
       messagesLength: messages.length,
       hasMessages: messages.length > 0
     });
-    
+
     if (currentPresentationId && currentWorkspace && messages.length > 0) {
       const storageKey = `activeVersion_${currentPresentationId}_${currentWorkspace}`;
       const savedVersion = localStorage.getItem(storageKey);
       console.log('🔍 VERSION RESTORE: localStorage check:', { storageKey, savedVersion });
-      
+
       if (savedVersion && !isNaN(Number(savedVersion))) {
         const versionNumber = Number(savedVersion);
         // Verify this version exists in the messages
-        const assistantMessages = messages.filter(msg => 
+        const assistantMessages = messages.filter(msg =>
           msg.role === 'assistant' && msg.version && msg.presentationData
         );
         console.log('🔍 VERSION RESTORE: Available versions:', assistantMessages.map(m => m.version));
-        
+
         const versionExists = assistantMessages.some(msg => msg.version === versionNumber);
         if (versionExists) {
           console.log('📂 Loading activeVersion from localStorage:', { presentationId: currentPresentationId, version: versionNumber });
@@ -1569,7 +1582,7 @@ export default function EditorPage() {
     console.log('📱 Presentation messages keys:', Object.keys(presentationMessages));
     console.log('📱 Total messages for current presentation:', messagesToUse.length);
     console.log('📱 All messages for current presentation:', messagesToUse.map(m => ({ role: m.role, hasData: !!m.presentationData, isLoading: m.isLoading, version: m.version })));
-    
+
     // Show ACTUAL slide data from each message
     messagesToUse.forEach((msg, idx) => {
       if (msg.presentationData?.slides) {
@@ -1581,7 +1594,7 @@ export default function EditorPage() {
         })));
       }
     });
-    
+
     // 🔧 VERSION HISTORY: If activeVersion is set, return data from that specific version
     if (activeVersion !== null) {
       console.log('🔄 VERSION HISTORY: Looking for version', activeVersion);
@@ -1599,7 +1612,7 @@ export default function EditorPage() {
         console.log('❌ VERSION HISTORY: Version', activeVersion, 'not found, falling back to latest');
       }
     }
-    
+
     // Try multiple approaches to find presentation data (default behavior - latest version)
     const approaches = [
       // Approach 1: Last assistant message with presentation data (not loading)
@@ -1615,11 +1628,11 @@ export default function EditorPage() {
         msg => msg.presentationData
       )
     ];
-    
+
     console.log('🎯 Found via approaches:', approaches.map(a => !!a));
-    
+
     const bestMatch = approaches.find(a => a) || null;
-    
+
     if (bestMatch) {
       console.log('✅ Using message data:', {
         title: bestMatch.presentationData?.title,
@@ -1651,13 +1664,13 @@ export default function EditorPage() {
       console.log('');
       return bestMatch.presentationData;
     }
-    
+
     // FALLBACK: Try to load from workspaceSlides if no messages exist yet
     if (currentPresentationId && workspaceSlides[currentWorkspace]?.[currentPresentationId]) {
       console.log('💾 Loading from workspaceSlides (fallback)');
       const slidesArray = workspaceSlides[currentWorkspace][currentPresentationId];
       const presentationTitle = workspacePresentations[currentWorkspace]?.find(p => p.id === currentPresentationId)?.title || 'Untitled';
-      
+
       const fallbackPresentation = {
         title: presentationTitle,
         slides: slidesArray.map((slideData: any, index: number) => {
@@ -1670,9 +1683,9 @@ export default function EditorPage() {
             id: `slide-${index + 1}`,
             blocks: [
               { type: "BackgroundBlock", props: { color: "bg-white" } },
-              { 
-                type: "Cover_ProductLayout", 
-                props: { 
+              {
+                type: "Cover_ProductLayout",
+                props: {
                   title: slideData.title || `Slide ${index + 1}`,
                   paragraph: "",
                   imageUrl: "/Default-Image-2.png",
@@ -1683,15 +1696,15 @@ export default function EditorPage() {
           };
         })
       };
-      
+
       console.log('✅ Loaded fallback presentation:', {
         title: fallbackPresentation.title,
         slideCount: fallbackPresentation.slides.length
       });
-      
+
       return fallbackPresentation;
-     }
-    
+    }
+
     console.log('❌ No presentation data found anywhere!');
     return null;
   }, [messages, currentPresentationId, presentationMessages, currentPresentation, activeVersion, workspaceSlides, currentWorkspace, workspacePresentations, slideUpdateKey]);
@@ -1703,17 +1716,17 @@ export default function EditorPage() {
     console.log('🔄 currentPresentationData updated for presentation:', currentPresentationId, 'data:', data?.title);
     return data;
   }, [getCurrentPresentationData, currentPresentationId, messages, presentationMessages, slideUpdateKey]);
-  
+
   // Create a stable reference for slides that only changes when the actual slide data changes
   const slides = React.useMemo(() => {
     const slideData = currentPresentationData?.slides || [{ title: "New Slide 1" }];
     console.log('🎬 Slides updated for presentation:', currentPresentationId, 'slides:', slideData.length, 'first slide:', slideData[0]?.title);
     console.log('🔍 Slide modifications detected:', slideData.map((s: any) => ({ id: s.id, lastModified: s._lastModified })));
-    
+
     // Calculate a hash of all slide timestamps to detect any changes
     const slidesHash = slideData.map((s: any) => `${s.id}-${s._lastModified || 0}`).join('|');
     console.log('🔑 Slides hash:', slidesHash);
-    
+
     // Force new reference when slides change by stringifying
     return JSON.parse(JSON.stringify(slideData));
   }, [currentPresentationData?.slides, currentPresentationId, presentationMessages, messages, activeSlide, slideUpdateKey]);
@@ -1726,21 +1739,21 @@ export default function EditorPage() {
       // Preserve slide-level _lastModified if it exists, otherwise use presentation-level or current time
       _lastModified: slide._lastModified || currentPresentationData?._lastModified || Date.now()
     }));
-    
+
     console.log('');
     console.log('🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷');
     console.log('🔄 memoizedSlides RECALCULATED');
     console.log('🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷');
     console.log('   Slide count:', memoized.length);
-    console.log('   Timestamps:', memoized.map((s: any) => ({ 
-      id: s.id, 
+    console.log('   Timestamps:', memoized.map((s: any) => ({
+      id: s.id,
       modified: s._lastModified,
-      blockCount: s.blocks?.length 
+      blockCount: s.blocks?.length
     })));
     console.log('   Presentation _lastModified:', currentPresentationData?._lastModified);
     console.log('🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷🔷');
     console.log('');
-    
+
     return memoized;
   }, [slides, currentPresentationData?._lastModified, slideUpdateKey]);
 
@@ -1763,10 +1776,10 @@ export default function EditorPage() {
       'create a single slide', // Add this for single slide creation when no presentation exists
       'create slide'
     ];
-    
+
     const containsPhrase = createNewTriggers.some(trigger => lowerPrompt.includes(trigger));
     const containsPattern = lowerPrompt.includes('create') && (lowerPrompt.includes('presentation') || lowerPrompt.includes('deck'));
-    
+
     return containsPhrase || containsPattern;
   };
 
@@ -1818,7 +1831,7 @@ export default function EditorPage() {
       'create metrics slide',
       // Spanish triggers
       'añade una diapositiva',
-      'agrega una diapositiva', 
+      'agrega una diapositiva',
       'crea una diapositiva',
       'añadir diapositiva',
       'agregar diapositiva',
@@ -1845,19 +1858,19 @@ export default function EditorPage() {
       'añade diapositiva con una gráfica',
       'agrega diapositiva con un gráfico'
     ];
-    
+
     const containsPhrase = addSlideTriggers.some(trigger => lowerPrompt.includes(trigger));
-    const containsPattern = (lowerPrompt.includes('add') || lowerPrompt.includes('create') || lowerPrompt.includes('insert') || 
-                           lowerPrompt.includes('añade') || lowerPrompt.includes('agrega') || lowerPrompt.includes('crea')) && 
-                           (lowerPrompt.includes('slide') || lowerPrompt.includes('chart') || lowerPrompt.includes('about') ||
-                           lowerPrompt.includes('diapositiva') || lowerPrompt.includes('gráfica') || lowerPrompt.includes('gráfico'));
-    
+    const containsPattern = (lowerPrompt.includes('add') || lowerPrompt.includes('create') || lowerPrompt.includes('insert') ||
+      lowerPrompt.includes('añade') || lowerPrompt.includes('agrega') || lowerPrompt.includes('crea')) &&
+      (lowerPrompt.includes('slide') || lowerPrompt.includes('chart') || lowerPrompt.includes('about') ||
+        lowerPrompt.includes('diapositiva') || lowerPrompt.includes('gráfica') || lowerPrompt.includes('gráfico'));
+
     return containsPhrase || containsPattern;
   };
 
   const isModificationRequest = (prompt: string): boolean => {
     const lowerPrompt = prompt.toLowerCase().trim();
-    
+
     // PRIORITY: If it's explicitly a new presentation or new slide request, it's NOT a modification
     if (isCreateNewPresentationRequest(prompt) || isAddNewSlideRequest(prompt)) {
       console.log('✅ New presentation/slide request detected, NOT a modification:', prompt);
@@ -1884,17 +1897,17 @@ export default function EditorPage() {
     ];
 
     const matchedKeywords = modificationKeywords.filter(keyword => lowerPrompt.includes(keyword));
-    
+
     // Short imperative patterns (commands without explicit modification words)
     const imperativePatterns = [
       /^(set|make|turn|put|place|position)\s+/,
       /^(increase|decrease|reduce)\s+/,
       /^(align|center|justify)\s+/
     ];
-    
+
     const matchedPatterns = imperativePatterns.filter(pattern => pattern.test(lowerPrompt));
     const isShortImperative = lowerPrompt.split(' ').length <= 5 && matchedPatterns.length > 0;
-    
+
     const isModification = matchedKeywords.length > 0 || matchedPatterns.length > 0 || isShortImperative;
 
     console.log('🔍 Intent Classification:', {
@@ -1906,7 +1919,7 @@ export default function EditorPage() {
       matchedPatterns: matchedPatterns.map(r => r.toString()),
       isShortImperative: isShortImperative
     });
-    
+
     // 🚨 EMERGENCY DEBUG - Force modification for chart update requests
     if (prompt.toLowerCase().includes('update') && prompt.toLowerCase().includes('chart')) {
       console.log('🚨 EMERGENCY: CHART UPDATE DETECTED - FORCING MODIFICATION');
@@ -1919,7 +1932,7 @@ export default function EditorPage() {
   // Legacy function for backward compatibility
   const isModificationRequestLegacy = (prompt: string) => {
     const lowerPrompt = prompt.toLowerCase().trim();
-    
+
     // PRIORITY: If prompt contains creation words, it's NOT a modification
     const creationKeywords = ['create', 'generate', 'make a', 'build', 'new presentation', 'start with', 'add slide', 'another slide', 'new slide'];
     const isCreationRequest = creationKeywords.some(keyword => lowerPrompt.includes(keyword));
@@ -1981,7 +1994,7 @@ export default function EditorPage() {
   // Handle hydration
   useEffect(() => {
     setIsMounted(true);
-    
+
     // EMERGENCY FIX: Listen for emergency KPI data
     const handleEmergencyData = (event: any) => {
       console.log('🚨 EMERGENCY: Received KPI data', event.detail);
@@ -1999,9 +2012,9 @@ export default function EditorPage() {
       }));
       setActiveSlide(0);
     };
-    
+
     window.addEventListener('emergencyKPIData', handleEmergencyData);
-    
+
     // Listen for iPhone Standalone Feature requests
     const handleiPhoneRequest = () => {
       const iPhoneData = {
@@ -2030,208 +2043,208 @@ export default function EditorPage() {
           }
         ]
       };
-      
+
       console.log('🚨 EMERGENCY: Injecting iPhone Standalone Feature data via direct trigger');
       handleEmergencyData({ detail: iPhoneData });
     };
-    
+
     // Trigger iPhone layout when user types iPhone-related requests
     const checkForIPhoneRequest = () => {
       const inputElement = document.querySelector('input[type="text"]') as HTMLInputElement;
-      if (inputElement && inputElement.value.toLowerCase().includes('iphone') && 
-          inputElement.value.toLowerCase().includes('standalone')) {
+      if (inputElement && inputElement.value.toLowerCase().includes('iphone') &&
+        inputElement.value.toLowerCase().includes('standalone')) {
         setTimeout(handleiPhoneRequest, 500);
       }
     };
-    
-        // KPI detection disabled - no automatic injection
-        
-        // KPI injection functions removed - no automatic injection
-        
-        const handleKPIRequest = () => {
-          // Wait for API response to fail, then inject emergency data
-          setTimeout(() => {
-            const kpiData = {
-            "title": "Business Performance Dashboard",
-            "slides": [
-              {
-                "id": "slide-1",
-                "blocks": [
-                  {
-                    "type": "BackgroundBlock",
-                    "props": {
-                      "color": "bg-white"
-                    }
-                  },
-                  {
-                    "type": "Impact_KPIOverview",
-                    "props": {
-                      "title": "KPI Overview",
-                      "description": "Product performance is the backbone of growth. By evaluating how web features resonate with users and their impact on engagement, we unlock opportunities to scale effectively.",
-                      "kpiCards": [
-                        {
-                          "title": "Active Users",
-                          "value": "35,000",
-                          "subtitle": "+3.2% compared to previous",
-                          "trend": "up",
-                          "trendValue": "+3.2%",
-                          "icon": "Users",
-                          "hasChart": true,
-                          "chartType": "area",
-                          "chartData": [100, 120, 150, 130, 160, 180, 200]
-                        },
-                        {
-                          "title": "Retention Rate",
-                          "value": "88%",
-                          "subtitle": "Needs improvement",
-                          "trend": "down",
-                          "trendValue": "-2%",
-                          "icon": "Users",
-                          "hasChart": true,
-                          "chartType": "area",
-                          "chartData": [95, 92, 90, 88, 85, 88, 87]
-                        },
-                        {
-                          "title": "Revenue Growth",
-                          "value": "24.5%",
-                          "subtitle": "Year-over-year",
-                          "trend": "up",
-                          "trendValue": "+4.5%",
-                          "icon": "TrendingUp"
-                        },
-                        {
-                          "title": "NPS Score",
-                          "value": "45",
-                          "subtitle": "Company Goal Target: 50+",
-                          "trend": "neutral",
-                          "icon": "Star"
-                        },
-                        {
-                          "title": "Monthly Churn Rate",
-                          "value": "4.5%",
-                          "subtitle": "Down from last year's 8%",
-                          "trend": "down",
-                          "trendValue": "-3.5%",
-                          "icon": "AlertTriangle"
-                        }
-                      ],
-                      "layout": {
-                        "columnSizes": [4, 8],
-                        "showTitle": true,
-                        "showDescription": true,
-                        "showKpiCards": true
-                      },
-                      "fontFamily": "font-helvetica-neue",
-                      "titleColor": "text-gray-900",
-                      "descriptionColor": "text-gray-600"
-                    }
-                  }
-                ]
-              }
-            ]
-          };
-            console.log('🚨 EMERGENCY: Triggering KPI Overview data injection with charts (after API timeout)');
-            handleEmergencyData({ detail: kpiData });
-          }, 5000); // Wait 5 seconds for API to complete, then inject
-        };
-        
-        // Monitor input changes - DISABLED
-        // document.addEventListener('input', checkForIPhoneRequest);
-        // document.addEventListener('keyup', checkForIPhoneRequest);
-        // KPI event listeners removed - no automatic injection
-    
-      // EMERGENCY FIX DISABLED - no automatic injection
+
+    // KPI detection disabled - no automatic injection
+
+    // KPI injection functions removed - no automatic injection
+
+    const handleKPIRequest = () => {
+      // Wait for API response to fail, then inject emergency data
       setTimeout(() => {
-        // All emergency KPI injection disabled
-        const shouldInjectKPI = false; // DISABLED
-        
-        if (false) { // Never execute
-          const kpiData = {
-            "title": "Business Performance Dashboard",
-            "slides": [
-              {
-                "id": "slide-1",
-                "blocks": [
-                  {
-                    "type": "BackgroundBlock",
-                    "props": {
-                      "color": "bg-white"
-                    }
-                  },
-                  {
-                    "type": "Impact_KPIOverview",
-                    "props": {
-                      "title": "KPI Overview",
-                      "description": "Product performance is the backbone of growth. By evaluating how web features resonate with users and their impact on engagement, we unlock opportunities to scale effectively.",
-                      "kpiCards": [
-                        {
-                          "title": "Active Users",
-                          "value": "35,000",
-                          "subtitle": "+3.2% compared to previous",
-                          "trend": "up",
-                          "trendValue": "+3.2%",
-                          "icon": "Users",
-                          "hasChart": true,
-                          "chartType": "area",
-                          "chartData": [100, 120, 150, 130, 160, 180, 200]
-                        },
-                        {
-                          "title": "Retention Rate",
-                          "value": "88%",
-                          "subtitle": "Needs improvement",
-                          "trend": "down",
-                          "trendValue": "-2%",
-                          "icon": "Users",
-                          "hasChart": true,
-                          "chartType": "area",
-                          "chartData": [95, 92, 90, 88, 85, 88, 87]
-                        },
-                        {
-                          "title": "Revenue Growth",
-                          "value": "24.5%",
-                          "subtitle": "Year-over-year",
-                          "trend": "up",
-                          "trendValue": "+4.5%",
-                          "icon": "TrendingUp"
-                        },
-                        {
-                          "title": "NPS Score",
-                          "value": "45",
-                          "subtitle": "Company Goal Target: 50+",
-                          "trend": "neutral",
-                          "icon": "Star"
-                        },
-                        {
-                          "title": "Monthly Churn Rate",
-                          "value": "4.5%",
-                          "subtitle": "Down from last year's 8%",
-                          "trend": "down",
-                          "trendValue": "-3.5%",
-                          "icon": "AlertTriangle"
-                        }
-                      ],
-                      "layout": {
-                        "columnSizes": [4, 8],
-                        "showTitle": true,
-                        "showDescription": true,
-                        "showKpiCards": true
-                      },
-                      "fontFamily": "font-helvetica-neue",
-                      "titleColor": "text-gray-900",
-                      "descriptionColor": "text-gray-600"
-                    }
+        const kpiData = {
+          "title": "Business Performance Dashboard",
+          "slides": [
+            {
+              "id": "slide-1",
+              "blocks": [
+                {
+                  "type": "BackgroundBlock",
+                  "props": {
+                    "color": "bg-white"
                   }
-                ]
-              }
-            ]
-          };
-          
-          console.log('🚨 EMERGENCY: Injecting KPI Overview data');
-          handleEmergencyData({ detail: kpiData });
-          return;
-        }
-        
-        const emergencyData = {
+                },
+                {
+                  "type": "Impact_KPIOverview",
+                  "props": {
+                    "title": "KPI Overview",
+                    "description": "Product performance is the backbone of growth. By evaluating how web features resonate with users and their impact on engagement, we unlock opportunities to scale effectively.",
+                    "kpiCards": [
+                      {
+                        "title": "Active Users",
+                        "value": "35,000",
+                        "subtitle": "+3.2% compared to previous",
+                        "trend": "up",
+                        "trendValue": "+3.2%",
+                        "icon": "Users",
+                        "hasChart": true,
+                        "chartType": "area",
+                        "chartData": [100, 120, 150, 130, 160, 180, 200]
+                      },
+                      {
+                        "title": "Retention Rate",
+                        "value": "88%",
+                        "subtitle": "Needs improvement",
+                        "trend": "down",
+                        "trendValue": "-2%",
+                        "icon": "Users",
+                        "hasChart": true,
+                        "chartType": "area",
+                        "chartData": [95, 92, 90, 88, 85, 88, 87]
+                      },
+                      {
+                        "title": "Revenue Growth",
+                        "value": "24.5%",
+                        "subtitle": "Year-over-year",
+                        "trend": "up",
+                        "trendValue": "+4.5%",
+                        "icon": "TrendingUp"
+                      },
+                      {
+                        "title": "NPS Score",
+                        "value": "45",
+                        "subtitle": "Company Goal Target: 50+",
+                        "trend": "neutral",
+                        "icon": "Star"
+                      },
+                      {
+                        "title": "Monthly Churn Rate",
+                        "value": "4.5%",
+                        "subtitle": "Down from last year's 8%",
+                        "trend": "down",
+                        "trendValue": "-3.5%",
+                        "icon": "AlertTriangle"
+                      }
+                    ],
+                    "layout": {
+                      "columnSizes": [4, 8],
+                      "showTitle": true,
+                      "showDescription": true,
+                      "showKpiCards": true
+                    },
+                    "fontFamily": "font-helvetica-neue",
+                    "titleColor": "text-gray-900",
+                    "descriptionColor": "text-gray-600"
+                  }
+                }
+              ]
+            }
+          ]
+        };
+        console.log('🚨 EMERGENCY: Triggering KPI Overview data injection with charts (after API timeout)');
+        handleEmergencyData({ detail: kpiData });
+      }, 5000); // Wait 5 seconds for API to complete, then inject
+    };
+
+    // Monitor input changes - DISABLED
+    // document.addEventListener('input', checkForIPhoneRequest);
+    // document.addEventListener('keyup', checkForIPhoneRequest);
+    // KPI event listeners removed - no automatic injection
+
+    // EMERGENCY FIX DISABLED - no automatic injection
+    setTimeout(() => {
+      // All emergency KPI injection disabled
+      const shouldInjectKPI = false; // DISABLED
+
+      if (false) { // Never execute
+        const kpiData = {
+          "title": "Business Performance Dashboard",
+          "slides": [
+            {
+              "id": "slide-1",
+              "blocks": [
+                {
+                  "type": "BackgroundBlock",
+                  "props": {
+                    "color": "bg-white"
+                  }
+                },
+                {
+                  "type": "Impact_KPIOverview",
+                  "props": {
+                    "title": "KPI Overview",
+                    "description": "Product performance is the backbone of growth. By evaluating how web features resonate with users and their impact on engagement, we unlock opportunities to scale effectively.",
+                    "kpiCards": [
+                      {
+                        "title": "Active Users",
+                        "value": "35,000",
+                        "subtitle": "+3.2% compared to previous",
+                        "trend": "up",
+                        "trendValue": "+3.2%",
+                        "icon": "Users",
+                        "hasChart": true,
+                        "chartType": "area",
+                        "chartData": [100, 120, 150, 130, 160, 180, 200]
+                      },
+                      {
+                        "title": "Retention Rate",
+                        "value": "88%",
+                        "subtitle": "Needs improvement",
+                        "trend": "down",
+                        "trendValue": "-2%",
+                        "icon": "Users",
+                        "hasChart": true,
+                        "chartType": "area",
+                        "chartData": [95, 92, 90, 88, 85, 88, 87]
+                      },
+                      {
+                        "title": "Revenue Growth",
+                        "value": "24.5%",
+                        "subtitle": "Year-over-year",
+                        "trend": "up",
+                        "trendValue": "+4.5%",
+                        "icon": "TrendingUp"
+                      },
+                      {
+                        "title": "NPS Score",
+                        "value": "45",
+                        "subtitle": "Company Goal Target: 50+",
+                        "trend": "neutral",
+                        "icon": "Star"
+                      },
+                      {
+                        "title": "Monthly Churn Rate",
+                        "value": "4.5%",
+                        "subtitle": "Down from last year's 8%",
+                        "trend": "down",
+                        "trendValue": "-3.5%",
+                        "icon": "AlertTriangle"
+                      }
+                    ],
+                    "layout": {
+                      "columnSizes": [4, 8],
+                      "showTitle": true,
+                      "showDescription": true,
+                      "showKpiCards": true
+                    },
+                    "fontFamily": "font-helvetica-neue",
+                    "titleColor": "text-gray-900",
+                    "descriptionColor": "text-gray-600"
+                  }
+                }
+              ]
+            }
+          ]
+        };
+
+        console.log('🚨 EMERGENCY: Injecting KPI Overview data');
+        handleEmergencyData({ detail: kpiData });
+        return;
+      }
+
+      const emergencyData = {
         "title": "Business Performance Dashboard",
         "slides": [
           {
@@ -2309,17 +2322,17 @@ export default function EditorPage() {
           }
         ]
       };
-      
+
       console.log('🚨 EMERGENCY: KPI data injection DISABLED');
       // handleEmergencyData({ detail: emergencyData }); // DISABLED
     }, 1000);
-    
-      return () => {
-        window.removeEventListener('emergencyKPIData', handleEmergencyData);
-        document.removeEventListener('input', checkForIPhoneRequest);
-        document.removeEventListener('keyup', checkForIPhoneRequest);
-        // KPI event listeners cleanup removed - no listeners to remove
-      };
+
+    return () => {
+      window.removeEventListener('emergencyKPIData', handleEmergencyData);
+      document.removeEventListener('input', checkForIPhoneRequest);
+      document.removeEventListener('keyup', checkForIPhoneRequest);
+      // KPI event listeners cleanup removed - no listeners to remove
+    };
   }, [currentPresentationId]);
 
   // No fallback components needed - starting fresh
@@ -2328,14 +2341,14 @@ export default function EditorPage() {
   // Function to handle roadmap data changes
   const handleRoadmapDataChange = useCallback((blockIndex: number, newRoadmapData: any) => {
     console.log('🔄 Roadmap data changed:', { blockIndex, newRoadmapData });
-    
+
     // Update the presentation data with the new roadmap data
     setPresentationMessages(prev => {
       const currentMessages = prev[currentPresentationId] || [];
       const lastAssistantMessage = [...currentMessages].reverse().find(
         msg => msg.role === 'assistant' && msg.presentationData && !msg.isLoading
       );
-      
+
       if (lastAssistantMessage && lastAssistantMessage.presentationData) {
         const updatedPresentationData = {
           ...lastAssistantMessage.presentationData,
@@ -2360,21 +2373,21 @@ export default function EditorPage() {
             return slide;
           })
         };
-        
+
         // Update the message with the new presentation data
-        const updatedMessages = currentMessages.map(msg => 
+        const updatedMessages = currentMessages.map(msg =>
           msg === lastAssistantMessage ? {
             ...msg,
             presentationData: updatedPresentationData
           } : msg
         );
-        
+
         return {
           ...prev,
           [currentPresentationId]: updatedMessages
         };
       }
-      
+
       return prev;
     });
   }, [currentPresentationId, activeSlide, setPresentationMessages]);
@@ -2382,14 +2395,14 @@ export default function EditorPage() {
   // 🔧 UNIVERSAL CANVAS EDIT HANDLER - Handles all canvas editing with database persistence
   const handleCanvasEdit = useCallback((blockIndex: number, updates: any) => {
     console.log('🎨 Canvas edit detected:', { blockIndex, updates, activeSlide, presentationId: currentPresentationId });
-    
+
     // Update the presentation data with the canvas edits
     setPresentationMessages(prev => {
       const currentMessages = prev[currentPresentationId] || [];
       const lastAssistantMessage = [...currentMessages].reverse().find(
         msg => msg.role === 'assistant' && msg.presentationData && !msg.isLoading
       );
-      
+
       if (lastAssistantMessage && lastAssistantMessage.presentationData) {
         const updatedPresentationData = {
           ...lastAssistantMessage.presentationData,
@@ -2414,26 +2427,26 @@ export default function EditorPage() {
             return slide;
           })
         };
-        
+
         console.log('🎨 Updated presentation data:', updatedPresentationData);
-        
+
         // Update the message with new presentation data
-        const updatedMessages = currentMessages.map(msg => 
+        const updatedMessages = currentMessages.map(msg =>
           msg === lastAssistantMessage ? {
             ...msg,
             presentationData: updatedPresentationData
           } : msg
         );
-        
+
         // 🔧 LET AUTOSAVE HANDLE DATABASE SAVE
         console.log('💾 Canvas edit updated in state - autosave will handle database save');
-        
+
         return {
           ...prev,
           [currentPresentationId]: updatedMessages
         };
       }
-      
+
       return prev;
     });
   }, [currentPresentationId, activeSlide, currentWorkspace]);
@@ -2441,15 +2454,15 @@ export default function EditorPage() {
   // Function to render a single block - Memoized to prevent unnecessary re-renders
   const renderBlock = React.useCallback((block: any, index: number, isPresentationMode = false) => {
     console.log(`🔷 Rendering block ${index}: ${block.type}`);
-    
+
     const Component = componentMap[block.type];
     console.log(`🔍 Component for ${block.type}:`, Component, typeof Component);
-    
+
     if (!Component) {
       console.warn(`❌ Unknown component type: ${block.type}`);
       return <div key={index} className="p-4 bg-yellow-100 text-yellow-800">Unknown component: "{block.type}"</div>;
     }
-    
+
     // 🔧 DOUBLE CHECK: Ensure component is valid
     if (typeof Component !== 'function' && (!Component || typeof Component !== 'object' || !(Component as any).$$typeof)) {
       console.error('❌ INVALID COMPONENT:', block.type, 'Component:', Component);
@@ -2459,30 +2472,30 @@ export default function EditorPage() {
     // Handle layout components with children
     if (['SingleColumnLayout', 'TwoColumnLayout', 'SplitLayout', 'ImageLeftLayout', 'ImageRightLayout'].includes(block.type)) {
       const props = { ...block.props };
-      
+
       // Render children arrays for layout components
       if (props.children && Array.isArray(props.children)) {
-        props.children = props.children.map((child: any, childIndex: number) => 
+        props.children = props.children.map((child: any, childIndex: number) =>
           renderBlock(child, childIndex)
         );
       }
       if (props.leftChildren && Array.isArray(props.leftChildren)) {
-        props.leftChildren = props.leftChildren.map((child: any, childIndex: number) => 
+        props.leftChildren = props.leftChildren.map((child: any, childIndex: number) =>
           renderBlock(child, childIndex)
         );
       }
       if (props.rightChildren && Array.isArray(props.rightChildren)) {
-        props.rightChildren = props.rightChildren.map((child: any, childIndex: number) => 
+        props.rightChildren = props.rightChildren.map((child: any, childIndex: number) =>
           renderBlock(child, childIndex)
         );
       }
       if (props.imageChildren && Array.isArray(props.imageChildren)) {
-        props.imageChildren = props.imageChildren.map((child: any, childIndex: number) => 
+        props.imageChildren = props.imageChildren.map((child: any, childIndex: number) =>
           renderBlock(child, childIndex)
         );
       }
       if (props.contentChildren && Array.isArray(props.contentChildren)) {
-        props.contentChildren = props.contentChildren.map((child: any, childIndex: number) => 
+        props.contentChildren = props.contentChildren.map((child: any, childIndex: number) =>
           renderBlock(child, childIndex)
         );
       }
@@ -2491,12 +2504,12 @@ export default function EditorPage() {
     }
 
     const propsToPass = block.props || {};
-    
+
     // Add fixed dimensions for consistent canvas sizing
     propsToPass.useFixedDimensions = true;
     propsToPass.canvasWidth = 881;
     propsToPass.canvasHeight = 495;
-    
+
     // 🔧 DISABLE ANIMATIONS IN EXPORT MODE FOR PROPER PDF RENDERING
     if (isExportMode) {
       // For layouts with chart prop
@@ -2521,13 +2534,13 @@ export default function EditorPage() {
         }));
       }
     }
-    
+
     // Add language parameter for layout components that support it
     const languageAwareComponents = [
-      'Metrics_FinancialsSplit', 
+      'Metrics_FinancialsSplit',
       'Impact_KPIOverview'
     ];
-    
+
     if (languageAwareComponents.includes(block.type)) {
       // Detect language from the last user message
       const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user');
@@ -2536,16 +2549,16 @@ export default function EditorPage() {
         propsToPass.language = userLanguage;
       }
     }
-    
+
     // Add onDataChange callback for Roadmap_Timeline components
     if (block.type === 'Roadmap_Timeline') {
       propsToPass.onDataChange = (newRoadmapData: any) => handleRoadmapDataChange(index, newRoadmapData);
     }
-    
+
     // 🔧 ADD CANVAS EDITING SUPPORT - Add onUpdate callback for canvas-enabled components
     const canvasEnabledComponents = [
       'Cover_LeftImageTextRight',
-      'Cover_TextCenter', 
+      'Cover_TextCenter',
       'Cover_LeftTitleRightBodyUnderlined', // Now mapped to Cover_TextCenter
       'Cover_ProductLayout',
       'BackCover_ThankYou',
@@ -2582,13 +2595,13 @@ export default function EditorPage() {
       'Content_TextImageDescription'
       // 🚨 REMOVED DUPLICATES: Impact_ImageMetrics, Impact_KPIOverview, Team_AdaptiveGrid already commented out above
     ];
-    
+
     if (canvasEnabledComponents.includes(block.type)) {
       propsToPass.onUpdate = (updates: any) => {
         console.log('🎨 Canvas edit from component:', block.type, updates);
         handleCanvasEdit(index, updates);
       };
-      
+
       // 🔧 PASS SAVED TRANSFORM DATA - Extract transform data from block props and pass as specific props
       if (block.props) {
         if (block.props.titleTransform) {
@@ -2600,7 +2613,7 @@ export default function EditorPage() {
         if (block.props.logoTransform) {
           propsToPass.logoTransform = block.props.logoTransform;
         }
-        
+
         // 🔧 PASS SAVED FONT STYLING DATA
         if (block.props.titleFontSize) {
           propsToPass.titleFontSize = block.props.titleFontSize;
@@ -2626,7 +2639,7 @@ export default function EditorPage() {
         if (block.props.paragraphColor) {
           propsToPass.paragraphColor = block.props.paragraphColor;
         }
-        
+
         // 🔧 PASS DESCRIPTION STYLING DATA (for Lists layouts)
         if (block.props.descriptionFontSize) {
           propsToPass.descriptionFontSize = block.props.descriptionFontSize;
@@ -2640,7 +2653,7 @@ export default function EditorPage() {
         if (block.props.descriptionColor) {
           propsToPass.descriptionColor = block.props.descriptionColor;
         }
-        
+
         // 🔧 PASS CONTACT STYLING DATA (for BackCover layouts)
         if (block.props.contactFontSize) {
           propsToPass.contactFontSize = block.props.contactFontSize;
@@ -2654,35 +2667,35 @@ export default function EditorPage() {
         if (block.props.contactColor) {
           propsToPass.contactColor = block.props.contactColor;
         }
-        
+
         // 🔧 PASS FLAT CONTACT PROPERTIES (for BackCover layouts)
         if (block.props.contactEmail !== undefined) {
-          propsToPass.contact = { 
-            ...propsToPass.contact, 
-            email: block.props.contactEmail 
+          propsToPass.contact = {
+            ...propsToPass.contact,
+            email: block.props.contactEmail
           };
         }
         if (block.props.contactSocial !== undefined) {
-          propsToPass.contact = { 
-            ...propsToPass.contact, 
-            social: block.props.contactSocial 
+          propsToPass.contact = {
+            ...propsToPass.contact,
+            social: block.props.contactSocial
           };
         }
         if (block.props.contactPhone !== undefined) {
-          propsToPass.contact = { 
-            ...propsToPass.contact, 
-            phone: block.props.contactPhone 
+          propsToPass.contact = {
+            ...propsToPass.contact,
+            phone: block.props.contactPhone
           };
         }
         if (block.props.contactPhone2 !== undefined) {
-          propsToPass.contact = { 
-            ...propsToPass.contact, 
-            phone2: block.props.contactPhone2 
+          propsToPass.contact = {
+            ...propsToPass.contact,
+            phone2: block.props.contactPhone2
           };
         }
         if (block.props.contactCity !== undefined || block.props.contactCountry !== undefined) {
-          propsToPass.contact = { 
-            ...propsToPass.contact, 
+          propsToPass.contact = {
+            ...propsToPass.contact,
             location: {
               ...propsToPass.contact?.location,
               city: block.props.contactCity,
@@ -2691,9 +2704,9 @@ export default function EditorPage() {
           };
         }
         if (block.props.contactWebsite !== undefined) {
-          propsToPass.contact = { 
-            ...propsToPass.contact, 
-            website: block.props.contactWebsite 
+          propsToPass.contact = {
+            ...propsToPass.contact,
+            website: block.props.contactWebsite
           };
         }
         if (block.props.bulletPointStyles) {
@@ -2702,7 +2715,7 @@ export default function EditorPage() {
         if (block.props.memberTextStyles) {
           propsToPass.memberTextStyles = block.props.memberTextStyles;
         }
-        
+
         // 🔧 PASS KPI STYLING ARRAYS FOR IMPACT KPI OVERVIEW
         if (block.props.kpiTitleFontSizes) {
           propsToPass.kpiTitleFontSizes = block.props.kpiTitleFontSizes;
@@ -2740,7 +2753,7 @@ export default function EditorPage() {
         if (block.props.kpiSubtitleAlignments) {
           propsToPass.kpiSubtitleAlignments = block.props.kpiSubtitleAlignments;
         }
-        
+
         // 🔧 PASS IMPACT STYLING ARRAYS FOR IMPACT IMAGE METRICS
         if (block.props.impactValueFontSizes) {
           propsToPass.impactValueFontSizes = block.props.impactValueFontSizes;
@@ -2766,7 +2779,7 @@ export default function EditorPage() {
         if (block.props.impactLabelAlignments) {
           propsToPass.impactLabelAlignments = block.props.impactLabelAlignments;
         }
-        
+
         // 🔧 PASS MARKET SIZE ANALYSIS SPECIFICATION TEXT STYLING DATA
         if (block.props.specDescriptionFontSize) {
           propsToPass.specDescriptionFontSize = block.props.specDescriptionFontSize;
@@ -2792,7 +2805,7 @@ export default function EditorPage() {
         if (block.props.specValueAlignment) {
           propsToPass.specValueAlignment = block.props.specValueAlignment;
         }
-        
+
         // 🔧 PASS SPEC LABEL STYLING DATA FOR MARKET SIZE ANALYSIS
         if (block.props.specLabelFontFamily) {
           propsToPass.specLabelFontFamily = block.props.specLabelFontFamily;
@@ -2803,7 +2816,7 @@ export default function EditorPage() {
         if (block.props.specLabelAlignment) {
           propsToPass.specLabelAlignment = block.props.specLabelAlignment;
         }
-        
+
         // 🔧 PASS TAM/SAM/SOM STYLING DATA FOR MARKET SIZE ANALYSIS
         if (block.props.tamLabelFontSize) {
           propsToPass.tamLabelFontSize = block.props.tamLabelFontSize;
@@ -2829,7 +2842,7 @@ export default function EditorPage() {
         if (block.props.tamValueAlignment) {
           propsToPass.tamValueAlignment = block.props.tamValueAlignment;
         }
-        
+
         if (block.props.samLabelFontSize) {
           propsToPass.samLabelFontSize = block.props.samLabelFontSize;
         }
@@ -2854,7 +2867,7 @@ export default function EditorPage() {
         if (block.props.samValueAlignment) {
           propsToPass.samValueAlignment = block.props.samValueAlignment;
         }
-        
+
         if (block.props.somLabelFontSize) {
           propsToPass.somLabelFontSize = block.props.somLabelFontSize;
         }
@@ -2880,9 +2893,9 @@ export default function EditorPage() {
           propsToPass.somValueAlignment = block.props.somValueAlignment;
         }
       }
-      
+
     }
-    
+
     return React.createElement(Component, { key: index, ...propsToPass });
   }, [isExportMode, messages, language]);
 
@@ -2890,12 +2903,12 @@ export default function EditorPage() {
   const renderSlideContent = React.useCallback((slideIndex?: number, isPresentationMode = false) => {
     // TEST: Disabled - show real presentation data
     const testBlueGradient = false; // DISABLED: Show real Claude-generated presentations
-    
+
     // In export mode, use the slide data from URL parameters
     if (isExportMode && exportSlideData) {
       console.log('📄 Export mode: Rendering slide from URL data');
       const currentSlide = exportSlideData;
-      
+
       if (!currentSlide) {
         return (
           <div className="w-full h-full bg-white flex items-center justify-center text-gray-400">
@@ -2905,7 +2918,7 @@ export default function EditorPage() {
       }
 
       console.log('🎬 Export mode - All slide blocks:', currentSlide.blocks);
-      
+
       return (
         <div className="w-full h-full relative">
           {/* Content container: no padding to match layout preview page */}
@@ -2920,7 +2933,7 @@ export default function EditorPage() {
         </div>
       );
     }
-    
+
     // Get the latest generated presentation from the most recent assistant message
     const currentMessages = messages;
     const lastAssistantMessage = [...currentMessages].reverse().find(
@@ -2931,7 +2944,7 @@ export default function EditorPage() {
     // Use memoized slides to prevent unnecessary re-renders
     const slideIndexToUse = slideIndex !== undefined ? slideIndex : activeSlide;
     const currentSlide = memoizedSlides?.[slideIndexToUse] || presentationData?.slides?.[slideIndexToUse];
-    
+
     console.log('🎬 Rendering slide:', {
       slideIndex: slideIndexToUse,
       totalSlides: presentationData?.slides?.length,
@@ -2971,7 +2984,7 @@ export default function EditorPage() {
 
 
     console.log('🎬 All slide blocks:', currentSlide.blocks);
-    
+
     // Decide canvas padding based on slide content (edge-to-edge layouts remove it)
     const shouldRemoveCanvasPadding = Array.isArray(currentSlide.blocks) && currentSlide.blocks.some((b: any) => {
       try {
@@ -3050,9 +3063,9 @@ export default function EditorPage() {
   // Modal component
   function CreditsModal() {
     if (!showCreditsModal) return null;
-    
+
     return (
-      <div 
+      <div
         className="fixed inset-0 z-50 flex items-center justify-center"
         onClick={() => {
           setShowCreditsModal(false);
@@ -3062,7 +3075,7 @@ export default function EditorPage() {
         {/* Overlay with fade-in */}
         <div className="absolute inset-0 bg-black/60" />
         {/* Modal with fade and scale transition */}
-        <div 
+        <div
           className="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 border border-[#23272f]"
           onClick={(e) => e.stopPropagation()}
         >
@@ -3075,8 +3088,8 @@ export default function EditorPage() {
             aria-label="Close"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
           <h2 className="text-gray-900 text-lg font-semibold mb-1">Presentation Credits</h2>
@@ -3094,13 +3107,13 @@ export default function EditorPage() {
                 <span className="text-gray-900 text-base font-semibold">
                   {credits?.remaining_credits?.toLocaleString() || '0'}
                 </span>
-            <span className="text-gray-500 text-base ml-1">remaining</span>
+                <span className="text-gray-500 text-base ml-1">remaining</span>
               </>
             )}
           </div>
-          <button className="w-full border border-[#23272f] text-gray-900 font-medium rounded-lg py-2 mb-3 text-base bg-transparent hover:bg-gray-50 hover:scale-105 transition duration-200 ease-in-out" onClick={() => { 
-            setShowCreditsModal(false); 
-            setShowCreditPacksModal(true); 
+          <button className="w-full border border-[#23272f] text-gray-900 font-medium rounded-lg py-2 mb-3 text-base bg-transparent hover:bg-gray-50 hover:scale-105 transition duration-200 ease-in-out" onClick={() => {
+            setShowCreditsModal(false);
+            setShowCreditPacksModal(true);
             refreshCredits(); // Refresh credits when switching modals
           }}>Purchase credit packs</button>
           <button className="w-full bg-[#002903] text-white font-semibold rounded-lg py-2 text-base shadow-md hover:opacity-90 hover:scale-110 transition duration-200 ease-in-out" onClick={() => setShowPricingModal(true)}>Upgrade plan</button>
@@ -3121,7 +3134,7 @@ export default function EditorPage() {
     const handleCreditPurchase = async (pack: { credits: number; price: string; productId: string }) => {
       try {
         console.log('🛒 Starting credit purchase for:', pack.credits, 'credits');
-        
+
         // Get Polar configuration
         const polarConfig = {
           publicAccessToken: process.env.NEXT_PUBLIC_POLAR_SH_PUBLIC_ACCESS_TOKEN,
@@ -3163,12 +3176,12 @@ export default function EditorPage() {
       }
     };
     return (
-      <div 
+      <div
         className="fixed inset-0 z-50 flex items-center justify-center"
         onClick={() => setShowCreditPacksModal(false)}
       >
         <div className="absolute inset-0 bg-black/60" />
-        <div 
+        <div
           className="relative bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 border border-[#23272f]"
           onClick={(e) => e.stopPropagation()}
         >
@@ -3178,8 +3191,8 @@ export default function EditorPage() {
             aria-label="Close"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
           <h2 className="text-gray-900 text-lg font-semibold mb-1">Purchase credit packs to create more with Slaid</h2>
@@ -3212,9 +3225,9 @@ export default function EditorPage() {
     const [isAnnualBasic, setIsAnnualBasic] = useState(false);
     const [isAnnualPro, setIsAnnualPro] = useState(false);
     const [isAnnualUltra, setIsAnnualUltra] = useState(false);
-    
+
     const CHECK_ICON = (
-      <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M4.5 7.5l2 2 3-3" stroke="#002903" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/></svg>
+      <svg width="14" height="14" fill="none" viewBox="0 0 14 14"><path d="M4.5 7.5l2 2 3-3" stroke="#002903" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" /></svg>
     );
     const CROSS_ICON = (
       <span className="text-gray-500 text-[12.3px]">×</span>
@@ -3223,8 +3236,8 @@ export default function EditorPage() {
     const plans = [
       {
         name: language === 'es' ? 'Básico' : "Basic",
-        monthly: { price: "$9.99", originalPrice: "$19.99", period: language === 'es' ? '/mes' : "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "500 créditos" : "500 credits" },
-        annual: { price: "$89.91", originalPrice: "$179.88", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra $89.97 por año" : "Save $89.97 per year", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "6,000 créditos" : "6,000 credits" },
+        monthly: { price: "$19.99", originalPrice: "$39.99", period: language === 'es' ? '/mes' : "/month", save: null, buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "500 créditos" : "500 credits" },
+        annual: { price: "$83.88", originalPrice: "$239.88", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra 65%" : "Save 65%", buttonColor: "bg-[#002903] text-white hover:bg-[#001a02]", toggleColor: "#002903", credits: language === 'es' ? "2,500 créditos" : "2,500 credits" },
         desc: [language === 'es' ? 'Perfecto para empezar.' : "Perfect for getting started."],
         icon: "/basic-plan.png",
         baseFeatures: [
@@ -3235,8 +3248,8 @@ export default function EditorPage() {
       },
       {
         name: "Pro",
-        monthly: { price: "$24.50", originalPrice: "$49", period: language === 'es' ? '/mes' : "/month", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: language === 'es' ? "1000 créditos" : "1000 credits" },
-        annual: { price: "$220.50", originalPrice: "$441", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra $367.50 por año" : "Save $367.50 per year", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: language === 'es' ? "12,000 créditos" : "12,000 credits" },
+        monthly: { price: "$9.99", originalPrice: "$19.99", period: language === 'es' ? '/sem' : "/week", save: null, buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: language === 'es' ? "200 créditos" : "200 credits" },
+        annual: { price: "$83.88", originalPrice: "$239.88", period: language === 'es' ? '/año' : "/year", save: language === 'es' ? "Ahorra 65%" : "Save 65%", buttonColor: "bg-[#1C0059] text-white hover:bg-[#150044]", toggleColor: "#1C0059", credits: language === 'es' ? "2,500 créditos" : "2,500 credits" },
         desc: [language === 'es' ? 'Diseñado para profesionales.' : "Designed for professionals."],
         icon: "/pro-plan.png",
         baseFeatures: [
@@ -3260,15 +3273,15 @@ export default function EditorPage() {
       },
     ];
 
-    function PlanCard({ plan, isAnnual = false, onToggle = () => {} }: { plan: any; isAnnual?: boolean; onToggle?: () => void }) {
+    function PlanCard({ plan, isAnnual = false, onToggle = () => { } }: { plan: any; isAnnual?: boolean; onToggle?: () => void }) {
       const priceData = isAnnual ? plan.annual : plan.monthly;
-      
+
       // Get the appropriate Polar product ID based on plan name and billing cycle
       const productId = getProductId(plan.name, isAnnual);
-      
+
       // Get toggle colors: light grey when monthly (unchecked), plan color when annual (checked)
       const toggleBgColor = isAnnual ? priceData.toggleColor : '#9CA3AF';
-      
+
       return (
         <div key={plan.name} className={`relative bg-gray-100 flex flex-col pt-[21px] pb-[35px] px-[21px] w-full max-w-[250px] min-w-[220px] mx-auto rounded-xl`}>
           {/* Header: icon left, toggle right */}
@@ -3280,8 +3293,8 @@ export default function EditorPage() {
               <span className="text-gray-600 text-[13px]">{t.pricing.monthly}</span>
               <label className="relative inline-block w-10 align-middle select-none cursor-pointer">
                 <input type="checkbox" className="sr-only peer" checked={isAnnual} onChange={onToggle} />
-                <span 
-                  className="block w-10 h-5 rounded-full shadow-inner transition" 
+                <span
+                  className="block w-10 h-5 rounded-full shadow-inner transition"
                   style={{ backgroundColor: toggleBgColor }}
                 />
                 <span className="dot absolute top-1 left-1 bg-white w-3 h-3 rounded-full transition peer-checked:left-6" />
@@ -3343,27 +3356,27 @@ export default function EditorPage() {
           </div>
           {/* Button */}
           {plan.name === "Basic" && credits?.plan_type === 'basic' ? (
-            <button 
+            <button
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
               {t.pricing.currentPlan}
             </button>
           ) : plan.name === "Basic" && (credits?.plan_type === 'pro' || credits?.plan_type === 'ultra') ? (
-            <button 
+            <button
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold transition bg-[#002903] text-white hover:bg-[#001a02]"
             >
               {t.pricing.downgradePlan}
             </button>
           ) : plan.name === "Pro" && credits?.plan_type === 'pro' ? (
-            <button 
+            <button
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
               {t.pricing.currentPlan}
             </button>
           ) : plan.name === "Ultra" && credits?.plan_type === 'ultra' ? (
-            <button 
+            <button
               className="w-full h-[48px] rounded-[6.75px] flex items-center justify-center text-[15px] font-semibold bg-gray-300 text-gray-700 cursor-not-allowed"
               disabled
             >
@@ -3387,7 +3400,7 @@ export default function EditorPage() {
     }
 
     return (
-      <div 
+      <div
         className="fixed inset-0 z-50 flex items-center justify-center"
         onClick={(e) => {
           e.stopPropagation();
@@ -3395,7 +3408,7 @@ export default function EditorPage() {
         }}
       >
         <div className="absolute inset-0 bg-black/60" />
-        <div 
+        <div
           className="relative bg-white rounded-2xl shadow-xl w-full max-w-5xl p-8"
           onClick={(e) => e.stopPropagation()}
         >
@@ -3405,8 +3418,8 @@ export default function EditorPage() {
             aria-label="Close"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
           <div className="text-center mb-8">
@@ -3434,32 +3447,32 @@ export default function EditorPage() {
             aria-label="Close"
           >
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+              <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+              <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
             </svg>
           </button>
-          
+
           <div className="flex flex-col gap-3">
             <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-[#002903] transition rounded-lg">
               <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500">
-                <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/>
-                <path d="M10 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                <circle cx="10" cy="14" r="1" fill="currentColor"/>
+                <circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" />
+                <path d="M10 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                <circle cx="10" cy="14" r="1" fill="currentColor" />
               </svg>
               Get support
             </button>
-            
+
             <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-[#002903] transition rounded-lg">
               <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500">
-                <path d="M10 2l2.39 4.84L18 7.27l-3.91 3.81L14.18 16 10 13.27 5.82 16l.91-4.92L2 7.27l5.61-.43L10 2z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+                <path d="M10 2l2.39 4.84L18 7.27l-3.91 3.81L14.18 16 10 13.27 5.82 16l.91-4.92L2 7.27l5.61-.43L10 2z" stroke="currentColor" strokeWidth="1.5" fill="none" />
               </svg>
               What's new
             </button>
-            
+
             <button className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-900 hover:bg-[#002903] transition rounded-lg">
               <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500">
-                <path d="M3 8.5a7 7 0 1 1 14 0c0 2.5-2 4.5-7 7-5-2.5-7-4.5-7-7z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
-                <circle cx="10" cy="8.5" r="2" fill="currentColor"/>
+                <path d="M3 8.5a7 7 0 1 1 14 0c0 2.5-2 4.5-7 7-5-2.5-7-4.5-7-7z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+                <circle cx="10" cy="8.5" r="2" fill="currentColor" />
               </svg>
               Join slack community
             </button>
@@ -3477,12 +3490,12 @@ export default function EditorPage() {
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="text-red-600">
-                <path d="M10 6v4M10 14h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M10 6v4M10 14h.01M19 10a9 9 0 11-18 0 9 9 0 0118 0z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </div>
             <h2 className="text-lg font-semibold text-gray-900">API Temporarily Overloaded</h2>
           </div>
-          
+
           <div className="mb-6">
             <p className="text-gray-600 text-sm leading-relaxed mb-3">
               The Anthropic API is currently experiencing high demand and is temporarily overloaded. This is not an issue with Slaid.
@@ -3491,7 +3504,7 @@ export default function EditorPage() {
               Please wait a moment and try again. The service should be available shortly.
             </p>
           </div>
-          
+
           <div className="flex gap-3">
             <button
               onClick={() => setShowApiOverloadModal(false)}
@@ -3517,10 +3530,10 @@ export default function EditorPage() {
   // Settings Modal
   function SettingsModal() {
     if (!showSettingsModal) return null;
-    
+
     const { user, signOut } = useAuth();
     const [localDisplayName, setLocalDisplayName] = useState(workspaceDisplayName);
-    
+
     // Update local state when workspaceDisplayName changes
     useEffect(() => {
       setLocalDisplayName(workspaceDisplayName);
@@ -3530,7 +3543,7 @@ export default function EditorPage() {
       try {
         await signOut();
         setShowSettingsModal(false);
-        router.push('/login');
+        router.push('/signup');
       } catch (error) {
         console.error('❌ Error logging out:', error);
       }
@@ -3538,43 +3551,56 @@ export default function EditorPage() {
 
     // Get plan display info
     const getPlanInfo = () => {
-      const planType = credits?.plan_type || 'basic';
+      const planType = (credits?.plan_type || 'free').toLowerCase();
+
       const planNames: Record<string, string> = {
-        'basic': 'Basic Plan',
-        'pro': 'Pro Plan',
-        'ultra': 'Ultra Plan'
+        'weekly': t.editor.settingsModal.weeklyPlan,
+        'monthly': t.editor.settingsModal.monthlyPlan,
+        'annual': t.editor.settingsModal.annualPlan,
+        'basic': t.editor.settingsModal.monthlyPlan, // Legacy fallback
+        'pro': t.editor.settingsModal.weeklyPlan,    // Legacy fallback
+        'ultra': t.editor.settingsModal.ultraPlan,
+        'free': t.editor.settingsModal.freePlan
       };
+
       const planPrices: Record<string, string> = {
-        'basic': '$9.99/month',
-        'pro': '$49.00/month',
-        'ultra': '$89.00/month'
+        'weekly': '9.99€/sem',
+        'monthly': '19.99€/mes',
+        'annual': '6.99€/mes*',
+        'basic': '19.99€/mes',
+        'pro': '9.99€/sem',
+        'ultra': '44.50€/mes'
       };
+
       const planDescriptions: Record<string, string> = {
-        'free': '35 credits (one-time) with basic features.',
-        'basic': '700 credits per month with slide preview and PDF export.',
-        'pro': '1,500 credits per month with all features.',
-        'ultra': '3,000 credits per month with priority support.'
+        'free': t.editor.settingsModal.freePlanInfo,
+        'weekly': t.editor.settingsModal.weeklyPlanInfo,
+        'monthly': t.editor.settingsModal.monthlyPlanInfo,
+        'annual': t.editor.settingsModal.annualPlanInfo,
+        'basic': t.editor.settingsModal.monthlyPlanInfo, // Legacy fallback
+        'pro': t.editor.settingsModal.weeklyPlanInfo,    // Legacy fallback
+        'ultra': t.editor.settingsModal.ultraPlanInfo
       };
-      
+
       return {
-        name: planNames[planType] || 'Free Plan',
-        price: planPrices[planType] || '$0.00/month',
-        description: planDescriptions[planType] || 'Basic features.',
+        name: planNames[planType] || t.editor.settingsModal.freePlan,
+        price: planPrices[planType] || '0.00€',
+        description: planDescriptions[planType] || t.editor.settingsModal.freePlanInfo,
         isPaid: planType !== 'free'
       };
     };
 
     const planInfo = getPlanInfo();
-    
+
     return (
-      <div 
+      <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
         onClick={(e) => {
           e.stopPropagation();
           setShowSettingsModal(false);
         }}
       >
-        <div 
+        <div
           className="bg-white rounded-2xl shadow-xl w-full max-w-md h-[600px] max-h-screen overflow-y-auto p-7 relative border border-gray-200 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]"
           onClick={(e) => e.stopPropagation()}
         >
@@ -3583,7 +3609,7 @@ export default function EditorPage() {
             onClick={() => setShowSettingsModal(false)}
             aria-label="Close"
           >
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5"/><line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" /><line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
           </button>
           <h2 className="text-gray-900 text-2xl font-bold mb-1">{t.editor.settingsModal.title}</h2>
           <p className="text-gray-500 text-sm mb-6">{t.editor.settingsModal.accountSettings}</p>
@@ -3591,8 +3617,8 @@ export default function EditorPage() {
           <div className="mb-7">
             <h3 className="text-gray-900 text-lg font-semibold mb-3">{language === 'es' ? 'Cuenta' : 'Account'}</h3>
             <label className="block text-gray-500 text-xs mb-1">{language === 'es' ? 'Nombre para mostrar' : 'Display Name'}</label>
-            <input 
-              className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]" 
+            <input
+              className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
               value={localDisplayName}
               onChange={(e) => setLocalDisplayName(e.target.value)}
               onBlur={(e) => {
@@ -3610,9 +3636,9 @@ export default function EditorPage() {
               }}
             />
             <label className="block text-gray-500 text-xs mb-1">{language === 'es' ? 'Correo electrónico' : 'Email'}</label>
-            <input 
-              className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]" 
-              value={user?.email || ''} 
+            <input
+              className="w-full bg-white border border-gray-200 rounded px-3 py-2 text-gray-900 mb-3 focus:outline-none focus:ring-2 focus:ring-[#2563eb]"
+              value={user?.email || ''}
               disabled
             />
           </div>
@@ -3627,8 +3653,8 @@ export default function EditorPage() {
               <div className="text-gray-500 text-xs mb-3">{planInfo.description}</div>
               <div className="flex gap-2">
                 {!planInfo.isPaid && (
-                  <button 
-                    className="bg-[#002903] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#002903]/90 transition" 
+                  <button
+                    className="bg-[#002903] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#002903]/90 transition"
                     onClick={() => {
                       setShowSettingsModal(false);
                       setShowPricingModal(true);
@@ -3639,8 +3665,8 @@ export default function EditorPage() {
                 )}
                 {planInfo.isPaid && (
                   <>
-                    <button 
-                      className="bg-[#002903] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#002903]/90 transition" 
+                    <button
+                      className="bg-[#002903] text-white font-medium rounded px-3 py-1 text-sm hover:bg-[#002903]/90 transition"
                       onClick={() => {
                         setShowSettingsModal(false);
                         setShowPricingModal(true);
@@ -3655,7 +3681,7 @@ export default function EditorPage() {
           </div>
           {/* Logout Section */}
           <div className="mb-7">
-            <button 
+            <button
               onClick={handleLogout}
               className="w-full bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] font-medium rounded px-3 py-2 text-sm transition"
             >
@@ -3667,7 +3693,7 @@ export default function EditorPage() {
             <h3 className="text-gray-900 text-lg font-semibold mb-3">{language === 'es' ? 'Eliminar Cuenta' : 'Delete Account'}</h3>
             <div className="bg-white border border-gray-200 rounded-lg p-4 mb-5">
               <div className="text-gray-600 text-sm mb-3">{language === 'es' ? 'Una vez que elimines tu cuenta, no hay vuelta atrás. Por favor, asegúrate.' : 'Once you delete your account, there is no going back. Please be certain.'}</div>
-              <button 
+              <button
                 className="bg-red-600 text-white font-medium rounded px-4 py-2 text-sm hover:bg-red-700 transition"
                 onClick={() => setShowDeleteConfirmation(true)}
               >
@@ -3676,13 +3702,13 @@ export default function EditorPage() {
             </div>
             <hr className="border-gray-200 mb-4" />
             <div className="flex justify-end gap-3">
-              <button 
+              <button
                 className="text-gray-500 hover:text-gray-900 font-medium rounded px-3 py-1 text-sm transition"
                 onClick={() => setShowSettingsModal(false)}
               >
                 {language === 'es' ? 'Cancelar' : 'Cancel'}
               </button>
-              <button 
+              <button
                 className="bg-[#f3f4f6] text-[#002903] font-semibold rounded px-4 py-2 text-sm hover:bg-gray-200 transition"
                 onClick={() => setShowSettingsModal(false)}
               >
@@ -3702,7 +3728,7 @@ export default function EditorPage() {
 
     const handleDeleteAccount = async () => {
       if (!user) return;
-      
+
       setIsDeleting(true);
       try {
         // Get user session for authentication
@@ -3728,16 +3754,16 @@ export default function EditorPage() {
         // Clear ALL localStorage data
         console.log('🧹 Clearing all localStorage...');
         localStorage.clear();
-        
+
         // Clear sessionStorage too
         sessionStorage.clear();
-        
+
         // Sign out from Supabase
         await signOut();
-        
+
         // Force a hard redirect to clear any cached state
-        window.location.href = '/login?message=account_deleted';
-        
+        window.location.href = '/signup?message=account_deleted';
+
       } catch (error) {
         console.error('❌ Error deleting account:', error);
         alert(`Failed to delete account: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -3763,7 +3789,7 @@ export default function EditorPage() {
               <p className="text-gray-500 text-sm">This action cannot be undone</p>
             </div>
           </div>
-          
+
           <div className="mb-6">
             <p className="text-gray-600 text-sm mb-3">
               Are you sure you want to delete your account? This will permanently remove:
@@ -3777,7 +3803,7 @@ export default function EditorPage() {
               This action is irreversible and cannot be undone.
             </p>
           </div>
-          
+
           <div className="flex gap-3">
             <button
               className="flex-1 bg-gray-100 text-gray-900 font-medium rounded px-4 py-2 text-sm hover:bg-gray-200 transition"
@@ -3882,7 +3908,7 @@ export default function EditorPage() {
   // Progress simulation effect
   useEffect(() => {
     const hasLoadingMessage = messages.some(msg => msg.isLoading);
-    
+
     if (hasLoadingMessage) {
       // Determine if this is a modification (quick) or new presentation (slow)
       const lastUserMessage = [...messages].reverse().find(msg => msg.role === 'user');
@@ -3907,7 +3933,7 @@ export default function EditorPage() {
         lastUserMessage.text.toLowerCase().includes('corregir') ||
         messages.length > 2 // If there are already messages, likely a modification
       );
-      
+
       // Define reasoning steps for new presentations
       const newPresentationSteps = [
         "Analyzing your request and requirements...",
@@ -3928,7 +3954,7 @@ export default function EditorPage() {
         "Performing quality checks...",
         "Finalizing slide arrangements..."
       ];
-      
+
       // Define reasoning steps for modifications
       const modificationSteps = [
         "Understanding your modification request...",
@@ -3939,18 +3965,18 @@ export default function EditorPage() {
         "Ensuring consistency with existing slides...",
         "Applying final refinements..."
       ];
-      
+
       const steps = isModification ? modificationSteps : newPresentationSteps;
-      
+
       // Start at 5% immediately
       setGenerationProgress(5);
       setCurrentReasoningStep(steps[0]);
-      
+
       // Set timing based on type of request
       const interval = isModification ? 278 : 1667; // 5s/18steps vs 30s/18steps (5% to 90% = 17 steps)
-      
+
       let stepIndex = 0;
-      
+
       // Increase by 5% at each interval until we reach 90%
       const progressInterval = setInterval(() => {
         setGenerationProgress(prev => {
@@ -3959,16 +3985,16 @@ export default function EditorPage() {
             setCurrentReasoningStep("Completing generation...");
             return 90; // Stop at 90%
           }
-          
+
           stepIndex++;
           if (stepIndex < steps.length) {
             setCurrentReasoningStep(steps[stepIndex]);
           }
-          
+
           return prev + 5; // Increase by 5% each time
         });
       }, interval);
-      
+
       return () => clearInterval(progressInterval);
     } else {
       // Complete to 100% when loading finishes
@@ -4029,7 +4055,7 @@ export default function EditorPage() {
 
   const handleDrop = (e: React.DragEvent, dropIndex: number) => {
     e.preventDefault();
-    
+
     if (draggedSlideIndex === null || draggedSlideIndex === dropIndex) {
       setDraggedSlideIndex(null);
       setDragOverIndex(null);
@@ -4041,34 +4067,34 @@ export default function EditorPage() {
     const lastAssistantMessage = [...currentMessages].reverse().find(
       msg => msg.role === 'assistant' && msg.presentationData && !msg.isLoading
     );
-    
+
     if (lastAssistantMessage && lastAssistantMessage.presentationData) {
       const currentSlides = [...lastAssistantMessage.presentationData.slides];
-      
+
       // Remove the dragged slide from its original position
       const [draggedSlide] = currentSlides.splice(draggedSlideIndex, 1);
-      
+
       // Insert it at the new position
       currentSlides.splice(dropIndex, 0, draggedSlide);
-      
+
       const updatedPresentationData = {
         ...lastAssistantMessage.presentationData,
         slides: currentSlides
       };
-      
+
       // Update the message with the new presentation data
-      const updatedMessages = currentMessages.map(msg => 
+      const updatedMessages = currentMessages.map(msg =>
         msg === lastAssistantMessage ? {
           ...msg,
           presentationData: updatedPresentationData
         } : msg
       );
-      
+
       setPresentationMessages(prev => ({
         ...prev,
         [currentPresentationId]: updatedMessages
       }));
-      
+
       // Update active slide if necessary
       if (activeSlide === draggedSlideIndex) {
         setActiveSlide(dropIndex);
@@ -4078,7 +4104,7 @@ export default function EditorPage() {
         setActiveSlide(activeSlide + 1);
       }
     }
-    
+
     setDraggedSlideIndex(null);
     setDragOverIndex(null);
   };
@@ -4101,31 +4127,31 @@ export default function EditorPage() {
     const lastAssistantMessage = [...currentMessages].reverse().find(
       msg => msg.role === 'assistant' && msg.presentationData && !msg.isLoading
     );
-    
+
     if (lastAssistantMessage && lastAssistantMessage.presentationData) {
       const currentSlides = [...lastAssistantMessage.presentationData.slides];
-      
+
       // Remove the slide at the specified index
       currentSlides.splice(slideIndex, 1);
-      
+
       const updatedPresentationData = {
         ...lastAssistantMessage.presentationData,
         slides: currentSlides
       };
-      
+
       // Update the message with the new presentation data
-      const updatedMessages = currentMessages.map(msg => 
-        msg === lastAssistantMessage 
+      const updatedMessages = currentMessages.map(msg =>
+        msg === lastAssistantMessage
           ? { ...msg, presentationData: updatedPresentationData }
           : msg
       );
-      
+
       // Update the state
       setPresentationMessages(prev => ({
         ...prev,
         [currentPresentationId]: updatedMessages
       }));
-      
+
       // Adjust active slide if necessary
       if (slideIndex === activeSlide && activeSlide > 0) {
         setActiveSlide(activeSlide - 1);
@@ -4134,7 +4160,7 @@ export default function EditorPage() {
       } else if (activeSlide >= currentSlides.length) {
         setActiveSlide(currentSlides.length - 1);
       }
-      
+
       console.log(`🗑️ Deleted slide ${slideIndex + 1}. Remaining slides: ${currentSlides.length}`);
     }
   };
@@ -4152,20 +4178,20 @@ export default function EditorPage() {
 
   // Export mode: render only the slide content for PDF generation
   if (isExportMode) {
-    console.log('📄📄📄 EXPORT MODE ACTIVE: Rendering with data:', { 
-      hasSlideData: !!exportSlideData, 
+    console.log('📄📄📄 EXPORT MODE ACTIVE: Rendering with data:', {
+      hasSlideData: !!exportSlideData,
       slideDataId: exportSlideData?.id,
       slideDataType: exportSlideData?.type,
       slideDataBlocks: exportSlideData?.blocks?.length,
-      isDataLoaded: isDataLoaded 
+      isDataLoaded: isDataLoaded
     });
-    
+
     // ALWAYS render .slide-content div to prevent timeout, even if there's an error
     // If we don't have slide data yet, show loading
     if (!exportSlideData) {
       return (
         <div className="bg-white" style={{ width: '1920px', height: '1080px', overflow: 'hidden', position: 'relative' }}>
-          <div 
+          <div
             className="slide-content"
             style={{
               width: '881px',
@@ -4183,11 +4209,11 @@ export default function EditorPage() {
         </div>
       );
     }
-    
+
     // CRITICAL: Wrap everything in try-catch to ensure .slide-content always renders
     return (
       <div className="bg-white" style={{ width: '1920px', height: '1080px', overflow: 'hidden', position: 'relative' }}>
-        <div 
+        <div
           className="slide-content"
           style={{
             width: '881px',
@@ -4204,7 +4230,7 @@ export default function EditorPage() {
                 console.error('❌ No blocks found in exportSlideData');
                 return <div className="p-4 text-red-800">No blocks to render</div>;
               }
-              
+
               return exportSlideData.blocks.map((block: any, index: number) => {
                 try {
                   console.log('📄📄📄 Export mode: Rendering block', index, block.type, 'Props keys:', Object.keys(block.props || {}));
@@ -4264,1334 +4290,2450 @@ export default function EditorPage() {
 
   return (
     <ProtectedRoute>
-    <SimpleAutosave
-      presentationId={currentPresentationId}
-      workspace={currentWorkspace}
-      messages={messages}
-      activeSlide={activeSlide}
-      presentationTitle={currentPresentationData?.title}
-      workspaceTitle={workspacePresentations[currentWorkspace]?.find(p => p.id === currentPresentationId)?.title}
-      onDataLoadComplete={() => {
-        console.log('🔄🔄🔄 DATA LOAD COMPLETE: No database data found, using defaults')
-        setIsDataLoaded(true)
-      }}
-      onStateRestored={(state) => {
-        console.log('🔄🔄🔄 SUPABASE AUTOSAVE: State restored:', {
-          slidesCount: state.slides?.length,
-          messagesCount: state.messages?.length,
-          activeSlide: state.activeSlide,
-          title: state.title
-        })
-        
-        console.log('🔍🔍🔍 EDITOR DEBUG: Current state before restoration:', {
-          currentPresentationId,
-          currentMessages: messages.length,
-          presentationMessagesKeys: Object.keys(presentationMessages)
-        })
-        
-        // If we have slides but no messages, check if it's truly empty or has content
-        if (state.slides && state.slides.length > 0 && (!state.messages || state.messages.length === 0)) {
-          console.log('🔧🔧🔧 Checking if presentation has actual content or is empty...')
-          
-          // Check if slides have actual content (blocks with meaningful data)
-          // Treat instruction slides as empty - they should not show chat messages
-          const hasActualContent = state.slides.some((slide: any) => 
-            slide.blocks && slide.blocks.length > 0 && 
-            slide.blocks.some((block: any) => 
-              (block.type === 'text' && block.content && block.content.trim() !== '' && 
-               !block.content.includes('To generate your presentation write in the input box below')) ||
-              (block.type === 'TextBlock' && block.props?.text && block.props.text.trim() !== '' && 
-               !block.props.text.includes('To generate your presentation write in the input box below')) ||
-              (block.type === 'image' && block.imageUrl) ||
-              (block.type === 'layout' && block.layoutType)
-            )
-          );
-          
-          if (hasActualContent) {
-            console.log('🔧🔧🔧 Presentation has actual content, reconstructing messages...')
-          
-          const reconstructedMessages = [
-            {
-              role: 'user',
-              text: `Create a presentation about ${state.title || 'business presentation'}`
-            },
-            {
-              role: 'assistant',
-              text: `I've created your presentation: "${state.title || 'Untitled Presentation'}"`,
-              isLoading: false,
-              presentationData: {
-                title: state.title || 'Untitled Presentation',
-                slides: state.slides
-              },
-              version: 1,
-              userMessage: `Create a presentation about ${state.title || 'business presentation'}`
-            }
-          ]
-          
-            console.log('🔄🔄🔄 Setting presentation messages with reconstructed data:', reconstructedMessages)
-          setPresentationMessages(prev => {
-            const updated = {
-              ...prev,
-              [currentPresentationId]: reconstructedMessages
-            }
-              console.log('📝📝📝 Updated presentationMessages:', updated)
-            return updated
+      <SimpleAutosave
+        presentationId={currentPresentationId}
+        workspace={currentWorkspace}
+        messages={messages}
+        activeSlide={activeSlide}
+        presentationTitle={currentPresentationData?.title}
+        workspaceTitle={workspacePresentations[currentWorkspace]?.find(p => p.id === currentPresentationId)?.title}
+        onDataLoadComplete={() => {
+          console.log('🔄🔄🔄 DATA LOAD COMPLETE: No database data found, using defaults')
+          setIsDataLoaded(true)
+        }}
+        onStateRestored={(state) => {
+          console.log('🔄🔄🔄 SUPABASE AUTOSAVE: State restored:', {
+            slidesCount: state.slides?.length,
+            messagesCount: state.messages?.length,
+            activeSlide: state.activeSlide,
+            title: state.title
           })
-          
-            console.log('✅✅✅ Presentation data reconstructed with', state.slides.length, 'slides')
-          } else {
-            console.log('🔧🔧🔧 Presentation appears to be empty - NOT creating any messages')
-            // Don't create any messages for empty presentations
-            // Just update the slides state without messages
-            setWorkspaceSlides(prev => ({
-              ...prev,
-              [currentWorkspace]: {
-                ...prev[currentWorkspace],
-                [currentPresentationId]: state.slides.map((slide: any) => ({ title: slide.title || 'Untitled Slide' }))
-              }
-            }));
-          }
-        } else if (state.messages) {
-          console.log('🔄🔄🔄 RESTORE CHAT MESSAGES: Loading messages from database:', state.messages)
-          
-          // 🔧 RESTORE MESSAGES: Load actual messages from database
-          const processedMessages = state.messages.map((msg: any) => {
-            const processedMsg = {
-              role: msg.role || 'user',
-              text: msg.content || msg.text || '',
-              isLoading: false,
-              ...(msg.presentationData && { presentationData: msg.presentationData }),
-              // Restore version information if it exists
-              ...(msg.version && { version: msg.version }),
-              ...(msg.userMessage && { userMessage: msg.userMessage })
-            };
-            
-            return processedMsg;
-          });
 
-          // 🔧 FALLBACK VERSION RECONSTRUCTION: Only if version info is missing
-          // This handles older presentations that don't have version data saved
-          let assistantCount = 0;
-          let lastUserMessage = '';
-          
-          processedMessages.forEach((msg: any, index: number) => {
-            if (msg.role === 'user') {
-              lastUserMessage = msg.text; // Store user message for next assistant
-            } else if (msg.role === 'assistant' && msg.presentationData && !msg.version) {
-              // Only reconstruct if version doesn't exist (older presentations)
-              assistantCount++;
-              processedMessages[index] = {
-                ...msg,
-                version: assistantCount,
-                userMessage: lastUserMessage
-              };
-            } else if (msg.role === 'assistant' && msg.version) {
-              // Count existing versions to keep track
-              assistantCount = Math.max(assistantCount, msg.version);
+          console.log('🔍🔍🔍 EDITOR DEBUG: Current state before restoration:', {
+            currentPresentationId,
+            currentMessages: messages.length,
+            presentationMessagesKeys: Object.keys(presentationMessages)
+          })
+
+          // If we have slides but no messages, check if it's truly empty or has content
+          if (state.slides && state.slides.length > 0 && (!state.messages || state.messages.length === 0)) {
+            console.log('🔧🔧🔧 Checking if presentation has actual content or is empty...')
+
+            // Check if slides have actual content (blocks with meaningful data)
+            // Treat instruction slides as empty - they should not show chat messages
+            const hasActualContent = state.slides.some((slide: any) =>
+              slide.blocks && slide.blocks.length > 0 &&
+              slide.blocks.some((block: any) =>
+                (block.type === 'text' && block.content && block.content.trim() !== '' &&
+                  !block.content.includes('To generate your presentation write in the input box below')) ||
+                (block.type === 'TextBlock' && block.props?.text && block.props.text.trim() !== '' &&
+                  !block.props.text.includes('To generate your presentation write in the input box below')) ||
+                (block.type === 'image' && block.imageUrl) ||
+                (block.type === 'layout' && block.layoutType)
+              )
+            );
+
+            if (hasActualContent) {
+              console.log('🔧🔧🔧 Presentation has actual content, reconstructing messages...')
+
+              const reconstructedMessages = [
+                {
+                  role: 'user',
+                  text: `Create a presentation about ${state.title || 'business presentation'}`
+                },
+                {
+                  role: 'assistant',
+                  text: `I've created your presentation: "${state.title || 'Untitled Presentation'}"`,
+                  isLoading: false,
+                  presentationData: {
+                    title: state.title || 'Untitled Presentation',
+                    slides: state.slides
+                  },
+                  version: 1,
+                  userMessage: `Create a presentation about ${state.title || 'business presentation'}`
+                }
+              ]
+
+              console.log('🔄🔄🔄 Setting presentation messages with reconstructed data:', reconstructedMessages)
+              setPresentationMessages(prev => {
+                const updated = {
+                  ...prev,
+                  [currentPresentationId]: reconstructedMessages
+                }
+                console.log('📝📝📝 Updated presentationMessages:', updated)
+                return updated
+              })
+
+              console.log('✅✅✅ Presentation data reconstructed with', state.slides.length, 'slides')
+            } else {
+              console.log('🔧🔧🔧 Presentation appears to be empty - NOT creating any messages')
+              // Don't create any messages for empty presentations
+              // Just update the slides state without messages
+              setWorkspaceSlides(prev => ({
+                ...prev,
+                [currentWorkspace]: {
+                  ...prev[currentWorkspace],
+                  [currentPresentationId]: state.slides.map((slide: any) => ({ title: slide.title || 'Untitled Slide' }))
+                }
+              }));
             }
-          });
+          } else if (state.messages) {
+            console.log('🔄🔄🔄 RESTORE CHAT MESSAGES: Loading messages from database:', state.messages)
 
-          // 🔧 CRITICAL FIX: If we have slides but assistant messages don't have presentationData, 
-          // reconstruct the presentationData from the loaded slides
-          if (state.slides && state.slides.length > 0) {
-            console.log('🔧🔧🔧 FIXING PRESENTATION DATA: Ensuring assistant messages have complete presentation data')
-            
-            const presentationDataToAdd = {
-              title: state.title || 'Untitled Presentation',
-              slides: state.slides
-            };
-            
-            // Find assistant messages and ensure they have presentationData
+            // 🔧 RESTORE MESSAGES: Load actual messages from database
+            const processedMessages = state.messages.map((msg: any) => {
+              const processedMsg = {
+                role: msg.role || 'user',
+                text: msg.content || msg.text || '',
+                isLoading: false,
+                ...(msg.presentationData && { presentationData: msg.presentationData }),
+                // Restore version information if it exists
+                ...(msg.version && { version: msg.version }),
+                ...(msg.userMessage && { userMessage: msg.userMessage })
+              };
+
+              return processedMsg;
+            });
+
+            // 🔧 FALLBACK VERSION RECONSTRUCTION: Only if version info is missing
+            // This handles older presentations that don't have version data saved
+            let assistantCount = 0;
+            let lastUserMessage = '';
+
             processedMessages.forEach((msg: any, index: number) => {
-              if (msg.role === 'assistant' && !msg.presentationData) {
-                console.log('🔧 Adding presentation data to assistant message', index)
+              if (msg.role === 'user') {
+                lastUserMessage = msg.text; // Store user message for next assistant
+              } else if (msg.role === 'assistant' && msg.presentationData && !msg.version) {
+                // Only reconstruct if version doesn't exist (older presentations)
+                assistantCount++;
                 processedMessages[index] = {
                   ...msg,
-                  presentationData: presentationDataToAdd,
-                  // Preserve version and userMessage if they exist
-                  ...(msg.version && { version: msg.version }),
-                  ...(msg.userMessage && { userMessage: msg.userMessage })
+                  version: assistantCount,
+                  userMessage: lastUserMessage
                 };
+              } else if (msg.role === 'assistant' && msg.version) {
+                // Count existing versions to keep track
+                assistantCount = Math.max(assistantCount, msg.version);
               }
             });
-          }
-          
-          console.log('🔄🔄🔄 Setting presentation messages with database data:', processedMessages);
-          setPresentationMessages(prev => ({
+
+            // 🔧 CRITICAL FIX: If we have slides but assistant messages don't have presentationData, 
+            // reconstruct the presentationData from the loaded slides
+            if (state.slides && state.slides.length > 0) {
+              console.log('🔧🔧🔧 FIXING PRESENTATION DATA: Ensuring assistant messages have complete presentation data')
+
+              const presentationDataToAdd = {
+                title: state.title || 'Untitled Presentation',
+                slides: state.slides
+              };
+
+              // Find assistant messages and ensure they have presentationData
+              processedMessages.forEach((msg: any, index: number) => {
+                if (msg.role === 'assistant' && !msg.presentationData) {
+                  console.log('🔧 Adding presentation data to assistant message', index)
+                  processedMessages[index] = {
+                    ...msg,
+                    presentationData: presentationDataToAdd,
+                    // Preserve version and userMessage if they exist
+                    ...(msg.version && { version: msg.version }),
+                    ...(msg.userMessage && { userMessage: msg.userMessage })
+                  };
+                }
+              });
+            }
+
+            console.log('🔄🔄🔄 Setting presentation messages with database data:', processedMessages);
+            setPresentationMessages(prev => ({
               ...prev,
-            [currentPresentationId]: processedMessages
-          }));
-          
-          // Also update slides if we have them
-          if (state.slides) {
-            setWorkspaceSlides(prev => ({
-              ...prev,
-              [currentWorkspace]: {
-                ...prev[currentWorkspace],
-                [currentPresentationId]: state.slides?.map((slide: any) => ({ title: slide.title || 'Untitled Slide' })) || [{ title: 'Untitled Slide' }]
-              }
+              [currentPresentationId]: processedMessages
             }));
+
+            // Also update slides if we have them
+            if (state.slides) {
+              setWorkspaceSlides(prev => ({
+                ...prev,
+                [currentWorkspace]: {
+                  ...prev[currentWorkspace],
+                  [currentPresentationId]: state.slides?.map((slide: any) => ({ title: slide.title || 'Untitled Slide' })) || [{ title: 'Untitled Slide' }]
+                }
+              }));
+            }
           }
-        }
-        
-        // Set active slide
-        if (typeof state.activeSlide === 'number') {
-          console.log('🔄🔄🔄 Setting active slide to:', state.activeSlide)
-          setActiveSlide(state.activeSlide)
-        }
-        
-        console.log('✅✅✅ State restoration completed')
-      }}
-    >
-      <div className="min-h-screen w-full flex flex-row bg-white font-sans">
-      <CreditsModal />
-      <CreditPacksModal />
-      <PricingModal />
-      <SettingsModal />
-      {showHelpModal && <HelpModal />}
-      {showApiOverloadModal && <ApiOverloadModal />}
-      <DeleteConfirmationModal />
-      
-      {showHelpDropdown && (
-        <div
-          ref={helpDropdownRef}
-          className="absolute left-full top-0 ml-2 mt-1 w-64 bg-[#002903] rounded-xl shadow-xl border border-gray-200 py-2 px-0 z-50 animate-modal-in"
-        >
-          <button 
-            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
-            onClick={() => {
-              setShowHelpDropdown(false);
-              setShowHelpModal(true);
-            }}
-          >
-            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5"/><path d="M10 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/><circle cx="10" cy="14" r="1" fill="currentColor"/></svg>
-            Get support
-          </button>
-          <button 
-            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
-            onClick={() => {
-              setShowHelpDropdown(false);
-              setShowHelpModal(true);
-            }}
-          >
-            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><path d="M10 2l2.39 4.84L18 7.27l-3.91 3.81L14.18 16 10 13.27 5.82 16l.91-4.92L2 7.27l5.61-.43L10 2z" stroke="currentColor" strokeWidth="1.5" fill="none"/></svg>
-            What's new
-          </button>
-          <button 
-            className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
-            onClick={() => {
-              setShowHelpDropdown(false);
-              setShowHelpModal(true);
-            }}
-          >
-            <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><path d="M3 8.5a7 7 0 1 1 14 0c0 2.5-2 4.5-7 7-5-2.5-7-4.5-7-7z" stroke="currentColor" strokeWidth="1.5" fill="none"/><circle cx="10" cy="8.5" r="2" fill="currentColor"/></svg>
-            Join slack community
-          </button>
-        </div>
-      )}
-      {/* Sidebar */}
-      <aside className={`flex flex-col h-screen bg-white border-r border-gray-200 ${sidebarCollapsed ? "w-14" : "w-[300px]"} hidden md:flex`}>
-        {sidebarCollapsed ? (
-          <>
-            {/* Top: sidebar toggle icon (points left) */}
-            <div className="flex flex-col items-center pt-4">
+
+          // Set active slide
+          if (typeof state.activeSlide === 'number') {
+            console.log('🔄🔄🔄 Setting active slide to:', state.activeSlide)
+            setActiveSlide(state.activeSlide)
+          }
+
+          console.log('✅✅✅ State restoration completed')
+        }}
+      >
+        <div className="min-h-screen w-full flex flex-row bg-white font-sans">
+          <CreditsModal />
+          <CreditPacksModal />
+          <PricingModal />
+          <SettingsModal />
+          {showHelpModal && <HelpModal />}
+          {showApiOverloadModal && <ApiOverloadModal />}
+          <DeleteConfirmationModal />
+
+          {showHelpDropdown && (
+            <div
+              ref={helpDropdownRef}
+              className="absolute left-full top-0 ml-2 mt-1 w-64 bg-[#002903] rounded-xl shadow-xl border border-gray-200 py-2 px-0 z-50 animate-modal-in"
+            >
               <button
-                className="w-9 h-9 rounded-xl bg-transparent hover:bg-gray-100 flex items-center justify-center mb-4 transition"
-                aria-label="Open sidebar"
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
                 onClick={() => {
-                  setSidebarCollapsed(false);
-                  refreshCredits(); // Refresh credits when sidebar opens
+                  setShowHelpDropdown(false);
+                  setShowHelpModal(true);
                 }}
               >
-                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
+                <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><circle cx="10" cy="10" r="8" stroke="currentColor" strokeWidth="1.5" /><path d="M10 6v4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /><circle cx="10" cy="14" r="1" fill="currentColor" /></svg>
+                Get support
+              </button>
+              <button
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
+                onClick={() => {
+                  setShowHelpDropdown(false);
+                  setShowHelpModal(true);
+                }}
+              >
+                <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><path d="M10 2l2.39 4.84L18 7.27l-3.91 3.81L14.18 16 10 13.27 5.82 16l.91-4.92L2 7.27l5.61-.43L10 2z" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
+                What's new
+              </button>
+              <button
+                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-900 hover:bg-white transition"
+                onClick={() => {
+                  setShowHelpDropdown(false);
+                  setShowHelpModal(true);
+                }}
+              >
+                <svg width="18" height="18" fill="none" viewBox="0 0 20 20" className="text-gray-500"><path d="M3 8.5a7 7 0 1 1 14 0c0 2.5-2 4.5-7 7-5-2.5-7-4.5-7-7z" stroke="currentColor" strokeWidth="1.5" fill="none" /><circle cx="10" cy="8.5" r="2" fill="currentColor" /></svg>
+                Join slack community
               </button>
             </div>
-            {/* Middle: empty space */}
-            <div className="flex-1" />
-            {/* Bottom: hex/star, credits, avatar */}
-            <div className="flex flex-col items-center mb-4 gap-2">
-              <button onClick={() => setShowCreditsModal(true)} className="focus:outline-none hover:scale-125 transition duration-200 ease-in-out">
-                <img src="/ai credit-icon.png" alt="Credit Icon" className="w-9 h-9 object-contain" />
-              </button>
-              <div className="text-gray-900 font-bold text-xs leading-none">
-                {creditsLoading ? 'Loading...' : (credits?.remaining_credits?.toLocaleString() || '0')}
-              </div>
-              <div className="h-9 w-9 rounded-full bg-[#002903] flex items-center justify-center text-white font-bold text-lg">
-                {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
-              </div>
-            </div>
-          </>
-        ) : (
-          <>
-            {/* Workspace section at the top */}
-            <div className="px-4 pt-4 pb-4 flex items-center gap-3 min-w-0 justify-between border-b border-gray-200">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="h-8 w-8 rounded-full bg-[#002903] flex items-center justify-center text-white font-medium text-sm">
-                  {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
+          )}
+          {/* Sidebar */}
+          <aside className={`flex flex-col h-screen bg-white border-r border-gray-200 ${sidebarCollapsed ? "w-14" : "w-[300px]"} hidden md:flex`}>
+            {sidebarCollapsed ? (
+              <>
+                {/* Top: sidebar toggle icon (points left) */}
+                <div className="flex flex-col items-center pt-4">
+                  <button
+                    className="w-9 h-9 rounded-xl bg-transparent hover:bg-gray-100 flex items-center justify-center mb-4 transition"
+                    aria-label="Open sidebar"
+                    onClick={() => {
+                      setSidebarCollapsed(false);
+                      refreshCredits(); // Refresh credits when sidebar opens
+                    }}
+                  >
+                    <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
+                  </button>
                 </div>
-                <div className="flex flex-col min-w-0">
-                  <div className="flex items-center gap-2">
-                    {editingWorkspace ? (
-                      <input
-                        type="text"
-                        defaultValue={workspaceDisplayName}
-                        autoFocus
-                        onBlur={async (e) => {
-                          const newName = e.target.value.trim();
-                          if (newName && newName !== workspaceDisplayName) {
-                            console.log('🔄 Renaming workspace from:', workspaceDisplayName, 'to:', newName);
-                            
-                            // Update the database via API
-                            try {
-                              const { data: { session } } = await supabase.auth.getSession();
-                              if (session?.access_token) {
-                                const response = await fetch('/api/workspaces/rename', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                    'Authorization': `Bearer ${session.access_token}`
-                                  },
-                                  body: JSON.stringify({ 
-                                    oldName: workspaceDisplayName, 
-                                    newName: newName 
-                                  })
-                                });
-                                
-                                if (response.ok) {
-                                  console.log('✅ Workspace renamed in database');
-                                  // Update the display name only after successful database update
-                                  setWorkspaceDisplayName(newName);
-                                  
-                                  // Update localStorage
-                                  const userSpecificKey = `slaid_workspace_display_name_${user?.id || 'anonymous'}`;
-                                  localStorage.setItem(userSpecificKey, newName);
-                                } else {
-                                  console.error('❌ Failed to rename workspace in database:', response.status);
+                {/* Middle: empty space */}
+                <div className="flex-1" />
+                {/* Bottom: hex/star, credits, avatar */}
+                <div className="flex flex-col items-center mb-4 gap-2">
+                  <button onClick={() => setShowCreditsModal(true)} className="focus:outline-none hover:scale-125 transition duration-200 ease-in-out">
+                    <img src="/ai credit-icon.png" alt="Credit Icon" className="w-9 h-9 object-contain" />
+                  </button>
+                  <div className="text-gray-900 font-bold text-xs leading-none">
+                    {creditsLoading ? 'Loading...' : (credits?.remaining_credits?.toLocaleString() || '0')}
+                  </div>
+                  <div className="h-9 w-9 rounded-full bg-[#002903] flex items-center justify-center text-white font-bold text-lg">
+                    {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* Workspace section at the top */}
+                <div className="px-4 pt-4 pb-4 flex items-center gap-3 min-w-0 justify-between border-b border-gray-200">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-8 w-8 rounded-full bg-[#002903] flex items-center justify-center text-white font-medium text-sm">
+                      {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
+                    </div>
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2">
+                        {editingWorkspace ? (
+                          <input
+                            type="text"
+                            defaultValue={workspaceDisplayName}
+                            autoFocus
+                            onBlur={async (e) => {
+                              const newName = e.target.value.trim();
+                              if (newName && newName !== workspaceDisplayName) {
+                                console.log('🔄 Renaming workspace from:', workspaceDisplayName, 'to:', newName);
+
+                                // Update the database via API
+                                try {
+                                  const { data: { session } } = await supabase.auth.getSession();
+                                  if (session?.access_token) {
+                                    const response = await fetch('/api/workspaces/rename', {
+                                      method: 'POST',
+                                      headers: {
+                                        'Content-Type': 'application/json',
+                                        'Authorization': `Bearer ${session.access_token}`
+                                      },
+                                      body: JSON.stringify({
+                                        oldName: workspaceDisplayName,
+                                        newName: newName
+                                      })
+                                    });
+
+                                    if (response.ok) {
+                                      console.log('✅ Workspace renamed in database');
+                                      // Update the display name only after successful database update
+                                      setWorkspaceDisplayName(newName);
+
+                                      // Update localStorage
+                                      const userSpecificKey = `slaid_workspace_display_name_${user?.id || 'anonymous'}`;
+                                      localStorage.setItem(userSpecificKey, newName);
+                                    } else {
+                                      console.error('❌ Failed to rename workspace in database:', response.status);
+                                      // Revert the input value
+                                      e.target.value = workspaceDisplayName;
+                                    }
+                                  }
+                                } catch (error) {
+                                  console.error('❌ Error renaming workspace:', error);
                                   // Revert the input value
                                   e.target.value = workspaceDisplayName;
                                 }
                               }
-                            } catch (error) {
-                              console.error('❌ Error renaming workspace:', error);
-                              // Revert the input value
-                              e.target.value = workspaceDisplayName;
-                            }
-                          }
-                          setEditingWorkspace(false);
-                        }}
-                        onKeyDown={(e) => {
-                          e.stopPropagation();
-                          if (e.key === 'Enter') {
-                            // Trigger the same logic as onBlur
-                            e.currentTarget.blur();
-                          }
-                          if (e.key === 'Escape') {
-                            setEditingWorkspace(false);
-                          }
-                        }}
-                        onClick={e => e.stopPropagation()}
-                        className="bg-transparent border-none outline-none text-gray-900 font-medium text-sm max-w-[140px]"
-                      />
-                    ) : (
-                      <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
-                    )}
-                  </div>
-                  <span className="text-gray-500 text-xs">
-                    {credits?.plan_type === 'basic' ? 'Basic plan' : 
-                     credits?.plan_type === 'pro' ? (language === 'es' ? 'Plan Pro' : 'Pro plan') : 
-                     credits?.plan_type === 'ultra' ? (language === 'es' ? 'Plan Ultra' : 'Ultra plan') : 
-                     language === 'es' ? 'Plan Gratuito' : 'Free plan'}
-                  </span>
-                </div>
-              </div>
-              {/* Close sidebar button */}
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
-                aria-label="Close sidebar"
-                onClick={() => setSidebarCollapsed(true)}
-              >
-                <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            {/* Main scrollable section */}
-            <div className="flex-1 min-h-0 flex flex-col">
-              <div className="px-4 mt-3">
-                <button
-                  className="w-full flex items-center justify-start gap-2 bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] rounded-lg py-1.5 mb-3 transition font-medium pl-3"
-                  onClick={async () => {
-                    // 🚨 CRITICAL: SET ONBOARDING FIRST - BEFORE ANY OTHER STATE UPDATES
-                    console.log('🚀🚀🚀 SETTING ONBOARDING STATE FIRST - BEFORE EVERYTHING ELSE');
-                    setShowOnboarding(true);
-                    setOnboardingStep(1);
-                    console.log('✅✅✅ ONBOARDING STATE SET FIRST - should be visible immediately');
-                    
-                    const currentPresentations = workspacePresentations[currentWorkspace] || [];
-                    const newId = uuidv4(); // Generate UUID for new presentation
-                    const newPresentation = { id: newId, title: "Untitled Presentation" };
-                    
-                    // Track this ID for future reloads
-                    persistCreatedId(newId);
-                    
-                    // Update UI immediately
-                    setWorkspacePresentations(prev => ({
-                      ...prev,
-                      [currentWorkspace]: [...currentPresentations, newPresentation]
-                    }));
-                    setWorkspaceSlides(prev => ({
-                      ...prev,
-                      [currentWorkspace]: {
-                        ...(prev[currentWorkspace] || {}),
-                        [newId]: [{ title: "New Slide 1" }]
-                      }
-                    }));
-                    lastCreatedPresentationId.current = newId;
-                    setCurrentPresentationId(newId);
-                    setActiveSlide(0);
-                    
-                    // 🚨 CRITICAL FIX: Initialize empty messages for new presentation
-                    setPresentationMessages(prev => ({
-                      ...prev,
-                      [newId]: [] // Start with completely empty messages
-                    }));
-                    
-                    // 🚨 PREVENT AUTO-LOADING: Mark this as a new presentation to prevent SimpleAutosave from loading old data
-                    window.slaidNewPresentationFlag = newId;
-                    
-                    console.log('💾💾💾 CREATING NEW PRESENTATION (in-memory only, will save after generation):', { id: newId, title: "Untitled Presentation" })
-                    
-                    // MVP: Don't save to database yet - only save after user generates content through onboarding
-                    // The presentation will be saved automatically when slides are generated
-                    
-                    // Onboarding already set at the beginning - no need to set again
-                    
-                    // Use setTimeout to ensure the state has updated before starting to edit
-                    setTimeout(() => {
-                      setEditingTitle(newId);
-                    }, 0);
-                  }}
-                >
-                  <span className="text-[#002903] text-lg font-bold leading-none">+</span>
-                  <span className="font-medium text-sm">{t.editor.newPresentation}</span>
-                </button>
-              </div>
-              <div className="px-4 mt-2 flex-1 min-h-0 flex flex-col">
-                <div className="text-gray-500 text-xs font-medium mb-3 uppercase tracking-wide">{language === 'es' ? 'PRESENTACIONES' : 'PRESENTATIONS'}</div>
-                <div className="flex flex-col gap-1 overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]">
-                  {(workspacePresentations[currentWorkspace] || []).map(p => (
-                    <div
-                      key={p.id}
-                      className={`w-full text-left px-3 py-1.5 rounded-lg ${
-                        // If we're editing the currently selected presentation, keep selection on it
-                        (editingTitle === currentPresentationId && p.id === currentPresentationId) ||
-                        // Show selection on original presentation if we're editing a different one
-                        (originalSelectedPresentation !== null && editingTitle !== null && editingTitle !== currentPresentationId && p.id === originalSelectedPresentation) ||
-                        // Show selection on current presentation if not editing
-                        (editingTitle === null && p.id === currentPresentationId)
-                          ? "bg-[#002903] text-white font-medium" 
-                          : "text-gray-700 hover:bg-gray-100 font-normal"
-                      } text-sm transition group relative cursor-pointer`}
-                    >
-                      {editingTitle === p.id ? (
-                        <>
-                        {console.log('🚨🚨🚨 RENDERING TITLE INPUT FOR PRESENTATION:', p.id, 'CURRENT VALUE:', p.title)}
-                        <input
-                          type="text"
-                          value={p.title || ''}
-                          autoFocus
-                          onChange={e => {
-                            e.stopPropagation();
-                            const newTitle = e.target.value;
-                          
-                            // Only update UI state - don't save to database yet
-                            setWorkspacePresentations(prev => ({
-                              ...prev,
-                              [currentWorkspace]: prev[currentWorkspace].map(presentation =>
-                                presentation.id === p.id ? { ...presentation, title: newTitle } : presentation
-                              )
-                            }));
-                          }}
-                          onBlur={() => {
-                            const finalTitle = p.title?.trim() || 'Untitled Presentation';
-                            
-                            if (!p.title?.trim()) {
-                              setWorkspacePresentations(prev => ({
-                                ...prev,
-                                [currentWorkspace]: prev[currentWorkspace].map(presentation =>
-                                  presentation.id === p.id ? { ...presentation, title: 'Untitled Presentation' } : presentation
-                                )
-                              }));
-                            }
-                            
-                            // Save title to database when editing finishes
-                            // BUT ONLY if the presentation has messages (i.e., has been used)
-                            const saveTitle = async () => {
-                              try {
-                                const messages = presentationMessages[p.id] || [];
-                                
-                                // MVP: Don't save if presentation is still empty (no messages)
-                                if (messages.length === 0) {
-                                  console.log('⏭️ Skipping save - presentation is empty (no messages yet)');
-                                  return;
-                                }
-                                
-                                const headers = await getAuthHeaders();
-                                
-                                fetch('/api/presentations/save', {
-                                  method: 'POST',
-                                  headers,
-                                  body: JSON.stringify({ 
-                                    presentationId: p.id,
-                                    state: {
-                                      title: finalTitle,
-                                      slides: [{ id: 'slide-1', blocks: [] }],
-                                      messages: [],
-                                      activeSlide: 0
-                                    }
-                                  })
-                                }).then(response => {
-                                  if (response.ok) {
-                                    console.log('✅ Title saved successfully:', finalTitle);
-                                  } else {
-                                    console.error('❌ Failed to save title:', response.status);
-                                  }
-                                }).catch(error => {
-                                  console.error('❌ Error saving title:', error);
-                                });
-                              } catch (error) {
-                                console.error('❌ Error getting auth headers:', error);
-                              }
-                            };
-                            saveTitle();
-                            
-                            // Don't switch presentations - just finish editing
-                            setEditingTitle(null);
-                            setOriginalSelectedPresentation(null);
-                          }}
-                          onKeyDown={e => {
-                            e.stopPropagation();
-                            if (e.key === 'Enter') {
-                              const finalTitle = p.title?.trim() || 'Untitled Presentation';
-                              
-                              if (!p.title?.trim()) {
-                                setWorkspacePresentations(prev => ({
-                                  ...prev,
-                                  [currentWorkspace]: prev[currentWorkspace].map(presentation =>
-                                    presentation.id === p.id ? { ...presentation, title: 'Untitled Presentation' } : presentation
-                                  )
-                                }));
-                              }
-                              
-                              // Save title to database when Enter is pressed
-                              // BUT ONLY if the presentation has messages (i.e., has been used)
-                              const saveTitleOnEnter = async () => {
-                                try {
-                                  const messages = presentationMessages[p.id] || [];
-                                  
-                                  // MVP: Don't save if presentation is still empty (no messages)
-                                  if (messages.length === 0) {
-                                    console.log('⏭️ Skipping save on Enter - presentation is empty (no messages yet)');
-                                    return;
-                                  }
-                                  
-                                  const headers = await getAuthHeaders();
-                                  
-                                  fetch('/api/presentations/save', {
-                                    method: 'POST',
-                                    headers,
-                                    body: JSON.stringify({ 
-                                      presentationId: p.id,
-                                      state: {
-                                        title: finalTitle,
-                                        slides: [{ id: 'slide-1', blocks: [] }],
-                                        messages: [],
-                                        activeSlide: 0
-                                      }
-                                    })
-                                  }).then(response => {
-                                    if (response.ok) {
-                                      console.log('✅ Title saved successfully on Enter:', finalTitle);
-                                  } else {
-                                    console.error('❌ Failed to save title on Enter:', response.status);
-                                  }
-                                }).catch(error => {
-                                  console.error('❌ Error saving title on Enter:', error);
-                                });
-                              } catch (error) {
-                                console.error('❌ Error getting auth headers:', error);
-                              }
-                            };
-                            saveTitleOnEnter();
-                              
-                              // Don't switch presentations - just finish editing
-                              setEditingTitle(null);
-                              setOriginalSelectedPresentation(null);
-                            }
-                            if (e.key === 'Escape') {
-                              setWorkspacePresentations(prev => ({
-                                ...prev,
-                                [currentWorkspace]: prev[currentWorkspace].map(presentation =>
-                                  presentation.id === p.id ? { ...presentation, title: 'Untitled Presentation' } : presentation
-                                )
-                              }));
-                              // Don't switch presentations - just finish editing
-                              setEditingTitle(null);
-                              setOriginalSelectedPresentation(null);
-                            }
-                          }}
-                          onClick={e => e.stopPropagation()}
-                          className="w-full bg-transparent border-none outline-none text-sm font-medium"
-                          style={{ color: 'inherit' }}
-                        />
-                        </>
-                      ) : (
-                        <div className="flex items-center justify-between w-full">
-                          <span 
-                            className="block flex-1 truncate text-sm cursor-pointer"
-                            onClick={(e) => {
+                              setEditingWorkspace(false);
+                            }}
+                            onKeyDown={(e) => {
                               e.stopPropagation();
-                              // Only change selection if we're not currently editing any title
-                              if (editingTitle === null) {
-                                setCurrentPresentationId(p.id);
-                                
-                                // Close onboarding when switching to any existing presentation
-                                if (showOnboarding) {
-                                  setShowOnboarding(false);
-                                  setOnboardingStep(1);
-                                  
-                                  // Clean up: Remove any empty presentations that were never saved to database
-                                  // (presentations with no messages and only created in-memory)
-                                  const currentPresentations = workspacePresentations[currentWorkspace] || [];
-                                  const filteredPresentations = currentPresentations.filter(presentation => {
-                                    // Keep the presentation we're switching to
-                                    if (presentation.id === p.id) return true;
-                                    
-                                    // Check if this presentation has any messages
-                                    const hasMessages = (presentationMessages[presentation.id]?.length || 0) > 0;
-                                    
-                                    // Only keep presentations that have messages (were actually generated/saved)
-                                    return hasMessages;
-                                  });
-                                  
-                                  if (filteredPresentations.length !== currentPresentations.length) {
-                                    console.log('🧹 Cleaning up empty unsaved presentations');
-                                    setWorkspacePresentations(prev => ({
-                                      ...prev,
-                                      [currentWorkspace]: filteredPresentations
-                                    }));
-                                  }
-                                }
+                              if (e.key === 'Enter') {
+                                // Trigger the same logic as onBlur
+                                e.currentTarget.blur();
+                              }
+                              if (e.key === 'Escape') {
+                                setEditingWorkspace(false);
                               }
                             }}
-                            onDoubleClick={(e) => {
-                              e.stopPropagation();
-                              // Double click: store original selection and start editing
-                              if (originalSelectedPresentation === null && p.id !== currentPresentationId) {
-                                setOriginalSelectedPresentation(currentPresentationId);
-                              }
-                              setEditingTitle(p.id);
-                            }}
-                          >
-                            {p.title || "Untitled Presentation"}
-                          </span>
-                          <button
-                            className="opacity-0 group-hover:opacity-100 ml-2 p-1 rounded hover:bg-black/20 transition-opacity"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              // Edit button: store original selection and start editing
-                              if (p.id !== currentPresentationId) {
-                                setOriginalSelectedPresentation(currentPresentationId);
-                              }
-                              setEditingTitle(p.id);
-                            }}
-                            aria-label="Edit title"
-                          >
-                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" className="text-current">
-                              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                            </svg>
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            {/* Fixed bottom section */}
-            <div className="px-4 pb-4 border-t border-gray-200 pt-4">
-              <button className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium rounded-lg py-1.5 mb-4 text-sm transition" onClick={() => setShowPricingModal(true)}>{language === 'es' ? 'Mejora para más créditos' : 'Upgrade for more credits'}</button>
-              <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5 mb-4">
-                <span className="flex items-center gap-2 text-gray-700 text-sm font-medium">
-                  <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain" />
-                  {creditsLoading ? 'Loading...' : `${credits?.remaining_credits?.toLocaleString() || '96'} Credits`}
-                </span>
-                <button className="hidden bg-[#002903] text-white text-xs font-medium rounded-md px-3 py-1.5 hover:bg-[#002903]/90 transition" onClick={() => setShowCreditsModal(true)}>Buy more</button>
-              </div>
-              <button className="w-full flex items-center gap-3 text-gray-600 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-100 transition mb-2" onClick={() => setShowSettingsModal(true)}>
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-500">
-                  <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" strokeWidth="2"/>
-                </svg>
-                {t.editor.settings}
-              </button>
-              <button
-                ref={helpButtonRef}
-                data-featurebase-feedback
-                className="w-full flex items-center gap-3 text-gray-600 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-100 transition"
-                onClick={e => {
-                  e.stopPropagation();
-                  console.log('🔘 Help & Support button clicked with data-featurebase-feedback');
-                  console.log('🔍 Checking Featurebase availability:', window.Featurebase);
-                  console.log('🔍 Button element:', e.currentTarget);
-                  console.log('🔍 Data attribute:', e.currentTarget.getAttribute('data-featurebase-feedback'));
-                  
-                  // Manual trigger as fallback
-                  if (window.Featurebase) {
-                    console.log('🚀 Manually triggering Featurebase widget...');
-                    try {
-                      window.Featurebase('show');
-                    } catch (error) {
-                      console.log('⚠️ Manual trigger failed:', error);
-                    }
-                  } else {
-                    console.log('❌ Featurebase not available on window');
-                  }
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-500">
-                  <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-                  <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                {t.editor.help}
-              </button>
-            </div>
-          </>
-        )}
-      </aside>
-      {/* Main content: chat + slide preview */}
-      <main className="flex-1 flex flex-col md:flex-row h-screen w-full overflow-hidden">
-        {/* Chat/editor column - Hide during onboarding */}
-        {!showOnboarding && (
-          <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 pt-6 pb-2 relative">
-            <h2 className="text-[#002903] text-xl font-medium break-words w-full line-clamp-2">
-              {currentPresentation?.title || "Untitled Presentation"}
-            </h2>
-              {/* Three dots icon */}
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
-                onClick={e => {
-                  e.stopPropagation();
-                  setShowTitleMenu(v => !v);
-                }}
-                aria-label="Presentation options"
-              >
-                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-                  <circle cx="5" cy="12" r="2" fill="currentColor"/>
-                  <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                  <circle cx="19" cy="12" r="2" fill="currentColor"/>
-                </svg>
-              </button>
-          </div>
-          <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-            {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full w-full">
-                <img src="/Favicon Slaid.png" alt="Slaid Icon" className="w-10 h-10 object-contain mb-3 mt-12" />
-                <div className="text-[#002903] text-base font-normal mb-4">Ask slaid what you want...</div>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-6 mb-6 mt-6">
-                {/* Version History Notice */}
-                
-                {/* 🔧 CRITICAL FIX: USER MESSAGE ALWAYS FIRST - Simple chronological order */}
-                {messages.map((msg, i) =>
-                  msg.role === 'user' ? (
-                    <div key={msg.id || `user-${i}`} className="flex flex-col items-end gap-1">
-                      <div className="flex flex-row-reverse items-end gap-2">
-                        <div className="h-9 w-9 rounded-full bg-[#002903] flex items-center justify-center text-white font-medium text-lg">
-                          {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
-                        </div>
-                        <div className="bg-[#002903] text-white rounded-xl px-4 py-2 max-w-xs mb-1 text-sm">{msg.text}</div>
+                            onClick={e => e.stopPropagation()}
+                            className="bg-transparent border-none outline-none text-gray-900 font-medium text-sm max-w-[140px]"
+                          />
+                        ) : (
+                          <span className="text-gray-900 font-medium text-sm truncate max-w-[140px]">{workspaceDisplayName}</span>
+                        )}
                       </div>
+                      <span className="text-gray-500 text-xs">
+                        {credits?.plan_type === 'basic' ? 'Basic plan' :
+                          credits?.plan_type === 'pro' ? (language === 'es' ? 'Plan Pro' : 'Pro plan') :
+                            credits?.plan_type === 'ultra' ? (language === 'es' ? 'Plan Ultra' : 'Ultra plan') :
+                              language === 'es' ? 'Plan Gratuito' : 'Free plan'}
+                      </span>
                     </div>
-                  ) : msg.role === 'assistant' ? (
-                    <div key={msg.id || `assistant-${i}`} className="flex flex-col items-start w-full">
-                      {msg.isLoading ? (
-                        // Loading state with Cursor-style UI
-                        <div className="flex flex-col w-full">
-                          <div className="flex items-center gap-2 text-[#002903] text-sm mb-3">
-                            <LoadingCircle size={16} color="#002903" progress={generationProgress} />
-                            <span className="font-semibold">Reasoning</span>
-                          </div>
-                          <div className="text-[#002903] text-sm leading-relaxed whitespace-pre-line mb-3">
-                            {currentReasoningStep}
-                          </div>
-                        </div>
-                      ) : (
-                        // Regular completed message
-                        <>
-                          <div className="text-[#002903] text-sm mb-2"><span className="font-semibold text-[#002903]">Reasoning</span></div>
-                          <div className="text-[#002903] text-sm mb-3">{msg.text}</div>
-                          <div className={`rounded-lg px-4 py-3 flex flex-col border w-full max-w-xs ${(() => {
-                            const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
-                            const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
-                            return msg.version === currentActiveVersion ? 'bg-[#f3f4f6] border-gray-200' : 'bg-[#f3f4f6] border-gray-200 opacity-80';
-                          })()}`}>
-                            <div className="flex items-center justify-between mb-1">
-                              <span className={(() => {
-                                const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
-                                const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
-                                return msg.version === currentActiveVersion ? 'text-[#002903] font-semibold text-sm' : 'text-[#002903] font-medium text-sm';
-                              })()}>{truncateVersionTitle(msg.userMessage || 'True Full Screen Slide Display')}</span>
-                              {(() => {
-                                const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
-                                const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
-                                
-                                if (msg.version !== undefined && msg.version === currentActiveVersion) {
-                                  return <span className="flex items-center gap-1 text-xs text-[#00e676]">●<span>Version {msg.version}</span></span>;
-                                } else if (msg.version !== undefined) {
-                                  return (
-                                    <button className="text-gray-500 text-xs hover:text-gray-900 hover:underline transition" onClick={() => {
-                                      console.log('🔄 VERSION HISTORY: Go back button clicked for version', msg.version);
-                                      console.log('🔄 VERSION HISTORY: Current activeVersion before click:', activeVersion);
-                                      setActiveVersion(msg.version!);
-                                      console.log('🔄 VERSION HISTORY: Setting activeVersion to:', msg.version);
-                                    }}>go back</button>
-                                  );
-                                } else {
-                                  return null;
-                                }
-                              })()}
-                            </div>
-                            {(() => {
-                              const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
-                              const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
-                              return msg.version !== undefined && msg.version !== currentActiveVersion ? (
-                                <div className="text-gray-500 text-xs">Version {msg.version}</div>
-                              ) : null;
-                            })()}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ) : null
-                )}
-              </div>
-            )}
-          </div>
-          {/* Chat Input */}
-          <form
-            className="px-6 pb-4 pt-2"
-            onSubmit={async (e) => {
-              // 🚨 ULTRA CRITICAL DEBUG: Form submission started
-              console.log('🚨 ULTRA CRITICAL DEBUG: Form onSubmit called with input:', chatInput);
-              console.log('🚨 ULTRA CRITICAL DEBUG: Checking investor deck detection for:', chatInput);
-              
-              // 🚨 TEST INVESTOR DECK DETECTION IMMEDIATELY
-              const testInvestorDetection = chatInput.toLowerCase().includes('investor deck') || 
-                     chatInput.toLowerCase().includes('pitch deck') || 
-                     chatInput.toLowerCase().includes('fundraising deck');
-              console.log('🚨 TEST INVESTOR DECK DETECTION:', {
-                input: chatInput,
-                lowerInput: chatInput.toLowerCase(),
-                hasInvestorDeck: chatInput.toLowerCase().includes('investor deck'),
-                hasPitchDeck: chatInput.toLowerCase().includes('pitch deck'),
-                hasFundraisingDeck: chatInput.toLowerCase().includes('fundraising deck'),
-                testResult: testInvestorDetection
-              });
-              
-              e.preventDefault();
-              if (chatInput.trim() || fileData) {
-                // 🚨 EMERGENCY DEBUG: Check if we reach this point for reports
-                console.log('🚨 EMERGENCY DEBUG - onSubmit called with:', {
-                  chatInput: chatInput,
-                  isQBR: chatInput.toLowerCase().includes('qbr'),
-                  isSalesReport: chatInput.toLowerCase().includes('sales report'),
-                  isQuarterlyBusinessReview: chatInput.toLowerCase().includes('quarterly business review'),
-                  isPitchDeck: chatInput.toLowerCase().includes('pitch deck'),
-                  isInvestorDeck: chatInput.toLowerCase().includes('investor deck'),
-                  isFundraisingDeck: chatInput.toLowerCase().includes('fundraising deck')
-                });
-                
-                // 🔧 RESTORE CHAT MESSAGES: Add user message and loading indicator TOGETHER
-                // Add both user message and loading message in a single state update to ensure correct order
-                const userMessage = { 
-                  id: `user-${Date.now()}-${Math.random()}`, // Unique ID
-                  role: "user" as const, 
-                  text: chatInput, 
-                  attachments: attachedFiles 
-                };
-                
-                const loadingMessage = { 
-                  id: `assistant-${Date.now()}-${Math.random()}`, // Unique ID
-                  role: "assistant" as const, 
-                  text: "Generating your presentation...", 
-                  isLoading: true 
-                };
-                
-                // Add both messages together to guarantee order
-                setPresentationMessages(prev => ({
-                  ...prev,
-                  [currentPresentationId]: [
-                    ...(prev[currentPresentationId] || []),
-                    userMessage,
-                    loadingMessage
-                  ]
-                }));
+                  </div>
+                  {/* Close sidebar button */}
+                  <button
+                    className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+                    aria-label="Close sidebar"
+                    onClick={() => setSidebarCollapsed(true)}
+                  >
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                {/* Main scrollable section */}
+                <div className="flex-1 min-h-0 flex flex-col">
+                  <div className="px-4 mt-3">
+                    <button
+                      className="w-full flex items-center justify-start gap-2 bg-[#f3f4f6] hover:bg-gray-200 text-[#002903] rounded-lg py-1.5 mb-3 transition font-medium pl-3"
+                      onClick={async () => {
+                        // 🚨 CRITICAL: SET ONBOARDING FIRST - BEFORE ANY OTHER STATE UPDATES
+                        console.log('🚀🚀🚀 SETTING ONBOARDING STATE FIRST - BEFORE EVERYTHING ELSE');
+                        setShowOnboarding(true);
+                        setOnboardingStep(1);
+                        console.log('✅✅✅ ONBOARDING STATE SET FIRST - should be visible immediately');
 
-                // 🚨 CRITICAL FIX: Preserve original intent BEFORE Excel processing
-                const originalPrompt = chatInput; // Preserve original user input for intent detection
-                
-                // Keep the user prompt clean - don't modify it with file analysis
-                const userPrompt = chatInput; // Use original user input, not enhanced with file data
-                setChatInput("");
-                setAttachedFiles([]);
-                if (fileData) {
-                  setFileData(null);
-                }
+                        const currentPresentations = workspacePresentations[currentWorkspace] || [];
+                        const newId = uuidv4(); // Generate UUID for new presentation
+                        const newPresentation = { id: newId, title: "Untitled Presentation" };
 
-                // Get the LATEST presentation data at submission time
-                // Include the user message that was just added to state
-                const existingMessages = presentationMessages[currentPresentationId] || [];
-                const currentMessages = [...existingMessages, userMessage];
-                const latestPresentationData = getCurrentPresentationData(currentMessages);
-                
-                // If no presentation data but we have assistant messages, try to get from last assistant message
-                const assistantMessage = [...currentMessages].reverse().find(m => m.role === 'assistant' && !m.isLoading);
-                const fallbackPresentationData = !latestPresentationData && assistantMessage ? 
-                  (assistantMessage as any).presentationData : null;
-                
-                let effectivePresentationData = latestPresentationData || fallbackPresentationData;
-                
-                // 🔧 CRITICAL FIX: Load presentation data from workspaceSlides if not in messages
-                // This allows modification of presentations loaded from database without chat history
-                if (!effectivePresentationData && currentPresentation) {
-                  console.log('🔄 No presentation data in messages - trying to load from workspaceSlides');
-                  const slidesFromWorkspace = workspaceSlides[currentWorkspace]?.[currentPresentationId];
-                  
-                  if (slidesFromWorkspace && slidesFromWorkspace.length > 0) {
-                    console.log('✅ Found presentation slides in workspaceSlides:', slidesFromWorkspace.length, 'slides');
-                    effectivePresentationData = {
-                      title: currentPresentation.title,
-                      slides: slidesFromWorkspace
-                    };
-                    console.log('✅ Presentation data loaded from workspaceSlides for modification');
-                  } else {
-                    console.log('⚠️ No slides found in workspaceSlides either');
-                  }
-                }
-                
-                // Determine if this is a modification request
-                // 🎯 ENHANCED INTENT CLASSIFICATION - Use ORIGINAL prompt for intent detection
-                const isCreateNewRequest = isCreateNewPresentationRequest(originalPrompt);
-                const isAddSlideRequest = isAddNewSlideRequest(originalPrompt);
-                const isModificationAttempt = isModificationRequest(originalPrompt);
-                const hasExistingPresentation = !!effectivePresentationData;
-                const hasAnyAssistantMessages = currentMessages.some(m => m.role === 'assistant' && !m.isLoading);
-                
-                // Intent-based logic:
-                // 1. CREATE NEW: Always create new presentation (ignore existing data)
-                // 2. ADD SLIDE: Create single slide (requires existing presentation context)
-                // 3. MODIFY: Modify existing content (requires existing data)
-                // 4. DEFAULT: If no clear intent and no existing data, create new presentation
-                
-                let finalIntent = 'create_new'; // Default
-                let isModification = false;
-                
-                if (isCreateNewRequest) {
-                  finalIntent = 'create_new';
-                  isModification = false;
-                } else if (isAddSlideRequest) {
-                  // If adding a slide but no existing presentation, create new presentation instead
-                  if (!hasExistingPresentation && !hasAnyAssistantMessages) {
-                    console.log('🔄 Add slide requested but no existing presentation - creating new presentation instead');
-                    finalIntent = 'create_new';
-                    isModification = false;
-                  } else {
-                    finalIntent = 'add_slide';
-                    isModification = false;
-                  }
-                } else if (isModificationAttempt && (hasExistingPresentation || hasAnyAssistantMessages)) {
-                  finalIntent = 'modify';
-                  isModification = true;
-                } else if (!isModificationAttempt && !hasExistingPresentation && !hasAnyAssistantMessages) {
-                  // No clear intent, no existing data -> create new presentation
-                  finalIntent = 'create_new';
-                  isModification = false;
-                } else {
-                  // Ambiguous case: assume modification if we have data, otherwise create new
-                  if (hasExistingPresentation || hasAnyAssistantMessages) {
-                    finalIntent = 'modify';
-                    isModification = true;
-                  } else {
-                    finalIntent = 'create_new';
-                    isModification = false;
-                  }
-                }
-                
-                console.log('🎯 Enhanced Intent Classification:', {
-                  userPrompt: userPrompt,
-                  isCreateNewRequest: isCreateNewRequest,
-                  isAddSlideRequest: isAddSlideRequest,
-                  isModificationAttempt: isModificationAttempt,
-                  hasExistingPresentation: hasExistingPresentation,
-                  hasAnyAssistantMessages: hasAnyAssistantMessages,
-                  finalIntent: finalIntent,
-                  isModification: isModification,
-                  currentPresentationSlides: effectivePresentationData?.slides?.length || 0,
-                  currentPresentationTitle: effectivePresentationData?.title,
-                  currentPresentationId: currentPresentationId,
-                  messageCount: messages.length,
-                  presentationMessageKeys: Object.keys(presentationMessages),
-                  willSendExistingPresentation: isModification && !!effectivePresentationData,
-                  existingPresentationTitle: effectivePresentationData?.title
-                });
+                        // Track this ID for future reloads
+                        persistCreatedId(newId);
 
-                // Generate dynamic reasoning based on user prompt
-                const { text: dynamicReasoning } = generateReasoningWithTiming(userPrompt, isModification);
-                
-                // 🔧 CLEAN CHAT: Skip adding loading message to keep chat clean
-                // Instead of showing loading messages, just process silently
+                        // Update UI immediately
+                        setWorkspacePresentations(prev => ({
+                          ...prev,
+                          [currentWorkspace]: [...currentPresentations, newPresentation]
+                        }));
+                        setWorkspaceSlides(prev => ({
+                          ...prev,
+                          [currentWorkspace]: {
+                            ...(prev[currentWorkspace] || {}),
+                            [newId]: [{ title: "New Slide 1" }]
+                          }
+                        }));
+                        lastCreatedPresentationId.current = newId;
+                        setCurrentPresentationId(newId);
+                        setActiveSlide(0);
 
-                try {
-                  console.log('Making API call to /api/generate...');
-                  
-                  // Prepare uploaded images data
-                  const uploadedImages = attachedFiles
-                    .filter(file => file.isUploaded && file.uploadStatus === 'completed' && file.serverUrl)
-                    .map(file => ({
-                      originalName: file.name,
-                      serverUrl: file.serverUrl,
-                      suggestedVariant: file.suggestedVariant || 'illustration',
-                      type: file.type
-                    }));
-
-                  // 🎯 PRODUCT DOSSIER DETECTION AND AUTOMATIC SPLIT
-                  const isProductDossierRequest = (prompt: string): boolean => {
-                    const lowerPrompt = prompt.toLowerCase();
-                    
-                    // Exclude sales/excel-related presentations from product dossier detection
-                    if (lowerPrompt.includes('sales') || 
-                        lowerPrompt.includes('excel') || 
-                        lowerPrompt.includes('report') ||
-                        lowerPrompt.includes('forecast') ||
-                        lowerPrompt.includes('revenue')) {
-                      return false;
-                    }
-                    
-                    return lowerPrompt.includes('product dossier') || 
-                           lowerPrompt.includes('dossier') ||
-                           lowerPrompt.includes('product deck') ||
-                           lowerPrompt.includes('product overview') ||
-                           lowerPrompt.includes('solution overview') ||
-                           lowerPrompt.includes('solution brief') ||
-                           lowerPrompt.includes('capability deck') ||
-                           lowerPrompt.includes('capabilities deck') ||
-                           lowerPrompt.includes('sales collateral') ||
-                           lowerPrompt.includes('product collateral') ||
-                           lowerPrompt.includes('sales enablement deck') ||
-                           lowerPrompt.includes('product enablement deck') ||
-                           lowerPrompt.includes('product brochure') ||
-                           lowerPrompt.includes('solution brochure') ||
-                           lowerPrompt.includes('product datasheet') ||
-                           lowerPrompt.includes('data sheet') ||
-                           lowerPrompt.includes('fact sheet') ||
-                           lowerPrompt.includes('factsheet') ||
-                           lowerPrompt.includes('customer pitch') ||
-                           lowerPrompt.includes('prospect pitch') ||
-                           lowerPrompt.includes('customer presentation') ||
-                           lowerPrompt.includes('prospect presentation') ||
-                           lowerPrompt.includes('product demo deck') ||
-                           lowerPrompt.includes('product demo presentation') ||
-                           lowerPrompt.includes('value proposition deck') ||
-                           lowerPrompt.includes('value prop deck') ||
-                           lowerPrompt.includes('product documentation') ||
-                           lowerPrompt.includes('product presentation') ||
-                           (lowerPrompt.includes('product') && lowerPrompt.includes('dossier'));
-                  };
-
-                  // 🎯 INVESTOR DECK DETECTION AND AUTOMATIC SPLIT
-                  const isInvestorDeckRequest = (prompt: string): boolean => {
-                    const lowerPrompt = prompt.toLowerCase();
-                    const isInvestor = lowerPrompt.includes('investor deck') || 
-                           lowerPrompt.includes('pitch deck') || 
-                           lowerPrompt.includes('fundraising deck') || 
-                           lowerPrompt.includes('vc pitch') || 
-                           lowerPrompt.includes('startup pitch') || 
-                           lowerPrompt.includes('seed deck') || 
-                           lowerPrompt.includes('pre-seed deck') || 
-                           lowerPrompt.includes('series a deck') || 
-                           lowerPrompt.includes('series b deck') || 
-                           lowerPrompt.includes('teaser deck') || 
-                           lowerPrompt.includes('raise round deck');
-                    console.log('🔍 Investor Deck Detection:', { prompt: lowerPrompt, isInvestor });
-                    return isInvestor;
-                  };
-
-                  // 🎯 REPORT PLAYBOOK DETECTION AND AUTOMATIC SPLIT
-                  const isReportRequest = (prompt: string): boolean => {
-                    const lowerPrompt = prompt.toLowerCase();
-                    
-                    // If user explicitly asks for a single slide, it's NOT a report
-                    if (lowerPrompt.includes('single slide') || 
-                        lowerPrompt.includes('one slide') || 
-                        lowerPrompt.includes('create a slide')) {
-                      return false;
-                    }
-                    
-                    const isReport = lowerPrompt.includes('sales report') || 
-                           lowerPrompt.includes('report using the data') ||  // Added for Excel-based reports
-                           lowerPrompt.includes('sales report using') ||     // Added for "sales report using this data"
-                           lowerPrompt.includes('create a sales report') ||  // Added for "create a sales report"
-                           lowerPrompt.includes('sales analysis') ||         // Added for Excel-based analysis
-                           lowerPrompt.includes('sales performance') || 
-                           lowerPrompt.includes('revenue report') || 
-                           lowerPrompt.includes('pipeline review') || 
-                           lowerPrompt.includes('forecast review') || 
-                           lowerPrompt.includes('revops report') ||
-                           // Spanish sales report keywords
-                           lowerPrompt.includes('reporte de ventas') ||
-                           lowerPrompt.includes('informe de ventas') ||
-                           lowerPrompt.includes('análisis de ventas') ||
-                           lowerPrompt.includes('reporte comercial') ||
-                           lowerPrompt.includes('informe comercial') ||
-                           lowerPrompt.includes('reporte de ingresos') ||
-                           lowerPrompt.includes('análisis comercial') ||
-                           lowerPrompt.includes('creame un reporte') ||
-                           lowerPrompt.includes('créame un reporte') ||
-                           lowerPrompt.includes('crea una reporte') ||
-                           lowerPrompt.includes('crea un reporte') ||
-                           // 🔥 EXCEL-BASED REPORT DETECTION - Only for EXPLICIT sales/business reports with Excel data
-                           (!isModification && lowerPrompt.includes('sales report') && lowerPrompt.includes('excel')) ||
-                           (!isModification && lowerPrompt.includes('business report') && lowerPrompt.includes('excel')) ||
-                           (!isModification && lowerPrompt.includes('revenue report') && lowerPrompt.includes('excel')) ||
-                           (!isModification && lowerPrompt.includes('sales analysis') && lowerPrompt.includes('excel')) ||
-                           (!isModification && lowerPrompt.includes('forecast') && lowerPrompt.includes('excel')) ||
-                           lowerPrompt.includes('qbr') || 
-                           lowerPrompt.includes('quarterly business review') || 
-                           lowerPrompt.includes('mbr') || 
-                           lowerPrompt.includes('monthly business review') || 
-                           lowerPrompt.includes('ebr') || 
-                           lowerPrompt.includes('executive business review') || 
-                           lowerPrompt.includes('customer success health') || 
-                           lowerPrompt.includes('cs health') || 
-                           lowerPrompt.includes('churn/expansion report') || 
-                           lowerPrompt.includes('churn expansion report') || 
-                           lowerPrompt.includes('marketing performance report') || 
-                           lowerPrompt.includes('campaign report') || 
-                           lowerPrompt.includes('product performance report') || 
-                           lowerPrompt.includes('feature adoption report') || 
-                           lowerPrompt.includes('regional report') || 
-                           lowerPrompt.includes('territory report') || 
-                           lowerPrompt.includes('partner performance') || 
-                           lowerPrompt.includes('channel performance') || 
-                           lowerPrompt.includes('finance snapshot') || 
-                           lowerPrompt.includes('financial summary');
-                    console.log('🔍 Report Detection:', { prompt: lowerPrompt, isReport });
-                    return isReport;
-                  };
-
-                  // 🎯 TOPIC PRESENTATION DETECTION
-                  const isTopicPresentationRequest = (prompt: string): boolean => {
-                    const lowerPrompt = prompt.toLowerCase();
-                    const isTopic = lowerPrompt.includes('topic presentation') || 
-                           lowerPrompt.includes('topic deck') || 
-                           lowerPrompt.includes('educational presentation') || 
-                           lowerPrompt.includes('topic overview') || 
-                           lowerPrompt.includes('presentation about') ||
-                           lowerPrompt.includes('information deck') ||
-                           lowerPrompt.includes('overview presentation') ||
-                           lowerPrompt.includes('knowledge share') ||
-                           lowerPrompt.includes('research summary') ||
-                           lowerPrompt.includes('market research') ||
-                           lowerPrompt.includes('industry analysis') ||
-                           lowerPrompt.includes('competitive landscape') ||
-                           lowerPrompt.includes('sector overview') ||
-                           lowerPrompt.includes('trend report') ||
-                           lowerPrompt.includes('market overview');
-                    console.log('🔍 Topic Presentation Detection:', { prompt: lowerPrompt, isTopic });
-                    return isTopic;
-                  };
-
-                  // 🎯 PRODUCT LAUNCH DETECTION
-                  const isProductLaunchRequest = (prompt: string): boolean => {
-                    const lowerPrompt = prompt.toLowerCase();
-                    const isProductLaunch = lowerPrompt.includes('product launch') ||
-                           lowerPrompt.includes('product launch presentation') ||
-                           lowerPrompt.includes('product launch deck') ||
-                           lowerPrompt.includes('launch presentation') ||
-                           lowerPrompt.includes('launch deck') ||
-                           lowerPrompt.includes('product launch plan') ||
-                           lowerPrompt.includes('launch strategy') ||
-                           lowerPrompt.includes('product rollout') ||
-                           lowerPrompt.includes('product announcement') ||
-                           lowerPrompt.includes('launch campaign') ||
-                           lowerPrompt.includes('product debut') ||
-                           lowerPrompt.includes('product introduction') ||
-                           lowerPrompt.includes('new product launch') ||
-                           lowerPrompt.includes('product release') ||
-                           lowerPrompt.includes('launch event') ||
-                           lowerPrompt.includes('product unveiling') ||
-                           lowerPrompt.includes('go-to-market launch') ||
-                           lowerPrompt.includes('product launch strategy') ||
-                           lowerPrompt.includes('launch a product') ||
-                           lowerPrompt.includes('product launch for') ||
-                           lowerPrompt.includes('launching our product');
-                    console.log('🔍 Product Launch Detection:', { prompt: lowerPrompt, isProductLaunch });
-                    return isProductLaunch;
-                  };
-
-                  // 🎯 CAMPAIGN DETECTION
-                  const isCampaignRequest = (prompt: string): boolean => {
-                    const lowerPrompt = prompt.toLowerCase();
-                    const isCampaign = lowerPrompt.includes('campaign') || 
-                           lowerPrompt.includes('campaign presentation') || 
-                           lowerPrompt.includes('campaign deck') || 
-                           lowerPrompt.includes('marketing campaign') || 
-                           lowerPrompt.includes('campaign overview') || 
-                           lowerPrompt.includes('campaign strategy') ||
-                           lowerPrompt.includes('campaign plan') ||
-                           lowerPrompt.includes('campaign proposal') ||
-                           lowerPrompt.includes('campaign brief') ||
-                           lowerPrompt.includes('campaign launch') ||
-                           lowerPrompt.includes('campaign rollout') ||
-                           lowerPrompt.includes('advertising campaign') ||
-                           lowerPrompt.includes('promotional campaign') ||
-                           lowerPrompt.includes('brand campaign') ||
-                           lowerPrompt.includes('digital campaign') ||
-                           lowerPrompt.includes('social campaign') ||
-                           lowerPrompt.includes('campaign materials') ||
-                           lowerPrompt.includes('campaign pitch') ||
-                           lowerPrompt.includes('campaign summary') ||
-                           lowerPrompt.includes('marketing campaign plan') ||
-                           lowerPrompt.includes('campaign roadmap') ||
-                           lowerPrompt.includes('go-to-market campaign') ||
-                           lowerPrompt.includes('launch campaign') ||
-                           lowerPrompt.includes('growth campaign') ||
-                           lowerPrompt.includes('acquisition campaign') ||
-                           lowerPrompt.includes('retention campaign') ||
-                           lowerPrompt.includes('paid media campaign') ||
-                           lowerPrompt.includes('performance marketing campaign') ||
-                           lowerPrompt.includes('google ads campaign') ||
-                           lowerPrompt.includes('meta campaign') ||
-                           lowerPrompt.includes('facebook ads campaign') ||
-                           lowerPrompt.includes('linkedin ads campaign') ||
-                           lowerPrompt.includes('tiktok ads campaign') ||
-                           lowerPrompt.includes('abm campaign') ||
-                           lowerPrompt.includes('email campaign') ||
-                           lowerPrompt.includes('drip campaign') ||
-                           lowerPrompt.includes('nurture campaign') ||
-                           lowerPrompt.includes('seo campaign') ||
-                           lowerPrompt.includes('content campaign') ||
-                           lowerPrompt.includes('plan a marketing campaign') ||
-                           lowerPrompt.includes('create a campaign') ||
-                           lowerPrompt.includes('build a campaign presentation') ||
-                           lowerPrompt.includes('campaign plan for') ||
-                           lowerPrompt.includes('campaign strategy for') ||
-                           lowerPrompt.includes('campaign brief for');
-                    console.log('🔍 Campaign Detection:', { prompt: lowerPrompt, isCampaign });
-                    return isCampaign;
-                  };
-
-                  // 🚨 CRITICAL DEBUG: Ensure detection functions are defined
-                  console.log('🚨 CRITICAL DEBUG: Detection functions defined', {
-                    isInvestorDeckRequest: typeof isInvestorDeckRequest,
-                    isProductDossierRequest: typeof isProductDossierRequest,
-                    isReportRequest: typeof isReportRequest,
-                    isTopicPresentationRequest: typeof isTopicPresentationRequest,
-                    isProductLaunchRequest: typeof isProductLaunchRequest,
-                    isCampaignRequest: typeof isCampaignRequest
-                  });
-
-                  // 🚨 CRITICAL DEBUG: Check all playbook detections
-                  console.log('🚨 CRITICAL DEBUG - Playbook Detection Check:', {
-                    userPrompt: userPrompt,
-                    isInvestorDeck: isInvestorDeckRequest(userPrompt),
-                    isProductDossier: isProductDossierRequest(userPrompt),
-                    isReport: isReportRequest(userPrompt),
-                    isTopicPresentation: isTopicPresentationRequest(userPrompt),
-                    isProductLaunch: isProductLaunchRequest(userPrompt),
-                    isCampaign: isCampaignRequest(userPrompt),
-                    isModification: isModification
-                  });
-
-                  if (isInvestorDeckRequest(userPrompt) && !isModification) {
-                    console.log('🎯 INVESTOR DECK DETECTED: Making 2 API calls automatically');
-                    
-                    // Detect language for investor deck API request - USE CURRENT PROMPT ONLY
-                    const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
-                    
-                    console.log('🌐 INVESTOR DECK LANGUAGE DEBUG:', {
-                      userInput: userPrompt, // Log current prompt, not previous message
-                      detectedLanguage: userLanguage,
-                      isSpanish: userLanguage === 'es'
-                    });
-                    
-                    try {
-                      // Helper function to make investor deck API calls
-                    const makeInvestorDeckCall = async (part: 'first' | 'second') => {
-                      let partPrompt = part === 'first' 
-                        ? `Create slides 1-6 of a SaaS investor deck: Cover_ProductLayout (Investor Deck), Index_LeftAgendaRightText (Agenda), Impact_ImageMetrics (Problem), Product_MacBookCentered (Solution), Lists_CardsLayoutRight (Why Now), Competition_Analysis (Competition). ${userPrompt}`
-                        : `Create slides 8-13 of a SaaS investor deck: Pricing_Plans (Business Model), Team_AdaptiveGrid (Team), Impact_KPIOverview (Traction), Metrics_FinancialsSplit (The Round), Quote_LeftTextRightImage (Mission), BackCover_ThankYouWithImage (Back Cover). ${userPrompt}`;
-
-                      // Force Spanish content if user spoke Spanish
-                      if (userLanguage === 'es') {
-                        partPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                      }
-
-                      // 💳 Check if user has at least 1 credit before API call (minimum cost)
-                      if (!hasEnoughCredits(1)) {
-                        setShowCreditsModal(true);
-                        // Update loading message to show insufficient credits
+                        // 🚨 CRITICAL FIX: Initialize empty messages for new presentation
                         setPresentationMessages(prev => ({
                           ...prev,
-                          [currentPresentationId]: prev[currentPresentationId].map(msg => 
-                            msg.isLoading ? {
-                              ...msg,
-                              text: 'Insufficient credits to generate presentation. Please purchase more credits or upgrade your plan.',
-                              isLoading: false
-                            } : msg
-                          )
+                          [newId]: [] // Start with completely empty messages
                         }));
-                        return;
-                      }
 
-                      // Get auth headers
-                      const { data: { session } } = await supabase.auth.getSession();
-                      const headers: Record<string, string> = {
-                        'Content-Type': 'application/json',
-                      };
-                      if (session?.access_token) {
-                        headers['Authorization'] = `Bearer ${session.access_token}`;
-                      }
+                        // 🚨 PREVENT AUTO-LOADING: Mark this as a new presentation to prevent SimpleAutosave from loading old data
+                        window.slaidNewPresentationFlag = newId;
 
-                      const response = await fetch('/api/generate', {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({
-                          prompt: partPrompt,
-                          language: userLanguage, // Add language parameter
-                          existingPresentation: undefined,
-                          uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
-                          presentationId: currentPresentationId,
-                          workspace: currentWorkspace
-                        }),
+                        console.log('💾💾💾 CREATING NEW PRESENTATION (in-memory only, will save after generation):', { id: newId, title: "Untitled Presentation" })
+
+                        // MVP: Don't save to database yet - only save after user generates content through onboarding
+                        // The presentation will be saved automatically when slides are generated
+
+                        // Onboarding already set at the beginning - no need to set again
+
+                        // Use setTimeout to ensure the state has updated before starting to edit
+                        setTimeout(() => {
+                          setEditingTitle(newId);
+                        }, 0);
+                      }}
+                    >
+                      <span className="text-[#002903] text-lg font-bold leading-none">+</span>
+                      <span className="font-medium text-sm">{t.editor.newPresentation}</span>
+                    </button>
+                  </div>
+                  <div className="px-4 mt-2 flex-1 min-h-0 flex flex-col">
+                    <div className="text-gray-500 text-xs font-medium mb-3 uppercase tracking-wide">{language === 'es' ? 'PRESENTACIONES' : 'PRESENTATIONS'}</div>
+                    <div className="flex flex-col gap-1 overflow-y-auto flex-1 min-h-0 scrollbar-thin scrollbar-thumb-[#31343b] scrollbar-track-[#18191c]">
+                      {(workspacePresentations[currentWorkspace] || []).map(p => (
+                        <div
+                          key={p.id}
+                          className={`w-full text-left px-3 py-1.5 rounded-lg ${
+                            // If we're editing the currently selected presentation, keep selection on it
+                            (editingTitle === currentPresentationId && p.id === currentPresentationId) ||
+                              // Show selection on original presentation if we're editing a different one
+                              (originalSelectedPresentation !== null && editingTitle !== null && editingTitle !== currentPresentationId && p.id === originalSelectedPresentation) ||
+                              // Show selection on current presentation if not editing
+                              (editingTitle === null && p.id === currentPresentationId)
+                              ? "bg-[#002903] text-white font-medium"
+                              : "text-gray-700 hover:bg-gray-100 font-normal"
+                            } text-sm transition group relative cursor-pointer`}
+                        >
+                          {editingTitle === p.id ? (
+                            <>
+                              {console.log('🚨🚨🚨 RENDERING TITLE INPUT FOR PRESENTATION:', p.id, 'CURRENT VALUE:', p.title)}
+                              <input
+                                type="text"
+                                value={p.title || ''}
+                                autoFocus
+                                onChange={e => {
+                                  e.stopPropagation();
+                                  const newTitle = e.target.value;
+
+                                  // Only update UI state - don't save to database yet
+                                  setWorkspacePresentations(prev => ({
+                                    ...prev,
+                                    [currentWorkspace]: prev[currentWorkspace].map(presentation =>
+                                      presentation.id === p.id ? { ...presentation, title: newTitle } : presentation
+                                    )
+                                  }));
+                                }}
+                                onBlur={() => {
+                                  const finalTitle = p.title?.trim() || 'Untitled Presentation';
+
+                                  if (!p.title?.trim()) {
+                                    setWorkspacePresentations(prev => ({
+                                      ...prev,
+                                      [currentWorkspace]: prev[currentWorkspace].map(presentation =>
+                                        presentation.id === p.id ? { ...presentation, title: 'Untitled Presentation' } : presentation
+                                      )
+                                    }));
+                                  }
+
+                                  // Save title to database when editing finishes
+                                  // BUT ONLY if the presentation has messages (i.e., has been used)
+                                  const saveTitle = async () => {
+                                    try {
+                                      const messages = presentationMessages[p.id] || [];
+
+                                      // MVP: Don't save if presentation is still empty (no messages)
+                                      if (messages.length === 0) {
+                                        console.log('⏭️ Skipping save - presentation is empty (no messages yet)');
+                                        return;
+                                      }
+
+                                      const headers = await getAuthHeaders();
+
+                                      fetch('/api/presentations/save', {
+                                        method: 'POST',
+                                        headers,
+                                        body: JSON.stringify({
+                                          presentationId: p.id,
+                                          state: {
+                                            title: finalTitle,
+                                            slides: [{ id: 'slide-1', blocks: [] }],
+                                            messages: [],
+                                            activeSlide: 0
+                                          }
+                                        })
+                                      }).then(response => {
+                                        if (response.ok) {
+                                          console.log('✅ Title saved successfully:', finalTitle);
+                                        } else {
+                                          console.error('❌ Failed to save title:', response.status);
+                                        }
+                                      }).catch(error => {
+                                        console.error('❌ Error saving title:', error);
+                                      });
+                                    } catch (error) {
+                                      console.error('❌ Error getting auth headers:', error);
+                                    }
+                                  };
+                                  saveTitle();
+
+                                  // Don't switch presentations - just finish editing
+                                  setEditingTitle(null);
+                                  setOriginalSelectedPresentation(null);
+                                }}
+                                onKeyDown={e => {
+                                  e.stopPropagation();
+                                  if (e.key === 'Enter') {
+                                    const finalTitle = p.title?.trim() || 'Untitled Presentation';
+
+                                    if (!p.title?.trim()) {
+                                      setWorkspacePresentations(prev => ({
+                                        ...prev,
+                                        [currentWorkspace]: prev[currentWorkspace].map(presentation =>
+                                          presentation.id === p.id ? { ...presentation, title: 'Untitled Presentation' } : presentation
+                                        )
+                                      }));
+                                    }
+
+                                    // Save title to database when Enter is pressed
+                                    // BUT ONLY if the presentation has messages (i.e., has been used)
+                                    const saveTitleOnEnter = async () => {
+                                      try {
+                                        const messages = presentationMessages[p.id] || [];
+
+                                        // MVP: Don't save if presentation is still empty (no messages)
+                                        if (messages.length === 0) {
+                                          console.log('⏭️ Skipping save on Enter - presentation is empty (no messages yet)');
+                                          return;
+                                        }
+
+                                        const headers = await getAuthHeaders();
+
+                                        fetch('/api/presentations/save', {
+                                          method: 'POST',
+                                          headers,
+                                          body: JSON.stringify({
+                                            presentationId: p.id,
+                                            state: {
+                                              title: finalTitle,
+                                              slides: [{ id: 'slide-1', blocks: [] }],
+                                              messages: [],
+                                              activeSlide: 0
+                                            }
+                                          })
+                                        }).then(response => {
+                                          if (response.ok) {
+                                            console.log('✅ Title saved successfully on Enter:', finalTitle);
+                                          } else {
+                                            console.error('❌ Failed to save title on Enter:', response.status);
+                                          }
+                                        }).catch(error => {
+                                          console.error('❌ Error saving title on Enter:', error);
+                                        });
+                                      } catch (error) {
+                                        console.error('❌ Error getting auth headers:', error);
+                                      }
+                                    };
+                                    saveTitleOnEnter();
+
+                                    // Don't switch presentations - just finish editing
+                                    setEditingTitle(null);
+                                    setOriginalSelectedPresentation(null);
+                                  }
+                                  if (e.key === 'Escape') {
+                                    setWorkspacePresentations(prev => ({
+                                      ...prev,
+                                      [currentWorkspace]: prev[currentWorkspace].map(presentation =>
+                                        presentation.id === p.id ? { ...presentation, title: 'Untitled Presentation' } : presentation
+                                      )
+                                    }));
+                                    // Don't switch presentations - just finish editing
+                                    setEditingTitle(null);
+                                    setOriginalSelectedPresentation(null);
+                                  }
+                                }}
+                                onClick={e => e.stopPropagation()}
+                                className="w-full bg-transparent border-none outline-none text-sm font-medium"
+                                style={{ color: 'inherit' }}
+                              />
+                            </>
+                          ) : (
+                            <div className="flex items-center justify-between w-full">
+                              <span
+                                className="block flex-1 truncate text-sm cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Only change selection if we're not currently editing any title
+                                  if (editingTitle === null) {
+                                    setCurrentPresentationId(p.id);
+
+                                    // Close onboarding when switching to any existing presentation
+                                    if (showOnboarding) {
+                                      setShowOnboarding(false);
+                                      setOnboardingStep(1);
+
+                                      // Clean up: Remove any empty presentations that were never saved to database
+                                      // (presentations with no messages and only created in-memory)
+                                      const currentPresentations = workspacePresentations[currentWorkspace] || [];
+                                      const filteredPresentations = currentPresentations.filter(presentation => {
+                                        // Keep the presentation we're switching to
+                                        if (presentation.id === p.id) return true;
+
+                                        // Check if this presentation has any messages
+                                        const hasMessages = (presentationMessages[presentation.id]?.length || 0) > 0;
+
+                                        // Only keep presentations that have messages (were actually generated/saved)
+                                        return hasMessages;
+                                      });
+
+                                      if (filteredPresentations.length !== currentPresentations.length) {
+                                        console.log('🧹 Cleaning up empty unsaved presentations');
+                                        setWorkspacePresentations(prev => ({
+                                          ...prev,
+                                          [currentWorkspace]: filteredPresentations
+                                        }));
+                                      }
+                                    }
+                                  }
+                                }}
+                                onDoubleClick={(e) => {
+                                  e.stopPropagation();
+                                  // Double click: store original selection and start editing
+                                  if (originalSelectedPresentation === null && p.id !== currentPresentationId) {
+                                    setOriginalSelectedPresentation(currentPresentationId);
+                                  }
+                                  setEditingTitle(p.id);
+                                }}
+                              >
+                                {p.title || "Untitled Presentation"}
+                              </span>
+                              <button
+                                className="opacity-0 group-hover:opacity-100 ml-2 p-1 rounded hover:bg-black/20 transition-opacity"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Edit button: store original selection and start editing
+                                  if (p.id !== currentPresentationId) {
+                                    setOriginalSelectedPresentation(currentPresentationId);
+                                  }
+                                  setEditingTitle(p.id);
+                                }}
+                                aria-label="Edit title"
+                              >
+                                <svg width="14" height="14" fill="none" viewBox="0 0 24 24" className="text-current">
+                                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                  <path d="m18.5 2.5 3 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {/* Fixed bottom section */}
+                <div className="px-4 pb-4 border-t border-gray-200 pt-4">
+                  <button className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium rounded-lg py-1.5 mb-4 text-sm transition" onClick={() => setShowPricingModal(true)}>{language === 'es' ? 'Mejora para más créditos' : 'Upgrade for more credits'}</button>
+                  <div className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5 mb-4">
+                    <span className="flex items-center gap-2 text-gray-700 text-sm font-medium">
+                      <img src="/ai credit-icon.png" alt="Credit Icon" className="w-6 h-6 object-contain" />
+                      {creditsLoading ? 'Loading...' : `${credits?.remaining_credits?.toLocaleString() || '96'} Credits`}
+                    </span>
+                    <button className="hidden bg-[#002903] text-white text-xs font-medium rounded-md px-3 py-1.5 hover:bg-[#002903]/90 transition" onClick={() => setShowCreditsModal(true)}>Buy more</button>
+                  </div>
+                  <button className="w-full flex items-center gap-3 text-gray-600 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-100 transition mb-2" onClick={() => setShowSettingsModal(true)}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-500">
+                      <path d="M12 15a3 3 0 100-6 3 3 0 000 6z" stroke="currentColor" strokeWidth="2" />
+                      <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" strokeWidth="2" />
+                    </svg>
+                    {t.editor.settings}
+                  </button>
+                  <button
+                    ref={helpButtonRef}
+                    data-featurebase-feedback
+                    className="w-full flex items-center gap-3 text-gray-600 text-sm py-1.5 px-3 rounded-lg hover:bg-gray-100 transition"
+                    onClick={e => {
+                      e.stopPropagation();
+                      console.log('🔘 Help & Support button clicked with data-featurebase-feedback');
+                      console.log('🔍 Checking Featurebase availability:', window.Featurebase);
+                      console.log('🔍 Button element:', e.currentTarget);
+                      console.log('🔍 Data attribute:', e.currentTarget.getAttribute('data-featurebase-feedback'));
+
+                      // Manual trigger as fallback
+                      if (window.Featurebase) {
+                        console.log('🚀 Manually triggering Featurebase widget...');
+                        try {
+                          window.Featurebase('show');
+                        } catch (error) {
+                          console.log('⚠️ Manual trigger failed:', error);
+                        }
+                      } else {
+                        console.log('❌ Featurebase not available on window');
+                      }
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-gray-500">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" />
+                      <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      <path d="M12 17h.01" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    {t.editor.help}
+                  </button>
+                </div>
+              </>
+            )}
+          </aside>
+          {/* Main content: chat + slide preview */}
+          <main className="flex-1 flex flex-col md:flex-row h-screen w-full overflow-hidden">
+            {/* Chat/editor column - Hide during onboarding */}
+            {!showOnboarding && (
+              <section className="w-[420px] flex flex-col h-full bg-white border-r border-gray-200 px-0 py-0">
+                {/* Header */}
+                <div className="flex items-center justify-between px-6 pt-6 pb-2 relative">
+                  <h2 className="text-[#002903] text-xl font-medium break-words w-full line-clamp-2">
+                    {currentPresentation?.title || "Untitled Presentation"}
+                  </h2>
+                  {/* Three dots icon */}
+                  <button
+                    className="p-2 rounded-full hover:bg-gray-100 transition text-gray-500"
+                    onClick={e => {
+                      e.stopPropagation();
+                      setShowTitleMenu(v => !v);
+                    }}
+                    aria-label="Presentation options"
+                  >
+                    <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <circle cx="5" cy="12" r="2" fill="currentColor" />
+                      <circle cx="12" cy="12" r="2" fill="currentColor" />
+                      <circle cx="19" cy="12" r="2" fill="currentColor" />
+                    </svg>
+                  </button>
+                </div>
+                <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-6 pb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                  {messages.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-full w-full">
+                      <img src="/Favicon Slaid.png" alt="Slaid Icon" className="w-10 h-10 object-contain mb-3 mt-12" />
+                      <div className="text-[#002903] text-base font-normal mb-4">Ask slaid what you want...</div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-6 mb-6 mt-6">
+                      {/* Version History Notice */}
+
+                      {/* 🔧 CRITICAL FIX: USER MESSAGE ALWAYS FIRST - Simple chronological order */}
+                      {messages.map((msg, i) =>
+                        msg.role === 'user' ? (
+                          <div key={msg.id || `user-${i}`} className="flex flex-col items-end gap-1">
+                            <div className="flex flex-row-reverse items-end gap-2">
+                              <div className="h-9 w-9 rounded-full bg-[#002903] flex items-center justify-center text-white font-medium text-lg">
+                                {workspaceDisplayName ? workspaceDisplayName.charAt(0).toUpperCase() : 'M'}
+                              </div>
+                              <div className="bg-[#002903] text-white rounded-xl px-4 py-2 max-w-xs mb-1 text-sm">{msg.text}</div>
+                            </div>
+                          </div>
+                        ) : msg.role === 'assistant' ? (
+                          <div key={msg.id || `assistant-${i}`} className="flex flex-col items-start w-full">
+                            {msg.isLoading ? (
+                              // Loading state with Cursor-style UI
+                              <div className="flex flex-col w-full">
+                                <div className="flex items-center gap-2 text-[#002903] text-sm mb-3">
+                                  <LoadingCircle size={16} color="#002903" progress={generationProgress} />
+                                  <span className="font-semibold">Reasoning</span>
+                                </div>
+                                <div className="text-[#002903] text-sm leading-relaxed whitespace-pre-line mb-3">
+                                  {currentReasoningStep}
+                                </div>
+                              </div>
+                            ) : (
+                              // Regular completed message
+                              <>
+                                <div className="text-[#002903] text-sm mb-2"><span className="font-semibold text-[#002903]">Reasoning</span></div>
+                                <div className="text-[#002903] text-sm mb-3">{msg.text}</div>
+                                <div className={`rounded-lg px-4 py-3 flex flex-col border w-full max-w-xs ${(() => {
+                                  const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
+                                  const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
+                                  return msg.version === currentActiveVersion ? 'bg-[#f3f4f6] border-gray-200' : 'bg-[#f3f4f6] border-gray-200 opacity-80';
+                                })()}`}>
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className={(() => {
+                                      const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
+                                      const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
+                                      return msg.version === currentActiveVersion ? 'text-[#002903] font-semibold text-sm' : 'text-[#002903] font-medium text-sm';
+                                    })()}>{truncateVersionTitle(msg.userMessage || 'True Full Screen Slide Display')}</span>
+                                    {(() => {
+                                      const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
+                                      const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
+
+                                      if (msg.version !== undefined && msg.version === currentActiveVersion) {
+                                        return <span className="flex items-center gap-1 text-xs text-[#00e676]">●<span>Version {msg.version}</span></span>;
+                                      } else if (msg.version !== undefined) {
+                                        return (
+                                          <button className="text-gray-500 text-xs hover:text-gray-900 hover:underline transition" onClick={() => {
+                                            console.log('🔄 VERSION HISTORY: Go back button clicked for version', msg.version);
+                                            console.log('🔄 VERSION HISTORY: Current activeVersion before click:', activeVersion);
+                                            setActiveVersion(msg.version!);
+                                            console.log('🔄 VERSION HISTORY: Setting activeVersion to:', msg.version);
+                                          }}>go back</button>
+                                        );
+                                      } else {
+                                        return null;
+                                      }
+                                    })()}
+                                  </div>
+                                  {(() => {
+                                    const latestVersion = messages.filter(m => m.role === 'assistant' && m.version).slice(-1)[0]?.version;
+                                    const currentActiveVersion = activeVersion !== null ? activeVersion : latestVersion;
+                                    return msg.version !== undefined && msg.version !== currentActiveVersion ? (
+                                      <div className="text-gray-500 text-xs">Version {msg.version}</div>
+                                    ) : null;
+                                  })()}
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        ) : null
+                      )}
+                    </div>
+                  )}
+                </div>
+                {/* Chat Input */}
+                <form
+                  className="px-6 pb-4 pt-2"
+                  onSubmit={async (e) => {
+                    // 🚨 ULTRA CRITICAL DEBUG: Form submission started
+                    console.log('🚨 ULTRA CRITICAL DEBUG: Form onSubmit called with input:', chatInput);
+                    console.log('🚨 ULTRA CRITICAL DEBUG: Checking investor deck detection for:', chatInput);
+
+                    // 🚨 TEST INVESTOR DECK DETECTION IMMEDIATELY
+                    const testInvestorDetection = chatInput.toLowerCase().includes('investor deck') ||
+                      chatInput.toLowerCase().includes('pitch deck') ||
+                      chatInput.toLowerCase().includes('fundraising deck');
+                    console.log('🚨 TEST INVESTOR DECK DETECTION:', {
+                      input: chatInput,
+                      lowerInput: chatInput.toLowerCase(),
+                      hasInvestorDeck: chatInput.toLowerCase().includes('investor deck'),
+                      hasPitchDeck: chatInput.toLowerCase().includes('pitch deck'),
+                      hasFundraisingDeck: chatInput.toLowerCase().includes('fundraising deck'),
+                      testResult: testInvestorDetection
+                    });
+
+                    e.preventDefault();
+                    if (chatInput.trim() || fileData) {
+                      // 🚨 EMERGENCY DEBUG: Check if we reach this point for reports
+                      console.log('🚨 EMERGENCY DEBUG - onSubmit called with:', {
+                        chatInput: chatInput,
+                        isQBR: chatInput.toLowerCase().includes('qbr'),
+                        isSalesReport: chatInput.toLowerCase().includes('sales report'),
+                        isQuarterlyBusinessReview: chatInput.toLowerCase().includes('quarterly business review'),
+                        isPitchDeck: chatInput.toLowerCase().includes('pitch deck'),
+                        isInvestorDeck: chatInput.toLowerCase().includes('investor deck'),
+                        isFundraisingDeck: chatInput.toLowerCase().includes('fundraising deck')
                       });
 
-                      if (!response.ok) {
-                        const errorData = await response.json();
-                        
-                        // Handle insufficient credits
+                      // 🔧 RESTORE CHAT MESSAGES: Add user message and loading indicator TOGETHER
+                      // Add both user message and loading message in a single state update to ensure correct order
+                      const userMessage = {
+                        id: `user-${Date.now()}-${Math.random()}`, // Unique ID
+                        role: "user" as const,
+                        text: chatInput,
+                        attachments: attachedFiles
+                      };
+
+                      const loadingMessage = {
+                        id: `assistant-${Date.now()}-${Math.random()}`, // Unique ID
+                        role: "assistant" as const,
+                        text: "Generating your presentation...",
+                        isLoading: true
+                      };
+
+                      // Add both messages together to guarantee order
+                      setPresentationMessages(prev => ({
+                        ...prev,
+                        [currentPresentationId]: [
+                          ...(prev[currentPresentationId] || []),
+                          userMessage,
+                          loadingMessage
+                        ]
+                      }));
+
+                      // 🚨 CRITICAL FIX: Preserve original intent BEFORE Excel processing
+                      const originalPrompt = chatInput; // Preserve original user input for intent detection
+
+                      // Keep the user prompt clean - don't modify it with file analysis
+                      const userPrompt = chatInput; // Use original user input, not enhanced with file data
+                      setChatInput("");
+                      setAttachedFiles([]);
+                      if (fileData) {
+                        setFileData(null);
+                      }
+
+                      // Get the LATEST presentation data at submission time
+                      // Include the user message that was just added to state
+                      const existingMessages = presentationMessages[currentPresentationId] || [];
+                      const currentMessages = [...existingMessages, userMessage];
+                      const latestPresentationData = getCurrentPresentationData(currentMessages);
+
+                      // If no presentation data but we have assistant messages, try to get from last assistant message
+                      const assistantMessage = [...currentMessages].reverse().find(m => m.role === 'assistant' && !m.isLoading);
+                      const fallbackPresentationData = !latestPresentationData && assistantMessage ?
+                        (assistantMessage as any).presentationData : null;
+
+                      let effectivePresentationData = latestPresentationData || fallbackPresentationData;
+
+                      // 🔧 CRITICAL FIX: Load presentation data from workspaceSlides if not in messages
+                      // This allows modification of presentations loaded from database without chat history
+                      if (!effectivePresentationData && currentPresentation) {
+                        console.log('🔄 No presentation data in messages - trying to load from workspaceSlides');
+                        const slidesFromWorkspace = workspaceSlides[currentWorkspace]?.[currentPresentationId];
+
+                        if (slidesFromWorkspace && slidesFromWorkspace.length > 0) {
+                          console.log('✅ Found presentation slides in workspaceSlides:', slidesFromWorkspace.length, 'slides');
+                          effectivePresentationData = {
+                            title: currentPresentation.title,
+                            slides: slidesFromWorkspace
+                          };
+                          console.log('✅ Presentation data loaded from workspaceSlides for modification');
+                        } else {
+                          console.log('⚠️ No slides found in workspaceSlides either');
+                        }
+                      }
+
+                      // Determine if this is a modification request
+                      // 🎯 ENHANCED INTENT CLASSIFICATION - Use ORIGINAL prompt for intent detection
+                      const isCreateNewRequest = isCreateNewPresentationRequest(originalPrompt);
+                      const isAddSlideRequest = isAddNewSlideRequest(originalPrompt);
+                      const isModificationAttempt = isModificationRequest(originalPrompt);
+                      const hasExistingPresentation = !!effectivePresentationData;
+                      const hasAnyAssistantMessages = currentMessages.some(m => m.role === 'assistant' && !m.isLoading);
+
+                      // Intent-based logic:
+                      // 1. CREATE NEW: Always create new presentation (ignore existing data)
+                      // 2. ADD SLIDE: Create single slide (requires existing presentation context)
+                      // 3. MODIFY: Modify existing content (requires existing data)
+                      // 4. DEFAULT: If no clear intent and no existing data, create new presentation
+
+                      let finalIntent = 'create_new'; // Default
+                      let isModification = false;
+
+                      if (isCreateNewRequest) {
+                        finalIntent = 'create_new';
+                        isModification = false;
+                      } else if (isAddSlideRequest) {
+                        // If adding a slide but no existing presentation, create new presentation instead
+                        if (!hasExistingPresentation && !hasAnyAssistantMessages) {
+                          console.log('🔄 Add slide requested but no existing presentation - creating new presentation instead');
+                          finalIntent = 'create_new';
+                          isModification = false;
+                        } else {
+                          finalIntent = 'add_slide';
+                          isModification = false;
+                        }
+                      } else if (isModificationAttempt && (hasExistingPresentation || hasAnyAssistantMessages)) {
+                        finalIntent = 'modify';
+                        isModification = true;
+                      } else if (!isModificationAttempt && !hasExistingPresentation && !hasAnyAssistantMessages) {
+                        // No clear intent, no existing data -> create new presentation
+                        finalIntent = 'create_new';
+                        isModification = false;
+                      } else {
+                        // Ambiguous case: assume modification if we have data, otherwise create new
+                        if (hasExistingPresentation || hasAnyAssistantMessages) {
+                          finalIntent = 'modify';
+                          isModification = true;
+                        } else {
+                          finalIntent = 'create_new';
+                          isModification = false;
+                        }
+                      }
+
+                      console.log('🎯 Enhanced Intent Classification:', {
+                        userPrompt: userPrompt,
+                        isCreateNewRequest: isCreateNewRequest,
+                        isAddSlideRequest: isAddSlideRequest,
+                        isModificationAttempt: isModificationAttempt,
+                        hasExistingPresentation: hasExistingPresentation,
+                        hasAnyAssistantMessages: hasAnyAssistantMessages,
+                        finalIntent: finalIntent,
+                        isModification: isModification,
+                        currentPresentationSlides: effectivePresentationData?.slides?.length || 0,
+                        currentPresentationTitle: effectivePresentationData?.title,
+                        currentPresentationId: currentPresentationId,
+                        messageCount: messages.length,
+                        presentationMessageKeys: Object.keys(presentationMessages),
+                        willSendExistingPresentation: isModification && !!effectivePresentationData,
+                        existingPresentationTitle: effectivePresentationData?.title
+                      });
+
+                      // Generate dynamic reasoning based on user prompt
+                      const { text: dynamicReasoning } = generateReasoningWithTiming(userPrompt, isModification);
+
+                      // 🔧 CLEAN CHAT: Skip adding loading message to keep chat clean
+                      // Instead of showing loading messages, just process silently
+
+                      try {
+                        console.log('Making API call to /api/generate...');
+
+                        // Prepare uploaded images data
+                        const uploadedImages = attachedFiles
+                          .filter(file => file.isUploaded && file.uploadStatus === 'completed' && file.serverUrl)
+                          .map(file => ({
+                            originalName: file.name,
+                            serverUrl: file.serverUrl,
+                            suggestedVariant: file.suggestedVariant || 'illustration',
+                            type: file.type
+                          }));
+
+                        // 🎯 PRODUCT DOSSIER DETECTION AND AUTOMATIC SPLIT
+                        const isProductDossierRequest = (prompt: string): boolean => {
+                          const lowerPrompt = prompt.toLowerCase();
+
+                          // Exclude sales/excel-related presentations from product dossier detection
+                          if (lowerPrompt.includes('sales') ||
+                            lowerPrompt.includes('excel') ||
+                            lowerPrompt.includes('report') ||
+                            lowerPrompt.includes('forecast') ||
+                            lowerPrompt.includes('revenue')) {
+                            return false;
+                          }
+
+                          return lowerPrompt.includes('product dossier') ||
+                            lowerPrompt.includes('dossier') ||
+                            lowerPrompt.includes('product deck') ||
+                            lowerPrompt.includes('product overview') ||
+                            lowerPrompt.includes('solution overview') ||
+                            lowerPrompt.includes('solution brief') ||
+                            lowerPrompt.includes('capability deck') ||
+                            lowerPrompt.includes('capabilities deck') ||
+                            lowerPrompt.includes('sales collateral') ||
+                            lowerPrompt.includes('product collateral') ||
+                            lowerPrompt.includes('sales enablement deck') ||
+                            lowerPrompt.includes('product enablement deck') ||
+                            lowerPrompt.includes('product brochure') ||
+                            lowerPrompt.includes('solution brochure') ||
+                            lowerPrompt.includes('product datasheet') ||
+                            lowerPrompt.includes('data sheet') ||
+                            lowerPrompt.includes('fact sheet') ||
+                            lowerPrompt.includes('factsheet') ||
+                            lowerPrompt.includes('customer pitch') ||
+                            lowerPrompt.includes('prospect pitch') ||
+                            lowerPrompt.includes('customer presentation') ||
+                            lowerPrompt.includes('prospect presentation') ||
+                            lowerPrompt.includes('product demo deck') ||
+                            lowerPrompt.includes('product demo presentation') ||
+                            lowerPrompt.includes('value proposition deck') ||
+                            lowerPrompt.includes('value prop deck') ||
+                            lowerPrompt.includes('product documentation') ||
+                            lowerPrompt.includes('product presentation') ||
+                            (lowerPrompt.includes('product') && lowerPrompt.includes('dossier'));
+                        };
+
+                        // 🎯 INVESTOR DECK DETECTION AND AUTOMATIC SPLIT
+                        const isInvestorDeckRequest = (prompt: string): boolean => {
+                          const lowerPrompt = prompt.toLowerCase();
+                          const isInvestor = lowerPrompt.includes('investor deck') ||
+                            lowerPrompt.includes('pitch deck') ||
+                            lowerPrompt.includes('fundraising deck') ||
+                            lowerPrompt.includes('vc pitch') ||
+                            lowerPrompt.includes('startup pitch') ||
+                            lowerPrompt.includes('seed deck') ||
+                            lowerPrompt.includes('pre-seed deck') ||
+                            lowerPrompt.includes('series a deck') ||
+                            lowerPrompt.includes('series b deck') ||
+                            lowerPrompt.includes('teaser deck') ||
+                            lowerPrompt.includes('raise round deck');
+                          console.log('🔍 Investor Deck Detection:', { prompt: lowerPrompt, isInvestor });
+                          return isInvestor;
+                        };
+
+                        // 🎯 REPORT PLAYBOOK DETECTION AND AUTOMATIC SPLIT
+                        const isReportRequest = (prompt: string): boolean => {
+                          const lowerPrompt = prompt.toLowerCase();
+
+                          // If user explicitly asks for a single slide, it's NOT a report
+                          if (lowerPrompt.includes('single slide') ||
+                            lowerPrompt.includes('one slide') ||
+                            lowerPrompt.includes('create a slide')) {
+                            return false;
+                          }
+
+                          const isReport = lowerPrompt.includes('sales report') ||
+                            lowerPrompt.includes('report using the data') ||  // Added for Excel-based reports
+                            lowerPrompt.includes('sales report using') ||     // Added for "sales report using this data"
+                            lowerPrompt.includes('create a sales report') ||  // Added for "create a sales report"
+                            lowerPrompt.includes('sales analysis') ||         // Added for Excel-based analysis
+                            lowerPrompt.includes('sales performance') ||
+                            lowerPrompt.includes('revenue report') ||
+                            lowerPrompt.includes('pipeline review') ||
+                            lowerPrompt.includes('forecast review') ||
+                            lowerPrompt.includes('revops report') ||
+                            // Spanish sales report keywords
+                            lowerPrompt.includes('reporte de ventas') ||
+                            lowerPrompt.includes('informe de ventas') ||
+                            lowerPrompt.includes('análisis de ventas') ||
+                            lowerPrompt.includes('reporte comercial') ||
+                            lowerPrompt.includes('informe comercial') ||
+                            lowerPrompt.includes('reporte de ingresos') ||
+                            lowerPrompt.includes('análisis comercial') ||
+                            lowerPrompt.includes('creame un reporte') ||
+                            lowerPrompt.includes('créame un reporte') ||
+                            lowerPrompt.includes('crea una reporte') ||
+                            lowerPrompt.includes('crea un reporte') ||
+                            // 🔥 EXCEL-BASED REPORT DETECTION - Only for EXPLICIT sales/business reports with Excel data
+                            (!isModification && lowerPrompt.includes('sales report') && lowerPrompt.includes('excel')) ||
+                            (!isModification && lowerPrompt.includes('business report') && lowerPrompt.includes('excel')) ||
+                            (!isModification && lowerPrompt.includes('revenue report') && lowerPrompt.includes('excel')) ||
+                            (!isModification && lowerPrompt.includes('sales analysis') && lowerPrompt.includes('excel')) ||
+                            (!isModification && lowerPrompt.includes('forecast') && lowerPrompt.includes('excel')) ||
+                            lowerPrompt.includes('qbr') ||
+                            lowerPrompt.includes('quarterly business review') ||
+                            lowerPrompt.includes('mbr') ||
+                            lowerPrompt.includes('monthly business review') ||
+                            lowerPrompt.includes('ebr') ||
+                            lowerPrompt.includes('executive business review') ||
+                            lowerPrompt.includes('customer success health') ||
+                            lowerPrompt.includes('cs health') ||
+                            lowerPrompt.includes('churn/expansion report') ||
+                            lowerPrompt.includes('churn expansion report') ||
+                            lowerPrompt.includes('marketing performance report') ||
+                            lowerPrompt.includes('campaign report') ||
+                            lowerPrompt.includes('product performance report') ||
+                            lowerPrompt.includes('feature adoption report') ||
+                            lowerPrompt.includes('regional report') ||
+                            lowerPrompt.includes('territory report') ||
+                            lowerPrompt.includes('partner performance') ||
+                            lowerPrompt.includes('channel performance') ||
+                            lowerPrompt.includes('finance snapshot') ||
+                            lowerPrompt.includes('financial summary');
+                          console.log('🔍 Report Detection:', { prompt: lowerPrompt, isReport });
+                          return isReport;
+                        };
+
+                        // 🎯 TOPIC PRESENTATION DETECTION
+                        const isTopicPresentationRequest = (prompt: string): boolean => {
+                          const lowerPrompt = prompt.toLowerCase();
+                          const isTopic = lowerPrompt.includes('topic presentation') ||
+                            lowerPrompt.includes('topic deck') ||
+                            lowerPrompt.includes('educational presentation') ||
+                            lowerPrompt.includes('topic overview') ||
+                            lowerPrompt.includes('presentation about') ||
+                            lowerPrompt.includes('information deck') ||
+                            lowerPrompt.includes('overview presentation') ||
+                            lowerPrompt.includes('knowledge share') ||
+                            lowerPrompt.includes('research summary') ||
+                            lowerPrompt.includes('market research') ||
+                            lowerPrompt.includes('industry analysis') ||
+                            lowerPrompt.includes('competitive landscape') ||
+                            lowerPrompt.includes('sector overview') ||
+                            lowerPrompt.includes('trend report') ||
+                            lowerPrompt.includes('market overview');
+                          console.log('🔍 Topic Presentation Detection:', { prompt: lowerPrompt, isTopic });
+                          return isTopic;
+                        };
+
+                        // 🎯 PRODUCT LAUNCH DETECTION
+                        const isProductLaunchRequest = (prompt: string): boolean => {
+                          const lowerPrompt = prompt.toLowerCase();
+                          const isProductLaunch = lowerPrompt.includes('product launch') ||
+                            lowerPrompt.includes('product launch presentation') ||
+                            lowerPrompt.includes('product launch deck') ||
+                            lowerPrompt.includes('launch presentation') ||
+                            lowerPrompt.includes('launch deck') ||
+                            lowerPrompt.includes('product launch plan') ||
+                            lowerPrompt.includes('launch strategy') ||
+                            lowerPrompt.includes('product rollout') ||
+                            lowerPrompt.includes('product announcement') ||
+                            lowerPrompt.includes('launch campaign') ||
+                            lowerPrompt.includes('product debut') ||
+                            lowerPrompt.includes('product introduction') ||
+                            lowerPrompt.includes('new product launch') ||
+                            lowerPrompt.includes('product release') ||
+                            lowerPrompt.includes('launch event') ||
+                            lowerPrompt.includes('product unveiling') ||
+                            lowerPrompt.includes('go-to-market launch') ||
+                            lowerPrompt.includes('product launch strategy') ||
+                            lowerPrompt.includes('launch a product') ||
+                            lowerPrompt.includes('product launch for') ||
+                            lowerPrompt.includes('launching our product');
+                          console.log('🔍 Product Launch Detection:', { prompt: lowerPrompt, isProductLaunch });
+                          return isProductLaunch;
+                        };
+
+                        // 🎯 CAMPAIGN DETECTION
+                        const isCampaignRequest = (prompt: string): boolean => {
+                          const lowerPrompt = prompt.toLowerCase();
+                          const isCampaign = lowerPrompt.includes('campaign') ||
+                            lowerPrompt.includes('campaign presentation') ||
+                            lowerPrompt.includes('campaign deck') ||
+                            lowerPrompt.includes('marketing campaign') ||
+                            lowerPrompt.includes('campaign overview') ||
+                            lowerPrompt.includes('campaign strategy') ||
+                            lowerPrompt.includes('campaign plan') ||
+                            lowerPrompt.includes('campaign proposal') ||
+                            lowerPrompt.includes('campaign brief') ||
+                            lowerPrompt.includes('campaign launch') ||
+                            lowerPrompt.includes('campaign rollout') ||
+                            lowerPrompt.includes('advertising campaign') ||
+                            lowerPrompt.includes('promotional campaign') ||
+                            lowerPrompt.includes('brand campaign') ||
+                            lowerPrompt.includes('digital campaign') ||
+                            lowerPrompt.includes('social campaign') ||
+                            lowerPrompt.includes('campaign materials') ||
+                            lowerPrompt.includes('campaign pitch') ||
+                            lowerPrompt.includes('campaign summary') ||
+                            lowerPrompt.includes('marketing campaign plan') ||
+                            lowerPrompt.includes('campaign roadmap') ||
+                            lowerPrompt.includes('go-to-market campaign') ||
+                            lowerPrompt.includes('launch campaign') ||
+                            lowerPrompt.includes('growth campaign') ||
+                            lowerPrompt.includes('acquisition campaign') ||
+                            lowerPrompt.includes('retention campaign') ||
+                            lowerPrompt.includes('paid media campaign') ||
+                            lowerPrompt.includes('performance marketing campaign') ||
+                            lowerPrompt.includes('google ads campaign') ||
+                            lowerPrompt.includes('meta campaign') ||
+                            lowerPrompt.includes('facebook ads campaign') ||
+                            lowerPrompt.includes('linkedin ads campaign') ||
+                            lowerPrompt.includes('tiktok ads campaign') ||
+                            lowerPrompt.includes('abm campaign') ||
+                            lowerPrompt.includes('email campaign') ||
+                            lowerPrompt.includes('drip campaign') ||
+                            lowerPrompt.includes('nurture campaign') ||
+                            lowerPrompt.includes('seo campaign') ||
+                            lowerPrompt.includes('content campaign') ||
+                            lowerPrompt.includes('plan a marketing campaign') ||
+                            lowerPrompt.includes('create a campaign') ||
+                            lowerPrompt.includes('build a campaign presentation') ||
+                            lowerPrompt.includes('campaign plan for') ||
+                            lowerPrompt.includes('campaign strategy for') ||
+                            lowerPrompt.includes('campaign brief for');
+                          console.log('🔍 Campaign Detection:', { prompt: lowerPrompt, isCampaign });
+                          return isCampaign;
+                        };
+
+                        // 🚨 CRITICAL DEBUG: Ensure detection functions are defined
+                        console.log('🚨 CRITICAL DEBUG: Detection functions defined', {
+                          isInvestorDeckRequest: typeof isInvestorDeckRequest,
+                          isProductDossierRequest: typeof isProductDossierRequest,
+                          isReportRequest: typeof isReportRequest,
+                          isTopicPresentationRequest: typeof isTopicPresentationRequest,
+                          isProductLaunchRequest: typeof isProductLaunchRequest,
+                          isCampaignRequest: typeof isCampaignRequest
+                        });
+
+                        // 🚨 CRITICAL DEBUG: Check all playbook detections
+                        console.log('🚨 CRITICAL DEBUG - Playbook Detection Check:', {
+                          userPrompt: userPrompt,
+                          isInvestorDeck: isInvestorDeckRequest(userPrompt),
+                          isProductDossier: isProductDossierRequest(userPrompt),
+                          isReport: isReportRequest(userPrompt),
+                          isTopicPresentation: isTopicPresentationRequest(userPrompt),
+                          isProductLaunch: isProductLaunchRequest(userPrompt),
+                          isCampaign: isCampaignRequest(userPrompt),
+                          isModification: isModification
+                        });
+
+                        if (isInvestorDeckRequest(userPrompt) && !isModification) {
+                          console.log('🎯 INVESTOR DECK DETECTED: Making 2 API calls automatically');
+
+                          // Detect language for investor deck API request - USE CURRENT PROMPT ONLY
+                          const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
+
+                          console.log('🌐 INVESTOR DECK LANGUAGE DEBUG:', {
+                            userInput: userPrompt, // Log current prompt, not previous message
+                            detectedLanguage: userLanguage,
+                            isSpanish: userLanguage === 'es'
+                          });
+
+                          try {
+                            // Helper function to make investor deck API calls
+                            const makeInvestorDeckCall = async (part: 'first' | 'second') => {
+                              let partPrompt = part === 'first'
+                                ? `Create slides 1-6 of a SaaS investor deck: Cover_ProductLayout (Investor Deck), Index_LeftAgendaRightText (Agenda), Impact_ImageMetrics (Problem), Product_MacBookCentered (Solution), Lists_CardsLayoutRight (Why Now), Competition_Analysis (Competition). ${userPrompt}`
+                                : `Create slides 8-13 of a SaaS investor deck: Pricing_Plans (Business Model), Team_AdaptiveGrid (Team), Impact_KPIOverview (Traction), Metrics_FinancialsSplit (The Round), Quote_LeftTextRightImage (Mission), BackCover_ThankYouWithImage (Back Cover). ${userPrompt}`;
+
+                              // Force Spanish content if user spoke Spanish
+                              if (userLanguage === 'es') {
+                                partPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                              }
+
+                              // 💳 Check if user has at least 1 credit before API call (minimum cost)
+                              if (!hasEnoughCredits(1)) {
+                                setShowCreditsModal(true);
+                                // Update loading message to show insufficient credits
+                                setPresentationMessages(prev => ({
+                                  ...prev,
+                                  [currentPresentationId]: prev[currentPresentationId].map(msg =>
+                                    msg.isLoading ? {
+                                      ...msg,
+                                      text: 'Insufficient credits to generate presentation. Please purchase more credits or upgrade your plan.',
+                                      isLoading: false
+                                    } : msg
+                                  )
+                                }));
+                                return;
+                              }
+
+                              // Get auth headers
+                              const { data: { session } } = await supabase.auth.getSession();
+                              const headers: Record<string, string> = {
+                                'Content-Type': 'application/json',
+                              };
+                              if (session?.access_token) {
+                                headers['Authorization'] = `Bearer ${session.access_token}`;
+                              }
+
+                              const response = await fetch('/api/generate', {
+                                method: 'POST',
+                                headers,
+                                body: JSON.stringify({
+                                  prompt: partPrompt,
+                                  language: userLanguage, // Add language parameter
+                                  existingPresentation: undefined,
+                                  uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
+                                  presentationId: currentPresentationId,
+                                  workspace: currentWorkspace
+                                }),
+                              });
+
+                              if (!response.ok) {
+                                const errorData = await response.json();
+
+                                // Handle insufficient credits
+                                if (response.status === 402) {
+                                  setShowCreditsModal(true);
+                                  // Update loading message to show insufficient credits
+                                  setPresentationMessages(prev => ({
+                                    ...prev,
+                                    [currentPresentationId]: prev[currentPresentationId].map(msg =>
+                                      msg.isLoading ? {
+                                        ...msg,
+                                        text: 'Insufficient credits to complete generation. Please purchase more credits or upgrade your plan.',
+                                        isLoading: false
+                                      } : msg
+                                    )
+                                  }));
+                                  return;
+                                }
+
+                                throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+                              }
+
+                              return await response.json();
+                            };
+
+                            // Make both calls in parallel for faster execution
+                            const [firstResponse, secondResponse] = await Promise.all([
+                              makeInvestorDeckCall('first'),
+                              makeInvestorDeckCall('second')
+                            ]);
+
+                            console.log('✅ Both investor deck parts completed, combining...');
+
+                            // Combine responses
+                            if (!firstResponse?.slides || !secondResponse?.slides) {
+                              throw new Error('One or both investor deck parts failed to generate slides');
+                            }
+
+                            const combinedData = {
+                              title: firstResponse.title || 'SaaS Investor Deck',
+                              slides: [
+                                ...firstResponse.slides,
+                                ...secondResponse.slides.map((slide: any, index: number) => ({
+                                  ...slide,
+                                  id: `slide-${firstResponse.slides.length + index + 1}`
+                                }))
+                              ]
+                            };
+
+                            console.log('✅ SUCCESS: Combined 13-slide investor deck created');
+
+                            // Replace loading message with success - REMOVE AND ADD NEW
+                            setPresentationMessages(prev => {
+                              const existingMessages = prev[currentPresentationId] || [];
+                              const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                              const nextVersion = assistantMessages.length + 1;
+
+                              return {
+                                ...prev,
+                                [currentPresentationId]: [
+                                  ...existingMessages.filter(msg => !msg.isLoading),
+                                  {
+                                    id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                    role: "assistant" as const,
+                                    text: `Successfully created "${combinedData.title}"\n\nPresentation structure:\n${combinedData.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title || `Slide ${i + 1}`}`).join('\n')}\n\nYour 12-slide investor deck features professional layouts, cohesive visual design, and optimized content hierarchy. Ready for review and presentation.`,
+                                    isLoading: false,
+                                    presentationData: combinedData,
+                                    userMessage: originalPrompt,  // 🔧 Add user input for version display
+                                    version: nextVersion
+                                  }
+                                ]
+                              };
+                            });
+
+                            // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
+                            setWorkspacePresentations(prev => {
+                              const currentPresentations = prev[currentWorkspace] || [];
+                              const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
+                              const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
+
+                              if (updatedPresentation) {
+                                // Move the generated presentation to the top of the list
+                                return {
+                                  ...prev,
+                                  [currentWorkspace]: [
+                                    { ...updatedPresentation, title: combinedData.title },
+                                    ...otherPresentations
+                                  ]
+                                };
+                              }
+                              return prev;
+                            });
+
+                            // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
+                            persistCreatedId(currentPresentationId);
+
+                            // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
+                            setTimeout(() => {
+                              reloadWorkspacePresentations();
+                              // 💳 Refresh credits after successful generation
+                              console.log('🔄 Refreshing credits after successful generation...');
+                              refreshCredits().then(() => {
+                                console.log('✅ Credits refreshed, new balance should be visible');
+                              }).catch(err => {
+                                console.error('❌ Failed to refresh credits:', err);
+                              });
+                            }, 1000);
+
+                            // Force immediate re-render
+                            setTimeout(() => {
+                              console.log('🔄 Forcing re-render after investor deck creation');
+                              setActiveSlide(prev => prev);
+                            }, 100);
+
+                            return;
+
+                          } catch (investorDeckError) {
+                            console.error('❌ Investor deck generation failed:', investorDeckError);
+
+                            // Update with investor deck specific error
+                            setPresentationMessages(prev => ({
+                              ...prev,
+                              [currentPresentationId]: prev[currentPresentationId].map(msg =>
+                                msg.isLoading ? {
+                                  ...msg,
+                                  text: `Investor deck generation failed: ${investorDeckError instanceof Error ? investorDeckError.message : 'Unknown error'}\n\nThis could be due to:\n• Network connectivity issues\n• API timeout\n• Server overload\n\nPlease try again in a moment.`,
+                                  isLoading: false
+                                } : msg
+                              )
+                            }));
+
+                            return;
+                          }
+                        }
+
+                        // 🎯 PRODUCT DOSSIER DETECTION AND AUTOMATIC SPLIT
+                        if (isProductDossierRequest(userPrompt) && !isModification) {
+                          console.log('🎯 PRODUCT DOSSIER DETECTED: Making 2 API calls automatically');
+
+                          // Detect language for product dossier API request - USE CURRENT PROMPT ONLY
+                          const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
+
+                          console.log('🌐 PRODUCT DOSSIER LANGUAGE DEBUG:', {
+                            userInput: userPrompt, // Log current prompt, not previous message
+                            detectedLanguage: userLanguage,
+                            isSpanish: userLanguage === 'es'
+                          });
+
+                          try {
+                            // Helper function to make product dossier API calls
+                            const makeProductDossierCall = async (part: 'first' | 'second') => {
+                              let partPrompt = part === 'first'
+                                ? `Create slides 1-6 of a product dossier: Cover, Index, Context, Problem, Solution, Main Feature. ${userPrompt}`
+                                : `Create slides 7-12 of a product dossier: Features, Competition, Benefits, Metrics, Missions, Back Cover. ${userPrompt}`;
+
+                              // Force Spanish content if user spoke Spanish
+                              if (userLanguage === 'es') {
+                                partPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                              }
+
+                              console.log(`📤 Making ${part} product dossier API call with prompt: "${partPrompt}"`);
+                              console.log(`🌐 Language for ${part} product dossier: ${userLanguage}`);
+
+                              // Get auth headers for credit tracking
+                              const { data: { session } } = await supabase.auth.getSession();
+                              const headers: Record<string, string> = {
+                                'Content-Type': 'application/json',
+                              };
+                              if (session?.access_token) {
+                                headers['Authorization'] = `Bearer ${session.access_token}`;
+                              }
+
+                              const response = await fetch('/api/generate', {
+                                method: 'POST',
+                                headers,
+                                body: JSON.stringify({
+                                  prompt: partPrompt,
+                                  language: userLanguage, // Add language parameter
+                                  existingPresentation: undefined,
+                                  uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
+                                  presentationId: currentPresentationId,
+                                  workspace: currentWorkspace
+                                }),
+                              });
+
+                              if (!response.ok) {
+                                const errorData = await response.json();
+                                throw new Error(`Product dossier ${part} part failed: ${errorData.error || response.statusText}`);
+                              }
+
+                              const result = await response.json();
+                              console.log(`✅ ${part} product dossier part completed with ${result.slides?.length || 0} slides`);
+                              console.log(`🔍 ${part} part slide IDs:`, result.slides?.map((s: any) => s.id) || []);
+                              console.log(`🔍 ${part} part slide blocks:`, result.slides?.map((s: any) => ({ id: s.id, blockCount: s.blocks?.length || 0 })) || []);
+                              return result;
+                            };
+
+                            // Make both calls in parallel for faster execution
+                            const [firstResponse, secondResponse] = await Promise.all([
+                              makeProductDossierCall('first'),
+                              makeProductDossierCall('second')
+                            ]);
+
+                            console.log('✅ Both product dossier parts completed, combining...');
+                            console.log('🔍 First response slides:', firstResponse?.slides?.length || 0);
+                            console.log('🔍 Second response slides:', secondResponse?.slides?.length || 0);
+
+                            // Combine responses
+                            if (!firstResponse?.slides || !secondResponse?.slides) {
+                              throw new Error('One or both product dossier parts failed to generate slides');
+                            }
+
+                            // Filter out any slides with empty blocks before combining
+                            const validFirstSlides = firstResponse.slides.filter((slide: any) => slide.blocks && slide.blocks.length > 0);
+                            const validSecondSlides = secondResponse.slides.filter((slide: any) => slide.blocks && slide.blocks.length > 0);
+
+                            console.log('🔍 Valid first slides:', validFirstSlides.length);
+                            console.log('🔍 Valid second slides:', validSecondSlides.length);
+
+                            if (validFirstSlides.length !== firstResponse.slides.length) {
+                              console.warn('⚠️ Filtered out', firstResponse.slides.length - validFirstSlides.length, 'invalid slides from first part');
+                            }
+                            if (validSecondSlides.length !== secondResponse.slides.length) {
+                              console.warn('⚠️ Filtered out', secondResponse.slides.length - validSecondSlides.length, 'invalid slides from second part');
+                            }
+
+                            const combinedData = {
+                              title: firstResponse.title || 'Product Dossier',
+                              slides: [
+                                ...validFirstSlides,
+                                ...validSecondSlides.map((slide: any, index: number) => ({
+                                  ...slide,
+                                  id: `slide-${validFirstSlides.length + index + 1}`
+                                }))
+                              ]
+                            };
+
+                            console.log('✅ SUCCESS: Combined 12-slide product dossier created');
+
+                            // Replace loading message with success - REMOVE AND ADD NEW
+                            setPresentationMessages(prev => {
+                              const existingMessages = prev[currentPresentationId] || [];
+                              const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                              const nextVersion = assistantMessages.length + 1;
+
+                              return {
+                                ...prev,
+                                [currentPresentationId]: [
+                                  ...existingMessages.filter(msg => !msg.isLoading),
+                                  {
+                                    id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                    role: "assistant" as const,
+                                    text: `Successfully created "${combinedData.title}"\n\nPresentation structure:\n${combinedData.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title || `Slide ${i + 1}`}`).join('\n')}\n\nYour 12-slide product dossier features comprehensive product documentation, competitive analysis, detailed feature overview, and company mission. Ready for review and presentation.`,
+                                    isLoading: false,
+                                    presentationData: combinedData,
+                                    userMessage: originalPrompt,  // 🔧 Add user input for version display
+                                    version: nextVersion
+                                  }
+                                ]
+                              };
+                            });
+
+                            // Close onboarding after successful generation
+                            if (showOnboarding) {
+                              setShowOnboarding(false);
+                              setOnboardingStep(1); // Reset for next time
+
+                              // Clear the generation timeout
+                              if ((window as any).generationTimeout) {
+                                clearTimeout((window as any).generationTimeout);
+                                (window as any).generationTimeout = null;
+                              }
+                            }
+
+                            // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
+                            setWorkspacePresentations(prev => {
+                              const currentPresentations = prev[currentWorkspace] || [];
+                              const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
+                              const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
+
+                              if (updatedPresentation) {
+                                // Move the generated presentation to the top of the list
+                                return {
+                                  ...prev,
+                                  [currentWorkspace]: [
+                                    { ...updatedPresentation, title: combinedData.title },
+                                    ...otherPresentations
+                                  ]
+                                };
+                              }
+                              return prev;
+                            });
+
+                            // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
+                            persistCreatedId(currentPresentationId);
+
+                            // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
+                            setTimeout(() => {
+                              reloadWorkspacePresentations();
+                            }, 1000);
+
+                            // Force immediate re-render
+                            setTimeout(() => {
+                              console.log('🔄 Forcing re-render after product dossier creation');
+                              setActiveSlide(prev => prev);
+                            }, 100);
+
+                            return;
+
+                          } catch (productDossierError) {
+                            console.error('❌ Product dossier generation failed:', productDossierError);
+
+                            // Update with product dossier specific error
+                            setPresentationMessages(prev => ({
+                              ...prev,
+                              [currentPresentationId]: prev[currentPresentationId].map(msg =>
+                                msg.isLoading ? {
+                                  ...msg,
+                                  text: `Product dossier generation failed: ${productDossierError instanceof Error ? productDossierError.message : 'Unknown error'}\n\nThis could be due to:\n• Network connectivity issues\n• API timeout\n• Server overload\n\nPlease try again in a moment.`,
+                                  isLoading: false
+                                } : msg
+                              )
+                            }));
+
+                            return;
+                          }
+                        }
+
+                        // 🎯 PRODUCT LAUNCH DETECTION AND SINGLE API CALL
+                        if (isProductLaunchRequest(userPrompt) && !isModification) {
+                          console.log('🎯 PRODUCT LAUNCH DETECTED: Making single API call');
+
+                          // Detect language for product launch API request
+                          const userLanguage = detectLanguage(userPrompt);
+
+                          let finalPrompt = `Create a 10-slide product launch presentation: Cover, Index, Content, Goals, Product Launch Info, New Features (slide 6), New Features (slide 7), Roadmap, Next Steps, Back Cover. ${userPrompt}`;
+                          if (userLanguage === 'es') {
+                            finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                          }
+
+                          // Make single API call for Product Launch (10 slides)
+                          const response = await fetch('/api/generate', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                            },
+                            body: JSON.stringify({
+                              prompt: finalPrompt,
+                              language: userLanguage,
+                              presentationId: currentPresentationId,
+                              workspace: currentWorkspace,
+                              fileData: fileData
+                            })
+                          });
+
+                          if (response.ok) {
+                            const result = await response.json();
+                            console.log('✅ Product Launch generated successfully');
+
+                            // Update presentation messages and workspace presentations
+                            setPresentationMessages(prev => ({
+                              ...prev,
+                              [currentPresentationId]: [
+                                ...prev[currentPresentationId].filter(msg => !msg.isLoading),
+                                {
+                                  id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                  role: "assistant" as const,
+                                  text: `Successfully created "${result.title}"\n\nYour 10-slide product launch presentation is ready!`,
+                                  isLoading: false,
+                                  presentationData: result,
+                                  userMessage: userPrompt,
+                                  version: 1
+                                }
+                              ]
+                            }));
+
+                            setTimeout(() => reloadWorkspacePresentations(), 1000);
+                            return;
+                          }
+                        }
+
+                        // 🎯 CAMPAIGN DETECTION AND SINGLE API CALL
+                        if (isCampaignRequest(userPrompt) && !isModification) {
+                          console.log('🎯 CAMPAIGN DETECTED: Making single API call');
+
+                          // Detect language for campaign API request
+                          const userLanguage = detectLanguage(userPrompt);
+
+                          let finalPrompt = `Create a 9-slide campaign presentation: Cover, Index, Context, Current Metrics, Goals, Strategy, Roadmap, Next Steps, Back Cover. ${userPrompt}`;
+                          if (userLanguage === 'es') {
+                            finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                          }
+
+                          // Make single API call for Campaign (9 slides)
+                          const response = await fetch('/api/generate', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                            },
+                            body: JSON.stringify({
+                              prompt: finalPrompt,
+                              language: userLanguage,
+                              presentationId: currentPresentationId,
+                              workspace: currentWorkspace,
+                              fileData: fileData
+                            })
+                          });
+
+                          if (response.ok) {
+                            const result = await response.json();
+                            console.log('✅ Campaign generated successfully');
+
+                            // Update presentation messages and workspace presentations
+                            setPresentationMessages(prev => ({
+                              ...prev,
+                              [currentPresentationId]: [
+                                ...prev[currentPresentationId].filter(msg => !msg.isLoading),
+                                {
+                                  id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                  role: "assistant" as const,
+                                  text: `Successfully created "${result.title}"\n\nYour 9-slide campaign presentation is ready!`,
+                                  isLoading: false,
+                                  presentationData: result,
+                                  userMessage: userPrompt,
+                                  version: 1
+                                }
+                              ]
+                            }));
+
+                            setTimeout(() => reloadWorkspacePresentations(), 1000);
+                            return;
+                          }
+                        }
+
+                        // 🎯 TOPIC PRESENTATION DETECTION AND SINGLE API CALL
+                        if (isTopicPresentationRequest(userPrompt) && !isModification) {
+                          console.log('🎯 TOPIC PRESENTATION DETECTED: Making single API call');
+
+                          // Detect language for topic presentation API request
+                          const userLanguage = detectLanguage(userPrompt);
+
+                          let finalPrompt = `Create a 9-slide topic presentation: Cover, Index, Quote, Info Topic (slide 4), Info Topic (slide 5), Info Topic (slide 6), Info Topic (slide 7), Info Topic (slide 8), Back Cover. ${userPrompt}`;
+                          if (userLanguage === 'es') {
+                            finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                          }
+
+                          // Make single API call for Topic Presentation (9 slides)
+                          const response = await fetch('/api/generate', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+                            },
+                            body: JSON.stringify({
+                              prompt: finalPrompt,
+                              language: userLanguage,
+                              presentationId: currentPresentationId,
+                              workspace: currentWorkspace,
+                              fileData: fileData
+                            })
+                          });
+
+                          if (response.ok) {
+                            const result = await response.json();
+                            console.log('✅ Topic Presentation generated successfully');
+
+                            // Update presentation messages and workspace presentations
+                            setPresentationMessages(prev => ({
+                              ...prev,
+                              [currentPresentationId]: [
+                                ...prev[currentPresentationId].filter(msg => !msg.isLoading),
+                                {
+                                  id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                  role: "assistant" as const,
+                                  text: `Successfully created "${result.title}"\n\nYour 9-slide topic presentation is ready!`,
+                                  isLoading: false,
+                                  presentationData: result,
+                                  userMessage: userPrompt,
+                                  version: 1
+                                }
+                              ]
+                            }));
+
+                            setTimeout(() => reloadWorkspacePresentations(), 1000);
+                            return;
+                          }
+                        }
+
+                        // 🔥 WORD DOCUMENT WITH EXISTING PLAYBOOKS - Map Word content to appropriate playbook
+                        if (fileData && (fileData.type === 'word' || fileData.type === 'document') && !isModification) {
+                          console.log('📄 WORD DOCUMENT DETECTED - Analyzing content to determine appropriate playbook');
+
+                          // Analyze Word content to determine which existing playbook to use
+                          const wordContent = fileData.processedData?.content || '';
+                          const lowerContent = wordContent.toLowerCase();
+
+                          let selectedPlaybook = 'topic'; // Default fallback
+
+                          // Determine playbook based on Word document content
+                          if (lowerContent.includes('sales') || lowerContent.includes('revenue') || lowerContent.includes('forecast')) {
+                            selectedPlaybook = 'report';
+                            console.log('📊 Word content suggests SALES REPORT playbook');
+                          } else if (lowerContent.includes('investor') || lowerContent.includes('funding') || lowerContent.includes('pitch')) {
+                            selectedPlaybook = 'investor';
+                            console.log('💰 Word content suggests INVESTOR DECK playbook');
+                          } else if (lowerContent.includes('product') && (lowerContent.includes('launch') || lowerContent.includes('feature'))) {
+                            selectedPlaybook = 'product-launch';
+                            console.log('🚀 Word content suggests PRODUCT LAUNCH playbook');
+                          } else if (lowerContent.includes('product') && (lowerContent.includes('overview') || lowerContent.includes('documentation'))) {
+                            selectedPlaybook = 'product-dossier';
+                            console.log('📋 Word content suggests PRODUCT DOSSIER playbook');
+                          } else if (lowerContent.includes('campaign') || lowerContent.includes('marketing') || lowerContent.includes('strategy')) {
+                            selectedPlaybook = 'campaign';
+                            console.log('📢 Word content suggests CAMPAIGN playbook');
+                          } else {
+                            console.log('📚 Word content suggests TOPIC PRESENTATION playbook (default)');
+                          }
+
+                          // Trigger the appropriate existing playbook
+                          console.log(`🎯 Triggering ${selectedPlaybook.toUpperCase()} playbook for Word document`);
+
+                          // Don't modify the chat input - keep it clean for the user
+                          // The Word content will be processed server-side via fileData
+
+                          // Let the existing playbook logic handle the rest
+                          // Don't return here - let it fall through to existing playbook detection
+                        }
+
+                        // 🔥 DEDICATED EXCEL PLAYBOOK - TRIGGERS AUTOMATICALLY WHEN EXCEL DATA IS PRESENT
+                        if (fileData && fileData.type === 'excel' && !isModification) {
+                          console.log('🎯 EXCEL PLAYBOOK TRIGGERED - Creating 12-slide Excel analysis presentation');
+
+                          try {
+                            // Helper function to make Excel report API calls
+                            const makeExcelReportCall = async (part: 'first' | 'second') => {
+                              const partPrompt = part === 'first'
+                                ? `Create slides 1-6 of an Excel analysis report: Cover_LeftTitleRightBodyUnderlined (Excel Analysis Report), Index_LeftAgendaRightImage (Data Overview), Lists_LeftTextRightImageDescription (Data Context), Impact_ImageMetrics (Key Metrics), Impact_KPIOverview (Performance KPIs), Metrics_FinancialsSplit (Financial Breakdown). Use the attached Excel data for all charts and metrics. ${userPrompt}`
+                                : `Create slides 7-12 of an Excel analysis report: Metrics_FullWidthChart (Trend Analysis), Metrics_FinancialsSplit (Distribution Analysis), Metrics_FullWidthChart (Growth Analysis), Lists_LeftTextRightImage (Key Insights), Quote_LeftTextRightImage (Recommendations), BackCover_ThankYouWithImage (Conclusion). Use the attached Excel data for all charts and metrics. ${userPrompt}`;
+
+                              console.log(`📤 Making ${part} Excel report API call with prompt: "${partPrompt}"`);
+
+                              // Get auth headers for credit tracking
+                              const { data: { session } } = await supabase.auth.getSession();
+                              const headers: Record<string, string> = {
+                                'Content-Type': 'application/json',
+                              };
+                              if (session?.access_token) {
+                                headers['Authorization'] = `Bearer ${session.access_token}`;
+                              }
+
+                              const response = await fetch('/api/generate', {
+                                method: 'POST',
+                                headers,
+                                body: JSON.stringify({
+                                  prompt: partPrompt,
+                                  existingPresentation: undefined,
+                                  uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
+                                  fileData: fileData, // Include Excel file data for analysis
+                                  presentationId: currentPresentationId,
+                                  workspace: currentWorkspace
+                                }),
+                              });
+
+                              if (!response.ok) {
+                                throw new Error(`Excel report API call failed: ${response.status}`);
+                              }
+
+                              return response.json();
+                            };
+
+                            // Execute both parts in parallel
+                            const [firstPart, secondPart] = await Promise.all([
+                              makeExcelReportCall('first'),
+                              makeExcelReportCall('second')
+                            ]);
+
+                            // Combine the slides from both parts
+                            const combinedSlides = [
+                              ...(firstPart.slides || []),
+                              ...(secondPart.slides || [])
+                            ];
+
+                            console.log(`✅ Excel playbook completed: ${combinedSlides.length} slides generated`);
+
+                            // Update presentation state using the message system
+                            const newPresentation = {
+                              title: firstPart.title || "Excel Data Analysis",
+                              slides: combinedSlides
+                            };
+
+                            // Replace loading message with success - REMOVE AND ADD NEW
+                            setPresentationMessages(prev => {
+                              const existingMessages = prev[currentPresentationId] || [];
+                              const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                              const nextVersion = assistantMessages.length + 1;
+
+                              return {
+                                ...prev,
+                                [currentPresentationId]: [
+                                  ...existingMessages.filter(msg => !msg.isLoading),
+                                  {
+                                    id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                    role: "assistant" as const,
+                                    text: `Successfully created "${newPresentation.title}"\n\nPresentation structure:\n${combinedSlides.map((slide: any, index: number) => `${index + 1}. ${slide.blocks.find((block: any) => block.props?.title)?.props?.title || `Slide ${index + 1}`}`).join('\n')}\n\nYour presentation features professional layouts, cohesive visual design, and optimized content hierarchy. Ready for review and presentation.`,
+                                    isLoading: false,
+                                    presentationData: newPresentation,
+                                    userMessage: originalPrompt,  // 🔧 Add user input for version display
+                                    version: nextVersion
+                                  }
+                                ]
+                              };
+                            });
+
+                            // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
+                            setWorkspacePresentations(prev => {
+                              const currentPresentations = prev[currentWorkspace] || [];
+                              const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
+                              const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
+
+                              if (updatedPresentation) {
+                                // Move the generated presentation to the top of the list
+                                return {
+                                  ...prev,
+                                  [currentWorkspace]: [
+                                    { ...updatedPresentation, title: newPresentation.title },
+                                    ...otherPresentations
+                                  ]
+                                };
+                              }
+                              return prev;
+                            });
+
+                            // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
+                            persistCreatedId(currentPresentationId);
+
+                            // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
+                            setTimeout(() => {
+                              reloadWorkspacePresentations();
+                            }, 1000);
+
+                            setActiveSlide(0);
+                            setChatInput('');
+
+                            return; // Exit early - Excel playbook complete
+
+                          } catch (error) {
+                            console.error('❌ Excel playbook failed:', error);
+                            // Fall through to regular generation if playbook fails
+                          }
+                        }
+
+                        // 🚨 DEBUG: Check what's preventing report detection
+                        console.log('🔍 DEBUGGING FLOW BEFORE REPORT DETECTION:', {
+                          userPrompt: userPrompt,
+                          isModification: isModification,
+                          isProductDossier: isProductDossierRequest(userPrompt),
+                          isInvestorDeck: isInvestorDeckRequest(userPrompt),
+                          isTopicPresentation: isTopicPresentationRequest(userPrompt),
+                          isProductLaunch: isProductLaunchRequest(userPrompt),
+                          isCampaign: isCampaignRequest(userPrompt)
+                        });
+
+                        // 🎯 REPORT PLAYBOOK DETECTION AND AUTOMATIC SPLIT
+                        console.log('🚨 REACHED REPORT DETECTION SECTION');
+                        console.log('🚨 CRITICAL DEBUG - Report Detection:', {
+                          userPrompt: userPrompt,
+                          userPromptLower: userPrompt.toLowerCase(),
+                          isModification: isModification,
+                          isReport: isReportRequest(userPrompt),
+                          shouldTriggerSplit: isReportRequest(userPrompt) && !isModification,
+                          containsQBR: userPrompt.toLowerCase().includes('qbr'),
+                          containsQuarterly: userPrompt.toLowerCase().includes('quarterly'),
+                          containsBusinessReview: userPrompt.toLowerCase().includes('business review')
+                        });
+
+                        // 🛡️ FORCE SPLIT FOR REPORTS - MANDATORY
+                        if (isReportRequest(userPrompt)) {
+                          if (isModification) {
+                            console.log('⚠️ Report modification detected - allowing single API call');
+                          } else {
+                            console.log('🎯 REPORT DETECTED: FORCING split logic (MANDATORY)');
+                            // ALWAYS use split logic for reports, never single API call
+                            // This prevents the broken 6-slide fallback
+                          }
+                        }
+
+                        // 🎯 SALES REPORT PLAYBOOK - RE-ENABLED FOR 12-SLIDE STRUCTURE
+                        console.log('🚨 CRITICAL DEBUG - REPORT DETECTION CHECK:', {
+                          userPrompt: userPrompt,
+                          isReportRequest: isReportRequest(userPrompt),
+                          isModification: isModification,
+                          shouldTriggerPlaybook: isReportRequest(userPrompt) && !isModification
+                        });
+
+                        if (isReportRequest(userPrompt) && !isModification) {
+
+                          // Detect language for sales report API request - USE CURRENT PROMPT ONLY
+                          const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
+
+                          // Debug language detection for sales reports
+                          console.log('🌐 SALES REPORT LANGUAGE DEBUG:', {
+                            userInput: userPrompt, // Log current prompt, not previous message
+                            detectedLanguage: userLanguage,
+                            isSpanish: userLanguage === 'es'
+                          });
+
+                          try {
+                            // Helper function to make report API calls
+                            const makeReportCall = async (part: 'first' | 'second') => {
+                              let partPrompt = part === 'first'
+                                ? `Create slides 1-6 of a report playbook: Cover_LeftTitleRightBodyUnderlined (Business Report), Index_LeftAgendaRightText (Agenda), Lists_LeftTextRightImageDescription (Context), Impact_ImageMetrics (Our Goals), Impact_KPIOverview (KPIs), Metrics_FinancialsSplit (Financial Analysis). ${userPrompt}`
+                                : `Create slides 7-12 of a report playbook: Metrics_FullWidthChart (Performance Trends), Metrics_FinancialsSplit (Budget Overview), Metrics_FullWidthChart (Market Analysis), Lists_LeftTextRightImage (Next Steps), Quote_LeftTextRightImage (Mission), BackCover_ThankYouWithImage (Thank You). ${userPrompt}`;
+
+                              // Force Spanish content if user spoke Spanish
+                              if (userLanguage === 'es') {
+                                partPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                              }
+
+                              console.log(`📤 Making ${part} report API call with prompt: "${partPrompt}"`);
+                              console.log(`🌐 Language for ${part} report: ${userLanguage}`);
+
+                              // Get auth headers for credit tracking
+                              const { data: { session } } = await supabase.auth.getSession();
+                              const headers: Record<string, string> = {
+                                'Content-Type': 'application/json',
+                              };
+                              if (session?.access_token) {
+                                headers['Authorization'] = `Bearer ${session.access_token}`;
+                              }
+
+                              const response = await fetch('/api/generate', {
+                                method: 'POST',
+                                headers,
+                                body: JSON.stringify({
+                                  prompt: partPrompt,
+                                  language: userLanguage, // Add language parameter
+                                  existingPresentation: undefined,
+                                  uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
+                                  fileData: fileData, // Include Excel/Word file data for analysis in reports
+                                  presentationId: currentPresentationId,
+                                  workspace: currentWorkspace
+                                }),
+                              });
+
+                              if (!response.ok) {
+                                throw new Error(`Sales report ${part} part failed: ${response.statusText}`);
+                              }
+
+                              const result = await response.json();
+                              console.log(`✅ ${part} sales report part completed with ${result.slides?.length || 0} slides`);
+                              console.log(`🔍 ${part} part slide IDs:`, result.slides?.map((s: any) => s.id) || []);
+                              console.log(`🔍 ${part} part slide blocks:`, result.slides?.map((s: any) => ({ id: s.id, blockCount: s.blocks?.length || 0 })) || []);
+                              return result;
+                            };
+
+                            // Make both API calls in parallel
+                            const [firstResponse, secondResponse] = await Promise.all([
+                              makeReportCall('first'),
+                              makeReportCall('second')
+                            ]);
+
+                            console.log('✅ Both report parts completed, combining...');
+                            console.log('🔍 First response slides:', firstResponse?.slides?.length || 0);
+                            console.log('🔍 Second response slides:', secondResponse?.slides?.length || 0);
+
+                            // Combine responses
+                            if (!firstResponse?.slides || !secondResponse?.slides) {
+                              throw new Error('One or both sales report parts failed to generate slides');
+                            }
+
+                            // Filter out any slides with empty blocks before combining
+                            const validFirstSlides = firstResponse.slides.filter((slide: any) => slide.blocks && slide.blocks.length > 0);
+                            const validSecondSlides = secondResponse.slides.filter((slide: any) => slide.blocks && slide.blocks.length > 0);
+
+                            if (validFirstSlides.length !== firstResponse.slides.length) {
+                              console.warn(`⚠️ Filtered out ${firstResponse.slides.length - validFirstSlides.length} slides with empty blocks from first part`);
+                            }
+                            if (validSecondSlides.length !== secondResponse.slides.length) {
+                              console.warn(`⚠️ Filtered out ${secondResponse.slides.length - validSecondSlides.length} slides with empty blocks from second part`);
+                            }
+
+                            const combinedData = {
+                              title: firstResponse.title || 'Sales Report',
+                              slides: [
+                                ...validFirstSlides,
+                                ...validSecondSlides
+                              ]
+                            };
+
+                            console.log('✅ SUCCESS: Combined 12-slide report created');
+
+                            // 🛡️ CRITICAL FAILSAFE: Validate slide count for reports
+                            if (combinedData.slides.length < 10) {
+                              throw new Error(`CRITICAL: Report generated incomplete slides (${combinedData.slides.length}/12). This should NEVER happen.`);
+                            }
+
+                            // Replace loading message with success - REMOVE AND ADD NEW
+                            setPresentationMessages(prev => {
+                              const existingMessages = prev[currentPresentationId] || [];
+                              const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                              const nextVersion = assistantMessages.length + 1;
+
+                              return {
+                                ...prev,
+                                [currentPresentationId]: [
+                                  ...existingMessages.filter(msg => !msg.isLoading),
+                                  {
+                                    id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                    role: "assistant" as const,
+                                    text: `Successfully created "${combinedData.title}"\n\nPresentation structure:\n${combinedData.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title || `Slide ${i + 1}`}`).join('\n')}\n\nYour 12-slide business report features comprehensive performance overview, strategic goals, KPI tracking, 4 detailed chart visualizations, next steps planning, strategic roadmap, and actionable insights. Ready for review and presentation.`,
+                                    isLoading: false,
+                                    presentationData: combinedData,
+                                    userMessage: originalPrompt,  // 🔧 Add user input for version display
+                                    version: nextVersion
+                                  }
+                                ]
+                              };
+                            });
+
+                            // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
+                            setWorkspacePresentations(prev => {
+                              const currentPresentations = prev[currentWorkspace] || [];
+                              const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
+                              const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
+
+                              if (updatedPresentation) {
+                                // Move the generated presentation to the top of the list
+                                return {
+                                  ...prev,
+                                  [currentWorkspace]: [
+                                    { ...updatedPresentation, title: combinedData.title },
+                                    ...otherPresentations
+                                  ]
+                                };
+                              }
+                              return prev;
+                            });
+
+                            // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
+                            persistCreatedId(currentPresentationId);
+
+                            // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
+                            setTimeout(() => {
+                              reloadWorkspacePresentations();
+                            }, 1000);
+
+                            // Force immediate re-render
+                            setTimeout(() => {
+                              console.log('🔄 Forcing re-render after report creation');
+                              setActiveSlide(prev => prev);
+                            }, 100);
+
+                            return;
+
+                          } catch (reportError: any) {
+                            console.error('❌ Report generation failed:', reportError);
+
+                            // Check if it's an API overload error
+                            const errorMessage = reportError instanceof Error ? reportError.message : 'Unknown error';
+                            const isOverloadError = errorMessage.includes('529') ||
+                              errorMessage.includes('Overloaded') ||
+                              errorMessage.includes('overloaded_error') ||
+                              errorMessage.includes('Report second part failed');
+
+                            if (isOverloadError) {
+                              // Show API overload modal instead of error message
+                              setShowApiOverloadModal(true);
+
+                              // Clear the loading message
+                              setPresentationMessages(prev => ({
+                                ...prev,
+                                [currentPresentationId]: prev[currentPresentationId].filter(msg => !msg.isLoading)
+                              }));
+                            } else {
+                              // Handle other errors with message
+                              const userFriendlyMessage = `❌ Report generation failed: ${errorMessage}\n\nThis could be due to:\n• Network connectivity issues\n• API timeout\n• Server overload\n\nPlease try again in a moment.`;
+
+                              // Update with report specific error
+                              setPresentationMessages(prev => ({
+                                ...prev,
+                                [currentPresentationId]: prev[currentPresentationId].map(msg =>
+                                  msg.isLoading ? {
+                                    ...msg,
+                                    text: userFriendlyMessage,
+                                    isLoading: false
+                                  } : msg
+                                )
+                              }));
+                            }
+
+                            return;
+                          }
+                        }
+
+                        // 🎯 QUOTE LAYOUT TEST - Add Mission slide for testing
+                        const includeQuoteLayout = userPrompt.toLowerCase().includes('quote') ||
+                          userPrompt.toLowerCase().includes('mission') ||
+                          userPrompt.toLowerCase().includes('test quote');
+
+                        if (includeQuoteLayout && !isModification) {
+                          console.log('🎯 QUOTE LAYOUT TEST: Adding Mission slide with Quote_LeftTextRightImage');
+
+                          // Add loading message for quote test
+                          setPresentationMessages(prev => ({
+                            ...prev,
+                            [currentPresentationId]: [
+                              ...prev[currentPresentationId],
+                              {
+                                id: Date.now().toString(),
+                                role: 'assistant',
+                                text: 'Creating presentation with Quote layout test...\n\nGenerating 7 slides including a Mission slide with Quote_LeftTextRightImage layout.\n\nThis will test the quote layout rendering.',
+                                isLoading: true,
+                                timestamp: new Date()
+                              }
+                            ]
+                          }));
+
+                          // Modify the prompt to include Mission slide
+                          const modifiedPrompt = `Create a 7-slide presentation: Cover, Index, Problem, Solution, Why Now, Market, Mission (use Quote_LeftTextRightImage layout). ${userPrompt}`;
+
+                          // Use modified prompt for the API call
+                          const requestData = {
+                            prompt: modifiedPrompt,
+                            existingPresentation: isModification ? effectivePresentationData : undefined,
+                            uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined
+                          };
+
+                          // Get auth headers for credit tracking
+                          const { data: { session } } = await supabase.auth.getSession();
+                          const headers: Record<string, string> = {
+                            'Content-Type': 'application/json',
+                          };
+                          if (session?.access_token) {
+                            headers['Authorization'] = `Bearer ${session.access_token}`;
+                          }
+
+                          // Add auth data to request
+                          (requestData as any).presentationId = currentPresentationId;
+                          (requestData as any).workspace = currentWorkspace;
+
+                          // Make the API call with quote layout
+                          const response = await fetch('/api/generate', {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify(requestData)
+                          });
+
+                          if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                          }
+
+                          const result = await response.json();
+
+                          // Replace loading message with success - REMOVE AND ADD NEW
+                          setPresentationMessages(prev => {
+                            const existingMessages = prev[currentPresentationId] || [];
+                            const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                            const nextVersion = assistantMessages.length + 1;
+
+                            return {
+                              ...prev,
+                              [currentPresentationId]: [
+                                ...existingMessages.filter(msg => !msg.isLoading),
+                                {
+                                  id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                  role: "assistant" as const,
+                                  text: `Successfully created "${result.title}"\n\nPresentation structure:\n${result.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title || `Slide ${i + 1}`}`).join('\n')}\n\nYour presentation includes a Mission slide with Quote_LeftTextRightImage layout for testing.`,
+                                  isLoading: false,
+                                  presentationData: result,
+                                  userMessage: originalPrompt,  // 🔧 Add user input for version display
+                                  version: nextVersion
+                                }
+                              ]
+                            };
+                          });
+
+                          // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
+                          setWorkspacePresentations(prev => {
+                            const currentPresentations = prev[currentWorkspace] || [];
+                            const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
+                            const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
+
+                            if (updatedPresentation) {
+                              // Move the generated presentation to the top of the list
+                              return {
+                                ...prev,
+                                [currentWorkspace]: [
+                                  { ...updatedPresentation, title: result.title },
+                                  ...otherPresentations
+                                ]
+                              };
+                            }
+                            return prev;
+                          });
+
+                          // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
+                          persistCreatedId(currentPresentationId);
+
+                          // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
+                          setTimeout(() => {
+                            reloadWorkspacePresentations();
+                          }, 1000);
+
+                          return;
+                        }
+
+                        // 🎯 DEFAULT FALLBACK: Handle modifications OR create Topic Presentation
+                        console.log('🎯 REACHED DEFAULT HANDLER:', {
+                          isModification: isModification,
+                          userPrompt: userPrompt
+                        });
+
+                        // Detect language for API request - USE CURRENT PROMPT ONLY, NOT PREVIOUS MESSAGES
+                        const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
+
+                        // Debug language detection
+                        console.log('🌐 LANGUAGE DEBUG:', {
+                          userInput: userPrompt, // Log current prompt, not previous message
+                          detectedLanguage: userLanguage,
+                          isSpanish: userLanguage === 'es'
+                        });
+
+                        let finalPrompt;
+
+                        if (isModification) {
+                          // 🔧 MODIFICATION: Pass user request directly without forcing structure
+                          console.log('🔧 MODIFICATION REQUEST: Passing user prompt directly');
+                          finalPrompt = userPrompt;
+                          if (userLanguage === 'es') {
+                            finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                          }
+                        } else if (finalIntent === 'add_slide') {
+                          // 🆕 ADD SLIDE: Pass user request directly without forcing structure
+                          console.log('🆕 ADD SLIDE REQUEST: Passing user prompt directly');
+                          finalPrompt = userPrompt;
+                          if (userLanguage === 'es') {
+                            finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                          }
+                        } else {
+                          // 🎯 NEW PRESENTATION: Force Topic Presentation structure for unmatched requests
+                          console.log('🎯 NO SPECIFIC PLAYBOOK DETECTED: Defaulting to TOPIC PRESENTATION');
+                          finalPrompt = `Create a 9-slide topic presentation: Cover, Index, Quote, Info Topic (slide 4), Info Topic (slide 5), Info Topic (slide 6), Info Topic (slide 7), Info Topic (slide 8), Back Cover. ${userPrompt}`;
+                          if (userLanguage === 'es') {
+                            finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
+                          }
+                        }
+
+                        const requestData = {
+                          prompt: finalPrompt,
+                          language: userLanguage, // Add language information
+                          existingPresentation: (isModification || finalIntent === 'add_slide') ? effectivePresentationData : undefined,
+                          uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
+                          currentSlideIndex: activeSlide,
+                          fileData: fileData // Include Excel/Word file data for analysis
+                        };
+
+                        console.log('📤 API Request Data:', {
+                          prompt: requestData.prompt,
+                          hasExistingPresentation: !!requestData.existingPresentation,
+                          existingPresentationTitle: requestData.existingPresentation?.title,
+                          existingPresentationSlides: requestData.existingPresentation?.slides?.length || 0,
+                          uploadedImagesCount: uploadedImages.length,
+                          uploadedImageNames: uploadedImages.map(img => img.originalName)
+                        });
+
+                        // Call Claude API with timeout
+                        console.log('🚀 Making API request to /api/generate');
+
+                        // Create AbortController for timeout
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => {
+                          controller.abort();
+                          console.log('⏰ Frontend request timeout after 70 seconds');
+                        }, 70000); // 70 second timeout (longer than backend)
+
+                        // 💳 Check if user has at least 1 credit before API call (minimum cost)
+                        if (!hasEnoughCredits(1)) {
+                          setShowCreditsModal(true);
+                          // Update loading message to show insufficient credits
+                          setPresentationMessages(prev => ({
+                            ...prev,
+                            [currentPresentationId]: prev[currentPresentationId].map(msg =>
+                              msg.isLoading ? {
+                                ...msg,
+                                text: 'Insufficient credits to generate content. Please purchase more credits or upgrade your plan.',
+                                isLoading: false
+                              } : msg
+                            )
+                          }));
+                          return;
+                        }
+
+                        // Get auth headers
+                        const { data: { session } } = await supabase.auth.getSession();
+                        const headers: Record<string, string> = {
+                          'Content-Type': 'application/json',
+                        };
+                        if (session?.access_token) {
+                          headers['Authorization'] = `Bearer ${session.access_token}`;
+                        }
+
+                        // Add auth data to request
+                        (requestData as any).presentationId = currentPresentationId;
+                        (requestData as any).workspace = currentWorkspace;
+
+                        const response = await fetch('/api/generate', {
+                          method: 'POST',
+                          headers,
+                          body: JSON.stringify(requestData),
+                          signal: controller.signal,
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        console.log('API response status:', response.status);
+
+                        // Handle insufficient credits error
                         if (response.status === 402) {
                           setShowCreditsModal(true);
                           // Update loading message to show insufficient credits
                           setPresentationMessages(prev => ({
                             ...prev,
-                            [currentPresentationId]: prev[currentPresentationId].map(msg => 
+                            [currentPresentationId]: prev[currentPresentationId].map(msg =>
                               msg.isLoading ? {
                                 ...msg,
                                 text: 'Insufficient credits to complete generation. Please purchase more credits or upgrade your plan.',
@@ -5601,2749 +6743,1632 @@ export default function EditorPage() {
                           }));
                           return;
                         }
-                        
-                        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-                      }
 
-                      return await response.json();
-                    };
+                        let data;
+                        try {
+                          data = await response.json();
+                          console.log('');
+                          console.log('═══════════════════════════════════════════════════════════');
+                          console.log('📥📥📥 RAW API RESPONSE RECEIVED');
+                          console.log('═══════════════════════════════════════════════════════════');
+                          console.log('   Success:', response.ok);
+                          console.log('   Title:', data?.title);
+                          console.log('   Slide count:', data?.slides?.length);
+                          console.log('   Has ID (direct slide):', !!data?.id);
+                          console.log('   Has blocks (direct slide):', !!data?.blocks);
+                          console.log('   Error:', data?.error);
+                          if (data?.slides) {
+                            console.log('   Slide IDs:', data.slides.map((s: any) => s.id));
+                            console.log('   First slide:', data.slides[0]);
+                          } else if (data?.blocks) {
+                            console.log('   Direct slide ID:', data.id);
+                            console.log('   Direct slide blocks:', data.blocks.length);
+                            console.log('   First block:', data.blocks[0]);
+                          }
+                          console.log('═══════════════════════════════════════════════════════════');
+                          console.log('');
 
-                    // Make both calls in parallel for faster execution
-                    const [firstResponse, secondResponse] = await Promise.all([
-                      makeInvestorDeckCall('first'),
-                      makeInvestorDeckCall('second')
-                    ]);
-
-                    console.log('✅ Both investor deck parts completed, combining...');
-                    
-                    // Combine responses
-                    if (!firstResponse?.slides || !secondResponse?.slides) {
-                      throw new Error('One or both investor deck parts failed to generate slides');
-                    }
-
-                    const combinedData = {
-                      title: firstResponse.title || 'SaaS Investor Deck',
-                      slides: [
-                        ...firstResponse.slides,
-                        ...secondResponse.slides.map((slide: any, index: number) => ({
-                          ...slide,
-                          id: `slide-${firstResponse.slides.length + index + 1}`
-                        }))
-                      ]
-                    };
-
-                      console.log('✅ SUCCESS: Combined 13-slide investor deck created');
-                    
-                    // Replace loading message with success - REMOVE AND ADD NEW
-                      setPresentationMessages(prev => {
-                        const existingMessages = prev[currentPresentationId] || [];
-                        const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                        const nextVersion = assistantMessages.length + 1;
-                        
-                        return {
-                      ...prev,
-                          [currentPresentationId]: [
-                            ...existingMessages.filter(msg => !msg.isLoading),
-                            {
-                              id: `assistant-result-${Date.now()}-${Math.random()}`,
-                              role: "assistant" as const,
-                          text: `Successfully created "${combinedData.title}"\n\nPresentation structure:\n${combinedData.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title || `Slide ${i + 1}`}`).join('\n')}\n\nYour 12-slide investor deck features professional layouts, cohesive visual design, and optimized content hierarchy. Ready for review and presentation.`,
-                          isLoading: false,
-                              presentationData: combinedData,
-                              userMessage: originalPrompt,  // 🔧 Add user input for version display
-                              version: nextVersion
+                          // 🛡️ CRITICAL FAILSAFE: Validate report slide count
+                          if (isReportRequest(userPrompt) && !isModification && data?.slides) {
+                            if (data.slides.length < 10) {
+                              console.error('🚨 CRITICAL ERROR: Report generated incomplete slides via single API call!');
+                              console.error('🚨 This should NEVER happen - split logic should have been used');
+                              throw new Error(`CRITICAL: Report generated only ${data.slides.length} slides instead of 12. Split logic failed to trigger.`);
                             }
-                          ]
-                        };
-                      });
-                      
-                      // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
-                      setWorkspacePresentations(prev => {
-                        const currentPresentations = prev[currentWorkspace] || [];
-                        const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
-                        const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
-                        
-                        if (updatedPresentation) {
-                          // Move the generated presentation to the top of the list
-                          return {
-                        ...prev,
-                            [currentWorkspace]: [
-                              { ...updatedPresentation, title: combinedData.title },
-                              ...otherPresentations
-                            ]
-                          };
-                        }
-                        return prev;
-                      });
-                      
-                      // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
-                      persistCreatedId(currentPresentationId);
-                      
-                      // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
-                      setTimeout(() => {
-                        reloadWorkspacePresentations();
-                        // 💳 Refresh credits after successful generation
-                        console.log('🔄 Refreshing credits after successful generation...');
-                        refreshCredits().then(() => {
-                          console.log('✅ Credits refreshed, new balance should be visible');
-                        }).catch(err => {
-                          console.error('❌ Failed to refresh credits:', err);
-                        });
-                      }, 1000);
-                    
-                    // Force immediate re-render
-                    setTimeout(() => {
-                      console.log('🔄 Forcing re-render after investor deck creation');
-                      setActiveSlide(prev => prev);
-                    }, 100);
-                    
-                    return;
-                    
-                    } catch (investorDeckError) {
-                      console.error('❌ Investor deck generation failed:', investorDeckError);
-                      
-                      // Update with investor deck specific error
-                      setPresentationMessages(prev => ({
-                        ...prev,
-                        [currentPresentationId]: prev[currentPresentationId].map(msg => 
-                            msg.isLoading ? {
-                              ...msg,
-                              text: `Investor deck generation failed: ${investorDeckError instanceof Error ? investorDeckError.message : 'Unknown error'}\n\nThis could be due to:\n• Network connectivity issues\n• API timeout\n• Server overload\n\nPlease try again in a moment.`,
-                              isLoading: false
-                            } : msg
-                        )
-                      }));
-                      
-                      return;
-                    }
-                  }
-
-                  // 🎯 PRODUCT DOSSIER DETECTION AND AUTOMATIC SPLIT
-                  if (isProductDossierRequest(userPrompt) && !isModification) {
-                    console.log('🎯 PRODUCT DOSSIER DETECTED: Making 2 API calls automatically');
-                    
-                    // Detect language for product dossier API request - USE CURRENT PROMPT ONLY
-                    const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
-                    
-                    console.log('🌐 PRODUCT DOSSIER LANGUAGE DEBUG:', {
-                      userInput: userPrompt, // Log current prompt, not previous message
-                      detectedLanguage: userLanguage,
-                      isSpanish: userLanguage === 'es'
-                    });
-                    
-                    try {
-                      // Helper function to make product dossier API calls
-                      const makeProductDossierCall = async (part: 'first' | 'second') => {
-                        let partPrompt = part === 'first' 
-                          ? `Create slides 1-6 of a product dossier: Cover, Index, Context, Problem, Solution, Main Feature. ${userPrompt}`
-                          : `Create slides 7-12 of a product dossier: Features, Competition, Benefits, Metrics, Missions, Back Cover. ${userPrompt}`;
-
-                        // Force Spanish content if user spoke Spanish
-                        if (userLanguage === 'es') {
-                          partPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                        }
-
-                        console.log(`📤 Making ${part} product dossier API call with prompt: "${partPrompt}"`);
-                        console.log(`🌐 Language for ${part} product dossier: ${userLanguage}`);
-                        
-                        // Get auth headers for credit tracking
-                        const { data: { session } } = await supabase.auth.getSession();
-                        const headers: Record<string, string> = {
-                          'Content-Type': 'application/json',
-                        };
-                        if (session?.access_token) {
-                          headers['Authorization'] = `Bearer ${session.access_token}`;
-                        }
-                        
-                        const response = await fetch('/api/generate', {
-                          method: 'POST',
-                          headers,
-                        body: JSON.stringify({
-                          prompt: partPrompt,
-                          language: userLanguage, // Add language parameter
-                          existingPresentation: undefined,
-                            uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
-                            presentationId: currentPresentationId,
-                            workspace: currentWorkspace
-                        }),
-                        });
-
-                        if (!response.ok) {
-                          const errorData = await response.json();
-                          throw new Error(`Product dossier ${part} part failed: ${errorData.error || response.statusText}`);
-                        }
-
-                        const result = await response.json();
-                        console.log(`✅ ${part} product dossier part completed with ${result.slides?.length || 0} slides`);
-                        console.log(`🔍 ${part} part slide IDs:`, result.slides?.map((s: any) => s.id) || []);
-                        console.log(`🔍 ${part} part slide blocks:`, result.slides?.map((s: any) => ({ id: s.id, blockCount: s.blocks?.length || 0 })) || []);
-                        return result;
-                      };
-
-                      // Make both calls in parallel for faster execution
-                      const [firstResponse, secondResponse] = await Promise.all([
-                        makeProductDossierCall('first'),
-                        makeProductDossierCall('second')
-                      ]);
-
-                      console.log('✅ Both product dossier parts completed, combining...');
-                      console.log('🔍 First response slides:', firstResponse?.slides?.length || 0);
-                      console.log('🔍 Second response slides:', secondResponse?.slides?.length || 0);
-                      
-                      // Combine responses
-                      if (!firstResponse?.slides || !secondResponse?.slides) {
-                        throw new Error('One or both product dossier parts failed to generate slides');
-                      }
-
-                      // Filter out any slides with empty blocks before combining
-                      const validFirstSlides = firstResponse.slides.filter((slide: any) => slide.blocks && slide.blocks.length > 0);
-                      const validSecondSlides = secondResponse.slides.filter((slide: any) => slide.blocks && slide.blocks.length > 0);
-                      
-                      console.log('🔍 Valid first slides:', validFirstSlides.length);
-                      console.log('🔍 Valid second slides:', validSecondSlides.length);
-                      
-                      if (validFirstSlides.length !== firstResponse.slides.length) {
-                        console.warn('⚠️ Filtered out', firstResponse.slides.length - validFirstSlides.length, 'invalid slides from first part');
-                      }
-                      if (validSecondSlides.length !== secondResponse.slides.length) {
-                        console.warn('⚠️ Filtered out', secondResponse.slides.length - validSecondSlides.length, 'invalid slides from second part');
-                      }
-                      
-                      const combinedData = {
-                        title: firstResponse.title || 'Product Dossier',
-                        slides: [
-                          ...validFirstSlides,
-                          ...validSecondSlides.map((slide: any, index: number) => ({
-                            ...slide,
-                            id: `slide-${validFirstSlides.length + index + 1}`
-                          }))
-                        ]
-                      };
-
-                      console.log('✅ SUCCESS: Combined 12-slide product dossier created');
-                      
-                      // Replace loading message with success - REMOVE AND ADD NEW
-                        setPresentationMessages(prev => {
-                          const existingMessages = prev[currentPresentationId] || [];
-                          const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                          const nextVersion = assistantMessages.length + 1;
-                          
-                          return {
-                        ...prev,
-                            [currentPresentationId]: [
-                              ...existingMessages.filter(msg => !msg.isLoading),
-                              {
-                                id: `assistant-result-${Date.now()}-${Math.random()}`,
-                                role: "assistant" as const,
-                            text: `Successfully created "${combinedData.title}"\n\nPresentation structure:\n${combinedData.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title || `Slide ${i + 1}`}`).join('\n')}\n\nYour 12-slide product dossier features comprehensive product documentation, competitive analysis, detailed feature overview, and company mission. Ready for review and presentation.`,
-                            isLoading: false,
-                                presentationData: combinedData,
-                                userMessage: originalPrompt,  // 🔧 Add user input for version display
-                                version: nextVersion
-                              }
-                            ]
-                          };
-                        });
-                        
-                        // Close onboarding after successful generation
-                        if (showOnboarding) {
-                          setShowOnboarding(false);
-                          setOnboardingStep(1); // Reset for next time
-                          
-                          // Clear the generation timeout
-                          if ((window as any).generationTimeout) {
-                            clearTimeout((window as any).generationTimeout);
-                            (window as any).generationTimeout = null;
                           }
-                        }
-                        
-                        // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
-                        setWorkspacePresentations(prev => {
-                          const currentPresentations = prev[currentWorkspace] || [];
-                          const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
-                          const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
-                          
-                          if (updatedPresentation) {
-                            // Move the generated presentation to the top of the list
-                            return {
-                          ...prev,
-                              [currentWorkspace]: [
-                                { ...updatedPresentation, title: combinedData.title },
-                                ...otherPresentations
-                              ]
-                            };
-                          }
-                          return prev;
-                        });
-                        
-                        // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
-                        persistCreatedId(currentPresentationId);
-                        
-                        // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
-                        setTimeout(() => {
-                          reloadWorkspacePresentations();
-                        }, 1000);
-                      
-                      // Force immediate re-render
-                      setTimeout(() => {
-                        console.log('🔄 Forcing re-render after product dossier creation');
-                        setActiveSlide(prev => prev);
-                      }, 100);
-                      
-                      return;
-                      
-                    } catch (productDossierError) {
-                      console.error('❌ Product dossier generation failed:', productDossierError);
-                      
-                      // Update with product dossier specific error
-                      setPresentationMessages(prev => ({
-                        ...prev,
-                        [currentPresentationId]: prev[currentPresentationId].map(msg => 
-                            msg.isLoading ? {
-                              ...msg,
-                              text: `Product dossier generation failed: ${productDossierError instanceof Error ? productDossierError.message : 'Unknown error'}\n\nThis could be due to:\n• Network connectivity issues\n• API timeout\n• Server overload\n\nPlease try again in a moment.`,
-                              isLoading: false
-                            } : msg
-                        )
-                      }));
-                      
-                      return;
-                    }
-                  }
-
-                  // 🎯 PRODUCT LAUNCH DETECTION AND SINGLE API CALL
-                  if (isProductLaunchRequest(userPrompt) && !isModification) {
-                    console.log('🎯 PRODUCT LAUNCH DETECTED: Making single API call');
-                    
-                    // Detect language for product launch API request
-                    const userLanguage = detectLanguage(userPrompt);
-                    
-                    let finalPrompt = `Create a 10-slide product launch presentation: Cover, Index, Content, Goals, Product Launch Info, New Features (slide 6), New Features (slide 7), Roadmap, Next Steps, Back Cover. ${userPrompt}`;
-                    if (userLanguage === 'es') {
-                      finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                    }
-
-                    // Make single API call for Product Launch (10 slides)
-                    const response = await fetch('/api/generate', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-                      },
-                      body: JSON.stringify({
-                        prompt: finalPrompt,
-                        language: userLanguage,
-                        presentationId: currentPresentationId,
-                        workspace: currentWorkspace,
-                        fileData: fileData
-                      })
-                    });
-
-                    if (response.ok) {
-                      const result = await response.json();
-                      console.log('✅ Product Launch generated successfully');
-                      
-                      // Update presentation messages and workspace presentations
-                      setPresentationMessages(prev => ({
-                        ...prev,
-                        [currentPresentationId]: [
-                          ...prev[currentPresentationId].filter(msg => !msg.isLoading),
-                          {
-                            id: `assistant-result-${Date.now()}-${Math.random()}`,
-                            role: "assistant" as const,
-                            text: `Successfully created "${result.title}"\n\nYour 10-slide product launch presentation is ready!`,
-                            isLoading: false,
-                            presentationData: result,
-                            userMessage: userPrompt,
-                            version: 1
-                          }
-                        ]
-                      }));
-                      
-                      setTimeout(() => reloadWorkspacePresentations(), 1000);
-                      return;
-                    }
-                  }
-
-                  // 🎯 CAMPAIGN DETECTION AND SINGLE API CALL
-                  if (isCampaignRequest(userPrompt) && !isModification) {
-                    console.log('🎯 CAMPAIGN DETECTED: Making single API call');
-                    
-                    // Detect language for campaign API request
-                    const userLanguage = detectLanguage(userPrompt);
-                    
-                    let finalPrompt = `Create a 9-slide campaign presentation: Cover, Index, Context, Current Metrics, Goals, Strategy, Roadmap, Next Steps, Back Cover. ${userPrompt}`;
-                    if (userLanguage === 'es') {
-                      finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                    }
-
-                    // Make single API call for Campaign (9 slides)
-                    const response = await fetch('/api/generate', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-                      },
-                      body: JSON.stringify({
-                        prompt: finalPrompt,
-                        language: userLanguage,
-                        presentationId: currentPresentationId,
-                        workspace: currentWorkspace,
-                        fileData: fileData
-                      })
-                    });
-
-                    if (response.ok) {
-                      const result = await response.json();
-                      console.log('✅ Campaign generated successfully');
-                      
-                      // Update presentation messages and workspace presentations
-                      setPresentationMessages(prev => ({
-                        ...prev,
-                        [currentPresentationId]: [
-                          ...prev[currentPresentationId].filter(msg => !msg.isLoading),
-                          {
-                            id: `assistant-result-${Date.now()}-${Math.random()}`,
-                            role: "assistant" as const,
-                            text: `Successfully created "${result.title}"\n\nYour 9-slide campaign presentation is ready!`,
-                            isLoading: false,
-                            presentationData: result,
-                            userMessage: userPrompt,
-                            version: 1
-                          }
-                        ]
-                      }));
-                      
-                      setTimeout(() => reloadWorkspacePresentations(), 1000);
-                      return;
-                    }
-                  }
-
-                  // 🎯 TOPIC PRESENTATION DETECTION AND SINGLE API CALL
-                  if (isTopicPresentationRequest(userPrompt) && !isModification) {
-                    console.log('🎯 TOPIC PRESENTATION DETECTED: Making single API call');
-                    
-                    // Detect language for topic presentation API request
-                    const userLanguage = detectLanguage(userPrompt);
-                    
-                    let finalPrompt = `Create a 9-slide topic presentation: Cover, Index, Quote, Info Topic (slide 4), Info Topic (slide 5), Info Topic (slide 6), Info Topic (slide 7), Info Topic (slide 8), Back Cover. ${userPrompt}`;
-                    if (userLanguage === 'es') {
-                      finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                    }
-
-                    // Make single API call for Topic Presentation (9 slides)
-                    const response = await fetch('/api/generate', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-                      },
-                      body: JSON.stringify({
-                        prompt: finalPrompt,
-                        language: userLanguage,
-                        presentationId: currentPresentationId,
-                        workspace: currentWorkspace,
-                        fileData: fileData
-                      })
-                    });
-
-                    if (response.ok) {
-                      const result = await response.json();
-                      console.log('✅ Topic Presentation generated successfully');
-                      
-                      // Update presentation messages and workspace presentations
-                      setPresentationMessages(prev => ({
-                        ...prev,
-                        [currentPresentationId]: [
-                          ...prev[currentPresentationId].filter(msg => !msg.isLoading),
-                          {
-                            id: `assistant-result-${Date.now()}-${Math.random()}`,
-                            role: "assistant" as const,
-                            text: `Successfully created "${result.title}"\n\nYour 9-slide topic presentation is ready!`,
-                            isLoading: false,
-                            presentationData: result,
-                            userMessage: userPrompt,
-                            version: 1
-                          }
-                        ]
-                      }));
-                      
-                      setTimeout(() => reloadWorkspacePresentations(), 1000);
-                      return;
-                    }
-                  }
-
-                  // 🔥 WORD DOCUMENT WITH EXISTING PLAYBOOKS - Map Word content to appropriate playbook
-                  if (fileData && (fileData.type === 'word' || fileData.type === 'document') && !isModification) {
-                    console.log('📄 WORD DOCUMENT DETECTED - Analyzing content to determine appropriate playbook');
-                    
-                    // Analyze Word content to determine which existing playbook to use
-                    const wordContent = fileData.processedData?.content || '';
-                    const lowerContent = wordContent.toLowerCase();
-                    
-                    let selectedPlaybook = 'topic'; // Default fallback
-                    
-                    // Determine playbook based on Word document content
-                    if (lowerContent.includes('sales') || lowerContent.includes('revenue') || lowerContent.includes('forecast')) {
-                      selectedPlaybook = 'report';
-                      console.log('📊 Word content suggests SALES REPORT playbook');
-                    } else if (lowerContent.includes('investor') || lowerContent.includes('funding') || lowerContent.includes('pitch')) {
-                      selectedPlaybook = 'investor';
-                      console.log('💰 Word content suggests INVESTOR DECK playbook');
-                    } else if (lowerContent.includes('product') && (lowerContent.includes('launch') || lowerContent.includes('feature'))) {
-                      selectedPlaybook = 'product-launch';
-                      console.log('🚀 Word content suggests PRODUCT LAUNCH playbook');
-                    } else if (lowerContent.includes('product') && (lowerContent.includes('overview') || lowerContent.includes('documentation'))) {
-                      selectedPlaybook = 'product-dossier';
-                      console.log('📋 Word content suggests PRODUCT DOSSIER playbook');
-                    } else if (lowerContent.includes('campaign') || lowerContent.includes('marketing') || lowerContent.includes('strategy')) {
-                      selectedPlaybook = 'campaign';
-                      console.log('📢 Word content suggests CAMPAIGN playbook');
-                    } else {
-                      console.log('📚 Word content suggests TOPIC PRESENTATION playbook (default)');
-                    }
-                    
-                    // Trigger the appropriate existing playbook
-                    console.log(`🎯 Triggering ${selectedPlaybook.toUpperCase()} playbook for Word document`);
-                    
-                    // Don't modify the chat input - keep it clean for the user
-                    // The Word content will be processed server-side via fileData
-                    
-                    // Let the existing playbook logic handle the rest
-                    // Don't return here - let it fall through to existing playbook detection
-                  }
-
-                  // 🔥 DEDICATED EXCEL PLAYBOOK - TRIGGERS AUTOMATICALLY WHEN EXCEL DATA IS PRESENT
-                  if (fileData && fileData.type === 'excel' && !isModification) {
-                    console.log('🎯 EXCEL PLAYBOOK TRIGGERED - Creating 12-slide Excel analysis presentation');
-                    
-                    try {
-                      // Helper function to make Excel report API calls
-                      const makeExcelReportCall = async (part: 'first' | 'second') => {
-                        const partPrompt = part === 'first' 
-                          ? `Create slides 1-6 of an Excel analysis report: Cover_LeftTitleRightBodyUnderlined (Excel Analysis Report), Index_LeftAgendaRightImage (Data Overview), Lists_LeftTextRightImageDescription (Data Context), Impact_ImageMetrics (Key Metrics), Impact_KPIOverview (Performance KPIs), Metrics_FinancialsSplit (Financial Breakdown). Use the attached Excel data for all charts and metrics. ${userPrompt}`
-                          : `Create slides 7-12 of an Excel analysis report: Metrics_FullWidthChart (Trend Analysis), Metrics_FinancialsSplit (Distribution Analysis), Metrics_FullWidthChart (Growth Analysis), Lists_LeftTextRightImage (Key Insights), Quote_LeftTextRightImage (Recommendations), BackCover_ThankYouWithImage (Conclusion). Use the attached Excel data for all charts and metrics. ${userPrompt}`;
-
-                        console.log(`📤 Making ${part} Excel report API call with prompt: "${partPrompt}"`);
-                        
-                        // Get auth headers for credit tracking
-                        const { data: { session } } = await supabase.auth.getSession();
-                        const headers: Record<string, string> = {
-                          'Content-Type': 'application/json',
-                        };
-                        if (session?.access_token) {
-                          headers['Authorization'] = `Bearer ${session.access_token}`;
-                        }
-                        
-                        const response = await fetch('/api/generate', {
-                          method: 'POST',
-                          headers,
-                          body: JSON.stringify({
-                            prompt: partPrompt,
-                            existingPresentation: undefined,
-                            uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
-                            fileData: fileData, // Include Excel file data for analysis
-                            presentationId: currentPresentationId,
-                            workspace: currentWorkspace
-                          }),
-                        });
-
-                        if (!response.ok) {
-                          throw new Error(`Excel report API call failed: ${response.status}`);
+                        } catch (jsonError) {
+                          console.error('Failed to parse API response as JSON:', jsonError);
+                          throw new Error(`Failed to parse server response: ${jsonError instanceof Error ? jsonError.message : 'Invalid JSON'}`);
                         }
 
-                        return response.json();
-                      };
-
-                      // Execute both parts in parallel
-                      const [firstPart, secondPart] = await Promise.all([
-                        makeExcelReportCall('first'),
-                        makeExcelReportCall('second')
-                      ]);
-
-                      // Combine the slides from both parts
-                      const combinedSlides = [
-                        ...(firstPart.slides || []),
-                        ...(secondPart.slides || [])
-                      ];
-
-                      console.log(`✅ Excel playbook completed: ${combinedSlides.length} slides generated`);
-
-                      // Update presentation state using the message system
-                      const newPresentation = {
-                        title: firstPart.title || "Excel Data Analysis",
-                        slides: combinedSlides
-                      };
-
-                      // Replace loading message with success - REMOVE AND ADD NEW
-                        setPresentationMessages(prev => {
-                          const existingMessages = prev[currentPresentationId] || [];
-                          const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                          const nextVersion = assistantMessages.length + 1;
-                          
-                          return {
-                        ...prev,
-                            [currentPresentationId]: [
-                              ...existingMessages.filter(msg => !msg.isLoading),
-                              {
-                                id: `assistant-result-${Date.now()}-${Math.random()}`,
-                                role: "assistant" as const,
-                            text: `Successfully created "${newPresentation.title}"\n\nPresentation structure:\n${combinedSlides.map((slide: any, index: number) => `${index + 1}. ${slide.blocks.find((block: any) => block.props?.title)?.props?.title || `Slide ${index + 1}`}`).join('\n')}\n\nYour presentation features professional layouts, cohesive visual design, and optimized content hierarchy. Ready for review and presentation.`,
-                            isLoading: false,
-                                presentationData: newPresentation,
-                                userMessage: originalPrompt,  // 🔧 Add user input for version display
-                                version: nextVersion
-                              }
-                            ]
-                          };
+                        console.log('🚨 Response status check:', { ok: response.ok, status: response.status, dataType: data?.type });
+                        console.log('🚨 Full API response data:', data);
+                        console.log('🚨 CRITICAL DEBUG - Response structure:', {
+                          hasId: !!data?.id,
+                          hasBlocks: !!data?.blocks,
+                          hasTitle: !!data?.title,
+                          hasSlides: !!data?.slides,
+                          slidesIsArray: Array.isArray(data?.slides),
+                          slidesLength: data?.slides?.length,
+                          firstSlide: data?.slides?.[0],
+                          isModification: isModification,
+                          effectivePresentationExists: !!effectivePresentationData
                         });
-                        
-                        // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
-                        setWorkspacePresentations(prev => {
-                          const currentPresentations = prev[currentWorkspace] || [];
-                          const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
-                          const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
-                          
-                          if (updatedPresentation) {
-                            // Move the generated presentation to the top of the list
-                            return {
-                          ...prev,
-                              [currentWorkspace]: [
-                                { ...updatedPresentation, title: newPresentation.title },
-                                ...otherPresentations
-                              ]
-                            };
+
+                        if (response.ok) {
+                          console.log('🎉 SUCCESS: API call successful, processing response...');
+                          console.log('🔍 API SUCCESS DEBUG: About to check response type and structure');
+
+                          // Check if this is an informational response
+                          if (data.type === 'informational') {
+                            console.log('Received informational response:', data.response);
+
+                            // Replace loading message with success - REMOVE AND ADD NEW
+                            setPresentationMessages(prev => {
+                              const existingMessages = prev[currentPresentationId] || [];
+                              const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                              const nextVersion = assistantMessages.length + 1;
+
+                              return {
+                                ...prev,
+                                [currentPresentationId]: [
+                                  ...existingMessages.filter(msg => !msg.isLoading),
+                                  {
+                                    id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                    role: "assistant" as const,
+                                    text: `${data.response}`,
+                                    isLoading: false,
+                                    presentationData: null, // No presentation data for informational responses
+                                    version: nextVersion
+                                  }
+                                ]
+                              };
+                            });
+
+                            return; // Exit early for informational responses
                           }
-                          return prev;
-                        });
-                        
-                        // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
-                        persistCreatedId(currentPresentationId);
-                        
-                        // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
-                        setTimeout(() => {
-                          reloadWorkspacePresentations();
-                        }, 1000);
-                      
-                      setActiveSlide(0);
-                      setChatInput('');
-                      
-                      return; // Exit early - Excel playbook complete
-                      
-                    } catch (error) {
-                      console.error('❌ Excel playbook failed:', error);
-                      // Fall through to regular generation if playbook fails
-                    }
-                  }
 
-                  // 🚨 DEBUG: Check what's preventing report detection
-                  console.log('🔍 DEBUGGING FLOW BEFORE REPORT DETECTION:', {
-                    userPrompt: userPrompt,
-                    isModification: isModification,
-                    isProductDossier: isProductDossierRequest(userPrompt),
-                    isInvestorDeck: isInvestorDeckRequest(userPrompt),
-                    isTopicPresentation: isTopicPresentationRequest(userPrompt),
-                    isProductLaunch: isProductLaunchRequest(userPrompt),
-                    isCampaign: isCampaignRequest(userPrompt)
-                  });
-
-                  // 🎯 REPORT PLAYBOOK DETECTION AND AUTOMATIC SPLIT
-                  console.log('🚨 REACHED REPORT DETECTION SECTION');
-                  console.log('🚨 CRITICAL DEBUG - Report Detection:', { 
-                    userPrompt: userPrompt,
-                    userPromptLower: userPrompt.toLowerCase(),
-                    isModification: isModification,
-                    isReport: isReportRequest(userPrompt),
-                    shouldTriggerSplit: isReportRequest(userPrompt) && !isModification,
-                    containsQBR: userPrompt.toLowerCase().includes('qbr'),
-                    containsQuarterly: userPrompt.toLowerCase().includes('quarterly'),
-                    containsBusinessReview: userPrompt.toLowerCase().includes('business review')
-                  });
-                  
-                  // 🛡️ FORCE SPLIT FOR REPORTS - MANDATORY
-                  if (isReportRequest(userPrompt)) {
-                    if (isModification) {
-                      console.log('⚠️ Report modification detected - allowing single API call');
-                    } else {
-                      console.log('🎯 REPORT DETECTED: FORCING split logic (MANDATORY)');
-                      // ALWAYS use split logic for reports, never single API call
-                      // This prevents the broken 6-slide fallback
-                    }
-                  }
-                  
-                  // 🎯 SALES REPORT PLAYBOOK - RE-ENABLED FOR 12-SLIDE STRUCTURE
-                  console.log('🚨 CRITICAL DEBUG - REPORT DETECTION CHECK:', {
-                    userPrompt: userPrompt,
-                    isReportRequest: isReportRequest(userPrompt),
-                    isModification: isModification,
-                    shouldTriggerPlaybook: isReportRequest(userPrompt) && !isModification
-                  });
-                  
-                  if (isReportRequest(userPrompt) && !isModification) {
-                    
-                    // Detect language for sales report API request - USE CURRENT PROMPT ONLY
-                    const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
-                    
-                    // Debug language detection for sales reports
-                    console.log('🌐 SALES REPORT LANGUAGE DEBUG:', {
-                      userInput: userPrompt, // Log current prompt, not previous message
-                      detectedLanguage: userLanguage,
-                      isSpanish: userLanguage === 'es'
-                    });
-                    
-                    try {
-                      // Helper function to make report API calls
-                      const makeReportCall = async (part: 'first' | 'second') => {
-                        let partPrompt = part === 'first' 
-                          ? `Create slides 1-6 of a report playbook: Cover_LeftTitleRightBodyUnderlined (Business Report), Index_LeftAgendaRightText (Agenda), Lists_LeftTextRightImageDescription (Context), Impact_ImageMetrics (Our Goals), Impact_KPIOverview (KPIs), Metrics_FinancialsSplit (Financial Analysis). ${userPrompt}`
-                          : `Create slides 7-12 of a report playbook: Metrics_FullWidthChart (Performance Trends), Metrics_FinancialsSplit (Budget Overview), Metrics_FullWidthChart (Market Analysis), Lists_LeftTextRightImage (Next Steps), Quote_LeftTextRightImage (Mission), BackCover_ThankYouWithImage (Thank You). ${userPrompt}`;
-
-                        // Force Spanish content if user spoke Spanish
-                        if (userLanguage === 'es') {
-                          partPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                        }
-
-                        console.log(`📤 Making ${part} report API call with prompt: "${partPrompt}"`);
-                        console.log(`🌐 Language for ${part} report: ${userLanguage}`);
-                        
-                        // Get auth headers for credit tracking
-                        const { data: { session } } = await supabase.auth.getSession();
-                        const headers: Record<string, string> = {
-                          'Content-Type': 'application/json',
-                        };
-                        if (session?.access_token) {
-                          headers['Authorization'] = `Bearer ${session.access_token}`;
-                        }
-                        
-                        const response = await fetch('/api/generate', {
-                          method: 'POST',
-                          headers,
-                          body: JSON.stringify({
-                            prompt: partPrompt,
-                            language: userLanguage, // Add language parameter
-                            existingPresentation: undefined,
-                            uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
-                            fileData: fileData, // Include Excel/Word file data for analysis in reports
-                            presentationId: currentPresentationId,
-                            workspace: currentWorkspace
-                          }),
-                        });
-
-                        if (!response.ok) {
-                          throw new Error(`Sales report ${part} part failed: ${response.statusText}`);
-                        }
-
-                        const result = await response.json();
-                        console.log(`✅ ${part} sales report part completed with ${result.slides?.length || 0} slides`);
-                        console.log(`🔍 ${part} part slide IDs:`, result.slides?.map((s: any) => s.id) || []);
-                        console.log(`🔍 ${part} part slide blocks:`, result.slides?.map((s: any) => ({ id: s.id, blockCount: s.blocks?.length || 0 })) || []);
-                        return result;
-                      };
-
-                      // Make both API calls in parallel
-                      const [firstResponse, secondResponse] = await Promise.all([
-                        makeReportCall('first'),
-                        makeReportCall('second')
-                      ]);
-
-                      console.log('✅ Both report parts completed, combining...');
-                      console.log('🔍 First response slides:', firstResponse?.slides?.length || 0);
-                      console.log('🔍 Second response slides:', secondResponse?.slides?.length || 0);
-                      
-                      // Combine responses
-                      if (!firstResponse?.slides || !secondResponse?.slides) {
-                        throw new Error('One or both sales report parts failed to generate slides');
-                      }
-
-                      // Filter out any slides with empty blocks before combining
-                      const validFirstSlides = firstResponse.slides.filter((slide: any) => slide.blocks && slide.blocks.length > 0);
-                      const validSecondSlides = secondResponse.slides.filter((slide: any) => slide.blocks && slide.blocks.length > 0);
-                      
-                      if (validFirstSlides.length !== firstResponse.slides.length) {
-                        console.warn(`⚠️ Filtered out ${firstResponse.slides.length - validFirstSlides.length} slides with empty blocks from first part`);
-                      }
-                      if (validSecondSlides.length !== secondResponse.slides.length) {
-                        console.warn(`⚠️ Filtered out ${secondResponse.slides.length - validSecondSlides.length} slides with empty blocks from second part`);
-                      }
-
-                      const combinedData = {
-                        title: firstResponse.title || 'Sales Report',
-                        slides: [
-                          ...validFirstSlides,
-                          ...validSecondSlides
-                        ]
-                      };
-
-                      console.log('✅ SUCCESS: Combined 12-slide report created');
-                      
-                      // 🛡️ CRITICAL FAILSAFE: Validate slide count for reports
-                      if (combinedData.slides.length < 10) {
-                        throw new Error(`CRITICAL: Report generated incomplete slides (${combinedData.slides.length}/12). This should NEVER happen.`);
-                      }
-                      
-                      // Replace loading message with success - REMOVE AND ADD NEW
-                        setPresentationMessages(prev => {
-                          const existingMessages = prev[currentPresentationId] || [];
-                          const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                          const nextVersion = assistantMessages.length + 1;
-                          
-                          return {
-                        ...prev,
-                            [currentPresentationId]: [
-                              ...existingMessages.filter(msg => !msg.isLoading),
-                              {
-                                id: `assistant-result-${Date.now()}-${Math.random()}`,
-                                role: "assistant" as const,
-                            text: `Successfully created "${combinedData.title}"\n\nPresentation structure:\n${combinedData.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title || `Slide ${i + 1}`}`).join('\n')}\n\nYour 12-slide business report features comprehensive performance overview, strategic goals, KPI tracking, 4 detailed chart visualizations, next steps planning, strategic roadmap, and actionable insights. Ready for review and presentation.`,
-                            isLoading: false,
-                                presentationData: combinedData,
-                                userMessage: originalPrompt,  // 🔧 Add user input for version display
-                                version: nextVersion
-                              }
-                            ]
-                          };
-                        });
-                        
-                        // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
-                        setWorkspacePresentations(prev => {
-                          const currentPresentations = prev[currentWorkspace] || [];
-                          const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
-                          const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
-                          
-                          if (updatedPresentation) {
-                            // Move the generated presentation to the top of the list
-                            return {
-                          ...prev,
-                              [currentWorkspace]: [
-                                { ...updatedPresentation, title: combinedData.title },
-                                ...otherPresentations
-                              ]
-                            };
-                          }
-                          return prev;
-                        });
-                        
-                        // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
-                        persistCreatedId(currentPresentationId);
-                        
-                        // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
-                        setTimeout(() => {
-                          reloadWorkspacePresentations();
-                        }, 1000);
-                      
-                      // Force immediate re-render
-                      setTimeout(() => {
-                        console.log('🔄 Forcing re-render after report creation');
-                        setActiveSlide(prev => prev);
-                      }, 100);
-                      
-                      return;
-                      
-                      } catch (reportError: any) {
-                      console.error('❌ Report generation failed:', reportError);
-                      
-                      // Check if it's an API overload error
-                      const errorMessage = reportError instanceof Error ? reportError.message : 'Unknown error';
-                      const isOverloadError = errorMessage.includes('529') || 
-                                            errorMessage.includes('Overloaded') || 
-                                            errorMessage.includes('overloaded_error') ||
-                                            errorMessage.includes('Report second part failed');
-                      
-                      if (isOverloadError) {
-                        // Show API overload modal instead of error message
-                        setShowApiOverloadModal(true);
-                        
-                        // Clear the loading message
-                        setPresentationMessages(prev => ({
-                          ...prev,
-                          [currentPresentationId]: prev[currentPresentationId].filter(msg => !msg.isLoading)
-                        }));
-                      } else {
-                        // Handle other errors with message
-                        const userFriendlyMessage = `❌ Report generation failed: ${errorMessage}\n\nThis could be due to:\n• Network connectivity issues\n• API timeout\n• Server overload\n\nPlease try again in a moment.`;
-                        
-                        // Update with report specific error
-                        setPresentationMessages(prev => ({
-                          ...prev,
-                          [currentPresentationId]: prev[currentPresentationId].map(msg => 
-                            msg.isLoading ? {
-                              ...msg,
-                              text: userFriendlyMessage,
-                              isLoading: false
-                            } : msg
-                          )
-                        }));
-                      }
-                      
-                      return;
-                    }
-                  }
-
-                  // 🎯 QUOTE LAYOUT TEST - Add Mission slide for testing
-                  const includeQuoteLayout = userPrompt.toLowerCase().includes('quote') || 
-                                           userPrompt.toLowerCase().includes('mission') ||
-                                           userPrompt.toLowerCase().includes('test quote');
-                  
-                  if (includeQuoteLayout && !isModification) {
-                    console.log('🎯 QUOTE LAYOUT TEST: Adding Mission slide with Quote_LeftTextRightImage');
-                    
-                    // Add loading message for quote test
-                    setPresentationMessages(prev => ({
-                      ...prev,
-                      [currentPresentationId]: [
-                        ...prev[currentPresentationId],
-                        {
-                          id: Date.now().toString(),
-                          role: 'assistant',
-                          text: 'Creating presentation with Quote layout test...\n\nGenerating 7 slides including a Mission slide with Quote_LeftTextRightImage layout.\n\nThis will test the quote layout rendering.',
-                          isLoading: true,
-                          timestamp: new Date()
-                        }
-                      ]
-                    }));
-                    
-                    // Modify the prompt to include Mission slide
-                    const modifiedPrompt = `Create a 7-slide presentation: Cover, Index, Problem, Solution, Why Now, Market, Mission (use Quote_LeftTextRightImage layout). ${userPrompt}`;
-                    
-                    // Use modified prompt for the API call
-                  const requestData = { 
-                      prompt: modifiedPrompt,
-                    existingPresentation: isModification ? effectivePresentationData : undefined,
-                    uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined
-                    };
-                    
-                    // Get auth headers for credit tracking
-                    const { data: { session } } = await supabase.auth.getSession();
-                    const headers: Record<string, string> = {
-                      'Content-Type': 'application/json',
-                    };
-                    if (session?.access_token) {
-                      headers['Authorization'] = `Bearer ${session.access_token}`;
-                    }
-
-                    // Add auth data to request
-                    (requestData as any).presentationId = currentPresentationId;
-                    (requestData as any).workspace = currentWorkspace;
-                    
-                    // Make the API call with quote layout
-                    const response = await fetch('/api/generate', {
-                      method: 'POST',
-                      headers,
-                      body: JSON.stringify(requestData)
-                    });
-                    
-                    if (!response.ok) {
-                      throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const result = await response.json();
-                    
-                    // Replace loading message with success - REMOVE AND ADD NEW
-                    setPresentationMessages(prev => {
-                      const existingMessages = prev[currentPresentationId] || [];
-                      const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                      const nextVersion = assistantMessages.length + 1;
-                      
-                      return {
-                      ...prev,
-                        [currentPresentationId]: [
-                          ...existingMessages.filter(msg => !msg.isLoading),
-                          {
-                            id: `assistant-result-${Date.now()}-${Math.random()}`,
-                            role: "assistant" as const,
-                          text: `Successfully created "${result.title}"\n\nPresentation structure:\n${result.slides.map((slide: any, i: number) => `${i + 1}. ${slide.title || `Slide ${i + 1}`}`).join('\n')}\n\nYour presentation includes a Mission slide with Quote_LeftTextRightImage layout for testing.`,
-                          isLoading: false,
-                            presentationData: result,
-                            userMessage: originalPrompt,  // 🔧 Add user input for version display
-                            version: nextVersion
-                          }
-                        ]
-                      };
-                    });
-                    
-                    // 🔧 UPDATE WORKSPACE PRESENTATIONS WITH NEW AI-GENERATED TITLE AND MOVE TO TOP
-                    setWorkspacePresentations(prev => {
-                      const currentPresentations = prev[currentWorkspace] || [];
-                      const updatedPresentation = currentPresentations.find(p => p.id === currentPresentationId);
-                      const otherPresentations = currentPresentations.filter(p => p.id !== currentPresentationId);
-                      
-                      if (updatedPresentation) {
-                        // Move the generated presentation to the top of the list
-                        return {
-                      ...prev,
-                          [currentWorkspace]: [
-                            { ...updatedPresentation, title: result.title },
-                            ...otherPresentations
-                          ]
-                        };
-                      }
-                      return prev;
-                    });
-                    
-                    // 🔧 ENSURE CURRENT PRESENTATION IS TRACKED
-                    persistCreatedId(currentPresentationId);
-                    
-                    // 🔧 RELOAD PRESENTATIONS TO ENSURE UI IS UPDATED
-                    setTimeout(() => {
-                      reloadWorkspacePresentations();
-                    }, 1000);
-                    
-                    return;
-                  }
-
-                    // 🎯 DEFAULT FALLBACK: Handle modifications OR create Topic Presentation
-                    console.log('🎯 REACHED DEFAULT HANDLER:', {
-                      isModification: isModification,
-                      userPrompt: userPrompt
-                    });
-                    
-                    // Detect language for API request - USE CURRENT PROMPT ONLY, NOT PREVIOUS MESSAGES
-                    const userLanguage = detectLanguage(userPrompt); // Use current prompt, not message history
-                    
-                    // Debug language detection
-                    console.log('🌐 LANGUAGE DEBUG:', {
-                      userInput: userPrompt, // Log current prompt, not previous message
-                      detectedLanguage: userLanguage,
-                      isSpanish: userLanguage === 'es'
-                    });
-                    
-                    let finalPrompt;
-                    
-                    if (isModification) {
-                      // 🔧 MODIFICATION: Pass user request directly without forcing structure
-                      console.log('🔧 MODIFICATION REQUEST: Passing user prompt directly');
-                      finalPrompt = userPrompt;
-                      if (userLanguage === 'es') {
-                        finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                      }
-                    } else if (finalIntent === 'add_slide') {
-                      // 🆕 ADD SLIDE: Pass user request directly without forcing structure
-                      console.log('🆕 ADD SLIDE REQUEST: Passing user prompt directly');
-                      finalPrompt = userPrompt;
-                      if (userLanguage === 'es') {
-                        finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                      }
-                    } else {
-                      // 🎯 NEW PRESENTATION: Force Topic Presentation structure for unmatched requests
-                      console.log('🎯 NO SPECIFIC PLAYBOOK DETECTED: Defaulting to TOPIC PRESENTATION');
-                      finalPrompt = `Create a 9-slide topic presentation: Cover, Index, Quote, Info Topic (slide 4), Info Topic (slide 5), Info Topic (slide 6), Info Topic (slide 7), Info Topic (slide 8), Back Cover. ${userPrompt}`;
-                      if (userLanguage === 'es') {
-                        finalPrompt += `\n\nIMPORTANT: Generate ALL content in Spanish language. All slide titles, text, descriptions, and content must be in Spanish.`;
-                      }
-                    }
-                    
-                    const requestData = { 
-                      prompt: finalPrompt,
-                      language: userLanguage, // Add language information
-                      existingPresentation: (isModification || finalIntent === 'add_slide') ? effectivePresentationData : undefined,
-                      uploadedImages: uploadedImages.length > 0 ? uploadedImages : undefined,
-                    currentSlideIndex: activeSlide,
-                    fileData: fileData // Include Excel/Word file data for analysis
-                  };
-                  
-                  console.log('📤 API Request Data:', {
-                    prompt: requestData.prompt,
-                    hasExistingPresentation: !!requestData.existingPresentation,
-                    existingPresentationTitle: requestData.existingPresentation?.title,
-                    existingPresentationSlides: requestData.existingPresentation?.slides?.length || 0,
-                    uploadedImagesCount: uploadedImages.length,
-                    uploadedImageNames: uploadedImages.map(img => img.originalName)
-                  });
-                  
-                  // Call Claude API with timeout
-                  console.log('🚀 Making API request to /api/generate');
-                  
-                  // Create AbortController for timeout
-                  const controller = new AbortController();
-                  const timeoutId = setTimeout(() => {
-                    controller.abort();
-                    console.log('⏰ Frontend request timeout after 70 seconds');
-                  }, 70000); // 70 second timeout (longer than backend)
-                  
-                  // 💳 Check if user has at least 1 credit before API call (minimum cost)
-                  if (!hasEnoughCredits(1)) {
-                    setShowCreditsModal(true);
-                    // Update loading message to show insufficient credits
-                    setPresentationMessages(prev => ({
-                      ...prev,
-                      [currentPresentationId]: prev[currentPresentationId].map(msg => 
-                        msg.isLoading ? {
-                          ...msg,
-                          text: 'Insufficient credits to generate content. Please purchase more credits or upgrade your plan.',
-                          isLoading: false
-                        } : msg
-                      )
-                    }));
-                    return;
-                  }
-
-                  // Get auth headers
-                  const { data: { session } } = await supabase.auth.getSession();
-                  const headers: Record<string, string> = {
-                    'Content-Type': 'application/json',
-                  };
-                  if (session?.access_token) {
-                    headers['Authorization'] = `Bearer ${session.access_token}`;
-                  }
-
-                  // Add auth data to request
-                  (requestData as any).presentationId = currentPresentationId;
-                  (requestData as any).workspace = currentWorkspace;
-
-                  const response = await fetch('/api/generate', {
-                    method: 'POST',
-                    headers,
-                    body: JSON.stringify(requestData),
-                    signal: controller.signal,
-                  });
-                  
-                  clearTimeout(timeoutId);
-
-                  console.log('API response status:', response.status);
-                  
-                  // Handle insufficient credits error
-                  if (response.status === 402) {
-                    setShowCreditsModal(true);
-                    // Update loading message to show insufficient credits
-                    setPresentationMessages(prev => ({
-                      ...prev,
-                      [currentPresentationId]: prev[currentPresentationId].map(msg => 
-                        msg.isLoading ? {
-                          ...msg,
-                          text: 'Insufficient credits to complete generation. Please purchase more credits or upgrade your plan.',
-                          isLoading: false
-                        } : msg
-                      )
-                    }));
-                    return;
-                  }
-                  
-                  let data;
-                  try {
-                    data = await response.json();
-                    console.log('');
-                    console.log('═══════════════════════════════════════════════════════════');
-                    console.log('📥📥📥 RAW API RESPONSE RECEIVED');
-                    console.log('═══════════════════════════════════════════════════════════');
-                    console.log('   Success:', response.ok);
-                    console.log('   Title:', data?.title);
-                    console.log('   Slide count:', data?.slides?.length);
-                    console.log('   Has ID (direct slide):', !!data?.id);
-                    console.log('   Has blocks (direct slide):', !!data?.blocks);
-                    console.log('   Error:', data?.error);
-                    if (data?.slides) {
-                      console.log('   Slide IDs:', data.slides.map((s: any) => s.id));
-                      console.log('   First slide:', data.slides[0]);
-                    } else if (data?.blocks) {
-                      console.log('   Direct slide ID:', data.id);
-                      console.log('   Direct slide blocks:', data.blocks.length);
-                      console.log('   First block:', data.blocks[0]);
-                    }
-                    console.log('═══════════════════════════════════════════════════════════');
-                    console.log('');
-                  
-                  // 🛡️ CRITICAL FAILSAFE: Validate report slide count
-                  if (isReportRequest(userPrompt) && !isModification && data?.slides) {
-                    if (data.slides.length < 10) {
-                      console.error('🚨 CRITICAL ERROR: Report generated incomplete slides via single API call!');
-                      console.error('🚨 This should NEVER happen - split logic should have been used');
-                      throw new Error(`CRITICAL: Report generated only ${data.slides.length} slides instead of 12. Split logic failed to trigger.`);
-                    }
-                  }
-                  } catch (jsonError) {
-                    console.error('Failed to parse API response as JSON:', jsonError);
-                    throw new Error(`Failed to parse server response: ${jsonError instanceof Error ? jsonError.message : 'Invalid JSON'}`);
-                  }
-
-                  console.log('🚨 Response status check:', { ok: response.ok, status: response.status, dataType: data?.type });
-                  console.log('🚨 Full API response data:', data);
-                  console.log('🚨 CRITICAL DEBUG - Response structure:', {
-                    hasId: !!data?.id,
-                    hasBlocks: !!data?.blocks,
-                    hasTitle: !!data?.title,
-                    hasSlides: !!data?.slides,
-                    slidesIsArray: Array.isArray(data?.slides),
-                    slidesLength: data?.slides?.length,
-                    firstSlide: data?.slides?.[0],
-                    isModification: isModification,
-                    effectivePresentationExists: !!effectivePresentationData
-                  });
-
-                  if (response.ok) {
-                    console.log('🎉 SUCCESS: API call successful, processing response...');
-                    console.log('🔍 API SUCCESS DEBUG: About to check response type and structure');
-                    
-                    // Check if this is an informational response
-                    if (data.type === 'informational') {
-                      console.log('Received informational response:', data.response);
-                      
-                      // Replace loading message with success - REMOVE AND ADD NEW
-                      setPresentationMessages(prev => {
-                        const existingMessages = prev[currentPresentationId] || [];
-                        const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                        const nextVersion = assistantMessages.length + 1;
-                        
-                        return {
-                        ...prev,
-                          [currentPresentationId]: [
-                            ...existingMessages.filter(msg => !msg.isLoading),
-                            {
-                              id: `assistant-result-${Date.now()}-${Math.random()}`,
-                              role: "assistant" as const,
-                            text: `${data.response}`,
-                            isLoading: false,
-                              presentationData: null, // No presentation data for informational responses
-                              version: nextVersion
-                            }
-                          ]
-                        };
-                      });
-                      
-                      return; // Exit early for informational responses
-                    }
-                    
-                    // Handle both full presentation and single slide modification responses
-                    console.log('🔍 RESPONSE STRUCTURE DEBUG:', {
-                      hasId: !!data.id,
-                      hasBlocks: !!data.blocks,
-                      hasTitle: !!data.title,
-                      hasSlides: Array.isArray(data.slides),
-                      slideCount: Array.isArray(data.slides) ? data.slides.length : 0,
-                      responseType: data.id && data.blocks ? 'direct-slide' : 
-                                   !data.title && Array.isArray(data.slides) ? 'wrapped-slides' : 
-                                   'full-presentation'
-                    });
-                    
-                    if (data.id && data.blocks) {
-                      // Single slide modification response (direct slide object)
-                      console.log('🔄🔄🔄 ENTERING DIRECT SLIDE MODIFICATION PATH 🔄🔄🔄');
-                      console.log('🔄 Processing single slide modification (direct):', {
-                        slideId: data.id,
-                        blockCount: data.blocks.length,
-                        slideBlocks: data.blocks
-                      });
-                      
-                      // Update the existing presentation with the modified slide
-                      if (effectivePresentationData) {
-                        // Add a timestamp to force re-render even if content is similar
-                        const slideWithTimestamp = {
-                          ...data,
-                          _lastModified: Date.now()
-                        };
-                        
-                        const updatedPresentation = {
-                          ...effectivePresentationData,
-                          slides: effectivePresentationData.slides.map((slide: any) => 
-                            slide.id === data.id ? slideWithTimestamp : slide
-                          ),
-                          _lastModified: Date.now() // Add timestamp to presentation itself to force update
-                        };
-                        
-                        console.log('🎉 SUCCESS: Single slide modification completed');
-                        console.log('🔍 DIRECT SUCCESS DEBUG: About to replace loading message with success');
-                        console.log('🔍🔍🔍 UPDATED PRESENTATION (DIRECT) DETAILS:', {
-                          title: updatedPresentation.title,
-                          slideCount: updatedPresentation.slides.length,
-                          modifiedSlideId: data.id,
-                          modifiedSlideBlocks: updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks
-                        });
-                        
-                        // Replace loading message with success - REMOVE AND ADD NEW
-                        setPresentationMessages(prev => {
-                          const existingMessages = prev[currentPresentationId] || [];
-                          const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                          const nextVersion = assistantMessages.length + 1;
-                          
-                          console.log('💾💾💾 SAVING UPDATED PRESENTATION TO MESSAGES (DIRECT)');
-                          console.log('💾 Presentation being saved:', {
-                            title: updatedPresentation.title,
-                            slideCount: updatedPresentation.slides.length,
-                            version: nextVersion,
-                            modifiedSlideBlocks: updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks
+                          // Handle both full presentation and single slide modification responses
+                          console.log('🔍 RESPONSE STRUCTURE DEBUG:', {
+                            hasId: !!data.id,
+                            hasBlocks: !!data.blocks,
+                            hasTitle: !!data.title,
+                            hasSlides: Array.isArray(data.slides),
+                            slideCount: Array.isArray(data.slides) ? data.slides.length : 0,
+                            responseType: data.id && data.blocks ? 'direct-slide' :
+                              !data.title && Array.isArray(data.slides) ? 'wrapped-slides' :
+                                'full-presentation'
                           });
-                          
-                          return {
-                          ...prev,
-                            [currentPresentationId]: [
-                              ...existingMessages.filter(msg => !msg.isLoading),
-                              {
-                                id: `assistant-result-${Date.now()}-${Math.random()}`,
-                                role: "assistant" as const,
-                                text: `Successfully updated slide "${data.id}". Chart color changed to green.`,
-                              isLoading: false,
-                                presentationData: updatedPresentation,
-                                userMessage: originalPrompt,
-                                version: nextVersion
-                              }
-                            ]
-                          };
-                        });
-                        
-                        console.log('');
-                        console.log('███████████████████████████████████████████████████████████');
-                        console.log('💾💾💾 DATA SAVED TO MESSAGES - DIRECT PATH');
-                        console.log('███████████████████████████████████████████████████████████');
-                        console.log('🔍 Updated presentation:');
-                        console.log('   - Title:', updatedPresentation.title);
-                        console.log('   - Presentation _lastModified:', updatedPresentation._lastModified);
-                        console.log('   - Modified slide ID:', data.id);
-                        console.log('   - Modified slide _lastModified:', updatedPresentation.slides.find((s: any) => s.id === data.id)?._lastModified);
-                        console.log('   - Modified slide blocks:', updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks?.length);
-                        console.log('   - First block of modified slide:', updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks?.[0]);
-                        console.log('███████████████████████████████████████████████████████████');
-                        console.log('');
-                        
-                        // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
-                        console.log('🔄 SYNCING workspaceSlides with updated presentation');
-                        setWorkspaceSlides(prev => ({
-                          ...prev,
-                          [currentWorkspace]: {
-                            ...prev[currentWorkspace],
-                            [currentPresentationId]: updatedPresentation.slides
-                          }
-                        }));
-                        
-                        // Force immediate re-render by updating a dummy state
-                        setTimeout(() => {
-                          console.log('🔄 Forcing re-render after direct slide modification');
-                          setActiveSlide(prev => prev); // Trigger re-render
-                        }, 50);
-                        
-                        // 🔥 FORCE RE-RENDER: Increment slideUpdateKey to trigger useMemo recalculation
-                        console.log('🔄🔄🔄 FORCING SLIDE RE-RENDER via slideUpdateKey');
-                        setSlideUpdateKey(prev => prev + 1);
-                        
-                        // 🔥 FORCE IMMEDIATE SAVE AFTER MODIFICATION
-                        console.log('💾💾💾 FORCING IMMEDIATE SAVE after modification');
-                        const saveState = {
-                          slides: updatedPresentation.slides,
-                          messages: [...(presentationMessages[currentPresentationId] || [])].filter(msg => !msg.isLoading),
-                          activeSlide: activeSlide,
-                          title: updatedPresentation.title
-                        };
-                        
-                        presentationAPI.save(currentPresentationId, currentWorkspace, saveState).then(() => {
-                          console.log('✅ Modification saved immediately to database');
-                        }).catch(err => {
-                          console.error('❌ Failed to save modification:', err);
-                        });
-                        
-                        return; // Exit early for single slide modifications
-                      } else {
-                        throw new Error('Cannot modify slide: No existing presentation found');
-                      }
-                    } else if (!data.title && Array.isArray(data.slides) && data.slides.length > 0) {
-                      // Single slide modification or add new slide response (wrapped in slides array)
-                      console.log('🔄🔄🔄 ENTERING WRAPPED SLIDES MODIFICATION PATH 🔄🔄🔄');
-                      console.log('🔄 Processing single slide modification/addition (wrapped):', {
-                        slideCount: data.slides.length,
-                        firstSlideId: data.slides[0]?.id,
-                        firstSlideBlocks: data.slides[0]?.blocks,
-                        intent: finalIntent,
-                        allSlides: data.slides
-                      });
-                      console.log('🔍 WRAPPED SLIDES DEBUG: About to process wrapped slides response');
-                      
-                      // Update the existing presentation with the modified/added slide(s)
-                      if (effectivePresentationData) {
-                        let updatedPresentation = { ...effectivePresentationData };
-                        
-                        // Handle add new slide vs modify existing slide
-                        if (finalIntent === 'add_slide') {
-                          console.log('🆕 Adding new slide(s) to presentation');
-                          // Add new slides to the end of the presentation
-                          data.slides.forEach((newSlide: any) => {
-                            const slideWithTimestamp = {
-                              ...newSlide,
-                              _lastModified: Date.now()
-                            };
-                            
-                            // Check if slide already exists (shouldn't happen for add_slide)
-                            const existingSlideIndex = updatedPresentation.slides.findIndex((slide: any) => slide.id === newSlide.id);
-                            if (existingSlideIndex === -1) {
-                              // Add new slide to the end
-                              updatedPresentation.slides.push(slideWithTimestamp);
-                              console.log(`✅ Added new slide: ${newSlide.id}`);
+
+                          if (data.id && data.blocks) {
+                            // Single slide modification response (direct slide object)
+                            console.log('🔄🔄🔄 ENTERING DIRECT SLIDE MODIFICATION PATH 🔄🔄🔄');
+                            console.log('🔄 Processing single slide modification (direct):', {
+                              slideId: data.id,
+                              blockCount: data.blocks.length,
+                              slideBlocks: data.blocks
+                            });
+
+                            // Update the existing presentation with the modified slide
+                            if (effectivePresentationData) {
+                              // Add a timestamp to force re-render even if content is similar
+                              const slideWithTimestamp = {
+                                ...data,
+                                _lastModified: Date.now()
+                              };
+
+                              const updatedPresentation = {
+                                ...effectivePresentationData,
+                                slides: effectivePresentationData.slides.map((slide: any) =>
+                                  slide.id === data.id ? slideWithTimestamp : slide
+                                ),
+                                _lastModified: Date.now() // Add timestamp to presentation itself to force update
+                              };
+
+                              console.log('🎉 SUCCESS: Single slide modification completed');
+                              console.log('🔍 DIRECT SUCCESS DEBUG: About to replace loading message with success');
+                              console.log('🔍🔍🔍 UPDATED PRESENTATION (DIRECT) DETAILS:', {
+                                title: updatedPresentation.title,
+                                slideCount: updatedPresentation.slides.length,
+                                modifiedSlideId: data.id,
+                                modifiedSlideBlocks: updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks
+                              });
+
+                              // Replace loading message with success - REMOVE AND ADD NEW
+                              setPresentationMessages(prev => {
+                                const existingMessages = prev[currentPresentationId] || [];
+                                const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                                const nextVersion = assistantMessages.length + 1;
+
+                                console.log('💾💾💾 SAVING UPDATED PRESENTATION TO MESSAGES (DIRECT)');
+                                console.log('💾 Presentation being saved:', {
+                                  title: updatedPresentation.title,
+                                  slideCount: updatedPresentation.slides.length,
+                                  version: nextVersion,
+                                  modifiedSlideBlocks: updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks
+                                });
+
+                                return {
+                                  ...prev,
+                                  [currentPresentationId]: [
+                                    ...existingMessages.filter(msg => !msg.isLoading),
+                                    {
+                                      id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                      role: "assistant" as const,
+                                      text: `Successfully updated slide "${data.id}". Chart color changed to green.`,
+                                      isLoading: false,
+                                      presentationData: updatedPresentation,
+                                      userMessage: originalPrompt,
+                                      version: nextVersion
+                                    }
+                                  ]
+                                };
+                              });
+
+                              console.log('');
+                              console.log('███████████████████████████████████████████████████████████');
+                              console.log('💾💾💾 DATA SAVED TO MESSAGES - DIRECT PATH');
+                              console.log('███████████████████████████████████████████████████████████');
+                              console.log('🔍 Updated presentation:');
+                              console.log('   - Title:', updatedPresentation.title);
+                              console.log('   - Presentation _lastModified:', updatedPresentation._lastModified);
+                              console.log('   - Modified slide ID:', data.id);
+                              console.log('   - Modified slide _lastModified:', updatedPresentation.slides.find((s: any) => s.id === data.id)?._lastModified);
+                              console.log('   - Modified slide blocks:', updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks?.length);
+                              console.log('   - First block of modified slide:', updatedPresentation.slides.find((s: any) => s.id === data.id)?.blocks?.[0]);
+                              console.log('███████████████████████████████████████████████████████████');
+                              console.log('');
+
+                              // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
+                              console.log('🔄 SYNCING workspaceSlides with updated presentation');
+                              setWorkspaceSlides(prev => ({
+                                ...prev,
+                                [currentWorkspace]: {
+                                  ...prev[currentWorkspace],
+                                  [currentPresentationId]: updatedPresentation.slides
+                                }
+                              }));
+
+                              // Force immediate re-render by updating a dummy state
+                              setTimeout(() => {
+                                console.log('🔄 Forcing re-render after direct slide modification');
+                                setActiveSlide(prev => prev); // Trigger re-render
+                              }, 50);
+
+                              // 🔥 FORCE RE-RENDER: Increment slideUpdateKey to trigger useMemo recalculation
+                              console.log('🔄🔄🔄 FORCING SLIDE RE-RENDER via slideUpdateKey');
+                              setSlideUpdateKey(prev => prev + 1);
+
+                              // 🔥 FORCE IMMEDIATE SAVE AFTER MODIFICATION
+                              console.log('💾💾💾 FORCING IMMEDIATE SAVE after modification');
+                              const saveState = {
+                                slides: updatedPresentation.slides,
+                                messages: [...(presentationMessages[currentPresentationId] || [])].filter(msg => !msg.isLoading),
+                                activeSlide: activeSlide,
+                                title: updatedPresentation.title
+                              };
+
+                              presentationAPI.save(currentPresentationId, currentWorkspace, saveState).then(() => {
+                                console.log('✅ Modification saved immediately to database');
+                              }).catch(err => {
+                                console.error('❌ Failed to save modification:', err);
+                              });
+
+                              return; // Exit early for single slide modifications
                             } else {
-                              console.warn(`⚠️ Slide ${newSlide.id} already exists, replacing instead of adding`);
-                              updatedPresentation.slides[existingSlideIndex] = slideWithTimestamp;
+                              throw new Error('Cannot modify slide: No existing presentation found');
                             }
+                          } else if (!data.title && Array.isArray(data.slides) && data.slides.length > 0) {
+                            // Single slide modification or add new slide response (wrapped in slides array)
+                            console.log('🔄🔄🔄 ENTERING WRAPPED SLIDES MODIFICATION PATH 🔄🔄🔄');
+                            console.log('🔄 Processing single slide modification/addition (wrapped):', {
+                              slideCount: data.slides.length,
+                              firstSlideId: data.slides[0]?.id,
+                              firstSlideBlocks: data.slides[0]?.blocks,
+                              intent: finalIntent,
+                              allSlides: data.slides
+                            });
+                            console.log('🔍 WRAPPED SLIDES DEBUG: About to process wrapped slides response');
+
+                            // Update the existing presentation with the modified/added slide(s)
+                            if (effectivePresentationData) {
+                              let updatedPresentation = { ...effectivePresentationData };
+
+                              // Handle add new slide vs modify existing slide
+                              if (finalIntent === 'add_slide') {
+                                console.log('🆕 Adding new slide(s) to presentation');
+                                // Add new slides to the end of the presentation
+                                data.slides.forEach((newSlide: any) => {
+                                  const slideWithTimestamp = {
+                                    ...newSlide,
+                                    _lastModified: Date.now()
+                                  };
+
+                                  // Check if slide already exists (shouldn't happen for add_slide)
+                                  const existingSlideIndex = updatedPresentation.slides.findIndex((slide: any) => slide.id === newSlide.id);
+                                  if (existingSlideIndex === -1) {
+                                    // Add new slide to the end
+                                    updatedPresentation.slides.push(slideWithTimestamp);
+                                    console.log(`✅ Added new slide: ${newSlide.id}`);
+                                  } else {
+                                    console.warn(`⚠️ Slide ${newSlide.id} already exists, replacing instead of adding`);
+                                    updatedPresentation.slides[existingSlideIndex] = slideWithTimestamp;
+                                  }
+                                });
+                              } else {
+                                console.log('🔄🔄🔄 MODIFYING EXISTING SLIDE(S) 🔄🔄🔄');
+                                console.log('🔄 Number of slides to modify:', data.slides.length);
+                                // Update each modified slide (existing behavior)
+                                data.slides.forEach((modifiedSlide: any) => {
+                                  console.log('🔄 Modifying slide:', modifiedSlide.id, 'with blocks:', modifiedSlide.blocks);
+                                  // Add a timestamp to force re-render even if content is similar
+                                  const slideWithTimestamp = {
+                                    ...modifiedSlide,
+                                    _lastModified: Date.now()
+                                  };
+
+                                  console.log('🔄 Searching for slide with ID:', modifiedSlide.id, 'in', updatedPresentation.slides.length, 'slides');
+                                  const beforeSlides = updatedPresentation.slides.map((s: any) => ({ id: s.id, blocks: s.blocks?.length }));
+
+                                  updatedPresentation.slides = updatedPresentation.slides.map((slide: any) =>
+                                    slide.id === modifiedSlide.id ? slideWithTimestamp : slide
+                                  );
+
+                                  const afterSlides = updatedPresentation.slides.map((s: any) => ({ id: s.id, blocks: s.blocks?.length, modified: s._lastModified }));
+                                  console.log('🔄 BEFORE modification:', beforeSlides);
+                                  console.log('🔄 AFTER modification:', afterSlides);
+                                  console.log('🔄 Modified slide now has blocks:', updatedPresentation.slides.find((s: any) => s.id === modifiedSlide.id)?.blocks);
+                                });
+                              }
+
+                              // Handle slide deletions if present in the response
+                              if (data.deletedSlides && Array.isArray(data.deletedSlides) && data.deletedSlides.length > 0) {
+                                console.log('🗑️ Processing slide deletions:', data.deletedSlides);
+                                data.deletedSlides.forEach((deletedSlideId: string) => {
+                                  const slideIndex = updatedPresentation.slides.findIndex((slide: any) => slide.id === deletedSlideId);
+                                  if (slideIndex !== -1) {
+                                    updatedPresentation.slides.splice(slideIndex, 1);
+                                    console.log(`✅ Deleted slide: ${deletedSlideId}`);
+                                  } else {
+                                    console.warn(`⚠️ Slide ${deletedSlideId} not found for deletion`);
+                                  }
+                                });
+                              }
+
+                              // Add timestamp to presentation itself to force update
+                              updatedPresentation._lastModified = Date.now();
+
+                              console.log('🎉 SUCCESS: Single slide operation completed');
+                              console.log('📊 Updated presentation now has', updatedPresentation.slides.length, 'slides');
+                              console.log('🔍 WRAPPED SUCCESS DEBUG: About to replace loading message with success');
+                              console.log('🔍🔍🔍 UPDATED PRESENTATION DETAILS:', {
+                                title: updatedPresentation.title,
+                                slideCount: updatedPresentation.slides.length,
+                                allSlideIds: updatedPresentation.slides.map((s: any) => s.id),
+                                allSlideBlocks: updatedPresentation.slides.map((s: any) => ({ id: s.id, blockCount: s.blocks?.length, firstBlockType: s.blocks?.[0]?.type })),
+                                modifiedSlides: updatedPresentation.slides.filter((s: any) => s._lastModified)
+                              });
+
+                              // Replace loading message with success - REMOVE AND ADD NEW
+                              setPresentationMessages(prev => {
+                                const existingMessages = prev[currentPresentationId] || [];
+                                const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                                const nextVersion = assistantMessages.length + 1;
+
+                                console.log('💾💾💾 SAVING UPDATED PRESENTATION TO MESSAGES');
+                                console.log('💾 Presentation being saved:', {
+                                  title: updatedPresentation.title,
+                                  slideCount: updatedPresentation.slides.length,
+                                  version: nextVersion
+                                });
+
+                                return {
+                                  ...prev,
+                                  [currentPresentationId]: [
+                                    ...existingMessages.filter(msg => !msg.isLoading),
+                                    {
+                                      id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                      role: "assistant" as const,
+                                      text: `Successfully updated ${data.slides.length} slide(s). Changes applied to presentation.`,
+                                      isLoading: false,
+                                      presentationData: updatedPresentation,
+                                      userMessage: originalPrompt,
+                                      version: nextVersion
+                                    }
+                                  ]
+                                };
+                              });
+
+                              console.log('');
+                              console.log('███████████████████████████████████████████████████████████');
+                              console.log('💾💾💾 DATA SAVED TO MESSAGES - WRAPPED PATH');
+                              console.log('███████████████████████████████████████████████████████████');
+                              console.log('🔍 Updated presentation:');
+                              console.log('   - Title:', updatedPresentation.title);
+                              console.log('   - Presentation _lastModified:', updatedPresentation._lastModified);
+                              console.log('   - All slide IDs:', updatedPresentation.slides.map((s: any) => s.id));
+                              console.log('   - All slide timestamps:', updatedPresentation.slides.map((s: any) => ({ id: s.id, modified: s._lastModified })));
+                              console.log('   - Modified slides:', data.slides.map((s: any) => s.id));
+                              data.slides.forEach((modSlide: any) => {
+                                const slideInPresentation = updatedPresentation.slides.find((s: any) => s.id === modSlide.id);
+                                console.log(`   - Slide ${modSlide.id}:`, {
+                                  found: !!slideInPresentation,
+                                  _lastModified: slideInPresentation?._lastModified,
+                                  blockCount: slideInPresentation?.blocks?.length,
+                                  firstBlock: slideInPresentation?.blocks?.[0]
+                                });
+                              });
+                              console.log('███████████████████████████████████████████████████████████');
+                              console.log('');
+
+                              // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
+                              console.log('🔄 SYNCING workspaceSlides with updated presentation');
+                              setWorkspaceSlides(prev => ({
+                                ...prev,
+                                [currentWorkspace]: {
+                                  ...prev[currentWorkspace],
+                                  [currentPresentationId]: updatedPresentation.slides
+                                }
+                              }));
+
+                              // Force immediate re-render by updating a dummy state
+                              setTimeout(() => {
+                                console.log('🔄 Forcing re-render after slide modification');
+                                setActiveSlide(prev => prev); // Trigger re-render
+                              }, 50);
+
+                              // 🔥 FORCE RE-RENDER: Increment slideUpdateKey to trigger useMemo recalculation
+                              console.log('🔄🔄🔄 FORCING SLIDE RE-RENDER via slideUpdateKey');
+                              setSlideUpdateKey(prev => prev + 1);
+
+                              // 🔥 FORCE IMMEDIATE SAVE AFTER MODIFICATION
+                              console.log('💾💾💾 FORCING IMMEDIATE SAVE after modification');
+                              const saveState = {
+                                slides: updatedPresentation.slides,
+                                messages: [...(presentationMessages[currentPresentationId] || [])].filter(msg => !msg.isLoading),
+                                activeSlide: activeSlide,
+                                title: updatedPresentation.title
+                              };
+
+                              presentationAPI.save(currentPresentationId, currentWorkspace, saveState).then(() => {
+                                console.log('✅ Modification saved immediately to database');
+                              }).catch(err => {
+                                console.error('❌ Failed to save modification:', err);
+                              });
+
+                              return; // Exit early for single slide operations
+                            } else {
+                              throw new Error('Cannot modify slide: No existing presentation found');
+                            }
+                          } else if (!data.title && (!Array.isArray(data.slides) || data.slides.length === 0)) {
+                            // Invalid response structure - must have either title+slides (full presentation) or slides array (single slide mod)
+                            console.error('❌ INVALID RESPONSE STRUCTURE:', data);
+                            console.error('❌ Expected: title+slides OR slides array with length > 0');
+                            throw new Error('Invalid presentation data received from server');
+                          }
+
+                          console.log('✅ VALIDATION PASSED: Response structure is valid, proceeding to success handler');
+
+                          console.log('🎉 SUCCESS HANDLER REACHED! Successfully received presentation data:', {
+                            title: data.title,
+                            slideCount: data.slides.length,
+                            backgroundBlocks: []
                           });
+
+                          // Create detailed change summary
+                          const createChangeDescription = (data: any, userPrompt: string) => {
+                            let changeDesc = '';
+
+                            // Analyze what changed
+                            if (userPrompt.toLowerCase().includes('color')) {
+                              changeDesc = `🎨 Color Changes Applied Based On: "${userPrompt}"`;
+                            } else {
+                              changeDesc = `✏️ Changes Applied Based On: "${userPrompt}"`;
+                            }
+
+                            return changeDesc;
+                          };
+
+                          // FULL PRESENTATION GENERATION - Store in presentationMessages
+                          console.log('🎉 SUCCESS: Full presentation generated, storing in messages');
+
+                          console.log('🎯 About to store presentation data:', {
+                            currentPresentationId,
+                            hasData: !!data,
+                            dataTitle: data?.title,
+                            slideCount: data?.slides?.length
+                          });
+
+                          // Add _lastModified timestamp to presentation and each slide
+                          const presentationWithTimestamps = {
+                            ...data,
+                            _lastModified: Date.now(),
+                            slides: data.slides.map((slide: any) => ({
+                              ...slide,
+                              _lastModified: Date.now()
+                            }))
+                          };
+
+                          // Store presentation in messages
+                          setPresentationMessages(prev => {
+                            const existingMessages = prev[currentPresentationId] || [];
+                            const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
+                            const nextVersion = assistantMessages.length + 1;
+
+                            console.log('💾 Saving new presentation to messages:', {
+                              title: presentationWithTimestamps.title,
+                              slideCount: presentationWithTimestamps.slides.length,
+                              version: nextVersion
+                            });
+
+                            return {
+                              ...prev,
+                              [currentPresentationId]: [
+                                ...existingMessages.filter(msg => !msg.isLoading),
+                                {
+                                  id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                  role: "assistant" as const,
+                                  text: `Successfully created "${presentationWithTimestamps.title}"\n\n${presentationWithTimestamps.slides.length} slides generated!`,
+                                  isLoading: false,
+                                  presentationData: presentationWithTimestamps,
+                                  userMessage: originalPrompt,
+                                  version: nextVersion
+                                }
+                              ]
+                            };
+                          });
+
+                          // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
+                          console.log('🔄 SYNCING workspaceSlides with new presentation');
+                          setWorkspaceSlides(prev => ({
+                            ...prev,
+                            [currentWorkspace]: {
+                              ...prev[currentWorkspace],
+                              [currentPresentationId]: presentationWithTimestamps.slides
+                            }
+                          }));
+
+                          // Force immediate re-render by triggering a state change
+                          setTimeout(() => {
+                            console.log('🔄 Forcing re-render after presentation data update');
+                            // Trigger a re-render after state update
+                            setActiveSlide(prev => prev);
+                            // 💳 Refresh credits after successful generation
+                            console.log('🔄 Refreshing credits after successful generation...');
+                            refreshCredits().then(() => {
+                              console.log('✅ Credits refreshed, new balance should be visible');
+                            }).catch(err => {
+                              console.error('❌ Failed to refresh credits:', err);
+                            });
+                          }, 100);
+
                         } else {
-                          console.log('🔄🔄🔄 MODIFYING EXISTING SLIDE(S) 🔄🔄🔄');
-                          console.log('🔄 Number of slides to modify:', data.slides.length);
-                          // Update each modified slide (existing behavior)
-                          data.slides.forEach((modifiedSlide: any) => {
-                            console.log('🔄 Modifying slide:', modifiedSlide.id, 'with blocks:', modifiedSlide.blocks);
-                            // Add a timestamp to force re-render even if content is similar
-                            const slideWithTimestamp = {
-                              ...modifiedSlide,
-                              _lastModified: Date.now()
-                            };
-                            
-                            console.log('🔄 Searching for slide with ID:', modifiedSlide.id, 'in', updatedPresentation.slides.length, 'slides');
-                            const beforeSlides = updatedPresentation.slides.map((s: any) => ({ id: s.id, blocks: s.blocks?.length }));
-                            
-                            updatedPresentation.slides = updatedPresentation.slides.map((slide: any) => 
-                              slide.id === modifiedSlide.id ? slideWithTimestamp : slide
-                            );
-                            
-                            const afterSlides = updatedPresentation.slides.map((s: any) => ({ id: s.id, blocks: s.blocks?.length, modified: s._lastModified }));
-                            console.log('🔄 BEFORE modification:', beforeSlides);
-                            console.log('🔄 AFTER modification:', afterSlides);
-                            console.log('🔄 Modified slide now has blocks:', updatedPresentation.slides.find((s: any) => s.id === modifiedSlide.id)?.blocks);
-                          });
-                        }
+                          // 🔧 CRITICAL: Reset loading state to prevent blank page
+                          setIsLoading(false);
+                          setLoadingStep(1);
+                          setBatchProgress({ current: 0, total: 0, slideRange: '' });
 
-                        // Handle slide deletions if present in the response
-                        if (data.deletedSlides && Array.isArray(data.deletedSlides) && data.deletedSlides.length > 0) {
-                          console.log('🗑️ Processing slide deletions:', data.deletedSlides);
-                          data.deletedSlides.forEach((deletedSlideId: string) => {
-                            const slideIndex = updatedPresentation.slides.findIndex((slide: any) => slide.id === deletedSlideId);
-                            if (slideIndex !== -1) {
-                              updatedPresentation.slides.splice(slideIndex, 1);
-                              console.log(`✅ Deleted slide: ${deletedSlideId}`);
-                            } else {
-                              console.warn(`⚠️ Slide ${deletedSlideId} not found for deletion`);
-                            }
-                          });
-                        }
-                        
-                        // Add timestamp to presentation itself to force update
-                        updatedPresentation._lastModified = Date.now();
-                        
-                        console.log('🎉 SUCCESS: Single slide operation completed');
-                        console.log('📊 Updated presentation now has', updatedPresentation.slides.length, 'slides');
-                        console.log('🔍 WRAPPED SUCCESS DEBUG: About to replace loading message with success');
-                        console.log('🔍🔍🔍 UPDATED PRESENTATION DETAILS:', {
-                          title: updatedPresentation.title,
-                          slideCount: updatedPresentation.slides.length,
-                          allSlideIds: updatedPresentation.slides.map((s: any) => s.id),
-                          allSlideBlocks: updatedPresentation.slides.map((s: any) => ({ id: s.id, blockCount: s.blocks?.length, firstBlockType: s.blocks?.[0]?.type })),
-                          modifiedSlides: updatedPresentation.slides.filter((s: any) => s._lastModified)
-                        });
-                        
-                        // Replace loading message with success - REMOVE AND ADD NEW
-                        setPresentationMessages(prev => {
-                          const existingMessages = prev[currentPresentationId] || [];
-                          const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                          const nextVersion = assistantMessages.length + 1;
-                          
-                          console.log('💾💾💾 SAVING UPDATED PRESENTATION TO MESSAGES');
-                          console.log('💾 Presentation being saved:', {
-                            title: updatedPresentation.title,
-                            slideCount: updatedPresentation.slides.length,
-                            version: nextVersion
-                          });
-                          
-                          return {
-                          ...prev,
+                          // 🔧 RESTORE ERROR MESSAGES: Show HTTP error in chat
+                          const errorMessage = data?.error || data?.message || `HTTP ${response.status}: ${response.statusText}`;
+                          // Replace loading message with error - REMOVE AND ADD NEW
+                          setPresentationMessages(prev => ({
+                            ...prev,
                             [currentPresentationId]: [
-                              ...existingMessages.filter(msg => !msg.isLoading),
+                              ...prev[currentPresentationId].filter(msg => !msg.isLoading),
                               {
-                                id: `assistant-result-${Date.now()}-${Math.random()}`,
+                                id: `assistant-error-${Date.now()}-${Math.random()}`,
                                 role: "assistant" as const,
-                                text: `Successfully updated ${data.slides.length} slide(s). Changes applied to presentation.`,
-                              isLoading: false,
-                                presentationData: updatedPresentation,
-                                userMessage: originalPrompt,
-                                version: nextVersion
+                                text: `Error: ${errorMessage}`,
+                                isLoading: false
                               }
                             ]
-                          };
-                        });
-                        
-                        console.log('');
-                        console.log('███████████████████████████████████████████████████████████');
-                        console.log('💾💾💾 DATA SAVED TO MESSAGES - WRAPPED PATH');
-                        console.log('███████████████████████████████████████████████████████████');
-                        console.log('🔍 Updated presentation:');
-                        console.log('   - Title:', updatedPresentation.title);
-                        console.log('   - Presentation _lastModified:', updatedPresentation._lastModified);
-                        console.log('   - All slide IDs:', updatedPresentation.slides.map((s: any) => s.id));
-                        console.log('   - All slide timestamps:', updatedPresentation.slides.map((s: any) => ({ id: s.id, modified: s._lastModified })));
-                        console.log('   - Modified slides:', data.slides.map((s: any) => s.id));
-                        data.slides.forEach((modSlide: any) => {
-                          const slideInPresentation = updatedPresentation.slides.find((s: any) => s.id === modSlide.id);
-                          console.log(`   - Slide ${modSlide.id}:`, {
-                            found: !!slideInPresentation,
-                            _lastModified: slideInPresentation?._lastModified,
-                            blockCount: slideInPresentation?.blocks?.length,
-                            firstBlock: slideInPresentation?.blocks?.[0]
-                          });
-                        });
-                        console.log('███████████████████████████████████████████████████████████');
-                        console.log('');
-                        
-                        // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
-                        console.log('🔄 SYNCING workspaceSlides with updated presentation');
-                        setWorkspaceSlides(prev => ({
-                          ...prev,
-                          [currentWorkspace]: {
-                            ...prev[currentWorkspace],
-                            [currentPresentationId]: updatedPresentation.slides
+                          }));
+                        }
+                      } catch (error) {
+                        // Update with network error
+
+                        let errorMessage = 'Unknown error occurred';
+                        if (error instanceof Error) {
+                          // Handle specific error types
+                          if (error.name === 'AbortError') {
+                            errorMessage = 'Request timed out. The AI is taking longer than expected. Please try again with a simpler request.';
+                          } else if (error.message?.includes('timeout')) {
+                            errorMessage = 'Request timed out. Please try again in a moment.';
+                          } else {
+                            errorMessage = error.message;
                           }
-                        }));
-                        
-                        // Force immediate re-render by updating a dummy state
-                        setTimeout(() => {
-                          console.log('🔄 Forcing re-render after slide modification');
-                          setActiveSlide(prev => prev); // Trigger re-render
-                        }, 50);
-                        
-                        // 🔥 FORCE RE-RENDER: Increment slideUpdateKey to trigger useMemo recalculation
-                        console.log('🔄🔄🔄 FORCING SLIDE RE-RENDER via slideUpdateKey');
-                        setSlideUpdateKey(prev => prev + 1);
-                        
-                        // 🔥 FORCE IMMEDIATE SAVE AFTER MODIFICATION
-                        console.log('💾💾💾 FORCING IMMEDIATE SAVE after modification');
-                        const saveState = {
-                          slides: updatedPresentation.slides,
-                          messages: [...(presentationMessages[currentPresentationId] || [])].filter(msg => !msg.isLoading),
-                          activeSlide: activeSlide,
-                          title: updatedPresentation.title
-                        };
-                        
-                        presentationAPI.save(currentPresentationId, currentWorkspace, saveState).then(() => {
-                          console.log('✅ Modification saved immediately to database');
-                        }).catch(err => {
-                          console.error('❌ Failed to save modification:', err);
-                        });
-                        
-                        return; // Exit early for single slide operations
-                      } else {
-                        throw new Error('Cannot modify slide: No existing presentation found');
-                      }
-                    } else if (!data.title && (!Array.isArray(data.slides) || data.slides.length === 0)) {
-                      // Invalid response structure - must have either title+slides (full presentation) or slides array (single slide mod)
-                      console.error('❌ INVALID RESPONSE STRUCTURE:', data);
-                      console.error('❌ Expected: title+slides OR slides array with length > 0');
-                      throw new Error('Invalid presentation data received from server');
-                    }
-                    
-                    console.log('✅ VALIDATION PASSED: Response structure is valid, proceeding to success handler');
-
-                    console.log('🎉 SUCCESS HANDLER REACHED! Successfully received presentation data:', {
-                      title: data.title,
-                      slideCount: data.slides.length,
-                      backgroundBlocks: []
-                    });
-
-                    // Create detailed change summary
-                    const createChangeDescription = (data: any, userPrompt: string) => {
-                      let changeDesc = '';
-                      
-                      // Analyze what changed
-                      if (userPrompt.toLowerCase().includes('color')) {
-                        changeDesc = `🎨 Color Changes Applied Based On: "${userPrompt}"`;
-                      } else {
-                        changeDesc = `✏️ Changes Applied Based On: "${userPrompt}"`;
-                      }
-                      
-                      return changeDesc;
-                    };
-
-                    // FULL PRESENTATION GENERATION - Store in presentationMessages
-                    console.log('🎉 SUCCESS: Full presentation generated, storing in messages');
-                      
-                      console.log('🎯 About to store presentation data:', {
-                        currentPresentationId,
-                        hasData: !!data,
-                        dataTitle: data?.title,
-                        slideCount: data?.slides?.length
-                      });
-                      
-                      // Add _lastModified timestamp to presentation and each slide
-                      const presentationWithTimestamps = {
-                        ...data,
-                        _lastModified: Date.now(),
-                        slides: data.slides.map((slide: any) => ({
-                          ...slide,
-                          _lastModified: Date.now()
-                        }))
-                      };
-                      
-                      // Store presentation in messages
-                      setPresentationMessages(prev => {
-                        const existingMessages = prev[currentPresentationId] || [];
-                        const assistantMessages = existingMessages.filter(msg => msg.role === 'assistant' && !msg.isLoading);
-                        const nextVersion = assistantMessages.length + 1;
-                        
-                        console.log('💾 Saving new presentation to messages:', {
-                          title: presentationWithTimestamps.title,
-                          slideCount: presentationWithTimestamps.slides.length,
-                          version: nextVersion
-                        });
-                        
-                        return {
-                          ...prev,
-                          [currentPresentationId]: [
-                            ...existingMessages.filter(msg => !msg.isLoading),
-                            {
-                              id: `assistant-result-${Date.now()}-${Math.random()}`,
-                              role: "assistant" as const,
-                              text: `Successfully created "${presentationWithTimestamps.title}"\n\n${presentationWithTimestamps.slides.length} slides generated!`,
-                              isLoading: false,
-                              presentationData: presentationWithTimestamps,
-                              userMessage: originalPrompt,
-                              version: nextVersion
-                            }
-                          ]
-                        };
-                      });
-                      
-                      // 🚨 CRITICAL: Also update workspaceSlides to sync both data sources
-                      console.log('🔄 SYNCING workspaceSlides with new presentation');
-                      setWorkspaceSlides(prev => ({
-                        ...prev,
-                        [currentWorkspace]: {
-                          ...prev[currentWorkspace],
-                          [currentPresentationId]: presentationWithTimestamps.slides
+                        } else if (typeof error === 'string') {
+                          errorMessage = error;
                         }
-                      }));
-                      
-                      // Force immediate re-render by triggering a state change
-                        setTimeout(() => {
-                        console.log('🔄 Forcing re-render after presentation data update');
-                          // Trigger a re-render after state update
-                          setActiveSlide(prev => prev);
-                          // 💳 Refresh credits after successful generation
-                          console.log('🔄 Refreshing credits after successful generation...');
-                        refreshCredits().then(() => {
-                          console.log('✅ Credits refreshed, new balance should be visible');
-                        }).catch(err => {
-                          console.error('❌ Failed to refresh credits:', err);
-                        });
-                      }, 100);
-                      
-                  } else {
-                    // 🔧 CRITICAL: Reset loading state to prevent blank page
-                    setIsLoading(false);
-                    setLoadingStep(1);
-                    setBatchProgress({ current: 0, total: 0, slideRange: '' });
-                    
-                    // 🔧 RESTORE ERROR MESSAGES: Show HTTP error in chat
-                    const errorMessage = data?.error || data?.message || `HTTP ${response.status}: ${response.statusText}`;
-                    // Replace loading message with error - REMOVE AND ADD NEW
-                    setPresentationMessages(prev => ({
-                      ...prev,
-                      [currentPresentationId]: [
-                        ...prev[currentPresentationId].filter(msg => !msg.isLoading),
-                        {
-                          id: `assistant-error-${Date.now()}-${Math.random()}`,
-                          role: "assistant" as const,
-                          text: `Error: ${errorMessage}`,
-                          isLoading: false
+
+                        // 🔧 CRITICAL: Reset loading state to prevent blank page
+                        setIsLoading(false);
+                        setLoadingStep(1);
+                        setBatchProgress({ current: 0, total: 0, slideRange: '' });
+
+                        // Check if it's an API overload error (529)
+                        const isOverloadError = errorMessage.includes('529') ||
+                          errorMessage.includes('Overloaded') ||
+                          errorMessage.includes('overloaded_error');
+
+                        if (isOverloadError) {
+                          // Show API overload modal
+                          setShowApiOverloadModal(true);
+                        } else {
+                          // Replace loading message with error - REMOVE AND ADD NEW
+                          setPresentationMessages(prev => ({
+                            ...prev,
+                            [currentPresentationId]: [
+                              ...prev[currentPresentationId].filter(msg => !msg.isLoading),
+                              {
+                                id: `assistant-error-${Date.now()}-${Math.random()}`,
+                                role: "assistant" as const,
+                                text: `Error: ${errorMessage}`,
+                                isLoading: false
+                              }
+                            ]
+                          }));
                         }
-                      ]
-                    }));
-                  }
-                } catch (error) {
-                  // Update with network error
-                  
-                  let errorMessage = 'Unknown error occurred';
-                  if (error instanceof Error) {
-                    // Handle specific error types
-                    if (error.name === 'AbortError') {
-                      errorMessage = 'Request timed out. The AI is taking longer than expected. Please try again with a simpler request.';
-                    } else if (error.message?.includes('timeout')) {
-                      errorMessage = 'Request timed out. Please try again in a moment.';
-                    } else {
-                    errorMessage = error.message;
-                    }
-                  } else if (typeof error === 'string') {
-                    errorMessage = error;
-                  }
-                  
-                  // 🔧 CRITICAL: Reset loading state to prevent blank page
-                  setIsLoading(false);
-                  setLoadingStep(1);
-                  setBatchProgress({ current: 0, total: 0, slideRange: '' });
-                  
-                  // Check if it's an API overload error (529)
-                  const isOverloadError = errorMessage.includes('529') || 
-                                        errorMessage.includes('Overloaded') || 
-                                        errorMessage.includes('overloaded_error');
-                  
-                  if (isOverloadError) {
-                    // Show API overload modal
-                    setShowApiOverloadModal(true);
-                  } else {
-                    // Replace loading message with error - REMOVE AND ADD NEW
-                  setPresentationMessages(prev => ({
-                    ...prev,
-                    [currentPresentationId]: [
-                      ...prev[currentPresentationId].filter(msg => !msg.isLoading),
-                      {
-                        id: `assistant-error-${Date.now()}-${Math.random()}`,
-                        role: "assistant" as const,
-                        text: `Error: ${errorMessage}`,
-                        isLoading: false
                       }
-                    ]
-                  }));
-                  }
-                }
-              } else if (attachedFiles.length > 0) {
-                setShowInputError(true);
-                setTimeout(() => setShowInputError(false), 2000);
-              }
-            }}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              style={{ display: 'none' }}
-              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
-              multiple
-              onChange={async (e) => {
-                const files = Array.from(e.target.files || []);
-                
-                for (const file of files) {
-                  if (file.type.startsWith('image/')) {
-                    // Handle image upload
-                    const tempFile = {
-                      url: URL.createObjectURL(file),
-                      type: file.type,
-                      name: file.name,
-                      isUploaded: true,
-                      uploadStatus: 'uploading' as const
-                    };
-                    
-                    setAttachedFiles(prev => [...prev, tempFile]);
-                    
-                    try {
-                      // Upload to server
-                      const formData = new FormData();
-                      formData.append('file', file);
-                      
-                      const response = await fetch('/api/upload', {
-                        method: 'POST',
-                        body: formData
-                      });
-                      
-                      if (response.ok) {
-                        const result = await response.json();
-                        
-                        // Update the file with server response
-                        setAttachedFiles(prev => prev.map(f => 
-                          f.url === tempFile.url ? {
-                            ...f,
-                            uploadStatus: 'completed' as const,
-                            serverUrl: result.url,
-                            suggestedVariant: result.suggestedVariant
-                          } : f
-                        ));
-                      } else {
-                        const error = await response.json();
-                        const errorMessage = error.error || `Upload failed (${response.status})`;
-                        
-                        console.error('Server upload error:', {
-                          status: response.status,
-                          statusText: response.statusText,
-                          error: error
-                        });
-                        
-                        // Show server error with alert for debugging
-                        alert(`Server Error: ${errorMessage}\nStatus: ${response.status}\nCheck browser console for details.`);
-                        
-                        setAttachedFiles(prev => prev.map(f => 
-                          f.url === tempFile.url ? {
-                            ...f,
-                            uploadStatus: 'error' as const,
-                            uploadError: errorMessage
-                          } : f
-                        ));
-                      }
-                    } catch (error) {
-                      console.error('Upload error:', error);
-                      
-                      // More detailed error logging
-                      let errorMessage = 'Network error';
-                      if (error instanceof Error) {
-                        errorMessage = error.message;
-                        console.error('Error details:', {
-                          name: error.name,
-                          message: error.message,
-                          stack: error.stack
-                        });
-                      }
-                      
-                      // Show error in UI with alert for debugging
-                      alert(`Upload Error: ${errorMessage}\nCheck browser console for details.`);
-                      
-                      setAttachedFiles(prev => prev.map(f => 
-                        f.url === tempFile.url ? {
-                          ...f,
-                          uploadStatus: 'error' as const,
-                          uploadError: errorMessage
-                        } : f
-                      ));
+                    } else if (attachedFiles.length > 0) {
+                      setShowInputError(true);
+                      setTimeout(() => setShowInputError(false), 2000);
                     }
-                  } else {
-                    // Handle non-image files (existing behavior)
-                    const newFile = { url: URL.createObjectURL(file), type: file.type, name: file.name };
-                    setAttachedFiles(prev => [...prev, newFile]);
-                  }
-                }
-                
-                // Clear the input
-                e.target.value = '';
-              }}
-            />
-            <div className="bg-white flex flex-col">
-              {attachedFiles.length > 0 && (
-                <div className="flex items-center gap-2 px-4 pt-4 flex-wrap">
-                  {attachedFiles.map((file, idx) => (
-                    file.type.startsWith('image/') ? (
-                      <div key={file.url} className="relative group w-20 h-20 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center overflow-hidden border border-gray-200">
-                        <div className="relative w-full h-full">
-                          <img src={file.url} alt="Attachment" className="w-full h-full object-cover" />
-                          
-                          {/* Upload status overlay */}
-                          {file.isUploaded && file.uploadStatus === 'uploading' && (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            </div>
-                          )}
-                          
-                          {file.isUploaded && file.uploadStatus === 'error' && (
-                            <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
-                              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-red-400">
-                                <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                            </div>
-                          )}
-                          
-
-                        </div>
-                        
-
-                        
-                        <button
-                          type="button"
-                          className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-[#002903] rounded-full text-gray-500 hover:text-gray-900 hover:bg-[#ef4444] transition opacity-0 group-hover:opacity-100"
-                          onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== idx))}
-                          aria-label="Remove attachment"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                            <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                        
-                        {/* Error tooltip */}
-                        {file.uploadError && (
-                          <div className="absolute -top-8 left-0 right-0 bg-red-600 text-gray-900 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                            {file.uploadError}
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div key={file.url} className="relative group w-16 h-16 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center border border-gray-200">
-                        {file.name.toLowerCase().endsWith('.pdf') && (
-                          <img src="/pdf-icon.png" alt="PDF Icon" className="w-8 h-8 mb-1 object-contain" />
-                        )}
-                        {file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx') ? (
-                          <img src="/doc-icon.png" alt="DOC Icon" className="w-8 h-8 mb-1 object-contain" />
-                        ) : null}
-                        {file.name.toLowerCase().endsWith('.xls') || file.name.toLowerCase().endsWith('.xlsx') ? (
-                          <img src="/xls-icon.png" alt="XLS Icon" className="w-8 h-8 mb-1 object-contain" />
-                        ) : null}
-                        <span className="text-xs text-gray-500 truncate w-14 text-center">{file.name}</span>
-                        <button
-                          type="button"
-                          className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-[#002903] rounded-full text-gray-500 hover:text-gray-900 hover:bg-[#ef4444] transition opacity-0 group-hover:opacity-100"
-                          onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== idx))}
-                          aria-label="Remove attachment"
-                        >
-                          <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                            <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-                          </svg>
-                        </button>
-                      </div>
-                    )
-                  ))}
-                </div>
-              )}
-              <div className="bg-[#f3f3f5] rounded-lg">
-              <textarea
-                ref={textareaRef}
-                rows={1}
-                value={chatInput}
-                onChange={e => setChatInput(e.target.value)}
-                onFocus={() => setSidebarCollapsed(true)}
-                onClick={() => setSidebarCollapsed(true)}
-                onKeyDown={e => {
-                  // Close sidebar when user starts typing
-                  setSidebarCollapsed(true);
-                  
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    const form = e.currentTarget.form;
-                    if (form) {
-                      form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                    }
-                  }
-                }}
-                  className={`bg-transparent outline-none border-none ${chatInput ? 'text-[#002903]' : 'text-gray-500'} text-base placeholder-[#717182] px-4 pt-5 pb-16 w-full focus:text-[#002903] focus:outline-none focus:ring-0 focus:border-none resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100`}
-                placeholder="Ask what you want"
-                style={{ minHeight: '56px', maxHeight: '180px' }}
-              />
-              
-                <div className="flex items-center justify-end px-4 py-2">
-                <button type="submit" className={`rounded-full w-8 h-8 flex items-center justify-center transition ${chatInput ? 'bg-[#002903] text-white' : 'bg-gray-200 text-gray-500 hover:bg-[#002903] hover:text-white'}`} disabled={!chatInput.trim()}><svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path d="M10 15V5M10 5l-5 5m5-5l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
-                </div>
-              </div>
-            </div>
-          </form>
-          {/* Render the error popup above the input box */}
-          {showInputError && (
-            <div className="w-full flex justify-center mb-2">
-              <div className="bg-red-600 text-gray-900 text-sm rounded-lg px-4 py-2 shadow-lg">You need to write</div>
-            </div>
-          )}
-        </section>
-        )}
-        {/* Onboarding Flow - Replace main content area */}
-        {showOnboarding ? (
-          <section className={`flex-1 flex flex-col items-center ${onboardingStep === 3 && selectedSlideCount ? 'justify-start' : 'justify-center'} bg-[#f9fafb] h-full p-8`}>
-            {onboardingStep === 1 && (
-              <div className="relative w-full max-w-md">
-                <div 
-                  className={`bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border ${isDragOver ? 'border-blue-400 border-2 bg-blue-50' : 'border-gray-100'} min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative transition-all duration-200`}
-                  onDrop={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragOver(false);
-                    const files = Array.from(e.dataTransfer.files);
-                    if (files.length > 0) {
-                      handleFileUpload(files[0]);
-                    }
-                  }}
-                  onDragOver={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragOver(true);
-                  }}
-                  onDragEnter={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragOver(true);
-                  }}
-                  onDragLeave={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    setIsDragOver(false);
                   }}
                 >
-                  {/* Layered Cards Background */}
-                  <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
-                    {/* Back card */}
-                    <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform rotate-3 translate-x-2 translate-y-2 transition-transform duration-300 group-hover:translate-x-6"></div>
-                    {/* Middle card */}
-                    <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform -rotate-1 translate-x-1 translate-y-1 transition-transform duration-300 group-hover:-translate-x-4"></div>
-                    {/* Front card */}
-                    <div className="relative w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-start p-3 sm:p-4 transition-transform duration-300">
-                      {/* Document header lines */}
-                      <div className="w-full mb-6">
-                        <div className="h-1.5 bg-gray-200 rounded mb-2"></div>
-                        <div className="h-1.5 bg-gray-200 rounded w-2/3 mb-2"></div>
-                        <div className="h-1.5 bg-gray-200 rounded w-1/2"></div>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    style={{ display: 'none' }}
+                    accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+                    multiple
+                    onChange={async (e) => {
+                      const files = Array.from(e.target.files || []);
+
+                      for (const file of files) {
+                        if (file.type.startsWith('image/')) {
+                          // Handle image upload
+                          const tempFile = {
+                            url: URL.createObjectURL(file),
+                            type: file.type,
+                            name: file.name,
+                            isUploaded: true,
+                            uploadStatus: 'uploading' as const
+                          };
+
+                          setAttachedFiles(prev => [...prev, tempFile]);
+
+                          try {
+                            // Upload to server
+                            const formData = new FormData();
+                            formData.append('file', file);
+
+                            const response = await fetch('/api/upload', {
+                              method: 'POST',
+                              body: formData
+                            });
+
+                            if (response.ok) {
+                              const result = await response.json();
+
+                              // Update the file with server response
+                              setAttachedFiles(prev => prev.map(f =>
+                                f.url === tempFile.url ? {
+                                  ...f,
+                                  uploadStatus: 'completed' as const,
+                                  serverUrl: result.url,
+                                  suggestedVariant: result.suggestedVariant
+                                } : f
+                              ));
+                            } else {
+                              const error = await response.json();
+                              const errorMessage = error.error || `Upload failed (${response.status})`;
+
+                              console.error('Server upload error:', {
+                                status: response.status,
+                                statusText: response.statusText,
+                                error: error
+                              });
+
+                              // Show server error with alert for debugging
+                              alert(`Server Error: ${errorMessage}\nStatus: ${response.status}\nCheck browser console for details.`);
+
+                              setAttachedFiles(prev => prev.map(f =>
+                                f.url === tempFile.url ? {
+                                  ...f,
+                                  uploadStatus: 'error' as const,
+                                  uploadError: errorMessage
+                                } : f
+                              ));
+                            }
+                          } catch (error) {
+                            console.error('Upload error:', error);
+
+                            // More detailed error logging
+                            let errorMessage = 'Network error';
+                            if (error instanceof Error) {
+                              errorMessage = error.message;
+                              console.error('Error details:', {
+                                name: error.name,
+                                message: error.message,
+                                stack: error.stack
+                              });
+                            }
+
+                            // Show error in UI with alert for debugging
+                            alert(`Upload Error: ${errorMessage}\nCheck browser console for details.`);
+
+                            setAttachedFiles(prev => prev.map(f =>
+                              f.url === tempFile.url ? {
+                                ...f,
+                                uploadStatus: 'error' as const,
+                                uploadError: errorMessage
+                              } : f
+                            ));
+                          }
+                        } else {
+                          // Handle non-image files (existing behavior)
+                          const newFile = { url: URL.createObjectURL(file), type: file.type, name: file.name };
+                          setAttachedFiles(prev => [...prev, newFile]);
+                        }
+                      }
+
+                      // Clear the input
+                      e.target.value = '';
+                    }}
+                  />
+                  <div className="bg-white flex flex-col">
+                    {attachedFiles.length > 0 && (
+                      <div className="flex items-center gap-2 px-4 pt-4 flex-wrap">
+                        {attachedFiles.map((file, idx) => (
+                          file.type.startsWith('image/') ? (
+                            <div key={file.url} className="relative group w-20 h-20 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center overflow-hidden border border-gray-200">
+                              <div className="relative w-full h-full">
+                                <img src={file.url} alt="Attachment" className="w-full h-full object-cover" />
+
+                                {/* Upload status overlay */}
+                                {file.isUploaded && file.uploadStatus === 'uploading' && (
+                                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                  </div>
+                                )}
+
+                                {file.isUploaded && file.uploadStatus === 'error' && (
+                                  <div className="absolute inset-0 bg-red-500/20 flex items-center justify-center">
+                                    <svg width="16" height="16" viewBox="0 0 20 20" fill="none" className="text-red-400">
+                                      <path d="M10 6V10M10 14H10.01M19 10C19 14.9706 14.9706 19 10 19C5.02944 19 1 14.9706 1 10C1 5.02944 5.02944 1 10 1C14.9706 1 19 5.02944 19 10Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                  </div>
+                                )}
+
+
+                              </div>
+
+
+
+                              <button
+                                type="button"
+                                className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-[#002903] rounded-full text-gray-500 hover:text-gray-900 hover:bg-[#ef4444] transition opacity-0 group-hover:opacity-100"
+                                onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== idx))}
+                                aria-label="Remove attachment"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                  <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                              </button>
+
+                              {/* Error tooltip */}
+                              {file.uploadError && (
+                                <div className="absolute -top-8 left-0 right-0 bg-red-600 text-gray-900 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                  {file.uploadError}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <div key={file.url} className="relative group w-16 h-16 bg-[#2a2a2a] rounded-md flex flex-col items-center justify-center border border-gray-200">
+                              {file.name.toLowerCase().endsWith('.pdf') && (
+                                <img src="/pdf-icon.png" alt="PDF Icon" className="w-8 h-8 mb-1 object-contain" />
+                              )}
+                              {file.name.toLowerCase().endsWith('.doc') || file.name.toLowerCase().endsWith('.docx') ? (
+                                <img src="/doc-icon.png" alt="DOC Icon" className="w-8 h-8 mb-1 object-contain" />
+                              ) : null}
+                              {file.name.toLowerCase().endsWith('.xls') || file.name.toLowerCase().endsWith('.xlsx') ? (
+                                <img src="/xls-icon.png" alt="XLS Icon" className="w-8 h-8 mb-1 object-contain" />
+                              ) : null}
+                              <span className="text-xs text-gray-500 truncate w-14 text-center">{file.name}</span>
+                              <button
+                                type="button"
+                                className="absolute top-1 right-1 w-5 h-5 flex items-center justify-center bg-[#002903] rounded-full text-gray-500 hover:text-gray-900 hover:bg-[#ef4444] transition opacity-0 group-hover:opacity-100"
+                                onClick={() => setAttachedFiles(prev => prev.filter((_, i) => i !== idx))}
+                                aria-label="Remove attachment"
+                              >
+                                <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                  <line x1="5.5" y1="5.5" x2="14.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                  <line x1="14.5" y1="5.5" x2="5.5" y2="14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                                </svg>
+                              </button>
+                            </div>
+                          )
+                        ))}
                       </div>
-                      
-                      {/* Google Sheets icon in center */}
-                      <div className="flex-1 flex items-center justify-center">
-                        <img src="/google-sheets.png" alt="Google Sheets" className="w-12 h-16 sm:w-14 sm:h-18 lg:w-16 lg:h-20 object-contain" />
+                    )}
+                    <div className="bg-[#f3f3f5] rounded-lg">
+                      <textarea
+                        ref={textareaRef}
+                        rows={1}
+                        value={chatInput}
+                        onChange={e => setChatInput(e.target.value)}
+                        onFocus={() => setSidebarCollapsed(true)}
+                        onClick={() => setSidebarCollapsed(true)}
+                        onKeyDown={e => {
+                          // Close sidebar when user starts typing
+                          setSidebarCollapsed(true);
+
+                          if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            const form = e.currentTarget.form;
+                            if (form) {
+                              form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                            }
+                          }
+                        }}
+                        className={`bg-transparent outline-none border-none ${chatInput ? 'text-[#002903]' : 'text-gray-500'} text-base placeholder-[#717182] px-4 pt-5 pb-16 w-full focus:text-[#002903] focus:outline-none focus:ring-0 focus:border-none resize-none overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100`}
+                        placeholder="Ask what you want"
+                        style={{ minHeight: '56px', maxHeight: '180px' }}
+                      />
+
+                      <div className="flex items-center justify-end px-4 py-2">
+                        <button type="submit" className={`rounded-full w-8 h-8 flex items-center justify-center transition ${chatInput ? 'bg-[#002903] text-white' : 'bg-gray-200 text-gray-500 hover:bg-[#002903] hover:text-white'}`} disabled={!chatInput.trim()}><svg width="18" height="18" fill="none" viewBox="0 0 20 20"><path d="M10 15V5M10 5l-5 5m5-5l5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg></button>
                       </div>
                     </div>
                   </div>
-                  
-                  <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
-                    <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>{t.editor.uploadTitle}</h3>
-                    {isUploading || isAnalyzing ? (
-                      <div className="text-center">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#002903] mx-auto mb-2"></div>
-                        <p className="text-sm text-[#002903]">
-                          {isUploading ? (language === 'es' ? 'Subiendo archivo...' : 'Uploading file...') : (language === 'es' ? 'Analizando datos...' : 'Analyzing data...')}
-                        </p>
-                      </div>
-                    ) : (
-                    <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>
-                      {t.editor.uploadSubtitle}{' '}
-                  <button 
-                        className="text-blue-500 hover:underline"
-                        onClick={() => {
-                          // Trigger file input click
-                          const input = document.createElement('input');
-                          input.type = 'file';
-                          input.multiple = true;
-                          input.accept = '.xlsx,.xls,.csv,.docx,.doc,.pdf';
-                      input.onchange = (e) => {
-                        const files = Array.from((e.target as HTMLInputElement).files || []);
-                        console.log('Files selected:', files);
+                </form>
+                {/* Render the error popup above the input box */}
+                {showInputError && (
+                  <div className="w-full flex justify-center mb-2">
+                    <div className="bg-red-600 text-gray-900 text-sm rounded-lg px-4 py-2 shadow-lg">You need to write</div>
+                  </div>
+                )}
+              </section>
+            )}
+            {/* Onboarding Flow - Replace main content area */}
+            {showOnboarding ? (
+              <section className={`flex-1 flex flex-col items-center ${onboardingStep === 3 && selectedSlideCount ? 'justify-start' : 'justify-center'} bg-[#f9fafb] h-full p-8`}>
+                {onboardingStep === 1 && (
+                  <div className="relative w-full max-w-md">
+                    <div
+                      className={`bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-xl border ${isDragOver ? 'border-blue-400 border-2 bg-blue-50' : 'border-gray-100'} min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex flex-col items-center justify-center relative transition-all duration-200`}
+                      onDrop={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDragOver(false);
+                        const files = Array.from(e.dataTransfer.files);
                         if (files.length > 0) {
-                                // Handle file upload with comprehensive analysis
-                                handleFileUpload(files[0]);
+                          handleFileUpload(files[0]);
                         }
-                      };
-                          input.click();
-                        }}
-                      >
-                        {language === 'es' ? 'haz clic para seleccionar' : 'click to select'}
-                      </button>.
-                    </p>
+                      }}
+                      onDragOver={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDragOver(true);
+                      }}
+                      onDragEnter={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDragOver(true);
+                      }}
+                      onDragLeave={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsDragOver(false);
+                      }}
+                    >
+                      {/* Layered Cards Background */}
+                      <div className="absolute inset-2 sm:inset-4 flex items-start justify-center pt-4 sm:pt-8 group">
+                        {/* Back card */}
+                        <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform rotate-3 translate-x-2 translate-y-2 transition-transform duration-300 group-hover:translate-x-6"></div>
+                        {/* Middle card */}
+                        <div className="absolute w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 transform -rotate-1 translate-x-1 translate-y-1 transition-transform duration-300 group-hover:-translate-x-4"></div>
+                        {/* Front card */}
+                        <div className="relative w-32 h-40 sm:w-36 sm:h-44 lg:w-40 lg:h-48 bg-white rounded-2xl shadow-lg border border-gray-200 flex flex-col items-center justify-start p-3 sm:p-4 transition-transform duration-300">
+                          {/* Document header lines */}
+                          <div className="w-full mb-6">
+                            <div className="h-1.5 bg-gray-200 rounded mb-2"></div>
+                            <div className="h-1.5 bg-gray-200 rounded w-2/3 mb-2"></div>
+                            <div className="h-1.5 bg-gray-200 rounded w-1/2"></div>
+                          </div>
+
+                          {/* Google Sheets icon in center */}
+                          <div className="flex-1 flex items-center justify-center">
+                            <img src="/google-sheets.png" alt="Google Sheets" className="w-12 h-16 sm:w-14 sm:h-18 lg:w-16 lg:h-20 object-contain" />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="relative z-10 mt-32 sm:mt-40 lg:mt-48">
+                        <h3 className="text-base sm:text-lg font-semibold mb-2 text-center" style={{ color: '#002903' }}>{t.editor.uploadTitle}</h3>
+                        {isUploading || isAnalyzing ? (
+                          <div className="text-center">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#002903] mx-auto mb-2"></div>
+                            <p className="text-sm text-[#002903]">
+                              {isUploading ? (language === 'es' ? 'Subiendo archivo...' : 'Uploading file...') : (language === 'es' ? 'Analizando datos...' : 'Analyzing data...')}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-center mb-2 sm:mb-3 text-xs sm:text-sm" style={{ color: '#002903' }}>
+                            {t.editor.uploadSubtitle}{' '}
+                            <button
+                              className="text-blue-500 hover:underline"
+                              onClick={() => {
+                                // Trigger file input click
+                                const input = document.createElement('input');
+                                input.type = 'file';
+                                input.multiple = true;
+                                input.accept = '.xlsx,.xls,.csv,.docx,.doc,.pdf';
+                                input.onchange = (e) => {
+                                  const files = Array.from((e.target as HTMLInputElement).files || []);
+                                  console.log('Files selected:', files);
+                                  if (files.length > 0) {
+                                    // Handle file upload with comprehensive analysis
+                                    handleFileUpload(files[0]);
+                                  }
+                                };
+                                input.click();
+                              }}
+                            >
+                              {language === 'es' ? 'haz clic para seleccionar' : 'click to select'}
+                            </button>.
+                          </p>
                         )}
-                        
+
                         {uploadError && (
                           <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                             <p className="text-sm text-red-600 text-center">{uploadError}</p>
                             {uploadError.includes('taking longer than expected') && (
                               <div className="mt-2 text-xs text-gray-600 text-center">
                                 <p>{language === 'es' ? 'Intenta reducir el tamaño de tu conjunto de datos o simplificar tu solicitud.' : 'Try reducing your dataset size or simplifying your prompt.'}</p>
-                                <button 
+                                <button
                                   onClick={() => setUploadError('')}
                                   className="mt-1 text-blue-600 hover:underline"
                                 >
                                   {language === 'es' ? 'Intentar de nuevo' : 'Try Again'}
                                 </button>
-                </div>
+                              </div>
                             )}
                           </div>
                         )}
-                    
-                    <p className="text-xs text-center mt-2" style={{ color: '#002903' }}>{t.editor.supportedFormats}</p>
-                </div>
-              </div>
-            </div>
-            )}
 
-            {onboardingStep === 2 && (
-              <div className="max-w-2xl w-full relative">
-                {/* Back Button */}
-                <button
-                  onClick={() => setOnboardingStep(1)}
-                  className="absolute top-0 left-0 p-2 text-[#002903] hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label="Go back"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m15 18-6-6 6-6"/>
-                  </svg>
-                </button>
-                
-                {/* Title */}
-                <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">
-                  {language === 'es' ? 'Describe de qué tratará tu presentación' : 'Describe what your presentation will be about'}
-                </h2>
-
-                {/* Text Area with Send Button */}
-                <div className="mb-8 relative">
-                  <textarea
-                    className="w-full h-40 p-4 pr-16 bg-[#f3f4f6] border-none rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#002903] focus:border-transparent placeholder-[#717182] text-[#002903]"
-                    placeholder={language === 'es' 
-                      ? 'Describe el origen y contexto de tu conjunto de datos — incluyendo su fuente, contenido y estructura — e indica qué deseas extraer o visualizar de él...'
-                      : "Describe your dataset's origin and context — including its source, contents, and structure — and indicate what you aim to extract or visualize from it..."}
-                    style={{ fontSize: '16px' }}
-                    value={presentationPrompt}
-                    onChange={(e) => setPresentationPrompt(e.target.value)}
-                  />
-                  {/* Send Button */}
-                  <button 
-                    className="absolute bottom-4 right-4 w-8 h-8 bg-[#002903] hover:bg-[#002903]/90 rounded-full flex items-center justify-center transition disabled:opacity-50"
-                    onClick={() => {
-                      // Just move to step 3 - NO AI analysis yet (saves credits)
-                      if (presentationPrompt.trim()) {
-                        setOnboardingStep(3);
-                      }
-                    }}
-                    disabled={!presentationPrompt.trim()}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
-                      <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                  </button>
-                </div>
-                
-                {uploadError && (
-                  <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-                    <p className="text-sm text-red-600 text-center">{uploadError}</p>
+                        <p className="text-xs text-center mt-2" style={{ color: '#002903' }}>{t.editor.supportedFormats}</p>
+                      </div>
+                    </div>
                   </div>
                 )}
-            </div>
-            )}
 
-            {onboardingStep === 3 && !selectedSlideCount && (
-              <div className="max-w-2xl w-full relative">
-                {/* Back Button */}
-                <button
-                  onClick={() => setOnboardingStep(2)}
-                  className="absolute top-0 left-0 p-2 text-[#002903] hover:bg-gray-100 rounded-full transition-colors"
-                  aria-label="Go back"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="m15 18-6-6 6-6"/>
-                  </svg>
-                </button>
-                
-                {/* Title */}
-                <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">
-                  {language === 'es' ? '¿Cuántas diapositivas quieres?' : 'How many slides do you want?'}
-                </h2>
-
-                {/* Slide Count Selection Buttons */}
-                <div className="flex justify-center gap-3 mb-6">
-                  {(language === 'es' 
-                    ? ['Menos de 5', '6-10', '11-15', '16-20', 'Más de 20']
-                    : ['Less than 5', '6-10', '11-15', '16-20', 'More than 20']
-                  ).map((option, index) => {
-                    const originalOption = ['Less than 5', '6-10', '11-15', '16-20', 'More than 20'][index];
-                    // Estimate credits needed (backend only - not shown to user)
-                    const slideCount = getSlideCountNumber(originalOption);
-                    const estimatedCredits = Math.ceil(slideCount * 2.5);
-                    const canAfford = (credits?.remaining_credits || 0) >= estimatedCredits;
-                    
-                    return (
-                    <button 
-                      key={option}
-                      className={`px-4 py-2.5 border-2 rounded-full font-medium transition flex flex-col items-center gap-0 whitespace-nowrap ${
-                        canAfford 
-                          ? 'bg-white border-gray-200 text-gray-700 hover:border-[#002903] hover:text-[#002903]' 
-                          : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
-                      }`}
-                      disabled={!canAfford}
-                      onClick={async () => {
-                        if (!canAfford) {
-                          setShowPricingModal(true);
-                          return;
-                        }
-                        // Validate all required fields FIRST
-                        if (!uploadResult || !presentationPrompt.trim()) {
-                          console.error('❌ Missing required fields:', {
-                            hasUploadResult: !!uploadResult,
-                            presentationPrompt: presentationPrompt.trim()
-                          });
-                          setUploadError(language === 'es' ? 'Por favor asegúrate de completar todos los campos: archivo subido y descripción proporcionada.' : 'Please ensure all fields are filled: file uploaded and description provided.');
-                          return;
-                        }
-
-                        // Convert slide count text to number
-                        const slideCountNum = getSlideCountNumber(originalOption);
-                        
-                        if (slideCountNum < 1) {
-                          console.error('❌ Invalid slide count:', originalOption);
-                          setUploadError(language === 'es' ? 'Por favor selecciona un número válido de diapositivas.' : 'Please select a valid slide count.');
-                          return;
-                        }
-
-                        // Set both states together to avoid blank screen
-                        setIsLoading(true);
-                        setSelectedSlideCount(originalOption);
-                        setUploadError('');
-
-                        // Calculate batches (10 slides per batch)
-                        const SLIDES_PER_BATCH = 10;
-                        const totalBatches = Math.ceil(slideCountNum / SLIDES_PER_BATCH);
-
-                        console.log(`📊 Starting generation: ${slideCountNum} slides in ${totalBatches} batch(es)`);
-
-                        let allSlides: any[] = [];
-                        let allMessages: any[] = [];
-
-                        try {
-                          // Step 1: Analyzing content (only once at the beginning)
-                          setLoadingStep(1);
-                          await new Promise(resolve => setTimeout(resolve, 500));
-
-                          // Step 2: Generating slides (set once for all batches)
-                          setLoadingStep(2);
-
-                          for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
-                            const startSlide = batchIndex * SLIDES_PER_BATCH + 1;
-                            const endSlide = Math.min((batchIndex + 1) * SLIDES_PER_BATCH, slideCountNum);
-                            const slidesInBatch = endSlide - startSlide + 1;
-
-                            console.log(`📦 Batch ${batchIndex + 1}/${totalBatches}: Generating slides ${startSlide}-${endSlide}`);
-                            
-                            // Update batch progress
-                            setBatchProgress({
-                              current: batchIndex + 1,
-                              total: totalBatches,
-                              slideRange: `${startSlide}-${endSlide}`
-                            });
-
-                            let batchMessages: any[] = [];
-                            if (batchIndex === 0) {
-                              batchMessages = [
-                                { role: 'user', text: presentationPrompt },
-                                { role: 'assistant', text: 'Creating presentation...', isLoading: true }
-                              ];
-                            }
-                            
-                            const requestBody = {
-                              uploadResult: uploadResult,
-                              presentationPrompt: presentationPrompt,
-                              slideCount: slidesInBatch,
-                              batchNumber: batchIndex + 1,
-                              totalBatches: totalBatches,
-                              slideStart: startSlide,
-                              slideEnd: endSlide,
-                              comprehensiveAnalysis: comprehensiveAnalysis
-                            };
-
-                            console.log(`🤖 Sending batch ${batchIndex + 1} to API...`);
-                            
-                            const response = await fetch('/api/generate-excel-presentation', {
-                              method: 'POST',
-                              headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ''}`
-                              },
-                              body: JSON.stringify(requestBody)
-                            });
-
-                            if (!response.ok) {
-                              const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
-                              throw new Error(errorData.error || `Failed to generate presentation (batch ${batchIndex + 1})`);
-                            }
-
-                            const data = await response.json();
-                            console.log(`✅ Batch ${batchIndex + 1} response:`, data);
-
-                            if (data.presentation) {
-                              // Append slides from this batch
-                              allSlides = [...allSlides, ...data.presentation.slides];
-                              console.log(`📚 Total slides so far: ${allSlides.length}`);
-                              
-                              // For first batch, set up messages
-                              if (batchIndex === 0) {
-                                batchMessages = [
-                                  { role: 'user', text: presentationPrompt },
-                                  {
-                                    role: 'assistant',
-                                    text: `Successfully created "${data.presentation.title}"`,
-                                    isLoading: false,
-                                    presentationData: data.presentation
-                                  }
-                                ];
-                                allMessages = batchMessages;
-                              }
-                            } else {
-                              throw new Error(`No presentation data in batch ${batchIndex + 1} response`);
-                            }
-                          }
-
-                          // Step 3: Apply design (all batches complete)
-                          setLoadingStep(3);
-                          await new Promise(resolve => setTimeout(resolve, 500));
-
-                          // After all batches complete, create final presentation with all slides
-                          const finalPresentation = {
-                            title: uploadedFiles[0]?.name?.replace(/\.[^/.]+$/, '') || 'Data Analysis',
-                            slides: allSlides
-                          };
-
-                          console.log('🎉 All batches complete! Final presentation:', {
-                            totalSlides: finalPresentation.slides.length,
-                            batches: Math.ceil(slideCountNum / 10)
-                          });
-
-                          // Set the presentation data with all messages
-                          setPresentationMessages(prev => ({
-                            ...prev,
-                            [currentPresentationId]: [
-                              { role: 'user', text: presentationPrompt },
-                              {
-                                role: 'assistant',
-                                text: `Successfully created "${finalPresentation.title}" with ${finalPresentation.slides.length} slides`,
-                                isLoading: false,
-                                presentationData: finalPresentation
-                              }
-                            ]
-                          }));
-
-                          setShowOnboarding(false);
-                          setIsLoading(false);
-                          setActiveSlide(0);
-
-                        } catch (error: any) {
-                          console.error('❌ Error during batch generation:', error);
-                          console.error('❌ Error details:', {
-                            message: error.message,
-                            stack: error.stack,
-                            uploadResult: !!uploadResult,
-                            presentationPrompt: !!presentationPrompt,
-                            selectedSlideCount: option
-                          });
-                          setUploadError(error.message || 'Failed to generate presentation');
-                          setIsLoading(false);
-                          setLoadingStep(1);
-                          setBatchProgress({ current: 1, total: 1, slideRange: '' });
-                          setSelectedSlideCount(''); // Reset slide count to show options again
-                          setOnboardingStep(3); // Ensure we stay on step 3
-                        }
-                      }}
-                    >
-                      <span>{option}</span>
-                      <span className="text-[10px] opacity-60">~{estimatedCredits} credits</span>
-                    </button>
-                    );
-                  })}
-                </div>
-                
-                {/* Current Credits Display */}
-                <div className="text-center mb-4">
-                  <p className="text-sm text-gray-600">
-                    You have <span className="font-semibold text-[#002903]">{credits?.remaining_credits || 0} credits</span> available
-                  </p>
-                </div>
-                
-                {/* Upgrade Button if user can't afford any option */}
-                {(credits?.remaining_credits || 0) < 13 && (
-                  <div className="text-center mt-2">
-                    <p className="text-sm text-gray-600 mb-3">¿Need more credits?</p>
+                {onboardingStep === 2 && (
+                  <div className="max-w-2xl w-full relative">
+                    {/* Back Button */}
                     <button
-                      onClick={() => setShowPricingModal(true)}
-                      className="px-6 py-3 bg-[#002903] hover:bg-[#001a02] text-white rounded-full font-medium transition"
+                      onClick={() => setOnboardingStep(1)}
+                      className="absolute top-0 left-0 p-2 text-[#002903] hover:bg-gray-100 rounded-full transition-colors"
+                      aria-label="Go back"
                     >
-                      Upgrade Plan
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
                     </button>
-                  </div>
-                )}
-              </div>
-            )}
 
-            {onboardingStep === 3 && selectedSlideCount && isLoading && (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                {/* Multi-Step Loading State */}
-                <div className="flex flex-col items-start gap-6 w-full max-w-md mx-auto py-8">
-                    {/* Loading Step 1 - Analyzing content */}
-                    <div className="flex items-center gap-4 w-full">
-                      {loadingStep > 1 ? (
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-green-100 rounded-full">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20 6L9 17l-5-5" />
-                          </svg>
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
-                          <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
-                          <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h3 className="text-base font-medium text-gray-900">{language === 'es' ? 'Analizando contenido' : 'Analyzing content'}</h3>
-                        <p className="text-sm text-gray-500">{language === 'es' ? 'Procesando tus datos y requisitos' : 'Processing your data and requirements'}</p>
-                      </div>
+                    {/* Title */}
+                    <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">
+                      {language === 'es' ? 'Describe de qué tratará tu presentación' : 'Describe what your presentation will be about'}
+                    </h2>
+
+                    {/* Text Area with Send Button */}
+                    <div className="mb-8 relative">
+                      <textarea
+                        className="w-full h-40 p-4 pr-16 bg-[#f3f4f6] border-none rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-[#002903] focus:border-transparent placeholder-[#717182] text-[#002903]"
+                        placeholder={language === 'es'
+                          ? 'Describe el origen y contexto de tu conjunto de datos — incluyendo su fuente, contenido y estructura — e indica qué deseas extraer o visualizar de él...'
+                          : "Describe your dataset's origin and context — including its source, contents, and structure — and indicate what you aim to extract or visualize from it..."}
+                        style={{ fontSize: '16px' }}
+                        value={presentationPrompt}
+                        onChange={(e) => setPresentationPrompt(e.target.value)}
+                      />
+                      {/* Send Button */}
+                      <button
+                        className="absolute bottom-4 right-4 w-8 h-8 bg-[#002903] hover:bg-[#002903]/90 rounded-full flex items-center justify-center transition disabled:opacity-50"
+                        onClick={() => {
+                          // Just move to step 3 - NO AI analysis yet (saves credits)
+                          if (presentationPrompt.trim()) {
+                            setOnboardingStep(3);
+                          }
+                        }}
+                        disabled={!presentationPrompt.trim()}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" className="text-white">
+                          <path d="M12 19V5M5 12l7-7 7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      </button>
                     </div>
 
-                    {/* Loading Step 2 - Generating slides */}
-                    <div className={`flex items-center gap-4 w-full ${loadingStep < 2 ? 'opacity-50' : ''}`}>
-                      {loadingStep > 2 ? (
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-green-100 rounded-full">
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M20 6L9 17l-5-5" />
-                          </svg>
-                        </div>
-                      ) : loadingStep === 2 ? (
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
-                          <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
-                          <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-gray-100 rounded-full">
-                          <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h3 className={`text-base font-medium ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-900'}`}>{language === 'es' ? 'Generando diapositivas' : 'Generating slides'}</h3>
-                        <p className={`text-sm ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-500'}`}>{language === 'es' ? 'Creando la estructura de tu presentación' : 'Creating your presentation structure'}</p>
-                      </div>
-                    </div>
-
-                    {/* Loading Step 3 - Applying design */}
-                    <div className={`flex items-center gap-4 w-full ${loadingStep < 3 ? 'opacity-50' : ''}`}>
-                      {loadingStep === 3 ? (
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
-                          <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
-                          <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
-                        </div>
-                      ) : (
-                        <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-gray-100 rounded-full">
-                          <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
-                        </div>
-                      )}
-                      <div className="flex-1">
-                        <h3 className={`text-base font-medium ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-900'}`}>{language === 'es' ? 'Aplicando diseño' : 'Applying design'}</h3>
-                        <p className={`text-sm ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-500'}`}>{language === 'es' ? 'Estilizando tus diapositivas' : 'Styling your slides'}</p>
-                      </div>
-                    </div>
-
-                    {/* Error Display */}
                     {uploadError && (
-                      <div className="w-full mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                         <p className="text-sm text-red-600 text-center">{uploadError}</p>
-                        {uploadError.includes('timeout') && (
-                          <>
-                            <p className="text-xs text-red-500 text-center mt-2">
-                              Try reducing your dataset size or simplifying your prompt.
-                            </p>
-                            <button 
-                              className="mt-3 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
-                              onClick={() => {
-                                setIsLoading(false);
-                                setUploadError('');
-                              }}
-                            >
-                              Try Again
-                            </button>
-                          </>
-                        )}
                       </div>
                     )}
+                  </div>
+                )}
+
+                {onboardingStep === 3 && !selectedSlideCount && (
+                  <div className="max-w-2xl w-full relative">
+                    {/* Back Button */}
+                    <button
+                      onClick={() => setOnboardingStep(2)}
+                      className="absolute top-0 left-0 p-2 text-[#002903] hover:bg-gray-100 rounded-full transition-colors"
+                      aria-label="Go back"
+                    >
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="m15 18-6-6 6-6" />
+                      </svg>
+                    </button>
+
+                    {/* Title */}
+                    <h2 className="text-xl font-normal text-[#002903] mb-8 text-center">
+                      {language === 'es' ? '¿Cuántas diapositivas quieres?' : 'How many slides do you want?'}
+                    </h2>
+
+                    {/* Slide Count Selection Buttons */}
+                    <div className="flex justify-center gap-3 mb-6">
+                      {(language === 'es'
+                        ? ['Menos de 5', '6-10', '11-15', '16-20', 'Más de 20']
+                        : ['Less than 5', '6-10', '11-15', '16-20', 'More than 20']
+                      ).map((option, index) => {
+                        const originalOption = ['Less than 5', '6-10', '11-15', '16-20', 'More than 20'][index];
+                        // Estimate credits needed (backend only - not shown to user)
+                        const slideCount = getSlideCountNumber(originalOption);
+                        const estimatedCredits = Math.ceil(slideCount * 2.5);
+                        const canAfford = (credits?.remaining_credits || 0) >= estimatedCredits;
+
+                        return (
+                          <button
+                            key={option}
+                            className={`px-4 py-2.5 border-2 rounded-full font-medium transition flex flex-col items-center gap-0 whitespace-nowrap ${canAfford
+                              ? 'bg-white border-gray-200 text-gray-700 hover:border-[#002903] hover:text-[#002903]'
+                              : 'bg-gray-100 border-gray-300 text-gray-400 cursor-not-allowed opacity-60'
+                              }`}
+                            disabled={!canAfford}
+                            onClick={async () => {
+                              if (!canAfford) {
+                                setShowPricingModal(true);
+                                return;
+                              }
+                              // Validate all required fields FIRST
+                              if (!uploadResult || !presentationPrompt.trim()) {
+                                console.error('❌ Missing required fields:', {
+                                  hasUploadResult: !!uploadResult,
+                                  presentationPrompt: presentationPrompt.trim()
+                                });
+                                setUploadError(language === 'es' ? 'Por favor asegúrate de completar todos los campos: archivo subido y descripción proporcionada.' : 'Please ensure all fields are filled: file uploaded and description provided.');
+                                return;
+                              }
+
+                              // Convert slide count text to number
+                              const slideCountNum = getSlideCountNumber(originalOption);
+
+                              if (slideCountNum < 1) {
+                                console.error('❌ Invalid slide count:', originalOption);
+                                setUploadError(language === 'es' ? 'Por favor selecciona un número válido de diapositivas.' : 'Please select a valid slide count.');
+                                return;
+                              }
+
+                              // Set both states together to avoid blank screen
+                              setIsLoading(true);
+                              setSelectedSlideCount(originalOption);
+                              setUploadError('');
+
+                              // Calculate batches (10 slides per batch)
+                              const SLIDES_PER_BATCH = 10;
+                              const totalBatches = Math.ceil(slideCountNum / SLIDES_PER_BATCH);
+
+                              console.log(`📊 Starting generation: ${slideCountNum} slides in ${totalBatches} batch(es)`);
+
+                              let allSlides: any[] = [];
+                              let allMessages: any[] = [];
+
+                              try {
+                                // Step 1: Analyzing content (only once at the beginning)
+                                setLoadingStep(1);
+                                await new Promise(resolve => setTimeout(resolve, 500));
+
+                                // Step 2: Generating slides (set once for all batches)
+                                setLoadingStep(2);
+
+                                for (let batchIndex = 0; batchIndex < totalBatches; batchIndex++) {
+                                  const startSlide = batchIndex * SLIDES_PER_BATCH + 1;
+                                  const endSlide = Math.min((batchIndex + 1) * SLIDES_PER_BATCH, slideCountNum);
+                                  const slidesInBatch = endSlide - startSlide + 1;
+
+                                  console.log(`📦 Batch ${batchIndex + 1}/${totalBatches}: Generating slides ${startSlide}-${endSlide}`);
+
+                                  // Update batch progress
+                                  setBatchProgress({
+                                    current: batchIndex + 1,
+                                    total: totalBatches,
+                                    slideRange: `${startSlide}-${endSlide}`
+                                  });
+
+                                  let batchMessages: any[] = [];
+                                  if (batchIndex === 0) {
+                                    batchMessages = [
+                                      { role: 'user', text: presentationPrompt },
+                                      { role: 'assistant', text: 'Creating presentation...', isLoading: true }
+                                    ];
+                                  }
+
+                                  const requestBody = {
+                                    uploadResult: uploadResult,
+                                    presentationPrompt: presentationPrompt,
+                                    slideCount: slidesInBatch,
+                                    batchNumber: batchIndex + 1,
+                                    totalBatches: totalBatches,
+                                    slideStart: startSlide,
+                                    slideEnd: endSlide,
+                                    comprehensiveAnalysis: comprehensiveAnalysis
+                                  };
+
+                                  console.log(`🤖 Sending batch ${batchIndex + 1} to API...`);
+
+                                  const response = await fetch('/api/generate-excel-presentation', {
+                                    method: 'POST',
+                                    headers: {
+                                      'Content-Type': 'application/json',
+                                      'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token || ''}`
+                                    },
+                                    body: JSON.stringify(requestBody)
+                                  });
+
+                                  if (!response.ok) {
+                                    const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+                                    throw new Error(errorData.error || `Failed to generate presentation (batch ${batchIndex + 1})`);
+                                  }
+
+                                  const data = await response.json();
+                                  console.log(`✅ Batch ${batchIndex + 1} response:`, data);
+
+                                  if (data.presentation) {
+                                    // Append slides from this batch
+                                    allSlides = [...allSlides, ...data.presentation.slides];
+                                    console.log(`📚 Total slides so far: ${allSlides.length}`);
+
+                                    // For first batch, set up messages
+                                    if (batchIndex === 0) {
+                                      batchMessages = [
+                                        { role: 'user', text: presentationPrompt },
+                                        {
+                                          role: 'assistant',
+                                          text: `Successfully created "${data.presentation.title}"`,
+                                          isLoading: false,
+                                          presentationData: data.presentation
+                                        }
+                                      ];
+                                      allMessages = batchMessages;
+                                    }
+                                  } else {
+                                    throw new Error(`No presentation data in batch ${batchIndex + 1} response`);
+                                  }
+                                }
+
+                                // Step 3: Apply design (all batches complete)
+                                setLoadingStep(3);
+                                await new Promise(resolve => setTimeout(resolve, 500));
+
+                                // After all batches complete, create final presentation with all slides
+                                const finalPresentation = {
+                                  title: uploadedFiles[0]?.name?.replace(/\.[^/.]+$/, '') || 'Data Analysis',
+                                  slides: allSlides
+                                };
+
+                                console.log('🎉 All batches complete! Final presentation:', {
+                                  totalSlides: finalPresentation.slides.length,
+                                  batches: Math.ceil(slideCountNum / 10)
+                                });
+
+                                // Set the presentation data with all messages
+                                setPresentationMessages(prev => ({
+                                  ...prev,
+                                  [currentPresentationId]: [
+                                    { role: 'user', text: presentationPrompt },
+                                    {
+                                      role: 'assistant',
+                                      text: `Successfully created "${finalPresentation.title}" with ${finalPresentation.slides.length} slides`,
+                                      isLoading: false,
+                                      presentationData: finalPresentation
+                                    }
+                                  ]
+                                }));
+
+                                setShowOnboarding(false);
+                                setIsLoading(false);
+                                setActiveSlide(0);
+
+                              } catch (error: any) {
+                                console.error('❌ Error during batch generation:', error);
+                                console.error('❌ Error details:', {
+                                  message: error.message,
+                                  stack: error.stack,
+                                  uploadResult: !!uploadResult,
+                                  presentationPrompt: !!presentationPrompt,
+                                  selectedSlideCount: option
+                                });
+                                setUploadError(error.message || 'Failed to generate presentation');
+                                setIsLoading(false);
+                                setLoadingStep(1);
+                                setBatchProgress({ current: 1, total: 1, slideRange: '' });
+                                setSelectedSlideCount(''); // Reset slide count to show options again
+                                setOnboardingStep(3); // Ensure we stay on step 3
+                              }
+                            }}
+                          >
+                            <span>{option}</span>
+                            <span className="text-[10px] opacity-60">~{estimatedCredits} credits</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Current Credits Display */}
+                    <div className="text-center mb-4">
+                      <p className="text-sm text-gray-600">
+                        You have <span className="font-semibold text-[#002903]">{credits?.remaining_credits || 0} credits</span> available
+                      </p>
+                    </div>
+
+                    {/* Upgrade Button if user can't afford any option */}
+                    {(credits?.remaining_credits || 0) < 13 && (
+                      <div className="text-center mt-2">
+                        <p className="text-sm text-gray-600 mb-3">¿Need more credits?</p>
+                        <button
+                          onClick={() => setShowPricingModal(true)}
+                          className="px-6 py-3 bg-[#002903] hover:bg-[#001a02] text-white rounded-full font-medium transition"
+                        >
+                          Upgrade Plan
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {onboardingStep === 3 && selectedSlideCount && isLoading && (
+                  <div className="w-full h-full flex flex-col items-center justify-center">
+                    {/* Multi-Step Loading State */}
+                    <div className="flex flex-col items-start gap-6 w-full max-w-md mx-auto py-8">
+                      {/* Loading Step 1 - Analyzing content */}
+                      <div className="flex items-center gap-4 w-full">
+                        {loadingStep > 1 ? (
+                          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-green-100 rounded-full">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
+                            <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
+                            <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h3 className="text-base font-medium text-gray-900">{language === 'es' ? 'Analizando contenido' : 'Analyzing content'}</h3>
+                          <p className="text-sm text-gray-500">{language === 'es' ? 'Procesando tus datos y requisitos' : 'Processing your data and requirements'}</p>
+                        </div>
+                      </div>
+
+                      {/* Loading Step 2 - Generating slides */}
+                      <div className={`flex items-center gap-4 w-full ${loadingStep < 2 ? 'opacity-50' : ''}`}>
+                        {loadingStep > 2 ? (
+                          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-green-100 rounded-full">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20 6L9 17l-5-5" />
+                            </svg>
+                          </div>
+                        ) : loadingStep === 2 ? (
+                          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
+                            <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
+                            <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-gray-100 rounded-full">
+                            <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h3 className={`text-base font-medium ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-900'}`}>{language === 'es' ? 'Generando diapositivas' : 'Generating slides'}</h3>
+                          <p className={`text-sm ${loadingStep < 2 ? 'text-gray-400' : 'text-gray-500'}`}>{language === 'es' ? 'Creando la estructura de tu presentación' : 'Creating your presentation structure'}</p>
+                        </div>
+                      </div>
+
+                      {/* Loading Step 3 - Applying design */}
+                      <div className={`flex items-center gap-4 w-full ${loadingStep < 3 ? 'opacity-50' : ''}`}>
+                        {loadingStep === 3 ? (
+                          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 relative">
+                            <div className="absolute inset-0 rounded-full border-2 border-gray-200"></div>
+                            <div className="absolute inset-0 rounded-full border-2 border-[#002903] border-t-transparent animate-spin"></div>
+                          </div>
+                        ) : (
+                          <div className="w-10 h-10 flex items-center justify-center flex-shrink-0 bg-gray-100 rounded-full">
+                            <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
+                          </div>
+                        )}
+                        <div className="flex-1">
+                          <h3 className={`text-base font-medium ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-900'}`}>{language === 'es' ? 'Aplicando diseño' : 'Applying design'}</h3>
+                          <p className={`text-sm ${loadingStep < 3 ? 'text-gray-400' : 'text-gray-500'}`}>{language === 'es' ? 'Estilizando tus diapositivas' : 'Styling your slides'}</p>
+                        </div>
+                      </div>
+
+                      {/* Error Display */}
+                      {uploadError && (
+                        <div className="w-full mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+                          <p className="text-sm text-red-600 text-center">{uploadError}</p>
+                          {uploadError.includes('timeout') && (
+                            <>
+                              <p className="text-xs text-red-500 text-center mt-2">
+                                Try reducing your dataset size or simplifying your prompt.
+                              </p>
+                              <button
+                                className="mt-3 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+                                onClick={() => {
+                                  setIsLoading(false);
+                                  setUploadError('');
+                                }}
+                              >
+                                Try Again
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </section>
+            ) : (
+              /* Normal Slide preview column */
+              <section className="flex-1 flex flex-col h-full bg-white overflow-hidden">
+                {/* Top bar */}
+                <div className="bg-[#F9FAFB] border-b border-gray-200 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 flex justify-between items-center">
+                  {/* Chat toggle button - only show when chat is collapsed */}
+                  {sidebarCollapsed && (
+                    <button
+                      className="w-9 h-9 rounded-xl bg-transparent hover:bg-gray-100 flex items-center justify-center transition"
+                      aria-label="Open chat"
+                      onClick={() => setSidebarCollapsed(false)}
+                    >
+                      <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
+                    </button>
+                  )}
+                  <div className={`flex gap-2 sm:gap-3 flex-wrap ${sidebarCollapsed ? '' : 'ml-auto'}`}>
+                    {/* PowerPoint Export button */}
+                    <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
+                      // All paid plans (Basic, Pro, Ultra) have access to PowerPoint export
+                      setShowEditInModal(true);
+                    }}>
+                      <img src="/power-point.png" alt="PowerPoint" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
+                      <span className="hidden sm:inline">{language === 'es' ? 'Editar en PowerPoint' : 'Edit in PowerPoint'}</span>
+                      <span className="sm:hidden">{language === 'es' ? 'Editar' : 'Edit'}</span>
+                    </button>
+                    <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
+                      // All paid plans (Basic, Pro, Ultra) have access to Preview feature
+                      setShowFullscreenPreview(true);
+                    }}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-black sm:w-4 sm:h-4">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span className="hidden sm:inline">{language === 'es' ? 'Vista previa' : 'Preview'}</span>
+                      <span className="sm:hidden">{language === 'es' ? 'Ver' : 'View'}</span>
+                    </button>
+                    <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
+                      // All paid plans (Basic, Pro, Ultra) have access to Export PDF feature
+                      setShowExportModal(true);
+                    }}>
+                      <img src="/export-icon.png" alt="Export" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
+                      <span>{language === 'es' ? 'Exportar a PDF' : 'Export to PDF'}</span>
+                    </button>
+                  </div>
                 </div>
-              </div>
+                {/* Slide content area */}
+                <div className="flex-1 flex flex-col px-2 sm:px-3 md:px-4 lg:px-8 py-4 md:py-6 bg-[#f9fafb] overflow-y-auto">
+                  <div className="flex flex-col items-center gap-4 md:gap-6 bg-[#f9fafb] w-full">
+                    {memoizedSlides.map((slide: any, slideIndex: number) => (
+                      <IsolatedSlideRenderer
+                        key={`slide-${slideIndex}-${slide?.id || slideIndex}`}
+                        slideData={slide}
+                        slideIndex={slideIndex}
+                        sidebarCollapsed={sidebarCollapsed}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </section>
             )}
-          </section>
-        ) : (
-          /* Normal Slide preview column */
-          <section className="flex-1 flex flex-col h-full bg-white overflow-hidden">
-          {/* Top bar */}
-          <div className="bg-[#F9FAFB] border-b border-gray-200 px-3 sm:px-4 md:px-6 lg:px-8 py-3 md:py-4 flex justify-between items-center">
-            {/* Chat toggle button - only show when chat is collapsed */}
-            {sidebarCollapsed && (
-              <button
-                className="w-9 h-9 rounded-xl bg-transparent hover:bg-gray-100 flex items-center justify-center transition"
-                aria-label="Open chat"
-                onClick={() => setSidebarCollapsed(false)}
-              >
-                <img src="/sidebar-green.png" alt="Sidebar Icon" className="w-6 h-6 object-contain" />
-              </button>
-            )}
-            <div className={`flex gap-2 sm:gap-3 flex-wrap ${sidebarCollapsed ? '' : 'ml-auto'}`}>
-              {/* PowerPoint Export button */}
-              <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
-                // All paid plans (Basic, Pro, Ultra) have access to PowerPoint export
-                  setShowEditInModal(true);
-              }}>
-                <img src="/power-point.png" alt="PowerPoint" className="w-4 h-4 sm:w-5 sm:h-5 object-contain" />
-                <span className="hidden sm:inline">{language === 'es' ? 'Editar en PowerPoint' : 'Edit in PowerPoint'}</span>
-                <span className="sm:hidden">{language === 'es' ? 'Editar' : 'Edit'}</span>
-              </button>
-              <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
-                // All paid plans (Basic, Pro, Ultra) have access to Preview feature
-                  setShowFullscreenPreview(true);
-              }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className="text-black sm:w-4 sm:h-4">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span className="hidden sm:inline">{language === 'es' ? 'Vista previa' : 'Preview'}</span>
-                <span className="sm:hidden">{language === 'es' ? 'Ver' : 'View'}</span>
-              </button>
-              <button className="flex items-center gap-1 sm:gap-2 bg-white hover:bg-gray-50 active:bg-gray-100 text-gray-700 px-3 sm:px-4 py-2 rounded-lg font-medium text-xs sm:text-sm transition border border-gray-200 touch-manipulation" onClick={() => {
-                // All paid plans (Basic, Pro, Ultra) have access to Export PDF feature
-                  setShowExportModal(true);
-              }}>
-                <img src="/export-icon.png" alt="Export" className="w-3.5 h-3.5 sm:w-4 sm:h-4 object-contain" />
-                <span>{language === 'es' ? 'Exportar a PDF' : 'Export to PDF'}</span>
-              </button>
-            </div>
-          </div>
-          {/* Slide content area */}
-          <div className="flex-1 flex flex-col px-2 sm:px-3 md:px-4 lg:px-8 py-4 md:py-6 bg-[#f9fafb] overflow-y-auto">
-            <div className="flex flex-col items-center gap-4 md:gap-6 bg-[#f9fafb] w-full">
-              {memoizedSlides.map((slide: any, slideIndex: number) => (
-                <IsolatedSlideRenderer
-                  key={`slide-${slideIndex}-${slide?.id || slideIndex}`}
-                  slideData={slide}
-                  slideIndex={slideIndex}
-                  sidebarCollapsed={sidebarCollapsed}
-                />
-              ))}
-          </div>
-        </div>
-        </section>
-        )}
-      </main>
-      {showTitleMenu && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" onClick={() => setShowTitleMenu(false)} />
-          <div className="relative w-[400px] bg-white rounded-2xl shadow-xl border border-[#23272f] py-6 px-6 z-10">
-            <div className="text-gray-500 text-xs font-medium tracking-wide mb-2 px-1">Presentation options</div>
-            <div className="flex flex-col gap-1 mb-2 px-1">
-              <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
-                onClick={async () => {
-                  console.log('🔄🔄🔄 DUPLICATING PRESENTATION:', currentPresentation);
-                  
-                  // Duplicate presentation
-                  if (currentPresentation) {
-                    const duplicatedPresentation = {
-                      id: uuidv4(), // Generate UUID for duplicate presentation
-                      title: `${currentPresentation.title} (Copy)`
-                    };
-                    
-                    // Track this ID for future reloads
-                    persistCreatedId(duplicatedPresentation.id);
-                    
-                    console.log('💾💾💾 SAVING DUPLICATED PRESENTATION TO DATABASE:', duplicatedPresentation);
-                    
-                    // 🚨 NEW: Save duplicated presentation to database immediately
-                    try {
-                      // Get current presentation data to duplicate
-                      const currentData = getCurrentPresentationData();
-                      const slidesToDuplicate = currentData?.slides || [{ id: 'slide-1', blocks: [] }];
-                      const messagesToDuplicate = messages.length > 0 ? messages : [{
-                        role: 'assistant',
-                        text: `Duplicated presentation: "${duplicatedPresentation.title}"`,
-                        presentationData: {
-                          title: duplicatedPresentation.title,
-                          slides: slidesToDuplicate
-                        }
-                      }];
-                      
-                      const headers = await getAuthHeaders();
-                      const response = await fetch('/api/presentations/save', {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({ 
-                          presentationId: duplicatedPresentation.id,
-                          state: {
-                            title: duplicatedPresentation.title,
-                            slides: slidesToDuplicate,
-                            messages: messagesToDuplicate,
-                            activeSlide: 0
-                          }
-                        })
-                      });
-                      
-                      if (response.ok) {
-                        console.log('✅✅✅ DUPLICATED PRESENTATION SAVED TO DATABASE:', duplicatedPresentation.id)
-                        
-                        // 🚨 CRITICAL: Reload all workspace presentations to include the new duplicate
-                        console.log('🔄🔄🔄 RELOADING WORKSPACE PRESENTATIONS AFTER DUPLICATE...')
-                        setTimeout(async () => {
-                          await reloadWorkspacePresentations();
-                        }, 500); // Small delay to ensure database write is complete
-                        
-                      } else {
-                        console.error('❌❌❌ FAILED TO SAVE DUPLICATED PRESENTATION:', response.status)
-                      }
-                    } catch (error) {
-                      console.error('❌❌❌ ERROR SAVING DUPLICATED PRESENTATION:', error)
-                    }
-                    
-                    // 🚨 IMMEDIATELY update UI state (don't wait for database verification)
-                    console.log('🔄🔄🔄 IMMEDIATELY UPDATING UI WITH DUPLICATE:', duplicatedPresentation);
-                    setWorkspacePresentations(prev => {
-                      const currentPresentations = prev[currentWorkspace] || [];
-                      const isDuplicate = currentPresentations.some(p => p.id === duplicatedPresentation.id);
-                      if (!isDuplicate) {
-                        console.log('🔄🔄🔄 ADDING DUPLICATE TO UI IMMEDIATELY');
-                        return {
-                      ...prev,
-                          [currentWorkspace]: [...currentPresentations, duplicatedPresentation]
+          </main>
+          {showTitleMenu && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/60 transition-opacity duration-300 opacity-100" onClick={() => setShowTitleMenu(false)} />
+              <div className="relative w-[400px] bg-white rounded-2xl shadow-xl border border-[#23272f] py-6 px-6 z-10">
+                <div className="text-gray-500 text-xs font-medium tracking-wide mb-2 px-1">Presentation options</div>
+                <div className="flex flex-col gap-1 mb-2 px-1">
+                  <button
+                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
+                    onClick={async () => {
+                      console.log('🔄🔄🔄 DUPLICATING PRESENTATION:', currentPresentation);
+
+                      // Duplicate presentation
+                      if (currentPresentation) {
+                        const duplicatedPresentation = {
+                          id: uuidv4(), // Generate UUID for duplicate presentation
+                          title: `${currentPresentation.title} (Copy)`
                         };
-                      }
-                      return prev;
-                    });
-                    // Duplicate slides for the new presentation
-                    setWorkspaceSlides(prev => ({
-                      ...prev,
-                      [currentWorkspace]: {
-                        ...prev[currentWorkspace],
-                        [duplicatedPresentation.id]: [...slides]
-                      }
-                    }));
-                    // Select the newly duplicated presentation
-                    lastCreatedPresentationId.current = duplicatedPresentation.id;
-                    setCurrentPresentationId(duplicatedPresentation.id);
-                    setActiveSlide(0);
-                  }
-                  setShowTitleMenu(false);
-                }}
-              >
-                Duplicate
-              </button>
-              <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
-                onClick={() => {
-                  setShowTitleMenu(false);
-                  // All paid plans (Basic, Pro, Ultra) have access to Preview
-                    setShowFullscreenPreview(true);
-                }}
-              >
-                {language === 'es' ? 'Vista previa de presentación' : 'Preview presentation'}
-              </button>
-              <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
-                onClick={() => {
-                  setShowTitleMenu(false);
-                  // All paid plans (Basic, Pro, Ultra) have access to Export PDF feature
-                    setShowExportModal(true);
-                }}
-              >
-                Export as PDF
-              </button>
-              <button 
-                className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-[#ef4444] hover:bg-[#f3f4f6]" 
-                onClick={async () => {
-                  console.log('🗑️🗑️🗑️ DELETING PRESENTATION from database:', currentPresentationId)
-                  
-                  // Delete from database first
-                  try {
-                    const headers = await getAuthHeaders();
-                    const response = await fetch(`/api/presentations/delete?presentationId=${currentPresentationId}`, {
-                      method: 'DELETE',
-                      headers
-                    });
-                    
-                    if (response.ok) {
-                      console.log('✅✅✅ PRESENTATION DELETED from database successfully')
-                    } else {
-                      console.error('❌❌❌ Failed to delete presentation from database:', response.status)
-                      // Continue with UI deletion even if database deletion fails
-                    }
-                  } catch (error) {
-                    console.error('❌❌❌ Error deleting presentation from database:', error)
-                    // Continue with UI deletion even if database deletion fails
-                  }
-                  
-                  // Delete from UI
-                  const updatedPresentations = workspacePresentations[currentWorkspace]?.filter(p => p.id !== currentPresentationId) || [];
-                  setWorkspacePresentations(prev => ({
-                    ...prev,
-                    [currentWorkspace]: updatedPresentations
-                  }));
-                  
-                  // Remove slides for deleted presentation
-                  setWorkspaceSlides(prev => {
-                    const { [currentPresentationId]: deletedSlides, ...rest } = prev[currentWorkspace] || {};
-                    return {
-                      ...prev,
-                      [currentWorkspace]: rest
-                    };
-                  });
-                  
-                  // Remove presentation messages
-                  setPresentationMessages(prev => {
-                    const { [currentPresentationId]: deletedMessages, ...rest } = prev;
-                    return rest;
-                  });
-                  
-                  // Select the first presentation or create a new one if none exist
-                  if (updatedPresentations.length === 0) {
-                    console.log('💾💾💾 CREATING DEFAULT PRESENTATION after deletion')
-                    const newId = uuidv4(); // Generate UUID for new presentation
-                    const newPresentation = { id: newId, title: "Untitled presentation" };
-                    
-                    // Track this ID for future reloads
-                    persistCreatedId(newId);
-                    
-                    setWorkspacePresentations(prev => ({
-                      ...prev,
-                      [currentWorkspace]: [newPresentation]
-                    }));
-                    
-                    // Create and save new default presentation with instruction slide
-                    // Create a single instruction slide with no messages
-                    const instructionSlide = {
-                      id: 'slide-1',
-                      blocks: [
-                        {
-                          type: 'BackgroundBlock',
-                          props: { color: 'bg-white' }
-                        },
-                        {
-                          type: 'TextBlock',
-                          props: {
-                            text: 'To generate your presentation write in the input box below',
-                            fontSize: 'text-xl',
-                            textAlign: 'text-center',
-                            color: 'text-gray-600'
+
+                        // Track this ID for future reloads
+                        persistCreatedId(duplicatedPresentation.id);
+
+                        console.log('💾💾💾 SAVING DUPLICATED PRESENTATION TO DATABASE:', duplicatedPresentation);
+
+                        // 🚨 NEW: Save duplicated presentation to database immediately
+                        try {
+                          // Get current presentation data to duplicate
+                          const currentData = getCurrentPresentationData();
+                          const slidesToDuplicate = currentData?.slides || [{ id: 'slide-1', blocks: [] }];
+                          const messagesToDuplicate = messages.length > 0 ? messages : [{
+                            role: 'assistant',
+                            text: `Duplicated presentation: "${duplicatedPresentation.title}"`,
+                            presentationData: {
+                              title: duplicatedPresentation.title,
+                              slides: slidesToDuplicate
+                            }
+                          }];
+
+                          const headers = await getAuthHeaders();
+                          const response = await fetch('/api/presentations/save', {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify({
+                              presentationId: duplicatedPresentation.id,
+                              state: {
+                                title: duplicatedPresentation.title,
+                                slides: slidesToDuplicate,
+                                messages: messagesToDuplicate,
+                                activeSlide: 0
+                              }
+                            })
+                          });
+
+                          if (response.ok) {
+                            console.log('✅✅✅ DUPLICATED PRESENTATION SAVED TO DATABASE:', duplicatedPresentation.id)
+
+                            // 🚨 CRITICAL: Reload all workspace presentations to include the new duplicate
+                            console.log('🔄🔄🔄 RELOADING WORKSPACE PRESENTATIONS AFTER DUPLICATE...')
+                            setTimeout(async () => {
+                              await reloadWorkspacePresentations();
+                            }, 500); // Small delay to ensure database write is complete
+
+                          } else {
+                            console.error('❌❌❌ FAILED TO SAVE DUPLICATED PRESENTATION:', response.status)
                           }
+                        } catch (error) {
+                          console.error('❌❌❌ ERROR SAVING DUPLICATED PRESENTATION:', error)
                         }
-                      ]
-                    };
-                    
-                    // Get authentication headers and save to database
-                    try {
-                      const headers = await getAuthHeaders();
-                      
-                      const response = await fetch('/api/presentations/save', {
-                        method: 'POST',
-                        headers,
-                        body: JSON.stringify({ 
-                          presentationId: newId,
-                          state: {
-                            title: "Untitled presentation",
-                            slides: [instructionSlide],
-                            messages: [], // NO messages - completely empty chat
-                            activeSlide: 0
+
+                        // 🚨 IMMEDIATELY update UI state (don't wait for database verification)
+                        console.log('🔄🔄🔄 IMMEDIATELY UPDATING UI WITH DUPLICATE:', duplicatedPresentation);
+                        setWorkspacePresentations(prev => {
+                          const currentPresentations = prev[currentWorkspace] || [];
+                          const isDuplicate = currentPresentations.some(p => p.id === duplicatedPresentation.id);
+                          if (!isDuplicate) {
+                            console.log('🔄🔄🔄 ADDING DUPLICATE TO UI IMMEDIATELY');
+                            return {
+                              ...prev,
+                              [currentWorkspace]: [...currentPresentations, duplicatedPresentation]
+                            };
                           }
-                        })
-                      });
-                    
-                      if (response.ok) {
-                        console.log('✅✅✅ DEFAULT PRESENTATION WITH INSTRUCTION SLIDE SAVED TO DATABASE')
-                      } else {
-                        console.error('❌❌❌ Failed to save default presentation:', response.status)
+                          return prev;
+                        });
+                        // Duplicate slides for the new presentation
+                        setWorkspaceSlides(prev => ({
+                          ...prev,
+                          [currentWorkspace]: {
+                            ...prev[currentWorkspace],
+                            [duplicatedPresentation.id]: [...slides]
+                          }
+                        }));
+                        // Select the newly duplicated presentation
+                        lastCreatedPresentationId.current = duplicatedPresentation.id;
+                        setCurrentPresentationId(duplicatedPresentation.id);
+                        setActiveSlide(0);
                       }
-                    } catch (error) {
-                      console.error('❌❌❌ Error creating default presentation:', error)
-                    }
-                    
-                    setCurrentPresentationId(newId);
-                  } else {
-                    setCurrentPresentationId(updatedPresentations[0].id);
-                  }
-                  
-                  setActiveSlide(0);
-                  setShowTitleMenu(false);
-                }}
-              >
-                Delete presentation
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-      {/* Export Modal */}
-      {showExportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setShowExportModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 z-10">
-            <h2 className="text-[#002903] text-xl font-semibold mb-4">Export Presentation</h2>
-            <p className="text-[#002903] text-sm mb-6">
-              Your presentation <span className="text-[#002903] font-medium">{currentPresentation?.title || 'Untitled'}</span> contains <span className="text-[#002903] font-medium">{slides.length} slides</span>.
-            </p>
-            
-            {/* Progress Bar */}
-            {isExporting && (
-              <div className="mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-[#002903] text-xs">Generating PDF...</span>
-                  <span className="text-[#002903] text-xs">{Math.round(exportProgress)}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-[#002903] h-2 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${exportProgress}%` }}
-                  />
+                      setShowTitleMenu(false);
+                    }}
+                  >
+                    Duplicate
+                  </button>
+                  <button
+                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
+                    onClick={() => {
+                      setShowTitleMenu(false);
+                      // All paid plans (Basic, Pro, Ultra) have access to Preview
+                      setShowFullscreenPreview(true);
+                    }}
+                  >
+                    {language === 'es' ? 'Vista previa de presentación' : 'Preview presentation'}
+                  </button>
+                  <button
+                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-gray-900 hover:bg-[#f3f4f6]"
+                    onClick={() => {
+                      setShowTitleMenu(false);
+                      // All paid plans (Basic, Pro, Ultra) have access to Export PDF feature
+                      setShowExportModal(true);
+                    }}
+                  >
+                    Export as PDF
+                  </button>
+                  <button
+                    className="w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition text-[#ef4444] hover:bg-[#f3f4f6]"
+                    onClick={async () => {
+                      console.log('🗑️🗑️🗑️ DELETING PRESENTATION from database:', currentPresentationId)
+
+                      // Delete from database first
+                      try {
+                        const headers = await getAuthHeaders();
+                        const response = await fetch(`/api/presentations/delete?presentationId=${currentPresentationId}`, {
+                          method: 'DELETE',
+                          headers
+                        });
+
+                        if (response.ok) {
+                          console.log('✅✅✅ PRESENTATION DELETED from database successfully')
+                        } else {
+                          console.error('❌❌❌ Failed to delete presentation from database:', response.status)
+                          // Continue with UI deletion even if database deletion fails
+                        }
+                      } catch (error) {
+                        console.error('❌❌❌ Error deleting presentation from database:', error)
+                        // Continue with UI deletion even if database deletion fails
+                      }
+
+                      // Delete from UI
+                      const updatedPresentations = workspacePresentations[currentWorkspace]?.filter(p => p.id !== currentPresentationId) || [];
+                      setWorkspacePresentations(prev => ({
+                        ...prev,
+                        [currentWorkspace]: updatedPresentations
+                      }));
+
+                      // Remove slides for deleted presentation
+                      setWorkspaceSlides(prev => {
+                        const { [currentPresentationId]: deletedSlides, ...rest } = prev[currentWorkspace] || {};
+                        return {
+                          ...prev,
+                          [currentWorkspace]: rest
+                        };
+                      });
+
+                      // Remove presentation messages
+                      setPresentationMessages(prev => {
+                        const { [currentPresentationId]: deletedMessages, ...rest } = prev;
+                        return rest;
+                      });
+
+                      // Select the first presentation or create a new one if none exist
+                      if (updatedPresentations.length === 0) {
+                        console.log('💾💾💾 CREATING DEFAULT PRESENTATION after deletion')
+                        const newId = uuidv4(); // Generate UUID for new presentation
+                        const newPresentation = { id: newId, title: "Untitled presentation" };
+
+                        // Track this ID for future reloads
+                        persistCreatedId(newId);
+
+                        setWorkspacePresentations(prev => ({
+                          ...prev,
+                          [currentWorkspace]: [newPresentation]
+                        }));
+
+                        // Create and save new default presentation with instruction slide
+                        // Create a single instruction slide with no messages
+                        const instructionSlide = {
+                          id: 'slide-1',
+                          blocks: [
+                            {
+                              type: 'BackgroundBlock',
+                              props: { color: 'bg-white' }
+                            },
+                            {
+                              type: 'TextBlock',
+                              props: {
+                                text: 'To generate your presentation write in the input box below',
+                                fontSize: 'text-xl',
+                                textAlign: 'text-center',
+                                color: 'text-gray-600'
+                              }
+                            }
+                          ]
+                        };
+
+                        // Get authentication headers and save to database
+                        try {
+                          const headers = await getAuthHeaders();
+
+                          const response = await fetch('/api/presentations/save', {
+                            method: 'POST',
+                            headers,
+                            body: JSON.stringify({
+                              presentationId: newId,
+                              state: {
+                                title: "Untitled presentation",
+                                slides: [instructionSlide],
+                                messages: [], // NO messages - completely empty chat
+                                activeSlide: 0
+                              }
+                            })
+                          });
+
+                          if (response.ok) {
+                            console.log('✅✅✅ DEFAULT PRESENTATION WITH INSTRUCTION SLIDE SAVED TO DATABASE')
+                          } else {
+                            console.error('❌❌❌ Failed to save default presentation:', response.status)
+                          }
+                        } catch (error) {
+                          console.error('❌❌❌ Error creating default presentation:', error)
+                        }
+
+                        setCurrentPresentationId(newId);
+                      } else {
+                        setCurrentPresentationId(updatedPresentations[0].id);
+                      }
+
+                      setActiveSlide(0);
+                      setShowTitleMenu(false);
+                    }}
+                  >
+                    Delete presentation
+                  </button>
                 </div>
               </div>
-            )}
-            
-            <button 
-              className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium py-3 px-4 rounded-lg transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={handleExportPDF}
-              disabled={isExporting}
-            >
-              {isExporting ? 'Generating PDF...' : 'Export PDF'}
-            </button>
-          </div>
-          <style jsx>{`
+            </div>
+          )}
+          {/* Export Modal */}
+          {showExportModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/60" onClick={() => setShowExportModal(false)} />
+              <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 z-10">
+                <h2 className="text-[#002903] text-xl font-semibold mb-4">Export Presentation</h2>
+                <p className="text-[#002903] text-sm mb-6">
+                  Your presentation <span className="text-[#002903] font-medium">{currentPresentation?.title || 'Untitled'}</span> contains <span className="text-[#002903] font-medium">{slides.length} slides</span>.
+                </p>
+
+                {/* Progress Bar */}
+                {isExporting && (
+                  <div className="mb-4">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[#002903] text-xs">Generating PDF...</span>
+                      <span className="text-[#002903] text-xs">{Math.round(exportProgress)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-[#002903] h-2 rounded-full transition-all duration-300 ease-out"
+                        style={{ width: `${exportProgress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  className="w-full bg-[#002903] hover:bg-[#002903]/90 text-white font-medium py-3 px-4 rounded-lg transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                  onClick={handleExportPDF}
+                  disabled={isExporting}
+                >
+                  {isExporting ? 'Generating PDF...' : 'Export PDF'}
+                </button>
+              </div>
+              <style jsx>{`
             .animate-modal-in {
               animation: modalIn 0.3s cubic-bezier(0.4,0,0.2,1);
             }
@@ -8352,206 +8377,206 @@ export default function EditorPage() {
               100% { opacity: 1; transform: scale(1); }
             }
           `}</style>
-        </div>
-      )}
-      {/* Edit In Modal */}
-      {showEditInModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div className="absolute inset-0 bg-black/60" onClick={() => setShowEditInModal(false)} />
-          <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 z-10">
-            <h2 className="text-[#002903] text-xl font-semibold mb-2">Export to PowerPoint</h2>
-            <p className="text-gray-600 text-sm mb-6">
-              Download your presentation as a PowerPoint file
-            </p>
-            
-            <div className="flex flex-col gap-3">
-              {/* PowerPoint Button */}
-              <button 
-                className="w-full flex items-center justify-between bg-white hover:bg-gray-50 text-gray-900 font-medium py-4 px-5 rounded-lg transition border-2 border-gray-200 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isExportingPowerPoint}
-                onClick={async (e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  
-                  try {
-                    console.log('🚀 PowerPoint Export: Starting...');
-                    console.log('📊 Current Presentation:', currentPresentationId);
-                    console.log('📁 Workspace:', currentWorkspace);
-                    console.log('📄 Slides count:', slides?.length);
-                    
-                    setIsExportingPowerPoint(true);
-                    
-                    // Check if we have data
-                    if (!slides || slides.length === 0) {
-                      alert('No slides to export. Please create a presentation first.');
-                      setIsExportingPowerPoint(false);
-                      return;
-                    }
-                    
-                    console.log('📤 Sending request to /api/export-pptx...');
-                    const response = await fetch('/api/export-pptx', {
-                      method: 'POST',
-                      headers: {
-                        'Content-Type': 'application/json',
-                      },
-                      body: JSON.stringify({
-                        presentationId: currentPresentationId,
-                        workspace: currentWorkspace,
-                        slides: slides,
-                        title: currentPresentation?.title || 'Presentation'
-                      })
-                    });
-
-                    console.log('📥 Response status:', response.status);
-                    console.log('📥 Response ok:', response.ok);
-
-                    if (!response.ok) {
-                      const errorData = await response.text();
-                      console.error('❌ Export failed:', errorData);
-                      throw new Error(`Failed to export PowerPoint: ${response.status}`);
-                    }
-
-                    console.log('💾 Downloading file...');
-                    // Download the file
-                    const blob = await response.blob();
-                    console.log('📦 Blob size:', blob.size);
-                    
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = `${currentPresentation?.title || 'presentation'}.pptx`;
-                    document.body.appendChild(a);
-                    a.click();
-                    window.URL.revokeObjectURL(url);
-                    document.body.removeChild(a);
-                    
-                    console.log('✅ PowerPoint export completed!');
-                    setShowEditInModal(false);
-                    setIsExportingPowerPoint(false);
-                  } catch (error) {
-                    console.error('❌ PowerPoint export failed:', error);
-                    alert(`Failed to export PowerPoint presentation: ${(error as Error).message}`);
-                    setIsExportingPowerPoint(false);
-                  }
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <img src="/power-point.png" alt="PowerPoint" className="w-8 h-8 object-contain" />
-                  <span className="text-base">PowerPoint</span>
-                </div>
-                {isExportingPowerPoint ? (
-                  <svg className="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-400">
-                    <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
-                )}
-              </button>
             </div>
-            
-            <button 
-              className="w-full mt-4 text-gray-500 hover:text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm"
-              onClick={() => setShowEditInModal(false)}
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
-      {/* Fullscreen Preview */}
-      {showFullscreenPreview && (
-        <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
-          {/* Close button */}
-          <button 
-            className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition z-10"
-            onClick={() => setShowFullscreenPreview(false)}
-          >
-            <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
-          
-          {/* Slide navigation */}
-          {memoizedSlides.length > 1 && (
-            <>
-              <button 
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition disabled:opacity-30 disabled:cursor-not-allowed z-10 bg-black/20 hover:bg-black/40 rounded-full p-3"
-                onClick={() => setActiveSlide(Math.max(0, activeSlide - 1))}
-                disabled={activeSlide === 0}
-                aria-label="Previous slide"
-              >
-                <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                  <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-              <button 
-                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition disabled:opacity-30 disabled:cursor-not-allowed z-10 bg-black/20 hover:bg-black/40 rounded-full p-3"
-                onClick={() => setActiveSlide(Math.min(memoizedSlides.length - 1, activeSlide + 1))}
-                disabled={activeSlide === memoizedSlides.length - 1}
-                aria-label="Next slide"
-              >
-                <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
-                  <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-              </button>
-            </>
           )}
-          
-          {/* Slide content */}
-          <div className="w-full h-full flex items-center justify-center relative">
-            {/* Fullscreen canvas that properly scales the content */}
-            <div 
-              className="bg-white relative overflow-hidden"
-              style={{
-                width: '100vw',
-                height: '100vh'
-              }}
-            >
-              <div 
-                className="w-full h-full flex items-center justify-center"
-              >
-                <div 
-                  style={{
-                    width: '881px',
-                    height: '495px'
-                  }}
-                  ref={(el) => {
-                    if (el) {
-                      // Calculate scale to fill viewport more aggressively
-                      const availableWidth = window.innerWidth;
-                      const availableHeight = window.innerHeight;
-                      
-                      const scaleX = availableWidth / 881;
-                      const scaleY = availableHeight / 495;
-                      
-                      // Use the larger scale factor to fill more screen space
-                      // This will crop some content but eliminate white spaces
-                      const scale = Math.max(scaleX, scaleY);
-                      
-                      // Apply scaling to make content fill the screen
-                      el.style.transform = `scale(${scale})`;
-                      el.style.transformOrigin = 'center center';
-                    }
-                  }}
-                >
-                  {renderSlideContent(activeSlide, true)}
+          {/* Edit In Modal */}
+          {showEditInModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="absolute inset-0 bg-black/60" onClick={() => setShowEditInModal(false)} />
+              <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 border border-gray-200 z-10">
+                <h2 className="text-[#002903] text-xl font-semibold mb-2">Export to PowerPoint</h2>
+                <p className="text-gray-600 text-sm mb-6">
+                  Download your presentation as a PowerPoint file
+                </p>
+
+                <div className="flex flex-col gap-3">
+                  {/* PowerPoint Button */}
+                  <button
+                    className="w-full flex items-center justify-between bg-white hover:bg-gray-50 text-gray-900 font-medium py-4 px-5 rounded-lg transition border-2 border-gray-200 hover:border-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isExportingPowerPoint}
+                    onClick={async (e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+
+                      try {
+                        console.log('🚀 PowerPoint Export: Starting...');
+                        console.log('📊 Current Presentation:', currentPresentationId);
+                        console.log('📁 Workspace:', currentWorkspace);
+                        console.log('📄 Slides count:', slides?.length);
+
+                        setIsExportingPowerPoint(true);
+
+                        // Check if we have data
+                        if (!slides || slides.length === 0) {
+                          alert('No slides to export. Please create a presentation first.');
+                          setIsExportingPowerPoint(false);
+                          return;
+                        }
+
+                        console.log('📤 Sending request to /api/export-pptx...');
+                        const response = await fetch('/api/export-pptx', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            presentationId: currentPresentationId,
+                            workspace: currentWorkspace,
+                            slides: slides,
+                            title: currentPresentation?.title || 'Presentation'
+                          })
+                        });
+
+                        console.log('📥 Response status:', response.status);
+                        console.log('📥 Response ok:', response.ok);
+
+                        if (!response.ok) {
+                          const errorData = await response.text();
+                          console.error('❌ Export failed:', errorData);
+                          throw new Error(`Failed to export PowerPoint: ${response.status}`);
+                        }
+
+                        console.log('💾 Downloading file...');
+                        // Download the file
+                        const blob = await response.blob();
+                        console.log('📦 Blob size:', blob.size);
+
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${currentPresentation?.title || 'presentation'}.pptx`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+
+                        console.log('✅ PowerPoint export completed!');
+                        setShowEditInModal(false);
+                        setIsExportingPowerPoint(false);
+                      } catch (error) {
+                        console.error('❌ PowerPoint export failed:', error);
+                        alert(`Failed to export PowerPoint presentation: ${(error as Error).message}`);
+                        setIsExportingPowerPoint(false);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <img src="/power-point.png" alt="PowerPoint" className="w-8 h-8 object-contain" />
+                      <span className="text-base">PowerPoint</span>
+                    </div>
+                    {isExportingPowerPoint ? (
+                      <svg className="animate-spin h-5 w-5 text-gray-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-400">
+                        <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    )}
+                  </button>
                 </div>
+
+                <button
+                  className="w-full mt-4 text-gray-500 hover:text-gray-700 font-medium py-2 px-4 rounded-lg transition text-sm"
+                  onClick={() => setShowEditInModal(false)}
+                >
+                  Cancel
+                </button>
               </div>
             </div>
-          </div>
-          
-          {/* Slide counter */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
-            {activeSlide + 1} / {memoizedSlides.length}
-          </div>
+          )}
+          {/* Fullscreen Preview */}
+          {showFullscreenPreview && (
+            <div className="fixed inset-0 z-50 bg-black flex items-center justify-center">
+              {/* Close button */}
+              <button
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 transition z-10"
+                onClick={() => setShowFullscreenPreview(false)}
+              >
+                <svg width="24" height="24" fill="none" viewBox="0 0 24 24">
+                  <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </button>
+
+              {/* Slide navigation */}
+              {memoizedSlides.length > 1 && (
+                <>
+                  <button
+                    className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition disabled:opacity-30 disabled:cursor-not-allowed z-10 bg-black/20 hover:bg-black/40 rounded-full p-3"
+                    onClick={() => setActiveSlide(Math.max(0, activeSlide - 1))}
+                    disabled={activeSlide === 0}
+                    aria-label="Previous slide"
+                  >
+                    <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                      <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                  <button
+                    className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition disabled:opacity-30 disabled:cursor-not-allowed z-10 bg-black/20 hover:bg-black/40 rounded-full p-3"
+                    onClick={() => setActiveSlide(Math.min(memoizedSlides.length - 1, activeSlide + 1))}
+                    disabled={activeSlide === memoizedSlides.length - 1}
+                    aria-label="Next slide"
+                  >
+                    <svg width="32" height="32" fill="none" viewBox="0 0 24 24">
+                      <path d="M9 18l6-6-6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </>
+              )}
+
+              {/* Slide content */}
+              <div className="w-full h-full flex items-center justify-center relative">
+                {/* Fullscreen canvas that properly scales the content */}
+                <div
+                  className="bg-white relative overflow-hidden"
+                  style={{
+                    width: '100vw',
+                    height: '100vh'
+                  }}
+                >
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                  >
+                    <div
+                      style={{
+                        width: '881px',
+                        height: '495px'
+                      }}
+                      ref={(el) => {
+                        if (el) {
+                          // Calculate scale to fill viewport more aggressively
+                          const availableWidth = window.innerWidth;
+                          const availableHeight = window.innerHeight;
+
+                          const scaleX = availableWidth / 881;
+                          const scaleY = availableHeight / 495;
+
+                          // Use the larger scale factor to fill more screen space
+                          // This will crop some content but eliminate white spaces
+                          const scale = Math.max(scaleX, scaleY);
+
+                          // Apply scaling to make content fill the screen
+                          el.style.transform = `scale(${scale})`;
+                          el.style.transformOrigin = 'center center';
+                        }
+                      }}
+                    >
+                      {renderSlideContent(activeSlide, true)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Slide counter */}
+              <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-white text-sm bg-black/50 px-3 py-1 rounded-full">
+                {activeSlide + 1} / {memoizedSlides.length}
+              </div>
+            </div>
+          )}
         </div>
-      )}
-    </div>
-    </SimpleAutosave>
-      
+      </SimpleAutosave>
+
       {/* Featurebase Widget */}
       <FeaturebaseWidget appId="68fbb468fbac8b30b2071011" />
     </ProtectedRoute>

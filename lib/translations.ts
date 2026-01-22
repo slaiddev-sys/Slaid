@@ -7,7 +7,7 @@ export interface Translations {
     login: string;
     signup: string;
   };
-  
+
   // Homepage
   home: {
     customersText: string;
@@ -16,24 +16,24 @@ export interface Translations {
     subtitle: string;
     getStarted: string;
     freeCredits: string;
-    
+
     // Bento section
     bentoTitle: string;
     bentoDescription: string;
-    
+
     smartExcelTitle: string;
     smartExcelDescription: string;
-    
+
     slideReadyTitle: string;
     slideReadyDescription: string;
-    
+
     interactiveChartsTitle: string;
     interactiveChartsDescription: string;
-    
+
     editPowerPointTitle: string;
     editPowerPointDescription: string;
     editPowerPointButton: string;
-    
+
     // FAQ
     faqTitle: string;
     faq1Question: string;
@@ -46,7 +46,7 @@ export interface Translations {
     faq4Answer: string;
     faq5Question: string;
     faq5Answer: string;
-    
+
     // Footer
     footerSlogan: string;
     footerMenuTitle: string;
@@ -59,7 +59,7 @@ export interface Translations {
     footerCookies: string;
     footerCopyright: string;
   };
-  
+
   // Upload
   upload: {
     title: string;
@@ -67,7 +67,7 @@ export interface Translations {
     clickToSelect: string;
     supportedFormats: string;
   };
-  
+
   // Pricing
   pricing: {
     title: string;
@@ -80,7 +80,7 @@ export interface Translations {
     discount: string;
     currentPlan: string;
     downgradePlan: string;
-    
+
     // Plans
     basicPlan: string;
     proPlan: string;
@@ -88,7 +88,7 @@ export interface Translations {
     basicDescription: string;
     proDescription: string;
     ultraDescription: string;
-    
+
     // Features
     including: string;
     monthlyCredits: string;
@@ -97,17 +97,17 @@ export interface Translations {
     slidePreview: string;
     exportPDF: string;
     prioritySupport: string;
-    
+
     // Save messages
     savePerYear: string;
-    
+
     // Other
     termsAndPrivacy: string;
     viewTerms: string;
     privacyPolicy: string;
     freeTrial3Days: string;
   };
-  
+
   // Auth (Login/Signup)
   auth: {
     loginTitle: string;
@@ -118,17 +118,34 @@ export interface Translations {
     alreadyHaveAccount: string;
     signupLink: string;
     loginLink: string;
-    
+
     // Typewriter phrases
     typewriterPhrases: string[];
-    
+
     // Error messages
     authFailed: string;
     unexpectedError: string;
     authTimeout: string;
     accountDeleted: string;
   };
-  
+
+  // Onboarding
+  onboarding: {
+    steps: {
+      question: string;
+      options: {
+        id: string;
+        label: string;
+      }[];
+    }[];
+    finalTitle: string;
+    finalSubtitle: string;
+    startButton: string;
+    backButton: string;
+    stepCounter: string;
+    personalize: string;
+  };
+
   // Editor
   editor: {
     workspace: string;
@@ -138,42 +155,91 @@ export interface Translations {
     settings: string;
     help: string;
     logout: string;
-    
+
     // Upload
     uploadTitle: string;
     uploadSubtitle: string;
     uploadButton: string;
-    
+    clickToSelect: string;
+    supportedFormats: string;
+
     // Loading
     analyzingContent: string;
     generatingSlides: string;
     applyingDesign: string;
-    
+
+    // Sidebar
+    editSlide: string;
+    deleteSlide: string;
+    duplicateSlide: string;
+
+    // Export
+    export: string;
+    exportPDF: string;
+    exportPPTX: string;
+    exportGoogleSlides: string;
+    exporting: string;
+
     // Modals
     pricingModal: {
       title: string;
+      subtitle: string;
       upgradeMessage: string;
+      monthly: string;
+      annual: string;
     };
-    
+
     settingsModal: {
       title: string;
       accountSettings: string;
       currentPlan: string;
       freePlan: string;
-      basicPlan: string;
-      proPlan: string;
+      weeklyPlan: string;
+      monthlyPlan: string;
+      annualPlan: string;
       ultraPlan: string;
+      freePlanInfo: string;
+      weeklyPlanInfo: string;
+      monthlyPlanInfo: string;
+      annualPlanInfo: string;
+      ultraPlanInfo: string;
       manageSubscription: string;
       cancelSubscription: string;
+      cancelling: string;
       deleteAccount: string;
       close: string;
     };
-    
+
     helpModal: {
       title: string;
+      description: string;
       contactSupport: string;
       email: string;
+      documentation: string;
+      tutorials: string;
       close: string;
+    };
+
+    creditsModal: {
+      title: string;
+      currentBalance: string;
+      creditPacks: string;
+      or: string;
+      subscriptionPlans: string;
+    };
+
+    shareModal: {
+      title: string;
+      copyLink: string;
+      linkCopied: string;
+      close: string;
+    };
+
+    errors: {
+      uploadError: string;
+      generateError: string;
+      notEnoughCredits: string;
+      authRequired: string;
     };
   };
 }
@@ -184,7 +250,7 @@ export const translations: Record<Language, Translations> = {
       login: 'Login',
       signup: 'Sign Up',
     },
-    
+
     home: {
       customersText: 'Used by',
       happyCustomers: 'happy customers',
@@ -192,23 +258,23 @@ export const translations: Record<Language, Translations> = {
       subtitle: 'Unlock the potential of your Excel data with our AI-powered storytelling and presentation generator.',
       getStarted: 'Get Started',
       freeCredits: 'Get 35 free credits by signing up',
-      
+
       bentoTitle: 'Unlock the power of your data',
       bentoDescription: "Slaid doesn't just turn spreadsheets into visual reports — it acts like an analyst, interpreting your data, spotting patterns, and suggesting clear, actionable insights.",
-      
+
       smartExcelTitle: 'Smart Excel Analysis — Let AI do the number crunching.',
       smartExcelDescription: 'Upload any spreadsheet and Slaid will automatically analyze your data — no formulas, no pivot tables. From trends to anomalies, it detects what matters most and gets to work instantly.',
-      
+
       slideReadyTitle: 'Slide-Ready Reports — From raw data to polished storytelling.',
       slideReadyDescription: 'Turn your analysis into a structured presentation with titles, charts, summaries and key takeaways. No design skills needed — everything is laid out for clarity and impact.',
-      
+
       interactiveChartsTitle: 'Interactive Charts — Explore, filter, and highlight what matters.',
       interactiveChartsDescription: "Charts in Slaid aren't static images. You can click, explore, and dig deeper into the numbers — making it easier to find insights and adapt visuals before exporting.",
-      
+
       editPowerPointTitle: 'Edit in PowerPoint — Make it yours with your tools.',
       editPowerPointDescription: "Export your report to PowerPoint or your favorite editor. You're free to tweak every slide or drop it straight into your workflow, fully editable.",
       editPowerPointButton: 'Edit in PowerPoint',
-      
+
       faqTitle: 'Frequently Asked Questions',
       faq1Question: 'How does Slaid analyze my Excel data?',
       faq1Answer: 'Slaid uses advanced AI to automatically detect patterns, trends, and insights in your spreadsheet. Simply upload your Excel file, and our AI will analyze the data structure, identify key metrics, and generate meaningful visualizations without requiring any manual setup.',
@@ -220,7 +286,7 @@ export const translations: Record<Language, Translations> = {
       faq4Answer: 'Credit usage depends on the number of slides you generate. Smaller presentations (5 slides) use fewer credits, while larger presentations (15+ slides) require more. New users get 35 free credits to get started, and you can always upgrade your plan for more credits.',
       faq5Question: 'Is my data secure?',
       faq5Answer: 'Absolutely. Your data is encrypted in transit and at rest. We never share your data with third parties, and you maintain full ownership of all uploaded files and generated presentations. You can delete your data at any time from your account settings.',
-      
+
       footerSlogan: 'Transform your Excel into professional data presentations with AI-powered insights.',
       footerMenuTitle: 'Menu',
       footerPoliciesTitle: 'Policies',
@@ -232,14 +298,14 @@ export const translations: Record<Language, Translations> = {
       footerCookies: 'Cookie Policy',
       footerCopyright: 'All rights reserved.',
     },
-    
+
     upload: {
       title: 'Upload Files',
       dragDrop: 'Drag and drop your files here, or',
       clickToSelect: 'click to select',
       supportedFormats: 'Support formats: .xlsx, .xsl, .csv',
     },
-    
+
     pricing: {
       title: 'Pricing',
       subtitle: 'Choose the plan that perfectly fits your needs. Scale up anytime as you grow.',
@@ -251,14 +317,14 @@ export const translations: Record<Language, Translations> = {
       discount: 'CHRISTMAS 50% OFF',
       currentPlan: 'Current plan',
       downgradePlan: 'Downgrade plan',
-      
+
       basicPlan: 'Basic',
       proPlan: 'Pro',
       ultraPlan: 'Ultra',
       basicDescription: 'Perfect for getting started.',
       proDescription: 'Designed for professionals.',
       ultraDescription: 'For teams and power users.',
-      
+
       including: 'Including',
       monthlyCredits: 'credits',
       annualCredits: 'credits',
@@ -266,15 +332,15 @@ export const translations: Record<Language, Translations> = {
       slidePreview: 'Slide preview before generating',
       exportPDF: 'Export as PDF',
       prioritySupport: 'Priority support',
-      
+
       savePerYear: 'Save {amount} per year',
-      
+
       termsAndPrivacy: 'Terms and Privacy',
       viewTerms: 'View Terms',
       privacyPolicy: 'Privacy Policy',
       freeTrial3Days: '3 days for free, then $14.99/month',
     },
-    
+
     auth: {
       loginTitle: 'Log in to your account',
       signupTitle: 'Create your account',
@@ -284,7 +350,7 @@ export const translations: Record<Language, Translations> = {
       alreadyHaveAccount: 'Already have an account?',
       signupLink: 'Sign up',
       loginLink: 'Log in',
-      
+
       typewriterPhrases: [
         "Build a forecast presentation with this spreadsheet.",
         "Create a data room from this financial data.",
@@ -292,13 +358,52 @@ export const translations: Record<Language, Translations> = {
         "Turn this into a client report with insights.",
         "Summarize this sales report in 5 slides.",
       ],
-      
+
       authFailed: 'Authentication failed. Please check your Supabase configuration and try again.',
       unexpectedError: 'An unexpected error occurred during authentication. Please try again.',
       authTimeout: 'Authentication timed out. This may happen with new accounts. Please try again.',
       accountDeleted: 'Your account data has been successfully deleted and you have been signed out.',
     },
-    
+
+    // Onboarding
+    onboarding: {
+      steps: [
+        {
+          question: "What type of presentations do you need to create?",
+          options: [
+            { id: "business", label: "Business / Sales" },
+            { id: "education", label: "Academic / Education" },
+            { id: "creative", label: "Personal / Creative" },
+            { id: "marketing", label: "Marketing / Pitch Decks" }
+          ]
+        },
+        {
+          question: "How often do you create presentations?",
+          options: [
+            { id: "daily", label: "Daily" },
+            { id: "weekly", label: "Weekly" },
+            { id: "monthly", label: "Monthly" },
+            { id: "occasionally", label: "Occasionally" }
+          ]
+        },
+        {
+          question: "What is your current biggest frustration?",
+          options: [
+            { id: "design", label: "Lack of design skills" },
+            { id: "time", label: "Too much time spent" },
+            { id: "content", label: "Difficulty with structure" },
+            { id: "complexity", label: "Tools are too complex" }
+          ]
+        }
+      ],
+      finalTitle: "Everything is ready to start!",
+      finalSubtitle: "See how Slaid transforms your data into professional presentations in seconds.",
+      startButton: "Get started now",
+      backButton: "Back",
+      stepCounter: "STEP {step} OF 4",
+      personalize: "Help us personalize your experience."
+    },
+
     editor: {
       workspace: 'Workspace',
       newPresentation: 'New Presentation',
@@ -307,54 +412,62 @@ export const translations: Record<Language, Translations> = {
       settings: 'Settings',
       help: 'Help',
       logout: 'Logout',
-      
+
       // Upload section
       uploadTitle: 'Upload Files',
       uploadSubtitle: 'Drag and drop your files here, or',
+      uploadButton: 'Create Presentation',
       clickToSelect: 'click to select',
       supportedFormats: 'Support formats: .xlsx, .xsl, .csv',
-      
+
       // Loading states
       analyzingContent: 'Analyzing content',
       generatingSlides: 'Generating slides',
       applyingDesign: 'Applying design',
-      
+
       // Sidebar
       editSlide: 'Edit Slide',
       deleteSlide: 'Delete slide',
       duplicateSlide: 'Duplicate slide',
-      
+
       // Export
       export: 'Export',
       exportPDF: 'Export as PDF',
       exportPPTX: 'Export as PowerPoint',
       exportGoogleSlides: 'Export to Google Slides',
       exporting: 'Exporting...',
-      
+
       // Pricing Modal
       pricingModal: {
         title: 'Upgrade your plan',
         subtitle: 'Get more credits and unlock premium features',
+        upgradeMessage: 'You need more credits to complete this action.',
         monthly: 'Monthly',
         annual: 'Annual',
       },
-      
+
       // Settings Modal
       settingsModal: {
         title: 'Settings',
         accountSettings: 'Account Settings',
         currentPlan: 'Current Plan',
-        freePlan: 'Free Plan - 35 credits',
-        basicPlan: 'Basic Plan - 500 credits/month',
-        proPlan: 'Pro Plan - 1,000 credits/month',
-        ultraPlan: 'Ultra Plan - 2,000 credits/month',
+        freePlan: 'Free Plan',
+        weeklyPlan: 'Weekly Plan',
+        monthlyPlan: 'Monthly Plan',
+        annualPlan: 'Annual Plan',
+        ultraPlan: 'Ultra Plan',
+        freePlanInfo: '35 credits (one-time)',
+        weeklyPlanInfo: '200 weekly credits',
+        monthlyPlanInfo: '500 monthly credits',
+        annualPlanInfo: '2,500 annual credits',
+        ultraPlanInfo: '5,000 monthly credits',
         manageSubscription: 'Manage Subscription',
         cancelSubscription: 'Cancel Subscription',
         cancelling: 'Cancelling...',
         deleteAccount: 'Delete Account',
         close: 'Close',
       },
-      
+
       // Help Modal
       helpModal: {
         title: 'Help & Support',
@@ -365,7 +478,7 @@ export const translations: Record<Language, Translations> = {
         tutorials: 'Video Tutorials',
         close: 'Close',
       },
-      
+
       // Credits Modal
       creditsModal: {
         title: 'Get More Credits',
@@ -374,7 +487,7 @@ export const translations: Record<Language, Translations> = {
         or: 'or',
         subscriptionPlans: 'Subscription Plans',
       },
-      
+
       // Share Modal
       shareModal: {
         title: 'Share Presentation',
@@ -382,7 +495,7 @@ export const translations: Record<Language, Translations> = {
         linkCopied: 'Link copied!',
         close: 'Close',
       },
-      
+
       // Error messages
       errors: {
         uploadError: 'Error uploading file',
@@ -392,13 +505,13 @@ export const translations: Record<Language, Translations> = {
       },
     },
   },
-  
+
   es: {
     nav: {
       login: 'Iniciar sesión',
       signup: 'Registrarse',
     },
-    
+
     home: {
       customersText: 'Utilizado por',
       happyCustomers: 'clientes satisfechos',
@@ -406,23 +519,23 @@ export const translations: Record<Language, Translations> = {
       subtitle: 'Desbloquea el potencial de tus datos de Excel con nuestro generador de presentaciones basado en IA.',
       getStarted: 'Comenzar',
       freeCredits: 'Obtén 35 créditos gratis al registrarte',
-      
+
       bentoTitle: 'Desbloquea el poder de tus datos',
       bentoDescription: 'Slaid no solo convierte hojas de cálculo en informes visuales — actúa como un analista, interpretando tus datos, identificando patrones y sugiriendo información clara y procesable.',
-      
+
       smartExcelTitle: 'Análisis Inteligente de Excel — Deja que la IA haga los cálculos.',
       smartExcelDescription: 'Sube cualquier hoja de cálculo y Slaid analizará automáticamente tus datos — sin fórmulas, sin tablas dinámicas. Desde tendencias hasta anomalías, detecta lo que más importa y se pone a trabajar al instante.',
-      
+
       slideReadyTitle: 'Informes Listos para Presentar — De datos en bruto a storytelling pulido.',
       slideReadyDescription: 'Convierte tu análisis en una presentación estructurada con títulos, gráficos, resúmenes y conclusiones clave. No se necesitan habilidades de diseño — todo está diseñado para claridad e impacto.',
-      
+
       interactiveChartsTitle: 'Gráficos Interactivos — Explora, filtra y destaca lo que importa.',
       interactiveChartsDescription: 'Los gráficos en Slaid no son imágenes estáticas. Puedes hacer clic, explorar y profundizar en los números — facilitando encontrar información y adaptar visuales antes de exportar.',
-      
+
       editPowerPointTitle: 'Editar en PowerPoint — Hazlo tuyo con tus herramientas.',
       editPowerPointDescription: 'Exporta tu informe a PowerPoint o tu editor favorito. Eres libre de ajustar cada diapositiva o integrarla directamente en tu flujo de trabajo, completamente editable.',
       editPowerPointButton: 'Editar en PowerPoint',
-      
+
       faqTitle: 'Preguntas Frecuentes',
       faq1Question: '¿Cómo analiza Slaid mis datos de Excel?',
       faq1Answer: 'Slaid utiliza IA avanzada para detectar automáticamente patrones, tendencias e información en tu hoja de cálculo. Simplemente sube tu archivo de Excel, y nuestra IA analizará la estructura de datos, identificará métricas clave y generará visualizaciones significativas sin requerir ninguna configuración manual.',
@@ -434,7 +547,7 @@ export const translations: Record<Language, Translations> = {
       faq4Answer: 'El uso de créditos depende del número de diapositivas que generes. Presentaciones más pequeñas (5 diapositivas) usan menos créditos, mientras que presentaciones más grandes (15+ diapositivas) requieren más. Los nuevos usuarios obtienen 35 créditos gratis para comenzar, y siempre puedes actualizar tu plan para obtener más créditos.',
       faq5Question: '¿Están seguros mis datos?',
       faq5Answer: 'Absolutamente. Tus datos están encriptados en tránsito y en reposo. Nunca compartimos tus datos con terceros, y mantienes la propiedad completa de todos los archivos subidos y presentaciones generadas. Puedes eliminar tus datos en cualquier momento desde la configuración de tu cuenta.',
-      
+
       footerSlogan: 'Transforma tu Excel en presentaciones profesionales de datos con información impulsada por IA.',
       footerMenuTitle: 'Menú',
       footerPoliciesTitle: 'Políticas',
@@ -446,14 +559,14 @@ export const translations: Record<Language, Translations> = {
       footerCookies: 'Política de Cookies',
       footerCopyright: 'Todos los derechos reservados.',
     },
-    
+
     upload: {
       title: 'Subir Archivos',
       dragDrop: 'Arrastra y suelta tus archivos aquí, o',
       clickToSelect: 'haz clic para seleccionar',
       supportedFormats: 'Formatos soportados: .xlsx, .xsl, .csv',
     },
-    
+
     pricing: {
       title: 'Precios',
       subtitle: 'Elige el plan que se adapte perfectamente a tus necesidades. Escala en cualquier momento.',
@@ -465,14 +578,14 @@ export const translations: Record<Language, Translations> = {
       discount: 'DESCUENTO NAVIDEÑO 50%',
       currentPlan: 'Plan actual',
       downgradePlan: 'Bajar de plan',
-      
+
       basicPlan: 'Básico',
       proPlan: 'Pro',
       ultraPlan: 'Ultra',
       basicDescription: 'Perfecto para empezar.',
       proDescription: 'Diseñado para profesionales.',
       ultraDescription: 'Para equipos y usuarios avanzados.',
-      
+
       including: 'Incluye',
       monthlyCredits: 'créditos',
       annualCredits: 'créditos',
@@ -480,15 +593,15 @@ export const translations: Record<Language, Translations> = {
       slidePreview: 'Vista previa antes de generar',
       exportPDF: 'Exportar como PDF',
       prioritySupport: 'Soporte prioritario',
-      
+
       savePerYear: 'Ahorra {amount} por año',
-      
+
       termsAndPrivacy: 'Términos y Privacidad',
       viewTerms: 'Ver Términos',
       privacyPolicy: 'Política de Privacidad',
       freeTrial3Days: '3 días gratis, luego $14.99/mes',
     },
-    
+
     auth: {
       loginTitle: 'Inicia sesión en tu cuenta',
       signupTitle: 'Crea tu cuenta',
@@ -498,7 +611,7 @@ export const translations: Record<Language, Translations> = {
       alreadyHaveAccount: '¿Ya tienes una cuenta?',
       signupLink: 'Regístrate',
       loginLink: 'Inicia sesión',
-      
+
       typewriterPhrases: [
         "Crea una presentación de pronósticos con esta hoja de cálculo.",
         "Genera un data room con estos datos financieros.",
@@ -506,13 +619,52 @@ export const translations: Record<Language, Translations> = {
         "Convierte esto en un informe para clientes con insights.",
         "Resume este reporte de ventas en 5 diapositivas.",
       ],
-      
+
       authFailed: 'Error de autenticación. Por favor verifica tu configuración de Supabase e intenta nuevamente.',
       unexpectedError: 'Ocurrió un error inesperado durante la autenticación. Por favor intenta nuevamente.',
       authTimeout: 'La autenticación expiró. Esto puede ocurrir con cuentas nuevas. Por favor intenta nuevamente.',
       accountDeleted: 'Los datos de tu cuenta han sido eliminados exitosamente y has cerrado sesión.',
     },
-    
+
+    // Onboarding
+    onboarding: {
+      steps: [
+        {
+          question: "¿Qué tipo de presentaciones necesitas crear?",
+          options: [
+            { id: "business", label: "Negocios / Ventas" },
+            { id: "education", label: "Académico / Educación" },
+            { id: "creative", label: "Personal / Creativo" },
+            { id: "marketing", label: "Marketing / Pitch Decks" }
+          ]
+        },
+        {
+          question: "¿Con qué frecuencia creas presentaciones?",
+          options: [
+            { id: "daily", label: "Diariamente" },
+            { id: "weekly", label: "Semanalmente" },
+            { id: "monthly", label: "Mensualmente" },
+            { id: "occasionally", label: "Ocasionalmente" }
+          ]
+        },
+        {
+          question: "¿Cuál es tu mayor frustración actual?",
+          options: [
+            { id: "design", label: "Falta de habilidades de diseño" },
+            { id: "time", label: "Demasiado tiempo invertido" },
+            { id: "content", label: "Dificultad con la estructura" },
+            { id: "complexity", label: "Herramientas muy complejas" }
+          ]
+        }
+      ],
+      finalTitle: "¡Todo listo para empezar!",
+      finalSubtitle: "Mira cómo Slaid transforma tus datos en presentaciones profesionales en segundos.",
+      startButton: "Comenzar ahora",
+      backButton: "Atrás",
+      stepCounter: "PASO {step} DE 4",
+      personalize: "Ayúdanos a personalizar tu experiencia."
+    },
+
     editor: {
       workspace: 'Espacio de trabajo',
       newPresentation: 'Nueva Presentación',
@@ -521,54 +673,62 @@ export const translations: Record<Language, Translations> = {
       settings: 'Configuración',
       help: 'Ayuda',
       logout: 'Cerrar sesión',
-      
+
       // Upload section
       uploadTitle: 'Subir Archivos',
       uploadSubtitle: 'Arrastra y suelta tus archivos aquí, o',
+      uploadButton: 'Crear Presentación',
       clickToSelect: 'haz clic para seleccionar',
       supportedFormats: 'Formatos soportados: .xlsx, .xsl, .csv',
-      
+
       // Loading states
       analyzingContent: 'Analizando contenido',
       generatingSlides: 'Generando diapositivas',
       applyingDesign: 'Aplicando diseño',
-      
+
       // Sidebar
       editSlide: 'Editar Diapositiva',
       deleteSlide: 'Eliminar diapositiva',
       duplicateSlide: 'Duplicar diapositiva',
-      
+
       // Export
       export: 'Exportar',
       exportPDF: 'Exportar como PDF',
       exportPPTX: 'Exportar como PowerPoint',
       exportGoogleSlides: 'Exportar a Google Slides',
       exporting: 'Exportando...',
-      
+
       // Pricing Modal
       pricingModal: {
         title: 'Mejora tu plan',
         subtitle: 'Obtén más créditos y desbloquea funciones premium',
+        upgradeMessage: 'Necesitas más créditos para realizar esta acción.',
         monthly: 'Mensual',
         annual: 'Anual',
       },
-      
+
       // Settings Modal
       settingsModal: {
         title: 'Configuración',
         accountSettings: 'Configuración de Cuenta',
         currentPlan: 'Plan Actual',
-        freePlan: 'Plan Gratuito - 35 créditos',
-        basicPlan: 'Plan Básico - 500 créditos/mes',
-        proPlan: 'Plan Pro - 1,000 créditos/mes',
-        ultraPlan: 'Plan Ultra - 2,000 créditos/mes',
+        freePlan: 'Plan Gratuito',
+        weeklyPlan: 'Plan Semanal',
+        monthlyPlan: 'Plan Mensual',
+        annualPlan: 'Plan Anual',
+        ultraPlan: 'Plan Ultra',
+        freePlanInfo: '35 créditos (una vez)',
+        weeklyPlanInfo: '200 créditos semanales',
+        monthlyPlanInfo: '500 créditos mensuales',
+        annualPlanInfo: '2,500 créditos anuales',
+        ultraPlanInfo: '5,000 créditos mensuales',
         manageSubscription: 'Administrar Suscripción',
         cancelSubscription: 'Cancelar Suscripción',
         cancelling: 'Cancelando...',
         deleteAccount: 'Eliminar Cuenta',
         close: 'Cerrar',
       },
-      
+
       // Help Modal
       helpModal: {
         title: 'Ayuda y Soporte',
@@ -579,7 +739,7 @@ export const translations: Record<Language, Translations> = {
         tutorials: 'Tutoriales en Video',
         close: 'Cerrar',
       },
-      
+
       // Credits Modal
       creditsModal: {
         title: 'Obtener Más Créditos',
@@ -588,7 +748,7 @@ export const translations: Record<Language, Translations> = {
         or: 'o',
         subscriptionPlans: 'Planes de Suscripción',
       },
-      
+
       // Share Modal
       shareModal: {
         title: 'Compartir Presentación',
@@ -596,7 +756,7 @@ export const translations: Record<Language, Translations> = {
         linkCopied: '¡Enlace copiado!',
         close: 'Cerrar',
       },
-      
+
       // Error messages
       errors: {
         uploadError: 'Error al subir archivo',
