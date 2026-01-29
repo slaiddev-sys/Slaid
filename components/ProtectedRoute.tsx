@@ -15,22 +15,25 @@ interface ProtectedRouteProps {
 const hasRecentPurchase = (): boolean => {
   if (typeof window === 'undefined') return false;
   const purchaseTime = localStorage.getItem('slaid_just_purchased');
+  const purchasePending = localStorage.getItem('slaid_purchase_pending');
+
   if (!purchaseTime) return false;
-  
+
   const timeSincePurchase = Date.now() - parseInt(purchaseTime);
   const fiveMinutes = 5 * 60 * 1000;
-  
+
   console.log('🛒 ProtectedRoute: Checking recent purchase', {
     purchaseTime: new Date(parseInt(purchaseTime)).toISOString(),
     timeSincePurchase: Math.round(timeSincePurchase / 1000) + 's',
+    purchasePending,
     isRecent: timeSincePurchase < fiveMinutes
   });
-  
+
   return timeSincePurchase < fiveMinutes;
 };
 
-export default function ProtectedRoute({ 
-  children, 
+export default function ProtectedRoute({
+  children,
   redirectTo = '/login',
   requirePaidPlan = true
 }: ProtectedRouteProps) {
@@ -41,13 +44,6 @@ export default function ProtectedRoute({
 
   useEffect(() => {
     const checkAccess = async () => {
-      // FIRST: Check for recent purchase - bypasses ALL other checks
-      if (hasRecentPurchase()) {
-        console.log('🛒 ProtectedRoute: Recent purchase detected - GRANTING ACCESS');
-        setIsChecking(false);
-        return; // Grant access immediately
-      }
-
       // Wait for auth to load
       if (authLoading) {
         console.log('🔐 ProtectedRoute: Waiting for auth...');
@@ -61,6 +57,13 @@ export default function ProtectedRoute({
         return;
       }
 
+      // FIRST: Check for recent purchase - bypasses ALL other checks
+      if (hasRecentPurchase()) {
+        console.log('🛒 ProtectedRoute: Recent purchase detected - GRANTING ACCESS');
+        setIsChecking(false);
+        return; // Grant access immediately
+      }
+
       // If paid plan is required, check for it
       if (requirePaidPlan) {
         // Wait for credits to load
@@ -70,8 +73,8 @@ export default function ProtectedRoute({
         }
 
         // EXPLICIT check: only basic, pro, ultra are paid plans
-        const hasPaidPlan = credits?.plan_type && 
-          ['basic', 'pro', 'ultra'].includes(credits.plan_type.toLowerCase());
+        const hasPaidPlan = credits?.plan_type &&
+          ['basic', 'pro', 'ultra', 'weekly', 'monthly', 'annual'].includes(credits.plan_type.toLowerCase());
 
         console.log('🔐 ProtectedRoute: Plan check', {
           plan_type: credits?.plan_type,
@@ -80,8 +83,8 @@ export default function ProtectedRoute({
         });
 
         if (!hasPaidPlan) {
-          console.log('🔐 ProtectedRoute: No paid plan - redirecting to /pricing');
-          router.push('/pricing');
+          console.log('🔐 ProtectedRoute: No paid plan - redirecting to /onboarding');
+          router.push('/onboarding');
           return;
         }
       }

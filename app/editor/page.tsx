@@ -269,24 +269,33 @@ export default function EditorPage() {
 
   const router = useRouter();
   // Read from_purchase flag from URL (client-side only to avoid Suspense issues)
-  const [fromPurchase, setFromPurchase] = useState(false);
-  useEffect(() => {
+  const [fromPurchase, setFromPurchase] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const isFromPurchase = params.get('from_purchase') === 'true';
-      setFromPurchase(isFromPurchase);
 
-      // If returning from purchase, ensure localStorage flags are set
-      // This handles cases where they were redirected directly without hitting the success page
+      // If returning from purchase, ensure localStorage flags are set IMMEDIATELY
       if (isFromPurchase) {
         if (!localStorage.getItem('slaid_just_purchased')) {
           localStorage.setItem('slaid_just_purchased', Date.now().toString());
           localStorage.setItem('slaid_purchase_pending', 'true');
-          console.log('🛒 Purchase flags initialized from URL param');
+          console.log('🛒 Purchase flags initialized during state creation from URL param');
         }
       }
+      return isFromPurchase;
     }
-  }, []);
+    return false;
+  });
+
+  useEffect(() => {
+    // This effect now only handles cleanup or late-arrival flags if needed
+    if (typeof window !== 'undefined' && fromPurchase) {
+      if (!localStorage.getItem('slaid_just_purchased')) {
+        localStorage.setItem('slaid_just_purchased', Date.now().toString());
+        localStorage.setItem('slaid_purchase_pending', 'true');
+      }
+    }
+  }, [fromPurchase]);
 
   const { user, signOut } = useAuth();
   const { language, changeLanguage } = useLanguage();

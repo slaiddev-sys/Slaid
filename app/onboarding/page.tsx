@@ -86,7 +86,7 @@ export default function OnboardingPage() {
                         },
                         body: JSON.stringify({
                             product_id: plan.polarProductId,
-                            success_url: `${window.location.origin}/editor?from_purchase=true`,
+                            success_url: `${window.location.origin}/purchase-success`,
                             cancel_url: window.location.href,
                             customer_email: userEmail,
                         }),
@@ -94,8 +94,14 @@ export default function OnboardingPage() {
 
                     if (response.ok) {
                         const checkout = await response.json();
+                        // Set flags before leaving the app just in case
+                        localStorage.setItem('slaid_just_purchased', Date.now().toString());
+                        localStorage.setItem('slaid_purchase_pending', 'true');
                         window.location.href = checkout.url;
                     } else {
+                        // Set flags even for external checkout
+                        localStorage.setItem('slaid_just_purchased', Date.now().toString());
+                        localStorage.setItem('slaid_purchase_pending', 'true');
                         window.location.href = `https://polar.sh/checkout/${plan.polarProductId}`;
                     }
                 } catch (error) {
