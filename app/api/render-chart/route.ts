@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 
 // Simple canvas-based chart generator as fallback
 function generateSimpleChart(chartData: any, width: number, height: number): string {
@@ -29,7 +31,7 @@ function generateSimpleChart(chartData: any, width: number, height: number): str
   <circle cx="40" cy="${height - 10}" r="4" fill="#6366f1"/>
   <text x="50" y="${height - 6}" font-family="Helvetica" font-size="10" fill="#666">Revenue</text>
 </svg>`;
-  
+
   return `data:image/svg+xml;base64,${Buffer.from(svg).toString('base64')}`;
 }
 
@@ -41,24 +43,16 @@ export async function POST(request: NextRequest) {
     console.log('Chart data received:', JSON.stringify(chartData, null, 2));
     console.log('Dimensions:', { width, height });
 
-    // Launch Puppeteer (dynamic import)
-    const puppeteer = await import('puppeteer');
-    const browser = await puppeteer.default.launch({
-      headless: true,
-      args: [
-        '--no-sandbox', 
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ]
+    // Launch Puppeteer with Vercel-compatible Chrome
+    const browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
-    
+
     // Set viewport size
     await page.setViewport({ width: width + 100, height: height + 100 });
 
@@ -188,7 +182,7 @@ export async function POST(request: NextRequest) {
 
     // Wait for chart to be rendered
     await page.waitForFunction(() => window.chartReady === true, { timeout: 5000 });
-    
+
     // Wait a bit more for animations to complete
     await page.waitForTimeout(500);
 
@@ -209,7 +203,7 @@ export async function POST(request: NextRequest) {
 
     // Return base64 encoded image
     const base64Image = screenshot.toString('base64');
-    
+
     return NextResponse.json({
       success: true,
       image: `data:image/png;base64,${base64Image}`,
@@ -218,13 +212,13 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Puppeteer chart rendering failed, using fallback:', error);
-    
+
     // Use simple SVG fallback
     try {
       const fallbackImage = generateSimpleChart(chartData, width, height);
-      
+
       console.log('Fallback chart generated successfully');
-      
+
       return NextResponse.json({
         success: true,
         image: fallbackImage,
@@ -234,8 +228,8 @@ export async function POST(request: NextRequest) {
     } catch (fallbackError) {
       console.error('Fallback chart generation also failed:', fallbackError);
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Failed to render chart',
           details: error instanceof Error ? error.message : 'Unknown error'
         },

@@ -19,6 +19,13 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
+  serverExternalPackages: [
+    "puppeteer-core",
+    "@sparticuz/chromium",
+    "sharp",
+    "canvas",
+    "@napi-rs/canvas"
+  ],
 };
 
 export default nextConfig;

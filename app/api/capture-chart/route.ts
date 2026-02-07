@@ -1,31 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import puppeteer from 'puppeteer';
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 
 export async function POST(request: NextRequest) {
   try {
     const { chartData, width = 800, height = 400 } = await request.json();
-    
-    console.log('📊 Chart Capture: Starting capture for chart data:', { 
-      type: chartData.type, 
+
+    console.log('📊 Chart Capture: Starting capture for chart data:', {
+      type: chartData.type,
       seriesCount: chartData.series?.length,
-      width, 
-      height 
+      width,
+      height
     });
 
     if (!chartData) {
       return NextResponse.json({ error: 'Chart data is required' }, { status: 400 });
     }
 
-    // Launch Puppeteer
+    // Launch Puppeteer with Vercel-compatible Chrome
     const browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security', '--allow-running-insecure-content']
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
-    
+
     // Set viewport to desired chart size with high DPI for quality
-    await page.setViewport({ 
+    await page.setViewport({
       width: width * 2, // 2x for high quality
       height: height * 2,
       deviceScaleFactor: 2
@@ -182,13 +185,13 @@ export async function POST(request: NextRequest) {
 
     // Set the HTML content
     await page.setContent(chartHtml);
-    
+
     // Wait for the chart to be rendered
     await page.waitForFunction(() => window.chartReady, { timeout: 10000 });
-    
+
     // Wait a bit more for any animations
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
+
     // Take screenshot of the chart
     const screenshot = await page.screenshot({
       type: 'png',
@@ -202,10 +205,10 @@ export async function POST(request: NextRequest) {
     });
 
     await browser.close();
-    
+
     console.log('✅ Chart Capture: Successfully captured chart image');
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       image: screenshot,
       width: width * 2,
       height: height * 2

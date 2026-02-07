@@ -1,27 +1,30 @@
 // Dynamic import for puppeteer to avoid bundling issues
+import chromium from '@sparticuz/chromium';
+import puppeteer from 'puppeteer-core';
 
 // Direct chart capture function using Puppeteer to capture actual rendered chart
 export async function captureChartImage(chartData: any, width: number = 1200, height: number = 600, customMargins?: { top: number, right: number, left: number, bottom: number }): Promise<string | null> {
   let browser;
   try {
-    console.log('📊 Chart Capture: Starting capture for chart data:', { 
-      type: chartData.type, 
+    console.log('📊 Chart Capture: Starting capture for chart data:', {
+      type: chartData.type,
       seriesCount: chartData.series?.length,
-      width, 
-      height 
+      width,
+      height
     });
 
-    // Launch Puppeteer (dynamic import)
-    const puppeteer = await import('puppeteer');
-    browser = await puppeteer.default.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security', '--allow-running-insecure-content']
+    // Launch Puppeteer with Vercel-compatible Chrome
+    browser = await puppeteer.launch({
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     const page = await browser.newPage();
-    
+
     // Set viewport to desired chart size with high DPI for quality
-    await page.setViewport({ 
+    await page.setViewport({
       width: width,
       height: height,
       deviceScaleFactor: 2
@@ -30,18 +33,18 @@ export async function captureChartImage(chartData: any, width: number = 1200, he
     // Navigate to the actual chart component in the app
     const baseUrl = process.env.NODE_ENV === 'production' ? 'https://your-domain.com' : 'http://localhost:3000';
     const chartUrl = `${baseUrl}/chart-preview?data=${encodeURIComponent(JSON.stringify(chartData))}&width=${width}&height=${height}`;
-    
+
     console.log('📊 Chart Capture: Navigating to chart preview:', chartUrl);
-    
+
     try {
-      await page.goto(chartUrl, { 
+      await page.goto(chartUrl, {
         waitUntil: 'networkidle0',
         timeout: 15000
       });
-      
+
       // Wait for chart to be rendered
       await page.waitForSelector('.chart-block', { timeout: 10000 });
-      
+
       // Take screenshot of just the chart
       const screenshot = await page.screenshot({
         type: 'png',
@@ -51,7 +54,7 @@ export async function captureChartImage(chartData: any, width: number = 1200, he
 
       console.log('✅ Chart Capture: Successfully captured actual rendered chart');
       return screenshot;
-      
+
     } catch (navigationError) {
       console.warn('⚠️ Chart Capture: Could not navigate to chart preview, falling back to SVG generation');
       // Fall back to the original SVG generation method
@@ -80,9 +83,9 @@ async function generateSVGChart(chartData: any, width: number, height: number, c
     });
 
     const page = await browser.newPage();
-    
+
     // Set viewport to desired chart size with high DPI for quality
-    await page.setViewport({ 
+    await page.setViewport({
       width: width * 2, // 2x for high quality
       height: height * 2,
       deviceScaleFactor: 2
@@ -384,21 +387,21 @@ async function generateSVGChart(chartData: any, width: number, height: number, c
 
     // Set the HTML content
     await page.setContent(chartHtml, { waitUntil: 'networkidle0' });
-    
+
     // Add console and error logging
     page.on('console', msg => {
       console.log('📊 Browser Console:', msg.text());
     });
-    
+
     page.on('pageerror', error => {
       console.error('📊 Page Error:', error.message);
     });
-    
+
     // Wait for the chart to be rendered
     try {
       await page.waitForFunction(() => window.chartReady, { timeout: 10000 });
       console.log('📊 Direct Chart Capture: Chart ready signal received');
-      
+
       // Wait extra time for final rendering
       console.log('📊 Direct Chart Capture: Waiting for final rendering...');
       await new Promise(resolve => setTimeout(resolve, 2000));
@@ -408,7 +411,7 @@ async function generateSVGChart(chartData: any, width: number, height: number, c
       console.log('📊 Direct Chart Capture: Using fallback 3-second wait...');
       await new Promise(resolve => setTimeout(resolve, 3000));
     }
-    
+
     // Final check - log what's actually on the page before screenshot
     const pageContent = await page.evaluate(() => {
       const chartRoot = document.getElementById('chart-root');
@@ -422,7 +425,7 @@ async function generateSVGChart(chartData: any, width: number, height: number, c
       };
     });
     console.log('📊 Final Page Content Check:', pageContent);
-    
+
     // Take screenshot of the chart
     const screenshot = await page.screenshot({
       type: 'png',

@@ -6,7 +6,7 @@ import puppeteer from 'puppeteer-core';
 export async function POST(request: NextRequest) {
   try {
     const { presentationId, workspace, slides, title } = await request.json();
-    
+
     console.log('📄 PDF Export: Starting export for presentation:', { presentationId, title, slidesCount: slides?.length });
 
     if (!slides || slides.length === 0) {
@@ -28,14 +28,14 @@ export async function POST(request: NextRequest) {
     });
 
     const page = await browser.newPage();
-    
+
     // Set viewport to standard presentation size (16:9 aspect ratio)
-    await page.setViewport({ 
-      width: 1920, 
+    await page.setViewport({
+      width: 1920,
       height: 1080,
       deviceScaleFactor: 1
     });
-    
+
     // Set user agent to ensure consistent rendering
     await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
@@ -51,31 +51,31 @@ export async function POST(request: NextRequest) {
       try {
         const slideDataString = JSON.stringify(slide);
         console.log(`📄 Slide ${i + 1} data size:`, slideDataString.length, 'bytes');
-        
+
         // First navigate to editor with export mode
         const editorUrl = `${baseUrl}/editor?presentationId=${presentationId}&workspace=${encodeURIComponent(workspace)}&slideIndex=${i}&export=true`;
-        
+
         console.log(`📄 Navigating to: ${editorUrl}`);
-        await page.goto(editorUrl, { 
+        await page.goto(editorUrl, {
           waitUntil: 'domcontentloaded',
           timeout: 15000
         });
-        
+
         // Inject slide data directly into the page before React hydrates
         await page.evaluateOnNewDocument((slideData) => {
           (window as any).__EXPORT_SLIDE_DATA__ = slideData;
           console.log('📄 Injected slide data into window.__EXPORT_SLIDE_DATA__');
         }, slide);
-        
+
         // Reload to apply the injected data
-        await page.reload({ 
+        await page.reload({
           waitUntil: 'networkidle0',
           timeout: 15000
         });
-        
+
         // Wait for fonts to load before capturing
         await page.evaluateHandle('document.fonts.ready');
-        
+
         // Debug: Check what fonts are actually loaded
         const loadedFonts = await page.evaluate(() => {
           const fonts: string[] = [];
@@ -85,40 +85,40 @@ export async function POST(request: NextRequest) {
           return fonts;
         });
         console.log(`📄 Fonts loaded for slide ${i + 1}:`, loadedFonts);
-        
+
         // Debug: Check what font is actually being used
         const actualFont = await page.evaluate(() => {
           const element = document.querySelector('.slide-content') || document.body;
           return window.getComputedStyle(element).fontFamily;
         });
         console.log(`📄 Actual font being used on slide ${i + 1}:`, actualFont);
-        
+
         // Wait for the slide to be fully rendered
         console.log(`📄 Waiting for .slide-content selector for slide ${i + 1}`);
-        
+
         // Try to wait for .slide-content, but also check for Excel layouts (data-chart-container)
         const hasSlideContent = await page.waitForSelector('.slide-content', { timeout: 5000 }).then(() => true).catch(() => false);
         const hasExcelLayout = await page.waitForSelector('[data-chart-container]', { timeout: 5000 }).then(() => true).catch(() => false);
-        
+
         if (!hasSlideContent && !hasExcelLayout) {
           console.warn(`⚠️ Slide ${i + 1} has neither .slide-content nor [data-chart-container] - may fail to render`);
         }
-        
+
         console.log(`📄 Slide ${i + 1} - hasSlideContent: ${hasSlideContent}, hasExcelLayout: ${hasExcelLayout}`);
-        
+
         // Wait for content to be loaded and rendered (flexible for both standard and Excel layouts)
         await page.waitForFunction(() => {
           const slideContent = document.querySelector('.slide-content');
           const excelLayout = document.querySelector('[data-chart-container]');
-          
+
           if (slideContent && slideContent.children.length > 0) return true;
           if (excelLayout && excelLayout.children.length > 0) return true;
-          
+
           return false;
         }, { timeout: 10000 }).catch(() => {
           console.warn(`⚠️ Timeout waiting for slide content on slide ${i + 1}`);
         });
-        
+
         // Check if the slide content actually has content
         const hasContent = await page.evaluate(() => {
           const slideContent = document.querySelector('.slide-content');
@@ -126,9 +126,9 @@ export async function POST(request: NextRequest) {
           console.log('Slide content children count:', contentCount);
           return slideContent && contentCount > 0;
         });
-        
+
         console.log(`📄 Slide ${i + 1} has content: ${hasContent}`);
-        
+
         // Enhanced chart rendering wait - specifically handles Excel layouts with multiple charts
         await page.waitForFunction(() => {
           // Check if there are any charts (SVG elements from Recharts)
@@ -138,33 +138,33 @@ export async function POST(request: NextRequest) {
             const allSvgs = document.querySelectorAll('svg');
             return allSvgs.length === 0; // Return true if no SVGs at all
           }
-          
+
           console.log(`Found ${svgElements.length} Recharts SVG elements`);
-          
+
           // Check if all Recharts SVG elements have proper content and dimensions
           let allChartsReady = true;
           svgElements.forEach((svg, index) => {
             const children = svg.children;
             const width = (svg as SVGElement).getBBox().width;
             const height = (svg as SVGElement).getBBox().height;
-            
+
             // Chart must have children and non-zero dimensions
             if (children.length === 0 || width === 0 || height === 0) {
               console.log(`Chart ${index + 1} not ready: children=${children.length}, width=${width}, height=${height}`);
               allChartsReady = false;
             }
           });
-          
+
           return allChartsReady;
         }, { timeout: 15000 }).catch(() => {
           console.log(`⚠️ Timeout waiting for charts on slide ${i + 1}, proceeding anyway`);
         });
-        
+
         // Wait for tables to be fully rendered
         await page.waitForFunction(() => {
           const tables = document.querySelectorAll('table');
           if (tables.length === 0) return true; // No tables, ready to proceed
-          
+
           // Check if all tables have rows
           let allTablesHaveContent = true;
           tables.forEach(table => {
@@ -173,19 +173,19 @@ export async function POST(request: NextRequest) {
               allTablesHaveContent = false;
             }
           });
-          
+
           return allTablesHaveContent;
         }, { timeout: 5000 }).catch(() => {
           console.log(`⚠️ Timeout waiting for tables on slide ${i + 1}, proceeding anyway`);
         });
-        
+
         // Wait for ResponsiveContainer to calculate dimensions
         await page.waitForFunction(() => {
           const responsiveContainers = document.querySelectorAll('.recharts-responsive-container');
           if (responsiveContainers.length === 0) return true; // No responsive containers
-          
+
           console.log(`Found ${responsiveContainers.length} Recharts responsive containers`);
-          
+
           // Check if all responsive containers have calculated dimensions
           let allHaveDimensions = true;
           responsiveContainers.forEach((container, index) => {
@@ -196,19 +196,19 @@ export async function POST(request: NextRequest) {
               allHaveDimensions = false;
             }
           });
-          
+
           return allHaveDimensions;
         }, { timeout: 8000 }).catch(() => {
           console.log(`⚠️ Timeout waiting for ResponsiveContainer dimensions on slide ${i + 1}, proceeding anyway`);
         });
-        
+
         // Detect if this is an Excel layout with multiple charts (e.g., KPI Dashboard)
         const layoutInfo = await page.evaluate(() => {
           const excelLayout = document.querySelector('[data-chart-container]');
           const chartCount = document.querySelectorAll('svg.recharts-surface').length;
           const isKPIDashboard = excelLayout?.getAttribute('data-chart-container') === 'kpi-dashboard';
           const isComparisonLayout = excelLayout?.getAttribute('data-chart-container') === 'comparison-chart';
-          
+
           return {
             isExcelLayout: !!excelLayout,
             layoutType: excelLayout?.getAttribute('data-chart-container'),
@@ -216,9 +216,9 @@ export async function POST(request: NextRequest) {
             isComplexLayout: isKPIDashboard || isComparisonLayout || chartCount > 1
           };
         });
-        
+
         console.log(`📄 Slide ${i + 1} layout info:`, layoutInfo);
-        
+
         // Wait additional time based on layout complexity
         // Complex layouts (multiple charts, calculations) need more time
         const waitTime = layoutInfo.isComplexLayout ? 3500 : 2000;
@@ -327,19 +327,19 @@ export async function POST(request: NextRequest) {
         });
 
         // Debug: Take a screenshot to see what's being rendered
-        const screenshot = await page.screenshot({ 
+        const screenshot = await page.screenshot({
           fullPage: true,
           type: 'png'
         });
         console.log(`📄 Screenshot taken for slide ${i + 1}, size: ${screenshot.length} bytes`);
-        
+
         // Debug: Get the actual HTML content and dimensions being rendered
         const debugInfo = await page.evaluate(() => {
           const slideContent = document.querySelector('.slide-content');
           const excelLayout = document.querySelector('[data-chart-container]');
           const body = document.body;
           const chartCount = document.querySelectorAll('svg.recharts-surface').length;
-          
+
           return {
             hasSlideContent: !!slideContent,
             hasExcelLayout: !!excelLayout,
@@ -380,27 +380,27 @@ export async function POST(request: NextRequest) {
         });
 
         pdfPages.push(pdfBuffer);
-        
+
       } catch (error) {
         console.error(`❌ Error rendering slide ${i + 1}:`, error);
-        
+
         // Create a fallback page with error message instead of skipping
         try {
-          await page.goto('data:text/html,<html><body style="margin:0;padding:0;width:1920px;height:1080px;display:flex;align-items:center;justify-content:center;background:white;font-family:Arial,sans-serif;"><div style="text-align:center;"><h1 style="color:#666;margin-bottom:20px;">Slide ' + (i + 1) + '</h1><p style="color:#999;">Error rendering this slide</p><p style="color:#ccc;font-size:12px;">Slide ID: ' + slide.id + '</p></div></body></html>', { 
+          await page.goto('data:text/html,<html><body style="margin:0;padding:0;width:1920px;height:1080px;display:flex;align-items:center;justify-content:center;background:white;font-family:Arial,sans-serif;"><div style="text-align:center;"><h1 style="color:#666;margin-bottom:20px;">Slide ' + (i + 1) + '</h1><p style="color:#999;">Error rendering this slide</p><p style="color:#ccc;font-size:12px;">Slide ID: ' + slide.id + '</p></div></body></html>', {
             waitUntil: 'domcontentloaded',
             timeout: 5000
           });
-          
+
           const fallbackPdfBuffer = await page.pdf({
             width: '1920px',
             height: '1080px',
             printBackground: true,
             margin: { top: 0, right: 0, bottom: 0, left: 0 }
           });
-          
+
           pdfPages.push(fallbackPdfBuffer);
           console.log(`📄 Added fallback page for slide ${i + 1}`);
-          
+
         } catch (fallbackError) {
           console.error(`❌ Failed to create fallback page for slide ${i + 1}:`, fallbackError);
         }
@@ -415,20 +415,20 @@ export async function POST(request: NextRequest) {
 
     // Merge all PDFs into one
     let finalPdf: Buffer;
-    
+
     if (pdfPages.length === 1) {
       finalPdf = pdfPages[0];
     } else {
       const merger = new PDFMerger();
-      
+
       for (const pdfBuffer of pdfPages) {
         await merger.add(pdfBuffer);
       }
-      
+
       const mergedPdfBuffer = await merger.saveAsBuffer();
       finalPdf = Buffer.from(mergedPdfBuffer);
     }
-    
+
     console.log(`✅ PDF Export: Successfully generated PDF with ${pdfPages.length} slides`);
 
     return new NextResponse(finalPdf, {
