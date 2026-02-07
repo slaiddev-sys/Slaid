@@ -30,11 +30,11 @@ class AnthropicWrapper {
 
   constructor(apiKey?: string) {
     const finalApiKey = apiKey || process.env.ANTHROPIC_API_KEY;
-    
+
     if (!finalApiKey) {
       throw new Error('Anthropic API key not configured. Please add ANTHROPIC_API_KEY to your .env.local file.');
     }
-    
+
     this.client = new Anthropic({
       apiKey: finalApiKey,
     });
@@ -45,7 +45,7 @@ class AnthropicWrapper {
    */
   async createMessage(params: AnthropicCallParams): Promise<AnthropicResponse> {
     const { model, messages, max_tokens, temperature, system, kind, userAction, requestId } = params;
-    
+
     // Start user action tracking if provided
     if (userAction) {
       llmCostTracker.startUserAction(userAction);
@@ -60,7 +60,7 @@ class AnthropicWrapper {
 
       try {
         console.log(`🔄 API attempt ${attempt}/${maxRetries} for request ${requestId || 'unknown'}`);
-        
+
         // Make the API call
         const response = await this.client.messages.create({
           model,
@@ -122,7 +122,7 @@ class AnthropicWrapper {
 
         // Check if this is a retryable error
         const isRetryable = this.isRetryableError(error);
-        
+
         if (!isRetryable || attempt === maxRetries) {
           // Log failed API call (with 0 tokens)
           llmCostTracker.logApiCall({
@@ -158,27 +158,27 @@ class AnthropicWrapper {
     if (error.cause?.code === 'ECONNREFUSED' || error.cause?.code === 'ENOTFOUND') {
       return true;
     }
-    
+
     // Network timeout errors are retryable
     if (error.message?.includes('timeout') || error.message?.includes('Connection error')) {
       return true;
     }
-    
+
     // 5xx server errors are retryable (but not 4xx client errors)
     if (error.status >= 500 && error.status < 600) {
       return true;
     }
-    
+
     // 429 rate limit errors are retryable
     if (error.status === 429) {
       return true;
     }
-    
+
     // 529 overload errors are retryable
     if (error.status === 529 || error.error?.type === 'overloaded_error') {
       return true;
     }
-    
+
     return false;
   }
 
@@ -204,5 +204,14 @@ class AnthropicWrapper {
   }
 }
 
-// Export singleton instance
-export const anthropicWrapper = new AnthropicWrapper();
+// Export lazy singleton instance to avoid build-time errors
+let _instance: AnthropicWrapper | null = null;
+
+export const anthropicWrapper = new Proxy({} as AnthropicWrapper, {
+  get(target, prop) {
+    if (!_instance) {
+      _instance = new AnthropicWrapper();
+    }
+    return (_instance as any)[prop];
+  }
+});
